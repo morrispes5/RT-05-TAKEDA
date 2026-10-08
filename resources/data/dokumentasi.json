@@ -11,7 +11,8 @@
                 480,
                 960,
                 1600
-            ]
+            ],
+            "label": "Gapura RT 05 RW 07"
         },
         "sekretariat": {
             "sumber": "IMG-20261007-WA0054.jpg",
@@ -23,7 +24,8 @@
                 480,
                 960,
                 1600
-            ]
+            ],
+            "label": "Sekretariat RT 05/07"
         },
         "taman-bermain": {
             "sumber": "IMG-20261007-WA0042.jpg",
@@ -35,7 +37,8 @@
                 480,
                 960,
                 1600
-            ]
+            ],
+            "label": "Taman bermain"
         },
         "kubah-panjat": {
             "sumber": "IMG-20261007-WA0051.jpg",
@@ -47,7 +50,8 @@
                 480,
                 960,
                 1600
-            ]
+            ],
+            "label": "Kubah panjat"
         },
         "ban-warna": {
             "sumber": "IMG-20261007-WA0048.jpg",
@@ -59,7 +63,8 @@
                 480,
                 960,
                 1600
-            ]
+            ],
+            "label": "Area bermain ban"
         },
         "lapangan": {
             "sumber": "IMG-20261007-WA0053.jpg",
@@ -71,7 +76,8 @@
                 480,
                 960,
                 1600
-            ]
+            ],
+            "label": "Lapangan serbaguna"
         },
         "jalan": {
             "sumber": "IMG-20261007-WA0046.jpg",
@@ -83,7 +89,8 @@
                 480,
                 960,
                 1600
-            ]
+            ],
+            "label": "Jalan lingkungan"
         },
         "menara-air": {
             "sumber": "IMG-20261007-WA0041.jpg",
@@ -95,7 +102,8 @@
                 480,
                 960,
                 1600
-            ]
+            ],
+            "label": "Menara air"
         },
         "papan-takeda": {
             "sumber": "IMG-20261007-WA0044.jpg",
@@ -107,7 +115,8 @@
                 480,
                 960,
                 1600
-            ]
+            ],
+            "label": "Papan Takeda"
         },
         "area-hijau": {
             "sumber": "IMG-20261007-WA0043.jpg",
@@ -119,7 +128,8 @@
                 480,
                 960,
                 1600
-            ]
+            ],
+            "label": "Area hijau"
         },
         "peraturan-lapangan": {
             "sumber": "IMG-20261007-WA0052.jpg",
@@ -130,7 +140,8 @@
             "ukuran": [
                 480,
                 960
-            ]
+            ],
+            "label": "Peraturan lapangan"
         }
     }
 }
