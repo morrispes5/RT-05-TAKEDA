@@ -1,33 +1,48 @@
-@import '@fontsource-variable/schibsted-grotesk';
+@import '@fontsource-variable/bricolage-grotesque';
 @import '@fontsource-variable/public-sans';
 @import 'tailwindcss';
 
 /*
- * Palet diambil dari lingkungan RT 05 sendiri: biru cat sekretariat, kuning pipa pos,
- * dan abu beton lapangan (lihat foto di public/images/dokumentasi).
+ * Token dari design system "RT 05 Takeda" (artifact Claude Design).
+ * Biru muda mengisi 20-70% elemen; brand = biru cat sekretariat; kuning = pipa pos, satu aksen per layar.
  */
 @theme {
-    --font-display: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
-    --font-sans: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Bricolage Grotesque Variable', 'Segoe UI', system-ui, sans-serif;
+    --font-sans: 'Public Sans Variable', 'Segoe UI', system-ui, sans-serif;
 
-    --color-kapur: #ffffff;
-    --color-beton: #eeefeb;
-    --color-garis: #d5d9d2;
-    --color-tinta: #0f1d33;
-    --color-abu: #566170;
-    --color-biru: #0b3f8c;
-    --color-biru-tua: #082f6a;
+    --color-surface: #ffffff;
+    --color-surface-sky: #f0f7ff;
+    --color-sky-100: #dceefe;
+    --color-sky-200: #bbdefc;
+    --color-sky-400: #5aaef0;
+    --color-brand: #0b3f8c;
+    --color-brand-strong: #082f6a;
+    --color-ink: #0f1d33;
+    --color-ink-muted: #4a5a70;
+    --color-line: #d3e3f3;
     --color-kuning: #f2c21a;
+    --color-success: #1f7a4d;
+    --color-success-bg: #e3f5ec;
+    --color-warning: #8a4f00;
+    --color-warning-bg: #fff1d6;
+
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+
+    --shadow-card: 0 1px 2px rgba(11, 63, 140, 0.06), 0 10px 28px rgba(11, 63, 140, 0.08);
+    --shadow-float: 0 20px 44px -14px rgba(11, 63, 140, 0.32);
 }
 
 @layer base {
     html {
         scroll-behavior: smooth;
-        scroll-padding-top: 5rem;
+        scroll-padding-top: 6rem;
     }
 
     body {
-        @apply bg-kapur font-sans text-[17px] leading-[1.6] text-tinta antialiased;
+        @apply bg-surface font-sans text-base leading-[1.65] text-ink antialiased;
     }
 
     h1,
@@ -37,11 +52,11 @@
     }
 
     :focus-visible {
-        outline: 3px solid var(--color-biru);
+        outline: 3px solid var(--color-brand);
         outline-offset: 3px;
     }
 
-    .bg-biru :focus-visible,
+    .bg-brand-strong :focus-visible,
     dialog :focus-visible {
         outline-color: var(--color-kuning);
     }
@@ -55,88 +70,117 @@
 
 @layer components {
     .wrap {
-        @apply mx-auto w-full max-w-[76rem] px-4 sm:px-6 lg:px-10;
+        @apply mx-auto w-full max-w-[75rem] px-4 sm:px-6 lg:px-8;
     }
 
-    .tombol {
-        @apply inline-flex min-h-12 items-center justify-center rounded-md bg-biru px-6 font-semibold text-kapur transition-colors hover:bg-biru-tua;
+    .seksi {
+        @apply py-16 sm:py-20 lg:py-24;
     }
 
-    .tautan {
-        @apply font-semibold text-biru underline decoration-2 underline-offset-4 transition-colors hover:text-biru-tua hover:decoration-kuning;
+    /* Button */
+    .rt-btn {
+        @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-full border-2 border-transparent px-6 font-semibold transition-colors;
+    }
+    .rt-btn--primary {
+        @apply bg-brand text-white hover:bg-brand-strong;
+    }
+    .rt-btn--secondary {
+        @apply bg-sky-100 text-brand hover:bg-sky-200;
+    }
+    .rt-btn--ghost {
+        @apply border-line text-ink hover:border-brand hover:text-brand;
+    }
+    .rt-btn--inverse {
+        @apply bg-surface text-brand hover:bg-sky-100;
     }
 
-    .judul-bagian {
-        @apply text-[clamp(1.875rem,3.6vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.02em];
+    /* Badge */
+    .rt-badge {
+        @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] leading-4 font-semibold;
     }
-
-    /* Satu-satunya elemen dekoratif yang berani: rel kuning seperti pipa pos RT. */
-    .rel-kuning {
-        position: relative;
-        isolation: isolate;
-    }
-
-    .rel-kuning::before {
-        --rel: 0.625rem;
+    .rt-badge::before {
         content: '';
-        position: absolute;
-        z-index: -1;
-        inset: var(--rel) auto calc(var(--rel) * -1) calc(var(--rel) * -1);
-        width: 100%;
-        border-left: var(--rel) solid var(--color-kuning);
-        border-bottom: var(--rel) solid var(--color-kuning);
-        border-radius: 0 0 0 var(--rel);
+        @apply size-[7px] rounded-full bg-current;
+    }
+    .rt-badge--info {
+        @apply bg-sky-100 text-brand;
+    }
+    .rt-badge--success {
+        @apply bg-success-bg text-success;
+    }
+    .rt-badge--warning {
+        @apply bg-warning-bg text-warning;
     }
 
-    @media (width >= 64rem) {
-        .rel-kuning::before {
-            --rel: 1rem;
-        }
+    /* SectionHeading */
+    .rt-label {
+        @apply inline-flex items-center gap-2 rounded-full bg-sky-100 px-3.5 py-1.5 text-[13px] leading-4 font-semibold text-brand;
+    }
+    .rt-label::before {
+        content: '';
+        @apply size-2 rounded-full bg-kuning;
+    }
+    .rt-judul {
+        @apply mt-4 text-[clamp(2rem,4.2vw,2.75rem)] leading-[1.08] font-extrabold tracking-[-0.025em];
+    }
+    .rt-lead {
+        @apply mt-4 text-lg leading-[1.7] text-ink-muted;
+    }
+
+    /* ServiceCard */
+    .rt-service {
+        @apply grid content-start gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-7 sm:p-8;
+    }
+    .rt-service--sorot {
+        @apply border-sky-200 bg-sky-100;
+    }
+    .rt-ikon {
+        @apply mb-2 grid size-12 place-items-center rounded-[var(--radius-sm)] bg-sky-100 text-brand;
+    }
+    .rt-service--sorot .rt-ikon {
+        @apply bg-surface;
+    }
+
+    /* FloatingCard */
+    .rt-float {
+        @apply flex max-w-[18rem] items-center gap-3 rounded-[var(--radius-md)] bg-surface py-3.5 pr-5 pl-3.5 shadow-[var(--shadow-float)];
+    }
+
+    /* PhotoCard */
+    .rt-photo {
+        @apply relative m-0 overflow-hidden rounded-[var(--radius-xl)] bg-sky-100;
+    }
+    .rt-photo figcaption {
+        @apply absolute bottom-4 left-4 w-fit max-w-[calc(100%-2rem)] rounded-full bg-surface px-3.5 py-2 text-sm leading-5 font-medium text-ink;
     }
 }
 
-/* Momen gerak tunggal: foto hero terbuka dari bawah saat halaman dimuat. */
+/* Satu momen gerak: kolase hero masuk saat halaman dimuat. */
 @media (prefers-reduced-motion: no-preference) {
-    .js .hero-foto img {
-        animation: buka-foto 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+    .js .hero-masuk > * {
+        animation: naik 0.7s cubic-bezier(0.2, 0.7, 0.1, 1) both;
     }
-
-    .js .hero-foto::before {
-        animation: rel-masuk 0.9s 0.25s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+    .js .hero-masuk > :nth-child(2) {
+        animation-delay: 0.12s;
     }
-
-    .js .hero-teks {
-        animation: teks-masuk 0.7s 0.1s ease-out both;
+    .js .hero-masuk > :nth-child(3) {
+        animation-delay: 0.24s;
     }
-
+    .js .hero-masuk > :nth-child(4) {
+        animation-delay: 0.36s;
+    }
     dialog[open] {
-        animation: teks-masuk 0.2s ease-out;
+        animation: naik 0.2s ease-out;
     }
 }
 
-@keyframes buka-foto {
-    from {
-        clip-path: inset(100% 0 0 0);
-    }
-    to {
-        clip-path: inset(0 0 0 0);
-    }
-}
-
-@keyframes rel-masuk {
+@keyframes naik {
     from {
         opacity: 0;
-        translate: 0.75rem -0.75rem;
-    }
-}
-
-@keyframes teks-masuk {
-    from {
-        opacity: 0;
-        translate: 0 0.5rem;
+        translate: 0 0.75rem;
     }
 }
 
 dialog::backdrop {
-    background: rgb(15 29 51 / 0.97);
+    background: rgb(15 29 51 / 0.95);
 }

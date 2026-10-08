@@ -15,31 +15,44 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
 
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b3f8c'/%3E%3Cpath d='M7 25V9h4v16zm7 0V9h11v4h-7v2h6v4h-6v6z' fill='%23f2c21a'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="/images/logo/rt05-mark.svg">
 
-    <link rel="preload" as="style" href="/build/assets/app-DxrKVjs8.css" /><link rel="modulepreload" as="script" href="/build/assets/app-BVWQO4lV.js" /><link rel="stylesheet" href="/build/assets/app-DxrKVjs8.css" /><script type="module" src="/build/assets/app-BVWQO4lV.js"></script></head>
+    <link rel="preload" as="style" href="/build/assets/app-C_noeO8T.css" /><link rel="modulepreload" as="script" href="/build/assets/app-BVWQO4lV.js" /><link rel="stylesheet" href="/build/assets/app-C_noeO8T.css" /><script type="module" src="/build/assets/app-BVWQO4lV.js"></script></head>
 <body>
-    <a href="#konten" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-kapur focus:px-4 focus:py-3 focus:font-semibold focus:text-biru">
+    <a href="#konten" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-surface focus:px-4 focus:py-3 focus:font-semibold focus:text-brand">
         Lewati ke konten
     </a>
 
-    <header class="sticky top-0 z-40 border-b border-garis bg-kapur/95 backdrop-blur-sm">
-    <div class="wrap flex h-16 items-center justify-between gap-6">
-        <a href="" class="font-display leading-none">
-            <span class="block text-xl font-extrabold tracking-[-0.02em]">RT 05</span>
-            <span class="block text-sm font-medium text-abu">Taman Kedaung</span>
+    <div class="bg-brand-strong text-[13px] text-white">
+    <div class="wrap flex min-h-9 items-center justify-between gap-4">
+        <p class="flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-4 text-sky-200"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+            Sekretariat RT 05/07, Taman Kedaung, Ciputat
+        </p>
+        <p class="hidden text-sky-200 sm:block">Website publik RT 05 RW 07 Takeda</p>
+    </div>
+</div>
+
+<header class="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur-sm">
+    <div class="wrap flex h-[4.5rem] items-center justify-between gap-6">
+        <a href="" class="flex items-center gap-3">
+            <img src="/images/logo/rt05-mark.svg" alt="" width="44" height="44" class="size-11">
+            <span class="leading-none">
+                <span class="block font-display text-xl font-extrabold tracking-[-0.02em]">RT 05</span>
+                <span class="mt-0.5 block text-[13px] font-medium text-ink-muted">Taman Kedaung</span>
+            </span>
         </a>
 
-        <nav class="hidden items-center gap-8 md:flex" aria-label="Menu utama">
-                            <a href="#lingkungan" class="font-medium text-tinta transition-colors hover:text-biru">Lingkungan</a>
-                            <a href="#layanan" class="font-medium text-tinta transition-colors hover:text-biru">Layanan</a>
-                            <a href="#fasilitas" class="font-medium text-tinta transition-colors hover:text-biru">Fasilitas</a>
-                            <a href="#tentang" class="font-medium text-tinta transition-colors hover:text-biru">Tentang</a>
-                        <a href="#aplikasi" class="tombol min-h-10 px-4 text-[15px]">Aplikasi warga</a>
+        <nav class="hidden items-center gap-1 md:flex" aria-label="Menu utama">
+                            <a href="#layanan" class="rounded-full px-4 py-2 font-medium text-ink transition-colors hover:bg-sky-100 hover:text-brand">Layanan</a>
+                            <a href="#tentang" class="rounded-full px-4 py-2 font-medium text-ink transition-colors hover:bg-sky-100 hover:text-brand">Tentang</a>
+                            <a href="#fasilitas" class="rounded-full px-4 py-2 font-medium text-ink transition-colors hover:bg-sky-100 hover:text-brand">Fasilitas</a>
+                            <a href="#galeri" class="rounded-full px-4 py-2 font-medium text-ink transition-colors hover:bg-sky-100 hover:text-brand">Galeri</a>
+                        <a href="#aplikasi" class="rt-btn rt-btn--primary ml-3 min-h-11 px-5">Aplikasi warga</a>
         </nav>
 
         <button type="button" data-menu-toggle aria-expanded="false" aria-controls="menu-mobile"
-                class="-mr-2 inline-flex min-h-11 items-center gap-2 rounded-md px-2 font-semibold md:hidden">
+                class="inline-flex min-h-11 items-center gap-2 rounded-full bg-sky-100 px-4 font-semibold text-brand md:hidden">
             Menu
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" class="size-5" aria-hidden="true">
                 <path d="M3 6h14M3 10h14M3 14h14" stroke-linecap="round" />
@@ -47,13 +60,13 @@
         </button>
     </div>
 
-    <nav id="menu-mobile" data-menu class="hidden border-t border-garis bg-kapur md:hidden" aria-label="Menu utama">
-        <div class="wrap flex flex-col py-3">
-                            <a href="#lingkungan" class="border-b border-garis py-3 text-lg font-medium">Lingkungan</a>
-                            <a href="#layanan" class="border-b border-garis py-3 text-lg font-medium">Layanan</a>
-                            <a href="#fasilitas" class="border-b border-garis py-3 text-lg font-medium">Fasilitas</a>
-                            <a href="#tentang" class="border-b border-garis py-3 text-lg font-medium">Tentang</a>
-                        <a href="#aplikasi" class="tombol mt-4">Aplikasi warga</a>
+    <nav id="menu-mobile" data-menu class="hidden border-t border-line bg-surface md:hidden" aria-label="Menu utama">
+        <div class="wrap flex flex-col gap-1 py-3">
+                            <a href="#layanan" class="rounded-[var(--radius-md)] px-4 py-3 text-lg font-medium hover:bg-sky-100">Layanan</a>
+                            <a href="#tentang" class="rounded-[var(--radius-md)] px-4 py-3 text-lg font-medium hover:bg-sky-100">Tentang</a>
+                            <a href="#fasilitas" class="rounded-[var(--radius-md)] px-4 py-3 text-lg font-medium hover:bg-sky-100">Fasilitas</a>
+                            <a href="#galeri" class="rounded-[var(--radius-md)] px-4 py-3 text-lg font-medium hover:bg-sky-100">Galeri</a>
+                        <a href="#aplikasi" class="rt-btn rt-btn--primary mt-2">Aplikasi warga</a>
         </div>
     </nav>
 </header>
@@ -61,372 +74,528 @@
     <main id="konten">
         
 
-<section class="overflow-x-clip border-b border-garis">
-    <div class="wrap grid items-center gap-14 py-12 sm:py-16 lg:grid-cols-12 lg:gap-10 lg:py-20">
-        <div class="hero-teks lg:col-span-6">
-            <h1 class="text-[clamp(3rem,9vw,6.5rem)] leading-[0.9] font-extrabold tracking-[-0.04em]">
-                RT 05<br>Taman Kedaung
+<section class="relative overflow-hidden bg-surface-sky">
+    <div class="pointer-events-none absolute -top-40 -right-40 size-[34rem] rounded-full bg-sky-100" aria-hidden="true"></div>
+    <div class="pointer-events-none absolute -bottom-24 -left-24 size-72 rounded-full border-[3rem] border-sky-100" aria-hidden="true"></div>
+
+    <div class="wrap relative grid items-center gap-14 py-14 sm:py-20 lg:grid-cols-12 lg:gap-10 lg:py-24">
+        <div class="hero-masuk lg:col-span-6">
+            <span class="rt-label">RT 05 RW 07 Takeda, Ciputat</span>
+            <h1 class="mt-6 text-[clamp(2.75rem,6.2vw,4.5rem)] leading-[1.02] font-extrabold tracking-[-0.035em]">
+                Lingkungan yang dirawat bersama warga
             </h1>
-            <p class="mt-8 max-w-[34rem] text-lg text-abu sm:text-xl sm:leading-relaxed">
-                Kabar lingkungan, fasilitas bersama, dan kegiatan warga RT 05 RW 07 Takeda, Ciputat.
+            <p class="mt-6 max-w-[34rem] text-lg leading-[1.7] text-ink-muted">
+                Kabar lingkungan, fasilitas bersama, dan layanan warga RT 05 Taman Kedaung dalam satu tempat.
                 Terbuka untuk siapa saja, tanpa perlu daftar.
             </p>
-            <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-5">
-                <a href="#lingkungan" class="tombol">Lihat lingkungan</a>
-                <a href="#aplikasi" class="tautan">Kenali aplikasi warga</a>
+            <div class="mt-9 flex flex-wrap gap-3">
+                <a href="#layanan" class="rt-btn rt-btn--primary">Lihat layanan warga</a>
+                <a href="#galeri" class="rt-btn rt-btn--secondary">Jelajahi lingkungan</a>
             </div>
+            <ul class="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-[15px] font-medium text-ink">
+                                    <li class="flex items-center gap-2">
+                        <span class="grid size-6 place-items-center rounded-full bg-brand text-white"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-3.5"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                        Terbuka tanpa akun
+                    </li>
+                                    <li class="flex items-center gap-2">
+                        <span class="grid size-6 place-items-center rounded-full bg-brand text-white"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-3.5"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                        Foto asli lingkungan
+                    </li>
+                                    <li class="flex items-center gap-2">
+                        <span class="grid size-6 place-items-center rounded-full bg-brand text-white"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-3.5"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                        Data pribadi tidak ditampilkan
+                    </li>
+                            </ul>
         </div>
 
-        <figure class="pl-2.5 lg:col-span-6 lg:pl-8">
-            <div class="hero-foto rel-kuning">
+        <div class="hero-masuk relative h-[24rem] sm:h-[30rem] lg:col-span-6 lg:h-[34rem]">
+            <figure class="rt-photo absolute top-0 right-0 h-[82%] w-full sm:w-[80%]">
                 <img
     src="/images/dokumentasi/gapura-960.webp"
     srcset="/images/dokumentasi/gapura-480.webp 480w, /images/dokumentasi/gapura-960.webp 960w, /images/dokumentasi/gapura-1600.webp 1600w"
-    sizes="(min-width: 1024px) 34rem, 100vw"
+    sizes="(min-width: 1024px) 30rem, 90vw"
     width="1600"
     height="1200"
     alt="Gapura masuk bertuliskan Selamat datang di RT 05 RW 07 Takeda, dihias merah putih untuk HUT RI ke-81."
     decoding="async"
-     fetchpriority="high"     class="aspect-[4/3] w-full rounded-md object-cover object-[50%_40%] lg:aspect-[6/5]"
+     fetchpriority="high"     class="size-full object-cover object-[50%_40%]"
 >
-            </div>
-            <figcaption class="mt-8 text-sm text-abu lg:mt-10">Gapura masuk RT 05 RW 07, dihias untuk HUT RI ke-81.</figcaption>
-        </figure>
-    </div>
-</section>
-
-
-<section id="layanan" class="py-20 sm:py-24" aria-labelledby="judul-layanan">
-    <div class="wrap">
-        <div class="max-w-2xl">
-            <h2 id="judul-layanan" class="judul-bagian">Satu sistem, tiga pintu</h2>
-            <p class="mt-4 text-lg text-abu">
-                Website ini bagian dari layanan digital RT 05. Informasi umum ada di sini; layanan pribadi
-                seperti pengaduan dan iuran ada di aplikasi warga.
-            </p>
-        </div>
-
-        <div class="mt-12 grid border-t-2 border-tinta md:grid-cols-3">
-                            <div class="border-b border-garis py-8 md:border-b-0 md:border-l md:px-8 md:first:border-l-0 md:first:pl-0">
-                    <h3 class="text-2xl font-bold tracking-[-0.01em]">Website publik</h3>
-                    <p class="mt-1 font-medium text-biru">Untuk siapa saja</p>
-                    <p class="mt-4 text-abu">Profil RT, fasilitas bersama, dan dokumentasi kegiatan. Bisa dibuka tanpa akun.</p>
-                    <p class="mt-6 flex items-center gap-2 text-sm font-medium">
-                        <span class="size-2.5 rounded-full bg-biru" aria-hidden="true"></span>
-                        Sudah bisa dipakai
-                    </p>
-                </div>
-                            <div class="border-b border-garis py-8 md:border-b-0 md:border-l md:px-8 md:first:border-l-0 md:first:pl-0">
-                    <h3 class="text-2xl font-bold tracking-[-0.01em]">Aplikasi warga</h3>
-                    <p class="mt-1 font-medium text-biru">Untuk warga terdaftar</p>
-                    <p class="mt-4 text-abu">Pengaduan, aspirasi, agenda kegiatan, dan status iuran rumah. Daftar memakai kode dari pengurus.</p>
-                    <p class="mt-6 flex items-center gap-2 text-sm font-medium">
-                        <span class="size-2.5 rounded-full bg-kuning" aria-hidden="true"></span>
-                        Sedang dikembangkan
-                    </p>
-                </div>
-                            <div class="border-b border-garis py-8 md:border-b-0 md:border-l md:px-8 md:first:border-l-0 md:first:pl-0">
-                    <h3 class="text-2xl font-bold tracking-[-0.01em]">Dashboard pengurus</h3>
-                    <p class="mt-1 font-medium text-biru">Untuk pengurus RT</p>
-                    <p class="mt-4 text-abu">Pendataan warga dan rumah, pencatatan iuran dan kas, serta pengelolaan isi website.</p>
-                    <p class="mt-6 flex items-center gap-2 text-sm font-medium">
-                        <span class="size-2.5 rounded-full bg-kuning" aria-hidden="true"></span>
-                        Sedang dikembangkan
-                    </p>
-                </div>
-                    </div>
-    </div>
-</section>
-
-
-<section id="lingkungan" class="border-t border-garis py-20 sm:py-24" aria-labelledby="judul-lingkungan">
-    <div class="wrap">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-            <h2 id="judul-lingkungan" class="judul-bagian">Sudut-sudut RT 05</h2>
-            <p class="text-abu">Difoto Kelompok 8 saat survei lapangan, Oktober 2026.</p>
-        </div>
-
-        <ul class="-mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:scroll-px-6 sm:px-6 md:mx-0 md:grid md:grid-cols-12 md:gap-x-4 md:gap-y-8 md:overflow-visible md:px-0 md:pb-0">
-                            <li class="w-[82%] shrink-0 snap-start md:col-span-7 md:w-auto">
-                    <button type="button" class="block w-full cursor-zoom-in text-left" data-lightbox="galeri"
-                            data-src="/images/dokumentasi/sekretariat-1600.webp" data-alt="Pos Sekretariat RT 05/07 berangka kuning dengan bangku dan meja di halamannya." data-caption="Sekretariat RT 05/07, tempat pengurus dan warga bertemu.">
-                        <img
+            </figure>
+            <figure class="rt-photo absolute bottom-0 left-0 hidden h-[44%] w-[48%] border-8 border-surface-sky sm:block">
+                <img
     src="/images/dokumentasi/sekretariat-960.webp"
     srcset="/images/dokumentasi/sekretariat-480.webp 480w, /images/dokumentasi/sekretariat-960.webp 960w, /images/dokumentasi/sekretariat-1600.webp 1600w"
-    sizes="(min-width: 768px) 40vw, 82vw"
+    sizes="16rem"
     width="1600"
     height="1200"
     alt="Pos Sekretariat RT 05/07 berangka kuning dengan bangku dan meja di halamannya."
     decoding="async"
-     loading="lazy"     class="aspect-[4/3] w-full rounded-md object-cover md:aspect-auto md:h-64 lg:h-80"
+     fetchpriority="high"     class="size-full object-cover"
 >
-                        <span class="mt-3 block text-sm text-abu">Sekretariat RT 05/07, tempat pengurus dan warga bertemu.</span>
-                    </button>
-                </li>
-                            <li class="w-[82%] shrink-0 snap-start md:col-span-5 md:w-auto">
-                    <button type="button" class="block w-full cursor-zoom-in text-left" data-lightbox="galeri"
-                            data-src="/images/dokumentasi/taman-bermain-1600.webp" data-alt="Taman bermain dengan kubah panjat biru dan perosotan kuning di bawah pohon rindang." data-caption="Taman bermain anak di sisi lapangan.">
-                        <img
-    src="/images/dokumentasi/taman-bermain-960.webp"
-    srcset="/images/dokumentasi/taman-bermain-480.webp 480w, /images/dokumentasi/taman-bermain-960.webp 960w, /images/dokumentasi/taman-bermain-1600.webp 1600w"
-    sizes="(min-width: 768px) 40vw, 82vw"
-    width="1600"
-    height="1200"
-    alt="Taman bermain dengan kubah panjat biru dan perosotan kuning di bawah pohon rindang."
-    decoding="async"
-     loading="lazy"     class="aspect-[4/3] w-full rounded-md object-cover md:aspect-auto md:h-64 lg:h-80"
->
-                        <span class="mt-3 block text-sm text-abu">Taman bermain anak di sisi lapangan.</span>
-                    </button>
-                </li>
-                            <li class="w-[82%] shrink-0 snap-start md:col-span-4 md:w-auto">
-                    <button type="button" class="block w-full cursor-zoom-in text-left" data-lightbox="galeri"
-                            data-src="/images/dokumentasi/lapangan-1600.webp" data-alt="Lapangan beton serbaguna dengan menara air biru dan atap pos di belakangnya." data-caption="Lapangan serbaguna RT 05.">
-                        <img
-    src="/images/dokumentasi/lapangan-960.webp"
-    srcset="/images/dokumentasi/lapangan-480.webp 480w, /images/dokumentasi/lapangan-960.webp 960w, /images/dokumentasi/lapangan-1600.webp 1600w"
-    sizes="(min-width: 768px) 40vw, 82vw"
-    width="1600"
-    height="1200"
-    alt="Lapangan beton serbaguna dengan menara air biru dan atap pos di belakangnya."
-    decoding="async"
-     loading="lazy"     class="aspect-[4/3] w-full rounded-md object-cover md:aspect-auto md:h-64 lg:h-80"
->
-                        <span class="mt-3 block text-sm text-abu">Lapangan serbaguna RT 05.</span>
-                    </button>
-                </li>
-                            <li class="w-[82%] shrink-0 snap-start md:col-span-4 md:w-auto">
-                    <button type="button" class="block w-full cursor-zoom-in text-left" data-lightbox="galeri"
-                            data-src="/images/dokumentasi/jalan-1600.webp" data-alt="Jalan lingkungan beraspal yang diapit rumah warga dan pagar." data-caption="Jalan lingkungan RT 05.">
-                        <img
-    src="/images/dokumentasi/jalan-960.webp"
-    srcset="/images/dokumentasi/jalan-480.webp 480w, /images/dokumentasi/jalan-960.webp 960w, /images/dokumentasi/jalan-1600.webp 1600w"
-    sizes="(min-width: 768px) 40vw, 82vw"
-    width="1600"
-    height="1200"
-    alt="Jalan lingkungan beraspal yang diapit rumah warga dan pagar."
-    decoding="async"
-     loading="lazy"     class="aspect-[4/3] w-full rounded-md object-cover md:aspect-auto md:h-64 lg:h-80"
->
-                        <span class="mt-3 block text-sm text-abu">Jalan lingkungan RT 05.</span>
-                    </button>
-                </li>
-                            <li class="w-[82%] shrink-0 snap-start md:col-span-4 md:w-auto">
-                    <button type="button" class="block w-full cursor-zoom-in text-left" data-lightbox="galeri"
-                            data-src="/images/dokumentasi/ban-warna-1600.webp" data-alt="Area bermain dari ban bekas bercat biru dan kuning yang ditanam berjajar di atas rumput." data-caption="Area bermain dari ban bekas berwarna biru dan kuning.">
-                        <img
-    src="/images/dokumentasi/ban-warna-960.webp"
-    srcset="/images/dokumentasi/ban-warna-480.webp 480w, /images/dokumentasi/ban-warna-960.webp 960w, /images/dokumentasi/ban-warna-1600.webp 1600w"
-    sizes="(min-width: 768px) 40vw, 82vw"
-    width="1600"
-    height="1200"
-    alt="Area bermain dari ban bekas bercat biru dan kuning yang ditanam berjajar di atas rumput."
-    decoding="async"
-     loading="lazy"     class="aspect-[4/3] w-full rounded-md object-cover md:aspect-auto md:h-64 lg:h-80"
->
-                        <span class="mt-3 block text-sm text-abu">Area bermain dari ban bekas berwarna biru dan kuning.</span>
-                    </button>
-                </li>
-                            <li class="w-[82%] shrink-0 snap-start md:col-span-4 md:w-auto">
-                    <button type="button" class="block w-full cursor-zoom-in text-left" data-lightbox="galeri"
-                            data-src="/images/dokumentasi/menara-air-1600.webp" data-alt="Menara air biru di sisi lapangan, dengan sepeda dan motor terparkir di depannya." data-caption="Menara air dan area parkir di sisi lapangan.">
-                        <img
-    src="/images/dokumentasi/menara-air-960.webp"
-    srcset="/images/dokumentasi/menara-air-480.webp 480w, /images/dokumentasi/menara-air-960.webp 960w, /images/dokumentasi/menara-air-1600.webp 1600w"
-    sizes="(min-width: 768px) 40vw, 82vw"
-    width="1600"
-    height="1200"
-    alt="Menara air biru di sisi lapangan, dengan sepeda dan motor terparkir di depannya."
-    decoding="async"
-     loading="lazy"     class="aspect-[4/3] w-full rounded-md object-cover md:aspect-auto md:h-64 lg:h-80"
->
-                        <span class="mt-3 block text-sm text-abu">Menara air dan area parkir di sisi lapangan.</span>
-                    </button>
-                </li>
-                            <li class="w-[82%] shrink-0 snap-start md:col-span-4 md:w-auto">
-                    <button type="button" class="block w-full cursor-zoom-in text-left" data-lightbox="galeri"
-                            data-src="/images/dokumentasi/kubah-panjat-1600.webp" data-alt="Kubah panjat biru dengan dua perosotan kuning, dikelilingi pepohonan." data-caption="Kubah panjat dan perosotan.">
-                        <img
-    src="/images/dokumentasi/kubah-panjat-960.webp"
-    srcset="/images/dokumentasi/kubah-panjat-480.webp 480w, /images/dokumentasi/kubah-panjat-960.webp 960w, /images/dokumentasi/kubah-panjat-1600.webp 1600w"
-    sizes="(min-width: 768px) 40vw, 82vw"
-    width="1600"
-    height="1200"
-    alt="Kubah panjat biru dengan dua perosotan kuning, dikelilingi pepohonan."
-    decoding="async"
-     loading="lazy"     class="aspect-[4/3] w-full rounded-md object-cover md:aspect-auto md:h-64 lg:h-80"
->
-                        <span class="mt-3 block text-sm text-abu">Kubah panjat dan perosotan.</span>
-                    </button>
-                </li>
-                            <li class="w-[82%] shrink-0 snap-start md:col-span-4 md:w-auto">
-                    <button type="button" class="block w-full cursor-zoom-in text-left" data-lightbox="galeri"
-                            data-src="/images/dokumentasi/papan-takeda-1600.webp" data-alt="Papan bergambar Merpati Putih bertuliskan Takeda di dinding sekretariat, dibingkai pipa kuning." data-caption="Papan Merpati Putih Takeda di dinding sekretariat.">
-                        <img
-    src="/images/dokumentasi/papan-takeda-960.webp"
-    srcset="/images/dokumentasi/papan-takeda-480.webp 480w, /images/dokumentasi/papan-takeda-960.webp 960w, /images/dokumentasi/papan-takeda-1600.webp 1600w"
-    sizes="(min-width: 768px) 40vw, 82vw"
-    width="1600"
-    height="1200"
-    alt="Papan bergambar Merpati Putih bertuliskan Takeda di dinding sekretariat, dibingkai pipa kuning."
-    decoding="async"
-     loading="lazy"     class="aspect-[4/3] w-full rounded-md object-cover md:aspect-auto md:h-64 lg:h-80"
->
-                        <span class="mt-3 block text-sm text-abu">Papan Merpati Putih Takeda di dinding sekretariat.</span>
-                    </button>
-                </li>
-                    </ul>
+            </figure>
+            <div class="rt-float absolute top-[8%] left-0 sm:-left-2">
+                <span class="grid size-11 flex-none place-items-center rounded-[var(--radius-sm)] bg-sky-100 text-brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-5"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg>
+</span>
+                <span><b class="block text-[15px] leading-5">Laporan warga dipantau</b><span class="block text-[13px] text-ink-muted">Diajukan, diproses, selesai</span></span>
+            </div>
+            <div class="rt-float absolute right-3 bottom-[6%] sm:right-0 sm:bottom-[22%]">
+                <span class="grid size-11 flex-none place-items-center rounded-[var(--radius-sm)] bg-kuning text-ink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-5"><path d="M4 7h15a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M4 7l11-3v3"/><path d="M16 14h1"/></svg>
+</span>
+                <span><b class="block text-[15px] leading-5">Iuran Rp75.000</b><span class="block text-[13px] text-ink-muted">Per rumah per bulan</span></span>
+            </div>
+        </div>
     </div>
 </section>
 
 
-<section id="fasilitas" class="bg-beton py-20 sm:py-24" aria-labelledby="judul-fasilitas">
-    <div class="wrap grid gap-12 lg:grid-cols-12">
-        <div class="lg:col-span-7">
-            <h2 id="judul-fasilitas" class="judul-bagian">Fasilitas bersama</h2>
-            <p class="mt-4 max-w-xl text-lg text-abu">Dipakai dan dirawat bersama oleh warga dan pengurus.</p>
-
-            <dl class="mt-10 grid gap-x-10 sm:grid-cols-2">
-                                    <div class="border-t border-garis py-5">
-                        <dt class="font-display text-xl font-bold">Sekretariat RT 05/07</dt>
-                        <dd class="mt-2 text-abu">Pos tempat pengurus bertugas dan warga berkumpul, di sisi lapangan.</dd>
-                    </div>
-                                    <div class="border-t border-garis py-5">
-                        <dt class="font-display text-xl font-bold">Lapangan serbaguna</dt>
-                        <dd class="mt-2 text-abu">Lapangan beton untuk kegiatan warga. Bukan untuk sepak bola, sesuai papan di sekretariat.</dd>
-                    </div>
-                                    <div class="border-t border-garis py-5">
-                        <dt class="font-display text-xl font-bold">Taman bermain anak</dt>
-                        <dd class="mt-2 text-abu">Kubah panjat, perosotan, dan area bermain dari ban bekas.</dd>
-                    </div>
-                                    <div class="border-t border-garis py-5">
-                        <dt class="font-display text-xl font-bold">Area hijau</dt>
-                        <dd class="mt-2 text-abu">Rumput dan pepohonan di tepi lapangan.</dd>
-                    </div>
-                            </dl>
+<section id="layanan" class="seksi bg-surface" aria-labelledby="judul-layanan">
+    <div class="wrap">
+        <div class="flex flex-wrap items-end justify-between gap-6">
+            <div class="max-w-2xl">
+                <span class="rt-label">Layanan warga</span>
+                <h2 id="judul-layanan" class="rt-judul">Urusan RT, cukup dari satu aplikasi</h2>
+                <p class="rt-lead">Layanan pribadi tersedia untuk warga terdaftar di aplikasi warga. Akun dibuat dengan kode dari pengurus dan aktif setelah disetujui.</p>
+            </div>
+            <a href="#aplikasi" class="rt-btn rt-btn--ghost">Tentang aplikasi warga</a>
         </div>
 
-        <div class="lg:col-span-5">
-            <div class="rounded-md bg-kapur p-6 sm:p-8">
-                <h3 class="text-2xl font-bold">Peraturan lapangan</h3>
-                <ol class="mt-5 list-decimal space-y-2 pl-5 marker:font-semibold marker:text-biru">
+        <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                            <article class="rt-service ">
+                    <span class="rt-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg>
+</span>
+                    <h3 class="text-xl leading-[1.3] font-bold tracking-[-0.01em]">Pengaduan</h3>
+                    <p class="text-ink-muted">Laporkan masalah lingkungan dengan foto. Nama bisa disembunyikan dari warga lain; pengurus tetap tahu pelapornya.</p>
+                </article>
+                            <article class="rt-service ">
+                    <span class="rt-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>
+</span>
+                    <h3 class="text-xl leading-[1.3] font-bold tracking-[-0.01em]">Aspirasi</h3>
+                    <p class="text-ink-muted">Kirim kritik, saran, atau usulan dan pantau statusnya dari terkirim sampai selesai.</p>
+                </article>
+                            <article class="rt-service ">
+                    <span class="rt-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
+</span>
+                    <h3 class="text-xl leading-[1.3] font-bold tracking-[-0.01em]">Agenda kegiatan</h3>
+                    <p class="text-ink-muted">Lihat jadwal kegiatan RT dan tambahkan ke Google Calendar.</p>
+                </article>
+                            <article class="rt-service rt-service--sorot">
+                    <span class="rt-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6"><path d="M4 7h15a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M4 7l11-3v3"/><path d="M16 14h1"/></svg>
+</span>
+                    <h3 class="text-xl leading-[1.3] font-bold tracking-[-0.01em]">Iuran rumah</h3>
+                    <p class="text-ink-muted">Cek status iuran Rp75.000 per rumah per bulan dan riwayat pembayaran setahun ke belakang.</p>
+                </article>
+                            <article class="rt-service ">
+                    <span class="rt-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6"><path d="M4 13v-2a1 1 0 0 1 1-1h3l8-4v12l-8-4H5a1 1 0 0 1-1-1z"/><path d="M8 14l1 5h3l-1-4.5"/></svg>
+</span>
+                    <h3 class="text-xl leading-[1.3] font-bold tracking-[-0.01em]">Pengumuman</h3>
+                    <p class="text-ink-muted">Informasi resmi pengurus yang tidak tenggelam di percakapan grup.</p>
+                </article>
+                            <article class="rt-service ">
+                    <span class="rt-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6"><path d="M6 17v-6a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21h4"/></svg>
+</span>
+                    <h3 class="text-xl leading-[1.3] font-bold tracking-[-0.01em]">Notifikasi</h3>
+                    <p class="text-ink-muted">Pengingat agenda, iuran, dan perubahan status laporanmu.</p>
+                </article>
+                    </div>
+    </div>
+</section>
+
+
+<section id="tentang" class="seksi bg-surface-sky" aria-labelledby="judul-tentang">
+    <div class="wrap grid items-center gap-14 lg:grid-cols-12">
+        <div class="relative pb-10 lg:col-span-6 lg:pb-12">
+            <figure class="rt-photo h-[20rem] w-[86%] sm:h-[26rem]">
+                <img
+    src="/images/dokumentasi/area-hijau-960.webp"
+    srcset="/images/dokumentasi/area-hijau-480.webp 480w, /images/dokumentasi/area-hijau-960.webp 960w, /images/dokumentasi/area-hijau-1600.webp 1600w"
+    sizes="(min-width: 1024px) 30rem, 86vw"
+    width="1600"
+    height="1200"
+    alt="Lapangan berumput dengan deretan rumah dan pohon palem di latar belakang."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover"
+>
+            </figure>
+            <figure class="rt-photo absolute right-0 bottom-0 h-40 w-[48%] border-8 border-surface-sky sm:h-52">
+                <img
+    src="/images/dokumentasi/kubah-panjat-960.webp"
+    srcset="/images/dokumentasi/kubah-panjat-480.webp 480w, /images/dokumentasi/kubah-panjat-960.webp 960w, /images/dokumentasi/kubah-panjat-1600.webp 1600w"
+    sizes="16rem"
+    width="1600"
+    height="1200"
+    alt="Kubah panjat biru dengan dua perosotan kuning, dikelilingi pepohonan."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover"
+>
+            </figure>
+            <span class="absolute top-6 right-[8%] size-6 rounded-full bg-kuning" aria-hidden="true"></span>
+        </div>
+
+        <div class="lg:col-span-6">
+            <span class="rt-label">Tentang RT 05</span>
+            <h2 id="judul-tentang" class="rt-judul">Satu sumber informasi untuk warga Taman Kedaung</h2>
+            <p class="rt-lead">
+                RT 05 berada di lingkungan RW 07 Taman Kedaung, Ciputat. Nama Takeda di gapura dan papan sekretariat
+                adalah singkatan dari Taman Kedaung. Selama ini pengumuman, laporan, dan catatan iuran tersebar di
+                grup percakapan; Layanan Pintar menyatukannya.
+            </p>
+            <ul class="mt-8 grid gap-4">
+                                    <li class="flex items-start gap-3">
+                        <span class="mt-0.5 grid size-8 flex-none place-items-center rounded-[var(--radius-sm)] bg-sky-100 text-brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                        <span class="text-[17px]">Informasi umum terbuka untuk siapa saja di website ini.</span>
+                    </li>
+                                    <li class="flex items-start gap-3">
+                        <span class="mt-0.5 grid size-8 flex-none place-items-center rounded-[var(--radius-sm)] bg-sky-100 text-brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                        <span class="text-[17px]">Layanan pribadi lewat akun warga yang disetujui pengurus.</span>
+                    </li>
+                                    <li class="flex items-start gap-3">
+                        <span class="mt-0.5 grid size-8 flex-none place-items-center rounded-[var(--radius-sm)] bg-sky-100 text-brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                        <span class="text-[17px]">Data rumah, keluarga, dan keuangan tidak dipublikasikan.</span>
+                    </li>
+                            </ul>
+            <a href="#fasilitas" class="rt-btn rt-btn--primary mt-9">Lihat fasilitas</a>
+        </div>
+    </div>
+</section>
+
+
+<section id="fasilitas" class="seksi bg-surface" aria-labelledby="judul-fasilitas">
+    <div class="wrap">
+        <div class="max-w-2xl">
+            <span class="rt-label">Fasilitas bersama</span>
+            <h2 id="judul-fasilitas" class="rt-judul">Dirawat bersama, dipakai bersama</h2>
+        </div>
+
+        <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                            <article>
+                    <figure class="rt-photo aspect-[4/3]">
+                        <img
+    src="/images/dokumentasi/sekretariat-960.webp"
+    srcset="/images/dokumentasi/sekretariat-480.webp 480w, /images/dokumentasi/sekretariat-960.webp 960w, /images/dokumentasi/sekretariat-1600.webp 1600w"
+    sizes="(min-width: 1024px) 18rem, (min-width: 640px) 45vw, 100vw"
+    width="1600"
+    height="1200"
+    alt="Pos Sekretariat RT 05/07 berangka kuning dengan bangku dan meja di halamannya."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover"
+>
+                    </figure>
+                    <h3 class="mt-5 text-xl font-bold tracking-[-0.01em]">Sekretariat RT 05/07</h3>
+                    <p class="mt-2 text-ink-muted">Pos tempat pengurus bertugas dan warga berkumpul, di sisi lapangan.</p>
+                </article>
+                            <article>
+                    <figure class="rt-photo aspect-[4/3]">
+                        <img
+    src="/images/dokumentasi/lapangan-960.webp"
+    srcset="/images/dokumentasi/lapangan-480.webp 480w, /images/dokumentasi/lapangan-960.webp 960w, /images/dokumentasi/lapangan-1600.webp 1600w"
+    sizes="(min-width: 1024px) 18rem, (min-width: 640px) 45vw, 100vw"
+    width="1600"
+    height="1200"
+    alt="Lapangan beton serbaguna dengan menara air biru dan atap pos di belakangnya."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover"
+>
+                    </figure>
+                    <h3 class="mt-5 text-xl font-bold tracking-[-0.01em]">Lapangan serbaguna</h3>
+                    <p class="mt-2 text-ink-muted">Lapangan beton untuk kegiatan warga. Bukan untuk sepak bola, sesuai papan di sekretariat.</p>
+                </article>
+                            <article>
+                    <figure class="rt-photo aspect-[4/3]">
+                        <img
+    src="/images/dokumentasi/taman-bermain-960.webp"
+    srcset="/images/dokumentasi/taman-bermain-480.webp 480w, /images/dokumentasi/taman-bermain-960.webp 960w, /images/dokumentasi/taman-bermain-1600.webp 1600w"
+    sizes="(min-width: 1024px) 18rem, (min-width: 640px) 45vw, 100vw"
+    width="1600"
+    height="1200"
+    alt="Taman bermain dengan kubah panjat biru dan perosotan kuning di bawah pohon rindang."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover"
+>
+                    </figure>
+                    <h3 class="mt-5 text-xl font-bold tracking-[-0.01em]">Taman bermain anak</h3>
+                    <p class="mt-2 text-ink-muted">Kubah panjat, perosotan, dan area bermain dari ban bekas di bawah pohon rindang.</p>
+                </article>
+            
+            <article class="rt-service rt-service--sorot">
+                <span class="rt-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6"><path d="M4 13v-2a1 1 0 0 1 1-1h3l8-4v12l-8-4H5a1 1 0 0 1-1-1z"/><path d="M8 14l1 5h3l-1-4.5"/></svg>
+</span>
+                <h3 class="text-xl font-bold tracking-[-0.01em]">Peraturan lapangan</h3>
+                <ol class="list-decimal space-y-1.5 pl-5 text-[15px] marker:font-semibold marker:text-brand">
                                             <li>Buanglah sampah pada tempatnya.</li>
                                             <li>Cuci gelas, piring, sendok masing-masing setelah digunakan.</li>
                                             <li>Kembalikan barang yang digunakan ke tempat semula.</li>
                                             <li>Gunakan alat dan barang sesuai fungsinya.</li>
                                             <li>Jagalah kebersihan pos.</li>
                                     </ol>
-                <p class="mt-5 text-sm text-abu">Pengurus RT 05/007</p>
-                <button type="button" class="tautan mt-6 text-left" data-lightbox="peraturan"
-                        data-src="/images/dokumentasi/peraturan-lapangan-960.webp" data-alt="Papan Peraturan Lapangan RT 05 berisi lima aturan, ditandatangani Pengurus RT 05/007."
-                        data-caption="Peraturan lapangan yang dipasang di pintu sekretariat.">
-                    Lihat foto papan aslinya
+                <p class="text-sm text-ink-muted">Pengurus RT 05/007</p>
+                <button type="button" class="justify-self-start font-semibold text-brand underline decoration-2 underline-offset-4 hover:decoration-kuning" data-lightbox="peraturan"
+                        data-src="/images/dokumentasi/peraturan-lapangan-960.webp" data-alt="Papan Peraturan Lapangan RT 05 berisi lima aturan, ditandatangani Pengurus RT 05/007." data-caption="Peraturan lapangan yang dipasang di pintu sekretariat.">
+                    Lihat papan aslinya
                 </button>
-            </div>
+            </article>
         </div>
     </div>
 </section>
 
 
-<section id="tentang" class="py-20 sm:py-24" aria-labelledby="judul-tentang">
-    <div class="wrap grid items-center gap-12 lg:grid-cols-12">
-        <div class="lg:order-2 lg:col-span-7 lg:pl-6">
-            <h2 id="judul-tentang" class="judul-bagian">Tentang RT 05</h2>
-            <div class="mt-6 max-w-[62ch] space-y-4 text-lg text-abu">
-                <p>
-                    RT 05 berada di lingkungan RW 07 Taman Kedaung, Ciputat. Nama Takeda yang tertulis di gapura
-                    dan papan sekretariat adalah singkatan dari Taman Kedaung.
-                </p>
-                <p>
-                    Selama ini pengumuman, laporan warga, dan catatan iuran tersebar di grup percakapan dan catatan
-                    yang terpisah. Layanan Pintar menyatukannya dalam satu sumber data: website untuk informasi
-                    umum, aplikasi untuk warga, dan dashboard untuk pengurus.
-                </p>
+<section id="galeri" class="seksi bg-surface-sky" aria-labelledby="judul-galeri">
+    <div class="wrap">
+        <div class="flex flex-wrap items-end justify-between gap-6">
+            <div class="max-w-2xl">
+                <span class="rt-label">Galeri lingkungan</span>
+                <h2 id="judul-galeri" class="rt-judul">Sudut-sudut RT 05</h2>
             </div>
+            <p class="flex items-center gap-2 text-ink-muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-5 text-brand"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/></svg>
+ Difoto Kelompok 8, Oktober 2026</p>
         </div>
-        <figure class="lg:order-1 lg:col-span-5">
-            <img
-    src="/images/dokumentasi/area-hijau-960.webp"
-    srcset="/images/dokumentasi/area-hijau-480.webp 480w, /images/dokumentasi/area-hijau-960.webp 960w, /images/dokumentasi/area-hijau-1600.webp 1600w"
-    sizes="(min-width: 1024px) 28rem, 100vw"
+
+        <ul class="mt-12 grid grid-cols-2 gap-3 sm:gap-4 md:auto-rows-[15rem] md:grid-cols-12">
+                            <li class="col-span-2 md:col-span-5 md:row-span-2">
+                    <button type="button" class="rt-photo block h-44 w-full cursor-zoom-in text-left sm:h-56 md:h-full h-64 sm:h-80" data-lightbox="galeri"
+                            data-src="/images/dokumentasi/jalan-1600.webp" data-alt="Jalan lingkungan beraspal yang diapit rumah warga dan pagar." data-caption="Jalan lingkungan RT 05.">
+                        <img
+    src="/images/dokumentasi/jalan-960.webp"
+    srcset="/images/dokumentasi/jalan-480.webp 480w, /images/dokumentasi/jalan-960.webp 960w, /images/dokumentasi/jalan-1600.webp 1600w"
+    sizes="(min-width: 768px) 30vw, 50vw"
     width="1600"
     height="1200"
-    alt="Lapangan berumput dengan deretan rumah dan pohon palem di latar belakang."
+    alt="Jalan lingkungan beraspal yang diapit rumah warga dan pagar."
     decoding="async"
-     loading="lazy"     class="aspect-[4/3] w-full rounded-md object-cover"
+     loading="lazy"     class="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
 >
-            <figcaption class="mt-3 text-sm text-abu">Area hijau di tepi lapangan.</figcaption>
-        </figure>
-    </div>
-</section>
-
-
-<section id="aplikasi" class="bg-biru py-20 text-kapur sm:py-24" aria-labelledby="judul-aplikasi">
-    <div class="wrap grid gap-12 lg:grid-cols-12">
-        <div class="lg:col-span-5">
-            <h2 id="judul-aplikasi" class="judul-bagian">Aplikasi warga sedang disiapkan</h2>
-            <p class="mt-5 text-lg text-kapur/85">
-                Layanan pribadi untuk warga RT 05 akan tersedia di aplikasi mobile. Akun dibuat memakai kode
-                registrasi dari pengurus dan aktif setelah disetujui.
-            </p>
-            <p class="mt-6 text-lg">
-                Butuh kode registrasi? Tanyakan ke pengurus di Sekretariat RT 05/07.
-            </p>
-        </div>
-
-        <ul class="grid gap-x-10 sm:grid-cols-2 lg:col-span-7">
-                            <li class="border-t border-kapur/25 py-5">
-                    <h3 class="text-xl font-bold">Pengaduan</h3>
-                    <p class="mt-1 text-kapur/80">Laporkan masalah lingkungan dengan foto. Nama bisa disembunyikan dari warga lain; pengurus tetap tahu siapa pelapornya.</p>
+                        <span class="absolute bottom-3 left-3 hidden max-w-[calc(100%-1.5rem)] rounded-full bg-surface px-3 py-1.5 text-[13px] leading-4 font-medium text-ink sm:block">Jalan lingkungan</span>
+                    </button>
                 </li>
-                            <li class="border-t border-kapur/25 py-5">
-                    <h3 class="text-xl font-bold">Aspirasi</h3>
-                    <p class="mt-1 text-kapur/80">Kirim kritik, saran, atau usulan dan pantau tanggapannya sampai selesai.</p>
+                            <li class=" md:col-span-4">
+                    <button type="button" class="rt-photo block h-44 w-full cursor-zoom-in text-left sm:h-56 md:h-full " data-lightbox="galeri"
+                            data-src="/images/dokumentasi/ban-warna-1600.webp" data-alt="Area bermain dari ban bekas bercat biru dan kuning yang ditanam berjajar di atas rumput." data-caption="Area bermain dari ban bekas berwarna biru dan kuning.">
+                        <img
+    src="/images/dokumentasi/ban-warna-960.webp"
+    srcset="/images/dokumentasi/ban-warna-480.webp 480w, /images/dokumentasi/ban-warna-960.webp 960w, /images/dokumentasi/ban-warna-1600.webp 1600w"
+    sizes="(min-width: 768px) 30vw, 50vw"
+    width="1600"
+    height="1200"
+    alt="Area bermain dari ban bekas bercat biru dan kuning yang ditanam berjajar di atas rumput."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+>
+                        <span class="absolute bottom-3 left-3 hidden max-w-[calc(100%-1.5rem)] rounded-full bg-surface px-3 py-1.5 text-[13px] leading-4 font-medium text-ink sm:block">Area bermain ban</span>
+                    </button>
                 </li>
-                            <li class="border-t border-kapur/25 py-5">
-                    <h3 class="text-xl font-bold">Agenda</h3>
-                    <p class="mt-1 text-kapur/80">Lihat jadwal kegiatan RT dan tambahkan ke Google Calendar.</p>
+                            <li class=" md:col-span-3">
+                    <button type="button" class="rt-photo block h-44 w-full cursor-zoom-in text-left sm:h-56 md:h-full " data-lightbox="galeri"
+                            data-src="/images/dokumentasi/papan-takeda-1600.webp" data-alt="Papan bergambar Merpati Putih bertuliskan Takeda di dinding sekretariat, dibingkai pipa kuning." data-caption="Papan Merpati Putih Takeda di dinding sekretariat.">
+                        <img
+    src="/images/dokumentasi/papan-takeda-960.webp"
+    srcset="/images/dokumentasi/papan-takeda-480.webp 480w, /images/dokumentasi/papan-takeda-960.webp 960w, /images/dokumentasi/papan-takeda-1600.webp 1600w"
+    sizes="(min-width: 768px) 30vw, 50vw"
+    width="1600"
+    height="1200"
+    alt="Papan bergambar Merpati Putih bertuliskan Takeda di dinding sekretariat, dibingkai pipa kuning."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+>
+                        <span class="absolute bottom-3 left-3 hidden max-w-[calc(100%-1.5rem)] rounded-full bg-surface px-3 py-1.5 text-[13px] leading-4 font-medium text-ink sm:block">Papan Takeda</span>
+                    </button>
                 </li>
-                            <li class="border-t border-kapur/25 py-5">
-                    <h3 class="text-xl font-bold">Iuran</h3>
-                    <p class="mt-1 text-kapur/80">Cek status iuran rumah dan riwayat pembayaran sampai setahun ke belakang.</p>
+                            <li class=" md:col-span-3">
+                    <button type="button" class="rt-photo block h-44 w-full cursor-zoom-in text-left sm:h-56 md:h-full " data-lightbox="galeri"
+                            data-src="/images/dokumentasi/kubah-panjat-1600.webp" data-alt="Kubah panjat biru dengan dua perosotan kuning, dikelilingi pepohonan." data-caption="Kubah panjat dan perosotan.">
+                        <img
+    src="/images/dokumentasi/kubah-panjat-960.webp"
+    srcset="/images/dokumentasi/kubah-panjat-480.webp 480w, /images/dokumentasi/kubah-panjat-960.webp 960w, /images/dokumentasi/kubah-panjat-1600.webp 1600w"
+    sizes="(min-width: 768px) 30vw, 50vw"
+    width="1600"
+    height="1200"
+    alt="Kubah panjat biru dengan dua perosotan kuning, dikelilingi pepohonan."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+>
+                        <span class="absolute bottom-3 left-3 hidden max-w-[calc(100%-1.5rem)] rounded-full bg-surface px-3 py-1.5 text-[13px] leading-4 font-medium text-ink sm:block">Kubah panjat</span>
+                    </button>
                 </li>
-                            <li class="border-t border-kapur/25 py-5">
-                    <h3 class="text-xl font-bold">Pengumuman</h3>
-                    <p class="mt-1 text-kapur/80">Informasi resmi pengurus yang tidak tenggelam di percakapan grup.</p>
+                            <li class=" md:col-span-4">
+                    <button type="button" class="rt-photo block h-44 w-full cursor-zoom-in text-left sm:h-56 md:h-full " data-lightbox="galeri"
+                            data-src="/images/dokumentasi/menara-air-1600.webp" data-alt="Menara air biru di sisi lapangan, dengan sepeda dan motor terparkir di depannya." data-caption="Menara air dan area parkir di sisi lapangan.">
+                        <img
+    src="/images/dokumentasi/menara-air-960.webp"
+    srcset="/images/dokumentasi/menara-air-480.webp 480w, /images/dokumentasi/menara-air-960.webp 960w, /images/dokumentasi/menara-air-1600.webp 1600w"
+    sizes="(min-width: 768px) 30vw, 50vw"
+    width="1600"
+    height="1200"
+    alt="Menara air biru di sisi lapangan, dengan sepeda dan motor terparkir di depannya."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+>
+                        <span class="absolute bottom-3 left-3 hidden max-w-[calc(100%-1.5rem)] rounded-full bg-surface px-3 py-1.5 text-[13px] leading-4 font-medium text-ink sm:block">Menara air</span>
+                    </button>
                 </li>
-                            <li class="border-t border-kapur/25 py-5">
-                    <h3 class="text-xl font-bold">Notifikasi</h3>
-                    <p class="mt-1 text-kapur/80">Pengingat agenda, iuran, dan perubahan status laporanmu.</p>
+                            <li class=" md:col-span-4">
+                    <button type="button" class="rt-photo block h-44 w-full cursor-zoom-in text-left sm:h-56 md:h-full " data-lightbox="galeri"
+                            data-src="/images/dokumentasi/sekretariat-1600.webp" data-alt="Pos Sekretariat RT 05/07 berangka kuning dengan bangku dan meja di halamannya." data-caption="Sekretariat RT 05/07, tempat pengurus dan warga bertemu.">
+                        <img
+    src="/images/dokumentasi/sekretariat-960.webp"
+    srcset="/images/dokumentasi/sekretariat-480.webp 480w, /images/dokumentasi/sekretariat-960.webp 960w, /images/dokumentasi/sekretariat-1600.webp 1600w"
+    sizes="(min-width: 768px) 30vw, 50vw"
+    width="1600"
+    height="1200"
+    alt="Pos Sekretariat RT 05/07 berangka kuning dengan bangku dan meja di halamannya."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+>
+                        <span class="absolute bottom-3 left-3 hidden max-w-[calc(100%-1.5rem)] rounded-full bg-surface px-3 py-1.5 text-[13px] leading-4 font-medium text-ink sm:block">Sekretariat RT 05/07</span>
+                    </button>
+                </li>
+                            <li class=" md:col-span-4">
+                    <button type="button" class="rt-photo block h-44 w-full cursor-zoom-in text-left sm:h-56 md:h-full " data-lightbox="galeri"
+                            data-src="/images/dokumentasi/lapangan-1600.webp" data-alt="Lapangan beton serbaguna dengan menara air biru dan atap pos di belakangnya." data-caption="Lapangan serbaguna RT 05.">
+                        <img
+    src="/images/dokumentasi/lapangan-960.webp"
+    srcset="/images/dokumentasi/lapangan-480.webp 480w, /images/dokumentasi/lapangan-960.webp 960w, /images/dokumentasi/lapangan-1600.webp 1600w"
+    sizes="(min-width: 768px) 30vw, 50vw"
+    width="1600"
+    height="1200"
+    alt="Lapangan beton serbaguna dengan menara air biru dan atap pos di belakangnya."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+>
+                        <span class="absolute bottom-3 left-3 hidden max-w-[calc(100%-1.5rem)] rounded-full bg-surface px-3 py-1.5 text-[13px] leading-4 font-medium text-ink sm:block">Lapangan serbaguna</span>
+                    </button>
+                </li>
+                            <li class="col-span-2 md:col-span-4">
+                    <button type="button" class="rt-photo block h-44 w-full cursor-zoom-in text-left sm:h-56 md:h-full " data-lightbox="galeri"
+                            data-src="/images/dokumentasi/taman-bermain-1600.webp" data-alt="Taman bermain dengan kubah panjat biru dan perosotan kuning di bawah pohon rindang." data-caption="Taman bermain anak di sisi lapangan.">
+                        <img
+    src="/images/dokumentasi/taman-bermain-960.webp"
+    srcset="/images/dokumentasi/taman-bermain-480.webp 480w, /images/dokumentasi/taman-bermain-960.webp 960w, /images/dokumentasi/taman-bermain-1600.webp 1600w"
+    sizes="(min-width: 768px) 30vw, 50vw"
+    width="1600"
+    height="1200"
+    alt="Taman bermain dengan kubah panjat biru dan perosotan kuning di bawah pohon rindang."
+    decoding="async"
+     loading="lazy"     class="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+>
+                        <span class="absolute bottom-3 left-3 hidden max-w-[calc(100%-1.5rem)] rounded-full bg-surface px-3 py-1.5 text-[13px] leading-4 font-medium text-ink sm:block">Taman bermain</span>
+                    </button>
                 </li>
                     </ul>
     </div>
 </section>
 
 
-<dialog id="lightbox" class="m-auto max-h-none max-w-none bg-transparent p-0 text-kapur" aria-label="Foto lingkungan">
+<section id="aplikasi" class="seksi bg-surface" aria-labelledby="judul-aplikasi">
+    <div class="wrap">
+        <div class="relative overflow-hidden rounded-[var(--radius-lg)] bg-brand-strong px-6 py-12 text-white sm:px-12 lg:px-16 lg:py-16">
+            <div class="pointer-events-none absolute -top-24 -right-16 size-80 rounded-full bg-brand" aria-hidden="true"></div>
+            <div class="pointer-events-none absolute -right-10 -bottom-28 size-64 rounded-full border-[2.5rem] border-sky-400/25" aria-hidden="true"></div>
+
+            <div class="relative grid items-center gap-12 lg:grid-cols-12">
+                <div class="lg:col-span-6">
+                    <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-[13px] font-semibold text-sky-100">
+                        <span class="size-2 rounded-full bg-kuning"></span> Sedang dikembangkan
+                    </span>
+                    <h2 id="judul-aplikasi" class="mt-5 text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-extrabold tracking-[-0.025em]">Aplikasi warga RT 05 sedang disiapkan</h2>
+                    <p class="mt-5 max-w-xl text-lg leading-[1.7] text-sky-100">
+                        Pengaduan, aspirasi, agenda, dan status iuran rumah akan tersedia di aplikasi mobile.
+                        Butuh kode registrasi? Tanyakan ke pengurus di Sekretariat RT 05/07.
+                    </p>
+                    <a href="#layanan" class="rt-btn rt-btn--inverse mt-8">Lihat semua layanan</a>
+                </div>
+                <ul class="grid gap-3 sm:grid-cols-2 lg:col-span-6">
+                                            <li class="flex items-center gap-3 rounded-[var(--radius-md)] bg-white/[0.08] px-4 py-4 font-medium">
+                            <span class="grid size-8 flex-none place-items-center rounded-full bg-sky-200 text-brand-strong"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                            Pengaduan dengan foto
+                        </li>
+                                            <li class="flex items-center gap-3 rounded-[var(--radius-md)] bg-white/[0.08] px-4 py-4 font-medium">
+                            <span class="grid size-8 flex-none place-items-center rounded-full bg-sky-200 text-brand-strong"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                            Aspirasi warga
+                        </li>
+                                            <li class="flex items-center gap-3 rounded-[var(--radius-md)] bg-white/[0.08] px-4 py-4 font-medium">
+                            <span class="grid size-8 flex-none place-items-center rounded-full bg-sky-200 text-brand-strong"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                            Agenda dan kalender
+                        </li>
+                                            <li class="flex items-center gap-3 rounded-[var(--radius-md)] bg-white/[0.08] px-4 py-4 font-medium">
+                            <span class="grid size-8 flex-none place-items-center rounded-full bg-sky-200 text-brand-strong"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                            Status iuran rumah
+                        </li>
+                                            <li class="flex items-center gap-3 rounded-[var(--radius-md)] bg-white/[0.08] px-4 py-4 font-medium">
+                            <span class="grid size-8 flex-none place-items-center rounded-full bg-sky-200 text-brand-strong"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                            Pengumuman resmi
+                        </li>
+                                            <li class="flex items-center gap-3 rounded-[var(--radius-md)] bg-white/[0.08] px-4 py-4 font-medium">
+                            <span class="grid size-8 flex-none place-items-center rounded-full bg-sky-200 text-brand-strong"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="size-6 size-4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</span>
+                            Notifikasi
+                        </li>
+                                    </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<dialog id="lightbox" class="m-auto max-h-none max-w-none bg-transparent p-0 text-white" aria-label="Foto lingkungan">
     <figure class="flex h-dvh w-screen flex-col items-center justify-center gap-4 p-4 sm:p-10">
-        <img data-lightbox-img alt="" class="max-h-[80dvh] w-auto max-w-full rounded-md object-contain">
+        <img data-lightbox-img alt="" class="max-h-[80dvh] w-auto max-w-full rounded-[var(--radius-lg)] object-contain">
         <figcaption data-lightbox-caption class="max-w-2xl text-center"></figcaption>
     </figure>
     <div class="absolute inset-x-0 top-0 flex justify-end gap-2 p-3 sm:p-5">
-        <button type="button" data-lightbox-prev class="min-h-11 rounded-md bg-kapur/10 px-4 font-semibold hover:bg-kapur/20">Sebelumnya</button>
-        <button type="button" data-lightbox-next class="min-h-11 rounded-md bg-kapur/10 px-4 font-semibold hover:bg-kapur/20">Berikutnya</button>
-        <button type="button" data-lightbox-close class="min-h-11 rounded-md bg-kapur px-4 font-semibold text-tinta">Tutup</button>
+        <button type="button" data-lightbox-prev class="min-h-11 rounded-full bg-white/10 px-5 font-semibold hover:bg-white/20">Sebelumnya</button>
+        <button type="button" data-lightbox-next class="min-h-11 rounded-full bg-white/10 px-5 font-semibold hover:bg-white/20">Berikutnya</button>
+        <button type="button" data-lightbox-close class="min-h-11 rounded-full bg-white px-5 font-semibold text-ink">Tutup</button>
     </div>
 </dialog>
 
     </main>
 
-    <footer class="border-t border-garis">
-    <div class="wrap grid gap-8 py-12 md:grid-cols-12">
+    <footer class="bg-ink text-sky-100">
+    <div class="wrap grid gap-10 py-14 md:grid-cols-12">
         <div class="md:col-span-5">
-            <p class="font-display text-2xl leading-tight font-extrabold tracking-[-0.02em]">RT 05 Taman Kedaung</p>
-            <p class="mt-2 text-abu">RW 07 Takeda, Ciputat</p>
+            <div class="flex items-center gap-3">
+                <img src="/images/logo/rt05-mark-terang.svg" alt="" width="44" height="44" class="size-11">
+                <span class="leading-none">
+                    <span class="block font-display text-xl font-extrabold text-white">RT 05</span>
+                    <span class="mt-0.5 block text-[13px] text-sky-200">Taman Kedaung</span>
+                </span>
+            </div>
+            <p class="mt-5 max-w-sm text-sky-200">
+                Website publik RT 05 RW 07 Takeda, Ciputat. Tidak menampilkan data pribadi warga, data rumah,
+                atau keuangan RT.
+            </p>
         </div>
-        <div class="text-abu md:col-span-7 md:text-right">
-            <p>Website publik ini tidak menampilkan data pribadi warga, data rumah, atau keuangan RT.</p>
-            <p class="mt-2">Dibuat oleh Kelompok 8, Capstone Project PG194, Universitas Budi Luhur.</p>
+
+        <div class="md:col-span-3">
+            <h2 class="font-sans text-sm font-semibold text-white">Jelajahi</h2>
+            <ul class="mt-4 grid gap-2.5 text-sky-200">
+                <li><a href="#layanan" class="hover:text-white">Layanan warga</a></li>
+                <li><a href="#fasilitas" class="hover:text-white">Fasilitas bersama</a></li>
+                <li><a href="#galeri" class="hover:text-white">Galeri lingkungan</a></li>
+                <li><a href="#aplikasi" class="hover:text-white">Aplikasi warga</a></li>
+            </ul>
+        </div>
+
+        <div class="md:col-span-4">
+            <h2 class="font-sans text-sm font-semibold text-white">Sekretariat</h2>
+            <p class="mt-4 text-sky-200">
+                Sekretariat RT 05/07, di sisi lapangan serbaguna, Taman Kedaung, Ciputat.
+            </p>
+            <p class="mt-3 text-sky-200">Kode registrasi aplikasi warga bisa ditanyakan ke pengurus di sekretariat.</p>
+        </div>
+    </div>
+    <div class="border-t border-white/10">
+        <div class="wrap py-5 text-sm text-sky-200">
+            Dibuat oleh Kelompok 8, Capstone Project PG194, Universitas Budi Luhur.
         </div>
     </div>
 </footer>
