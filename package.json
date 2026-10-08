@@ -10,6 +10,7 @@
         "@tailwindcss/vite": "^4.0.0",
         "concurrently": "^10.0.3",
         "laravel-vite-plugin": "^3.1",
+        "sharp": "^0.35.5",
         "tailwindcss": "^4.0.0",
         "vite": "^8.0.0"
     },
@@ -17,6 +18,7 @@
         "@laravel/multiplex": "^0.4.1"
     },
     "dependencies": {
-        "@fontsource-variable/plus-jakarta-sans": "^5.3.0"
+        "@fontsource-variable/public-sans": "^5.3.0",
+        "@fontsource-variable/schibsted-grotesk": "^5.3.0"
     }
 }
