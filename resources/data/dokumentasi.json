@@ -1,0 +1,136 @@
+{
+    "_catatan": "Sumber tunggal foto dokumentasi. Dipakai scripts/optimize-images.mjs dan view Blade. Foto asli dari Drive Kelompok 8 (DOKUMENTASI RT 05), diambil 7 Oktober 2026.",
+    "foto": {
+        "gapura": {
+            "sumber": "IMG-20261007-WA0045.jpg",
+            "alt": "Gapura masuk bertuliskan Selamat datang di RT 05 RW 07 Takeda, dihias merah putih untuk HUT RI ke-81.",
+            "keterangan": "Gapura masuk RT 05 RW 07, dihias untuk HUT RI ke-81.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        },
+        "sekretariat": {
+            "sumber": "IMG-20261007-WA0054.jpg",
+            "alt": "Pos Sekretariat RT 05/07 berangka kuning dengan bangku dan meja di halamannya.",
+            "keterangan": "Sekretariat RT 05/07, tempat pengurus dan warga bertemu.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        },
+        "taman-bermain": {
+            "sumber": "IMG-20261007-WA0042.jpg",
+            "alt": "Taman bermain dengan kubah panjat biru dan perosotan kuning di bawah pohon rindang.",
+            "keterangan": "Taman bermain anak di sisi lapangan.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        },
+        "kubah-panjat": {
+            "sumber": "IMG-20261007-WA0051.jpg",
+            "alt": "Kubah panjat biru dengan dua perosotan kuning, dikelilingi pepohonan.",
+            "keterangan": "Kubah panjat dan perosotan.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        },
+        "ban-warna": {
+            "sumber": "IMG-20261007-WA0048.jpg",
+            "alt": "Area bermain dari ban bekas bercat biru dan kuning yang ditanam berjajar di atas rumput.",
+            "keterangan": "Area bermain dari ban bekas berwarna biru dan kuning.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        },
+        "lapangan": {
+            "sumber": "IMG-20261007-WA0053.jpg",
+            "alt": "Lapangan beton serbaguna dengan menara air biru dan atap pos di belakangnya.",
+            "keterangan": "Lapangan serbaguna RT 05.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        },
+        "jalan": {
+            "sumber": "IMG-20261007-WA0046.jpg",
+            "alt": "Jalan lingkungan beraspal yang diapit rumah warga dan pagar.",
+            "keterangan": "Jalan lingkungan RT 05.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        },
+        "menara-air": {
+            "sumber": "IMG-20261007-WA0041.jpg",
+            "alt": "Menara air biru di sisi lapangan, dengan sepeda dan motor terparkir di depannya.",
+            "keterangan": "Menara air dan area parkir di sisi lapangan.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        },
+        "papan-takeda": {
+            "sumber": "IMG-20261007-WA0044.jpg",
+            "alt": "Papan bergambar Merpati Putih bertuliskan Takeda di dinding sekretariat, dibingkai pipa kuning.",
+            "keterangan": "Papan Merpati Putih Takeda di dinding sekretariat.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        },
+        "area-hijau": {
+            "sumber": "IMG-20261007-WA0043.jpg",
+            "alt": "Lapangan berumput dengan deretan rumah dan pohon palem di latar belakang.",
+            "keterangan": "Area hijau di tepi lapangan.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        },
+        "peraturan-lapangan": {
+            "sumber": "IMG-20261007-WA0052.jpg",
+            "alt": "Papan Peraturan Lapangan RT 05 berisi lima aturan, ditandatangani Pengurus RT 05/007.",
+            "keterangan": "Peraturan lapangan yang dipasang di pintu sekretariat.",
+            "lebar": 1200,
+            "tinggi": 1600,
+            "ukuran": [
+                480,
+                960
+            ]
+        }
+    }
+}
