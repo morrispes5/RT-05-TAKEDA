@@ -1,37 +1,49 @@
-@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/schibsted-grotesk';
+@import '@fontsource-variable/public-sans';
 @import 'tailwindcss';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-
+/*
+ * Palet diambil dari lingkungan RT 05 sendiri: biru cat sekretariat, kuning pipa pos,
+ * dan abu beton lapangan (lihat foto di public/images/dokumentasi).
+ */
 @theme {
-    --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif;
 
-    /* Aksen biru muda sesuai prinsip tampilan di Dokumen Perancangan Solusi */
-    --color-brand-50: #f0f8ff;
-    --color-brand-100: #e0f0fe;
-    --color-brand-200: #bae0fd;
-    --color-brand-300: #7cc8fb;
-    --color-brand-400: #36aaf5;
-    --color-brand-500: #0c8ee6;
-    --color-brand-600: #0070c4;
-    --color-brand-700: #01599f;
-    --color-brand-800: #064b83;
-    --color-brand-900: #0b3f6c;
-
-    --color-ink: #0f2a43;
-    --color-ink-soft: #4a6076;
+    --color-kapur: #ffffff;
+    --color-beton: #eeefeb;
+    --color-garis: #d5d9d2;
+    --color-tinta: #0f1d33;
+    --color-abu: #566170;
+    --color-biru: #0b3f8c;
+    --color-biru-tua: #082f6a;
+    --color-kuning: #f2c21a;
 }
 
 @layer base {
     html {
         scroll-behavior: smooth;
-        scroll-padding-top: 5.5rem;
+        scroll-padding-top: 5rem;
     }
 
     body {
-        @apply bg-white font-sans text-ink antialiased;
+        @apply bg-kapur font-sans text-[17px] leading-[1.6] text-tinta antialiased;
+    }
+
+    h1,
+    h2,
+    h3 {
+        @apply font-display text-balance;
+    }
+
+    :focus-visible {
+        outline: 3px solid var(--color-biru);
+        outline-offset: 3px;
+    }
+
+    .bg-biru :focus-visible,
+    dialog :focus-visible {
+        outline-color: var(--color-kuning);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -39,54 +51,92 @@
             scroll-behavior: auto;
         }
     }
-
-    :focus-visible {
-        @apply outline-2 outline-offset-2 outline-brand-600;
-    }
 }
 
 @layer components {
-    .btn {
-        @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors;
+    .wrap {
+        @apply mx-auto w-full max-w-[76rem] px-4 sm:px-6 lg:px-10;
     }
 
-    .btn-primary {
-        @apply bg-brand-600 text-white shadow-sm shadow-brand-600/25 hover:bg-brand-700;
+    .tombol {
+        @apply inline-flex min-h-12 items-center justify-center rounded-md bg-biru px-6 font-semibold text-kapur transition-colors hover:bg-biru-tua;
     }
 
-    .btn-secondary {
-        @apply border border-brand-200 bg-white text-brand-800 hover:border-brand-300 hover:bg-brand-50;
+    .tautan {
+        @apply font-semibold text-biru underline decoration-2 underline-offset-4 transition-colors hover:text-biru-tua hover:decoration-kuning;
     }
 
-    .eyebrow {
-        @apply text-xs font-bold uppercase tracking-[0.18em] text-brand-600;
+    .judul-bagian {
+        @apply text-[clamp(1.875rem,3.6vw,2.75rem)] leading-[1.08] font-bold tracking-[-0.02em];
     }
 
-    .section-title {
-        @apply text-3xl font-extrabold tracking-tight text-ink sm:text-4xl;
+    /* Satu-satunya elemen dekoratif yang berani: rel kuning seperti pipa pos RT. */
+    .rel-kuning {
+        position: relative;
+        isolation: isolate;
     }
 
-    .section-lead {
-        @apply mt-4 max-w-2xl text-base leading-7 text-ink-soft sm:text-lg;
+    .rel-kuning::before {
+        --rel: 0.625rem;
+        content: '';
+        position: absolute;
+        z-index: -1;
+        inset: var(--rel) auto calc(var(--rel) * -1) calc(var(--rel) * -1);
+        width: 100%;
+        border-left: var(--rel) solid var(--color-kuning);
+        border-bottom: var(--rel) solid var(--color-kuning);
+        border-radius: 0 0 0 var(--rel);
+    }
+
+    @media (width >= 64rem) {
+        .rel-kuning::before {
+            --rel: 1rem;
+        }
     }
 }
 
-/* Animasi muncul halus saat di-scroll; aman bila JS mati. */
-.js .reveal {
-    opacity: 0;
-    transform: translateY(14px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.js .reveal.is-visible {
-    opacity: 1;
-    transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .js .reveal {
-        opacity: 1;
-        transform: none;
-        transition: none;
+/* Momen gerak tunggal: foto hero terbuka dari bawah saat halaman dimuat. */
+@media (prefers-reduced-motion: no-preference) {
+    .js .hero-foto img {
+        animation: buka-foto 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both;
     }
+
+    .js .hero-foto::before {
+        animation: rel-masuk 0.9s 0.25s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+    }
+
+    .js .hero-teks {
+        animation: teks-masuk 0.7s 0.1s ease-out both;
+    }
+
+    dialog[open] {
+        animation: teks-masuk 0.2s ease-out;
+    }
+}
+
+@keyframes buka-foto {
+    from {
+        clip-path: inset(100% 0 0 0);
+    }
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+@keyframes rel-masuk {
+    from {
+        opacity: 0;
+        translate: 0.75rem -0.75rem;
+    }
+}
+
+@keyframes teks-masuk {
+    from {
+        opacity: 0;
+        translate: 0 0.5rem;
+    }
+}
+
+dialog::backdrop {
+    background: rgb(15 29 51 / 0.97);
 }
