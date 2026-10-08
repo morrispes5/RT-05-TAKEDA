@@ -2,43 +2,18 @@
 
 @php
     $layanan = [
-        [
-            'judul' => 'Website publik',
-            'untuk' => 'Untuk siapa saja',
-            'isi' => 'Profil RT, fasilitas bersama, dan dokumentasi kegiatan. Bisa dibuka tanpa akun.',
-            'siap' => true,
-        ],
-        [
-            'judul' => 'Aplikasi warga',
-            'untuk' => 'Untuk warga terdaftar',
-            'isi' => 'Pengaduan, aspirasi, agenda kegiatan, dan status iuran rumah. Daftar memakai kode dari pengurus.',
-            'siap' => false,
-        ],
-        [
-            'judul' => 'Dashboard pengurus',
-            'untuk' => 'Untuk pengurus RT',
-            'isi' => 'Pendataan warga dan rumah, pencatatan iuran dan kas, serta pengelolaan isi website.',
-            'siap' => false,
-        ],
-    ];
-
-    // Urutan dan lebar kolom galeri (grid 12 kolom di layar md ke atas).
-    $galeri = [
-        ['sekretariat', 'md:col-span-7'],
-        ['taman-bermain', 'md:col-span-5'],
-        ['lapangan', 'md:col-span-4'],
-        ['jalan', 'md:col-span-4'],
-        ['ban-warna', 'md:col-span-4'],
-        ['menara-air', 'md:col-span-4'],
-        ['kubah-panjat', 'md:col-span-4'],
-        ['papan-takeda', 'md:col-span-4'],
+        ['pengaduan', 'Pengaduan', 'Laporkan masalah lingkungan dengan foto. Nama bisa disembunyikan dari warga lain; pengurus tetap tahu pelapornya.', false],
+        ['aspirasi', 'Aspirasi', 'Kirim kritik, saran, atau usulan dan pantau statusnya dari terkirim sampai selesai.', false],
+        ['agenda', 'Agenda kegiatan', 'Lihat jadwal kegiatan RT dan tambahkan ke Google Calendar.', false],
+        ['iuran', 'Iuran rumah', 'Cek status iuran Rp75.000 per rumah per bulan dan riwayat pembayaran setahun ke belakang.', true],
+        ['pengumuman', 'Pengumuman', 'Informasi resmi pengurus yang tidak tenggelam di percakapan grup.', false],
+        ['notifikasi', 'Notifikasi', 'Pengingat agenda, iuran, dan perubahan status laporanmu.', false],
     ];
 
     $fasilitas = [
-        ['Sekretariat RT 05/07', 'Pos tempat pengurus bertugas dan warga berkumpul, di sisi lapangan.'],
-        ['Lapangan serbaguna', 'Lapangan beton untuk kegiatan warga. Bukan untuk sepak bola, sesuai papan di sekretariat.'],
-        ['Taman bermain anak', 'Kubah panjat, perosotan, dan area bermain dari ban bekas.'],
-        ['Area hijau', 'Rumput dan pepohonan di tepi lapangan.'],
+        ['sekretariat', 'Sekretariat RT 05/07', 'Pos tempat pengurus bertugas dan warga berkumpul, di sisi lapangan.'],
+        ['lapangan', 'Lapangan serbaguna', 'Lapangan beton untuk kegiatan warga. Bukan untuk sepak bola, sesuai papan di sekretariat.'],
+        ['taman-bermain', 'Taman bermain anak', 'Kubah panjat, perosotan, dan area bermain dari ban bekas di bawah pohon rindang.'],
     ];
 
     // Ditulis sesuai papan yang dipasang Pengurus RT 05/007.
@@ -50,14 +25,19 @@
         'Jagalah kebersihan pos.',
     ];
 
-    $fitur = [
-        ['Pengaduan', 'Laporkan masalah lingkungan dengan foto. Nama bisa disembunyikan dari warga lain; pengurus tetap tahu siapa pelapornya.'],
-        ['Aspirasi', 'Kirim kritik, saran, atau usulan dan pantau tanggapannya sampai selesai.'],
-        ['Agenda', 'Lihat jadwal kegiatan RT dan tambahkan ke Google Calendar.'],
-        ['Iuran', 'Cek status iuran rumah dan riwayat pembayaran sampai setahun ke belakang.'],
-        ['Pengumuman', 'Informasi resmi pengurus yang tidak tenggelam di percakapan grup.'],
-        ['Notifikasi', 'Pengingat agenda, iuran, dan perubahan status laporanmu.'],
+    // Kolase galeri: slug, kelas grid di layar md ke atas.
+    $galeri = [
+        ['jalan', 'md:col-span-5 md:row-span-2'],
+        ['ban-warna', 'md:col-span-4'],
+        ['papan-takeda', 'md:col-span-3'],
+        ['kubah-panjat', 'md:col-span-3'],
+        ['menara-air', 'md:col-span-4'],
+        ['sekretariat', 'md:col-span-4'],
+        ['lapangan', 'md:col-span-4'],
+        ['taman-bermain', 'md:col-span-4'],
     ];
+
+    $fitur = ['Pengaduan dengan foto', 'Aspirasi warga', 'Agenda dan kalender', 'Status iuran rumah', 'Pengumuman resmi', 'Notifikasi'];
 
     $besar = fn (string $slug) => asset("images/dokumentasi/{$slug}-".max($foto[$slug]['ukuran']).'.webp');
 @endphp
@@ -65,77 +45,170 @@
 @section('content')
 
 {{-- Hero --}}
-<section class="overflow-x-clip border-b border-garis">
-    <div class="wrap grid items-center gap-14 py-12 sm:py-16 lg:grid-cols-12 lg:gap-10 lg:py-20">
-        <div class="hero-teks lg:col-span-6">
-            <h1 class="text-[clamp(3rem,9vw,6.5rem)] leading-[0.9] font-extrabold tracking-[-0.04em]">
-                RT 05<br>Taman Kedaung
+<section class="relative overflow-hidden bg-surface-sky">
+    <div class="pointer-events-none absolute -top-40 -right-40 size-[34rem] rounded-full bg-sky-100" aria-hidden="true"></div>
+    <div class="pointer-events-none absolute -bottom-24 -left-24 size-72 rounded-full border-[3rem] border-sky-100" aria-hidden="true"></div>
+
+    <div class="wrap relative grid items-center gap-14 py-14 sm:py-20 lg:grid-cols-12 lg:gap-10 lg:py-24">
+        <div class="hero-masuk lg:col-span-6">
+            <span class="rt-label">RT 05 RW 07 Takeda, Ciputat</span>
+            <h1 class="mt-6 text-[clamp(2.75rem,6.2vw,4.5rem)] leading-[1.02] font-extrabold tracking-[-0.035em]">
+                Lingkungan yang dirawat bersama warga
             </h1>
-            <p class="mt-8 max-w-[34rem] text-lg text-abu sm:text-xl sm:leading-relaxed">
-                Kabar lingkungan, fasilitas bersama, dan kegiatan warga RT 05 RW 07 Takeda, Ciputat.
+            <p class="mt-6 max-w-[34rem] text-lg leading-[1.7] text-ink-muted">
+                Kabar lingkungan, fasilitas bersama, dan layanan warga RT 05 Taman Kedaung dalam satu tempat.
                 Terbuka untuk siapa saja, tanpa perlu daftar.
             </p>
-            <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-5">
-                <a href="#lingkungan" class="tombol">Lihat lingkungan</a>
-                <a href="#aplikasi" class="tautan">Kenali aplikasi warga</a>
+            <div class="mt-9 flex flex-wrap gap-3">
+                <a href="#layanan" class="rt-btn rt-btn--primary">Lihat layanan warga</a>
+                <a href="#galeri" class="rt-btn rt-btn--secondary">Jelajahi lingkungan</a>
             </div>
+            <ul class="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-[15px] font-medium text-ink">
+                @foreach (['Terbuka tanpa akun', 'Foto asli lingkungan', 'Data pribadi tidak ditampilkan'] as $poin)
+                    <li class="flex items-center gap-2">
+                        <span class="grid size-6 place-items-center rounded-full bg-brand text-white"><x-ikon nama="cek" class="size-3.5" /></span>
+                        {{ $poin }}
+                    </li>
+                @endforeach
+            </ul>
         </div>
 
-        <figure class="pl-2.5 lg:col-span-6 lg:pl-8">
-            <div class="hero-foto rel-kuning">
-                <x-foto slug="gapura" :data="$foto['gapura']" utama
-                        sizes="(min-width: 1024px) 34rem, 100vw"
-                        class="aspect-[4/3] w-full rounded-md object-cover object-[50%_40%] lg:aspect-[6/5]" />
+        <div class="hero-masuk relative h-[24rem] sm:h-[30rem] lg:col-span-6 lg:h-[34rem]">
+            <figure class="rt-photo absolute top-0 right-0 h-[82%] w-full sm:w-[80%]">
+                <x-foto slug="gapura" :data="$foto['gapura']" utama sizes="(min-width: 1024px) 30rem, 90vw" class="size-full object-cover object-[50%_40%]" />
+            </figure>
+            <figure class="rt-photo absolute bottom-0 left-0 hidden h-[44%] w-[48%] border-8 border-surface-sky sm:block">
+                <x-foto slug="sekretariat" :data="$foto['sekretariat']" utama sizes="16rem" class="size-full object-cover" />
+            </figure>
+            <div class="rt-float absolute top-[8%] left-0 sm:-left-2">
+                <span class="grid size-11 flex-none place-items-center rounded-[var(--radius-sm)] bg-sky-100 text-brand"><x-ikon nama="pengaduan" class="size-5" /></span>
+                <span><b class="block text-[15px] leading-5">Laporan warga dipantau</b><span class="block text-[13px] text-ink-muted">Diajukan, diproses, selesai</span></span>
             </div>
-            <figcaption class="mt-8 text-sm text-abu lg:mt-10">{{ $foto['gapura']['keterangan'] }}</figcaption>
-        </figure>
+            <div class="rt-float absolute right-3 bottom-[6%] sm:right-0 sm:bottom-[22%]">
+                <span class="grid size-11 flex-none place-items-center rounded-[var(--radius-sm)] bg-kuning text-ink"><x-ikon nama="iuran" class="size-5" /></span>
+                <span><b class="block text-[15px] leading-5">Iuran Rp75.000</b><span class="block text-[13px] text-ink-muted">Per rumah per bulan</span></span>
+            </div>
+        </div>
     </div>
 </section>
 
 {{-- Layanan --}}
-<section id="layanan" class="py-20 sm:py-24" aria-labelledby="judul-layanan">
+<section id="layanan" class="seksi bg-surface" aria-labelledby="judul-layanan">
     <div class="wrap">
-        <div class="max-w-2xl">
-            <h2 id="judul-layanan" class="judul-bagian">Satu sistem, tiga pintu</h2>
-            <p class="mt-4 text-lg text-abu">
-                Website ini bagian dari layanan digital RT 05. Informasi umum ada di sini; layanan pribadi
-                seperti pengaduan dan iuran ada di aplikasi warga.
-            </p>
+        <div class="flex flex-wrap items-end justify-between gap-6">
+            <div class="max-w-2xl">
+                <span class="rt-label">Layanan warga</span>
+                <h2 id="judul-layanan" class="rt-judul">Urusan RT, cukup dari satu aplikasi</h2>
+                <p class="rt-lead">Layanan pribadi tersedia untuk warga terdaftar di aplikasi warga. Akun dibuat dengan kode dari pengurus dan aktif setelah disetujui.</p>
+            </div>
+            <a href="#aplikasi" class="rt-btn rt-btn--ghost">Tentang aplikasi warga</a>
         </div>
 
-        <div class="mt-12 grid border-t-2 border-tinta md:grid-cols-3">
-            @foreach ($layanan as $item)
-                <div class="border-b border-garis py-8 md:border-b-0 md:border-l md:px-8 md:first:border-l-0 md:first:pl-0">
-                    <h3 class="text-2xl font-bold tracking-[-0.01em]">{{ $item['judul'] }}</h3>
-                    <p class="mt-1 font-medium text-biru">{{ $item['untuk'] }}</p>
-                    <p class="mt-4 text-abu">{{ $item['isi'] }}</p>
-                    <p class="mt-6 flex items-center gap-2 text-sm font-medium">
-                        <span class="size-2.5 rounded-full {{ $item['siap'] ? 'bg-biru' : 'bg-kuning' }}" aria-hidden="true"></span>
-                        {{ $item['siap'] ? 'Sudah bisa dipakai' : 'Sedang dikembangkan' }}
-                    </p>
-                </div>
+        <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach ($layanan as [$ikon, $judul, $isi, $sorot])
+                <article class="rt-service {{ $sorot ? 'rt-service--sorot' : '' }}">
+                    <span class="rt-ikon"><x-ikon :nama="$ikon" /></span>
+                    <h3 class="text-xl leading-[1.3] font-bold tracking-[-0.01em]">{{ $judul }}</h3>
+                    <p class="text-ink-muted">{{ $isi }}</p>
+                </article>
             @endforeach
         </div>
     </div>
 </section>
 
-{{-- Galeri lingkungan --}}
-<section id="lingkungan" class="border-t border-garis py-20 sm:py-24" aria-labelledby="judul-lingkungan">
-    <div class="wrap">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-            <h2 id="judul-lingkungan" class="judul-bagian">Sudut-sudut RT 05</h2>
-            <p class="text-abu">Difoto Kelompok 8 saat survei lapangan, Oktober 2026.</p>
+{{-- Tentang --}}
+<section id="tentang" class="seksi bg-surface-sky" aria-labelledby="judul-tentang">
+    <div class="wrap grid items-center gap-14 lg:grid-cols-12">
+        <div class="relative pb-10 lg:col-span-6 lg:pb-12">
+            <figure class="rt-photo h-[20rem] w-[86%] sm:h-[26rem]">
+                <x-foto slug="area-hijau" :data="$foto['area-hijau']" sizes="(min-width: 1024px) 30rem, 86vw" class="size-full object-cover" />
+            </figure>
+            <figure class="rt-photo absolute right-0 bottom-0 h-40 w-[48%] border-8 border-surface-sky sm:h-52">
+                <x-foto slug="kubah-panjat" :data="$foto['kubah-panjat']" sizes="16rem" class="size-full object-cover" />
+            </figure>
+            <span class="absolute top-6 right-[8%] size-6 rounded-full bg-kuning" aria-hidden="true"></span>
         </div>
 
-        <ul class="-mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:scroll-px-6 sm:px-6 md:mx-0 md:grid md:grid-cols-12 md:gap-x-4 md:gap-y-8 md:overflow-visible md:px-0 md:pb-0">
-            @foreach ($galeri as [$slug, $kolom])
-                <li class="w-[82%] shrink-0 snap-start {{ $kolom }} md:w-auto">
-                    <button type="button" class="block w-full cursor-zoom-in text-left" data-lightbox="galeri"
+        <div class="lg:col-span-6">
+            <span class="rt-label">Tentang RT 05</span>
+            <h2 id="judul-tentang" class="rt-judul">Satu sumber informasi untuk warga Taman Kedaung</h2>
+            <p class="rt-lead">
+                RT 05 berada di lingkungan RW 07 Taman Kedaung, Ciputat. Nama Takeda di gapura dan papan sekretariat
+                adalah singkatan dari Taman Kedaung. Selama ini pengumuman, laporan, dan catatan iuran tersebar di
+                grup percakapan; Layanan Pintar menyatukannya.
+            </p>
+            <ul class="mt-8 grid gap-4">
+                @foreach ([
+                    'Informasi umum terbuka untuk siapa saja di website ini.',
+                    'Layanan pribadi lewat akun warga yang disetujui pengurus.',
+                    'Data rumah, keluarga, dan keuangan tidak dipublikasikan.',
+                ] as $poin)
+                    <li class="flex items-start gap-3">
+                        <span class="mt-0.5 grid size-8 flex-none place-items-center rounded-[var(--radius-sm)] bg-sky-100 text-brand"><x-ikon nama="cek" class="size-4" /></span>
+                        <span class="text-[17px]">{{ $poin }}</span>
+                    </li>
+                @endforeach
+            </ul>
+            <a href="#fasilitas" class="rt-btn rt-btn--primary mt-9">Lihat fasilitas</a>
+        </div>
+    </div>
+</section>
+
+{{-- Fasilitas --}}
+<section id="fasilitas" class="seksi bg-surface" aria-labelledby="judul-fasilitas">
+    <div class="wrap">
+        <div class="max-w-2xl">
+            <span class="rt-label">Fasilitas bersama</span>
+            <h2 id="judul-fasilitas" class="rt-judul">Dirawat bersama, dipakai bersama</h2>
+        </div>
+
+        <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($fasilitas as [$slug, $nama, $isi])
+                <article>
+                    <figure class="rt-photo aspect-[4/3]">
+                        <x-foto :slug="$slug" :data="$foto[$slug]" sizes="(min-width: 1024px) 18rem, (min-width: 640px) 45vw, 100vw" class="size-full object-cover" />
+                    </figure>
+                    <h3 class="mt-5 text-xl font-bold tracking-[-0.01em]">{{ $nama }}</h3>
+                    <p class="mt-2 text-ink-muted">{{ $isi }}</p>
+                </article>
+            @endforeach
+
+            <article class="rt-service rt-service--sorot">
+                <span class="rt-ikon"><x-ikon nama="pengumuman" /></span>
+                <h3 class="text-xl font-bold tracking-[-0.01em]">Peraturan lapangan</h3>
+                <ol class="list-decimal space-y-1.5 pl-5 text-[15px] marker:font-semibold marker:text-brand">
+                    @foreach ($peraturan as $aturan)
+                        <li>{{ $aturan }}</li>
+                    @endforeach
+                </ol>
+                <p class="text-sm text-ink-muted">Pengurus RT 05/007</p>
+                <button type="button" class="justify-self-start font-semibold text-brand underline decoration-2 underline-offset-4 hover:decoration-kuning" data-lightbox="peraturan"
+                        data-src="{{ $besar('peraturan-lapangan') }}" data-alt="{{ $foto['peraturan-lapangan']['alt'] }}" data-caption="{{ $foto['peraturan-lapangan']['keterangan'] }}">
+                    Lihat papan aslinya
+                </button>
+            </article>
+        </div>
+    </div>
+</section>
+
+{{-- Galeri --}}
+<section id="galeri" class="seksi bg-surface-sky" aria-labelledby="judul-galeri">
+    <div class="wrap">
+        <div class="flex flex-wrap items-end justify-between gap-6">
+            <div class="max-w-2xl">
+                <span class="rt-label">Galeri lingkungan</span>
+                <h2 id="judul-galeri" class="rt-judul">Sudut-sudut RT 05</h2>
+            </div>
+            <p class="flex items-center gap-2 text-ink-muted"><x-ikon nama="foto" class="size-5 text-brand" /> Difoto Kelompok 8, Oktober 2026</p>
+        </div>
+
+        <ul class="mt-12 grid grid-cols-2 gap-3 sm:gap-4 md:auto-rows-[15rem] md:grid-cols-12">
+            @foreach ($galeri as $i => [$slug, $kelas])
+                <li class="{{ $i === 0 || $loop->last ? 'col-span-2' : '' }} {{ $kelas }}">
+                    <button type="button" class="rt-photo block h-44 w-full cursor-zoom-in text-left sm:h-56 md:h-full {{ $i === 0 ? 'h-64 sm:h-80' : '' }}" data-lightbox="galeri"
                             data-src="{{ $besar($slug) }}" data-alt="{{ $foto[$slug]['alt'] }}" data-caption="{{ $foto[$slug]['keterangan'] }}">
-                        <x-foto :slug="$slug" :data="$foto[$slug]"
-                                sizes="(min-width: 768px) 40vw, 82vw"
-                                class="aspect-[4/3] w-full rounded-md object-cover md:aspect-auto md:h-64 lg:h-80" />
-                        <span class="mt-3 block text-sm text-abu">{{ $foto[$slug]['keterangan'] }}</span>
+                        <x-foto :slug="$slug" :data="$foto[$slug]" sizes="(min-width: 768px) 30vw, 50vw" class="size-full object-cover transition-transform duration-300 hover:scale-[1.03]" />
+                        <span class="absolute bottom-3 left-3 hidden max-w-[calc(100%-1.5rem)] rounded-full bg-surface px-3 py-1.5 text-[13px] leading-4 font-medium text-ink sm:block">{{ $foto[$slug]['label'] }}</span>
                     </button>
                 </li>
             @endforeach
@@ -143,102 +216,48 @@
     </div>
 </section>
 
-{{-- Fasilitas --}}
-<section id="fasilitas" class="bg-beton py-20 sm:py-24" aria-labelledby="judul-fasilitas">
-    <div class="wrap grid gap-12 lg:grid-cols-12">
-        <div class="lg:col-span-7">
-            <h2 id="judul-fasilitas" class="judul-bagian">Fasilitas bersama</h2>
-            <p class="mt-4 max-w-xl text-lg text-abu">Dipakai dan dirawat bersama oleh warga dan pengurus.</p>
-
-            <dl class="mt-10 grid gap-x-10 sm:grid-cols-2">
-                @foreach ($fasilitas as [$nama, $isi])
-                    <div class="border-t border-garis py-5">
-                        <dt class="font-display text-xl font-bold">{{ $nama }}</dt>
-                        <dd class="mt-2 text-abu">{{ $isi }}</dd>
-                    </div>
-                @endforeach
-            </dl>
-        </div>
-
-        <div class="lg:col-span-5">
-            <div class="rounded-md bg-kapur p-6 sm:p-8">
-                <h3 class="text-2xl font-bold">Peraturan lapangan</h3>
-                <ol class="mt-5 list-decimal space-y-2 pl-5 marker:font-semibold marker:text-biru">
-                    @foreach ($peraturan as $aturan)
-                        <li>{{ $aturan }}</li>
-                    @endforeach
-                </ol>
-                <p class="mt-5 text-sm text-abu">Pengurus RT 05/007</p>
-                <button type="button" class="tautan mt-6 text-left" data-lightbox="peraturan"
-                        data-src="{{ $besar('peraturan-lapangan') }}" data-alt="{{ $foto['peraturan-lapangan']['alt'] }}"
-                        data-caption="{{ $foto['peraturan-lapangan']['keterangan'] }}">
-                    Lihat foto papan aslinya
-                </button>
-            </div>
-        </div>
-    </div>
-</section>
-
-{{-- Tentang --}}
-<section id="tentang" class="py-20 sm:py-24" aria-labelledby="judul-tentang">
-    <div class="wrap grid items-center gap-12 lg:grid-cols-12">
-        <div class="lg:order-2 lg:col-span-7 lg:pl-6">
-            <h2 id="judul-tentang" class="judul-bagian">Tentang RT 05</h2>
-            <div class="mt-6 max-w-[62ch] space-y-4 text-lg text-abu">
-                <p>
-                    RT 05 berada di lingkungan RW 07 Taman Kedaung, Ciputat. Nama Takeda yang tertulis di gapura
-                    dan papan sekretariat adalah singkatan dari Taman Kedaung.
-                </p>
-                <p>
-                    Selama ini pengumuman, laporan warga, dan catatan iuran tersebar di grup percakapan dan catatan
-                    yang terpisah. Layanan Pintar menyatukannya dalam satu sumber data: website untuk informasi
-                    umum, aplikasi untuk warga, dan dashboard untuk pengurus.
-                </p>
-            </div>
-        </div>
-        <figure class="lg:order-1 lg:col-span-5">
-            <x-foto slug="area-hijau" :data="$foto['area-hijau']" sizes="(min-width: 1024px) 28rem, 100vw"
-                    class="aspect-[4/3] w-full rounded-md object-cover" />
-            <figcaption class="mt-3 text-sm text-abu">{{ $foto['area-hijau']['keterangan'] }}</figcaption>
-        </figure>
-    </div>
-</section>
-
 {{-- Aplikasi warga --}}
-<section id="aplikasi" class="bg-biru py-20 text-kapur sm:py-24" aria-labelledby="judul-aplikasi">
-    <div class="wrap grid gap-12 lg:grid-cols-12">
-        <div class="lg:col-span-5">
-            <h2 id="judul-aplikasi" class="judul-bagian">Aplikasi warga sedang disiapkan</h2>
-            <p class="mt-5 text-lg text-kapur/85">
-                Layanan pribadi untuk warga RT 05 akan tersedia di aplikasi mobile. Akun dibuat memakai kode
-                registrasi dari pengurus dan aktif setelah disetujui.
-            </p>
-            <p class="mt-6 text-lg">
-                Butuh kode registrasi? Tanyakan ke pengurus di Sekretariat RT 05/07.
-            </p>
-        </div>
+<section id="aplikasi" class="seksi bg-surface" aria-labelledby="judul-aplikasi">
+    <div class="wrap">
+        <div class="relative overflow-hidden rounded-[var(--radius-lg)] bg-brand-strong px-6 py-12 text-white sm:px-12 lg:px-16 lg:py-16">
+            <div class="pointer-events-none absolute -top-24 -right-16 size-80 rounded-full bg-brand" aria-hidden="true"></div>
+            <div class="pointer-events-none absolute -right-10 -bottom-28 size-64 rounded-full border-[2.5rem] border-sky-400/25" aria-hidden="true"></div>
 
-        <ul class="grid gap-x-10 sm:grid-cols-2 lg:col-span-7">
-            @foreach ($fitur as [$nama, $isi])
-                <li class="border-t border-kapur/25 py-5">
-                    <h3 class="text-xl font-bold">{{ $nama }}</h3>
-                    <p class="mt-1 text-kapur/80">{{ $isi }}</p>
-                </li>
-            @endforeach
-        </ul>
+            <div class="relative grid items-center gap-12 lg:grid-cols-12">
+                <div class="lg:col-span-6">
+                    <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-[13px] font-semibold text-sky-100">
+                        <span class="size-2 rounded-full bg-kuning"></span> Sedang dikembangkan
+                    </span>
+                    <h2 id="judul-aplikasi" class="mt-5 text-[clamp(2rem,4vw,2.75rem)] leading-[1.08] font-extrabold tracking-[-0.025em]">Aplikasi warga RT 05 sedang disiapkan</h2>
+                    <p class="mt-5 max-w-xl text-lg leading-[1.7] text-sky-100">
+                        Pengaduan, aspirasi, agenda, dan status iuran rumah akan tersedia di aplikasi mobile.
+                        Butuh kode registrasi? Tanyakan ke pengurus di Sekretariat RT 05/07.
+                    </p>
+                    <a href="#layanan" class="rt-btn rt-btn--inverse mt-8">Lihat semua layanan</a>
+                </div>
+                <ul class="grid gap-3 sm:grid-cols-2 lg:col-span-6">
+                    @foreach ($fitur as $f)
+                        <li class="flex items-center gap-3 rounded-[var(--radius-md)] bg-white/[0.08] px-4 py-4 font-medium">
+                            <span class="grid size-8 flex-none place-items-center rounded-full bg-sky-200 text-brand-strong"><x-ikon nama="cek" class="size-4" /></span>
+                            {{ $f }}
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
     </div>
 </section>
 
 {{-- Lightbox foto --}}
-<dialog id="lightbox" class="m-auto max-h-none max-w-none bg-transparent p-0 text-kapur" aria-label="Foto lingkungan">
+<dialog id="lightbox" class="m-auto max-h-none max-w-none bg-transparent p-0 text-white" aria-label="Foto lingkungan">
     <figure class="flex h-dvh w-screen flex-col items-center justify-center gap-4 p-4 sm:p-10">
-        <img data-lightbox-img alt="" class="max-h-[80dvh] w-auto max-w-full rounded-md object-contain">
+        <img data-lightbox-img alt="" class="max-h-[80dvh] w-auto max-w-full rounded-[var(--radius-lg)] object-contain">
         <figcaption data-lightbox-caption class="max-w-2xl text-center"></figcaption>
     </figure>
     <div class="absolute inset-x-0 top-0 flex justify-end gap-2 p-3 sm:p-5">
-        <button type="button" data-lightbox-prev class="min-h-11 rounded-md bg-kapur/10 px-4 font-semibold hover:bg-kapur/20">Sebelumnya</button>
-        <button type="button" data-lightbox-next class="min-h-11 rounded-md bg-kapur/10 px-4 font-semibold hover:bg-kapur/20">Berikutnya</button>
-        <button type="button" data-lightbox-close class="min-h-11 rounded-md bg-kapur px-4 font-semibold text-tinta">Tutup</button>
+        <button type="button" data-lightbox-prev class="min-h-11 rounded-full bg-white/10 px-5 font-semibold hover:bg-white/20">Sebelumnya</button>
+        <button type="button" data-lightbox-next class="min-h-11 rounded-full bg-white/10 px-5 font-semibold hover:bg-white/20">Berikutnya</button>
+        <button type="button" data-lightbox-close class="min-h-11 rounded-full bg-white px-5 font-semibold text-ink">Tutup</button>
     </div>
 </dialog>
 

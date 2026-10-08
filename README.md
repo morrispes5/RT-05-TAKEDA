@@ -25,6 +25,7 @@ php artisan serve    # buka http://127.0.0.1:8000
 |---|---|
 | `resources/views/home.blade.php` | Halaman Beranda |
 | `resources/views/components/foto.blade.php` | Komponen `<x-foto>`: gambar responsif (`srcset`, lazy load) |
+| `resources/views/components/ikon.blade.php` | Komponen `<x-ikon>`: ikon garis gaya Lucide |
 | `resources/views/layouts`, `resources/views/partials` | Layout, navbar, footer |
 | `resources/css/app.css` | Token desain (warna, font) dan komponen kecil |
 | `resources/js/app.js` | Menu mobile dan lightbox foto |
@@ -33,13 +34,19 @@ php artisan serve    # buka http://127.0.0.1:8000
 
 ## Desain
 
-Arah visual "civic modern" yang diambil dari lingkungan RT 05 sendiri: biru cat sekretariat
-(`#0B3F8C`), kuning pipa pos (`#F2C21A`), dan abu beton lapangan. Font Schibsted Grotesk (judul) dan
-Public Sans (teks), di-host sendiri lewat `@fontsource`.
+Design system resmi ada di artifact Claude Design **RT 05 Takeda Design System**
+(<https://claude.ai/artifact/UxTQtV5HPZbyFHkVciKYN9>): token warna terang/gelap, tipografi, spasi,
+radius, bayangan, logo gapura, dan komponen `rt-` beserta aturannya. Ringkasnya:
 
-Aturan desain mengikuti skill `frontend-design` dari [anthropics/skills](https://github.com/anthropics/skills)
-(Apache-2.0) yang disimpan di `.claude/skills/frontend-design/`. Claude Code memakainya otomatis saat
-mengubah tampilan.
+- Biru muda (`surface-sky`, `sky-100`, `sky-200`) mengisi 20 sampai 70 persen elemen setiap layar.
+- `brand` (`#0B3F8C`, biru cat sekretariat) untuk tombol dan tautan; `kuning` (pipa pos) satu aksen per layar.
+- Judul Bricolage Grotesque, teks Public Sans, keduanya di-host sendiri lewat `@fontsource`.
+- Kelas komponen (`rt-btn`, `rt-badge`, `rt-label`, `rt-service`, `rt-float`, `rt-photo`) ada di
+  `resources/css/app.css` dan sama dengan di design system. Ikon garis lewat `<x-ikon nama="...">`.
+- Logo: `public/images/logo/rt05-mark.svg` (latar terang) dan `rt05-mark-terang.svg` (latar gelap).
+
+Skill `frontend-design` dari [anthropics/skills](https://github.com/anthropics/skills) (Apache-2.0)
+disimpan di `.claude/skills/frontend-design/` sebagai aturan desain repo.
 
 ## Foto dokumentasi
 
