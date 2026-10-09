@@ -101,3 +101,58 @@ yang aman di semua viewport. Diverifikasi ulang oleh QA browser (lihat di bawah)
 - Hover lift memakai pola `translateY(-2px s.d. -4px)` + penguatan bayangan; ikuti pola ini.
 - `@media (prefers-reduced-motion:reduce)` di akhir file mematikan semua transisi/animasi baru
   secara otomatis — tidak perlu penanganan khusus.
+
+---
+
+# Putaran 2 — Redesign logo & hero (9 Oktober 2026, sesi Kimi Code)
+
+## Latar
+Pemilik menilai hero lama (teks tengah + kolase 3 foto) terlalu generik/"template AI" dan logo
+(ikon rumah dalam kotak biru) tidak khas. Redesign ini berpedoman pada
+`.claude/skills/frontend-design/SKILL.md` (anti-pola default AI) dan tetap mematuhi mandat
+`docs/FRONTEND_REFACTOR.md`: biru muda wajib ada, font dan warna inti tidak berubah, hanya foto asli.
+
+## Konsep: "Gapura"
+Elemen pembeda digali dari subjek itu sendiri: gapura masuk RT 05 (pediment garis merah-putih
+HUT RI ke-81, dua pilar, tulisan "Selamat datang di RT 05 RW 07 Takeda").
+
+### Logo baru — public/images/logo/rt05-mark.svg & rt05-mark-terang.svg
+- Siluet gapura asli: pediment segitiga bergaris merah-putih (clipPath + stripe manual),
+  dua pilar dengan kapital, titik kuning di puncak, garis tanah kuning. Digambar tangan sebagai SVG.
+- Varian `-terang` untuk footer navy: pilar/outline biru sangat muda, merah dicerahkan (#e0607e).
+- Nama file tidak berubah, sehingga navbar, footer, dan favicon otomatis memakai logo baru.
+
+### Hero baru — resources/views/home.blade.php + app.css
+- Layout editorial dua kolom (`.hero-grid`): copy di kiri, visual di kanan. Bukan lagi teks-tengah generik.
+- Headline: baris kedua bergaya outline/hollow (`-webkit-text-stroke`, kelas `.hollow`,
+  fallback `@supports` mengembalikan warna solid). Bukan aksen satu kata.
+- Foto gapura dibingkai mask lengkung gerbang (`.hero-arch`, border-radius 999px atas) dengan
+  bingkai putih inset (outline) — elemen visual utama yang tidak ada di template manapun.
+- `.hero-tuck`: foto taman bermain kecil menumpuk di tepi arch dengan border putih.
+- `.hero-badge`: badge teks melingkar SVG (textPath) berputar 26 detik, berisi tulisan gapura asli,
+  logo mini di tengah. `aria-hidden`.
+- `.hero-marquee`: strip navy berjalan 36 detik berisi teks sambutan gapura; dua span identik
+  untuk loop mulus (`translateX(-50%)`).
+- Latar hero: gradasi biru muda + pola garis vertikal tipis (repeating-linear-gradient) —
+  mengingatkan pilar-pilar gapura, menjaga biru muda tetap dominan.
+- Animasi pembuka tunggal yang terorkestrasi: `.hero-copy` anak-anaknya naik berurutan
+  (`hero-rise`, delay 0/.1/.22/.34s), arch muncul `gate-rise` (naik + scale), badge `badge-pop`.
+  Tidak ada animasi tersebar di section lain. Semua animasi otomatis mati via aturan
+  `prefers-reduced-motion` global yang sudah ada (fill-mode `both` memastikan status akhir tampil).
+
+### Selector lama yang DIHAPUS (jangan dipakai lagi)
+`.hero-intro`, `.hero-collage`, `.hero-side`, `.hero-garden`, `.hero-post`, `.hero-main`,
+`.hero-foot`, `.desktop-break` — beserta seluruh aturan media query terkait.
+
+### Responsif hero baru
+- ≥1500px: padding hero lebih lega, arch 620px.
+- ≤1100px: gap dipersempit, arch 470px, badge/tuck diperkecil.
+- ≤768px: hero jadi satu kolom (copy dulu, visual di bawah), arch 420px, tuck pindah ke kanan bawah.
+- ≤600px: arch 340px dengan radius arch 170px, badge 82px, marquee lebih kecil.
+
+## Verifikasi putaran 2
+- `npm run build` + `scripts/build-preview.sh`: 21 rute + 404 sukses.
+- `npm run test:preview`: 105/105 responsive PASS, 42 axe PASS, 30 tautan PASS, tanpa browser error.
+- Catatan: screenshot QA (`artifacts/screenshots/`) menangkap hero di tengah animasi pembuka
+  sehingga tampak pudar; status akhir diverifikasi manual lewat screenshot terpisah
+  (`artifacts/hero-final-desktop.png`, `artifacts/hero-final-mobile.png`) setelah 2,5 detik.
