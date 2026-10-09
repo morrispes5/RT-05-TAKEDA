@@ -1,5 +1,7 @@
 # QA frontend RT 05 Takeda
 Tanggal pemeriksaan lokal: 9 Oktober 2026 (Asia/Jakarta).
+Diperbarui 9 Oktober 2026 oleh sesi Kimi Code setelah fine-tuning desain (lihat DESIGN_FINETUNE_KIMI.md):
+seluruh pemeriksaan di bawah dijalankan ulang setelah perubahan CSS dan hasilnya tetap PASS.
 
 ## Hasil lokal
 | Pemeriksaan | Hasil |
