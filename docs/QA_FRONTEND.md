@@ -54,3 +54,10 @@ Vercel melaporkan preview branch Ready melalui check GitHub. Pemeriksaan isi pre
 terhambat Vercel Authentication: konektor Vercel mengembalikan 403 untuk team/proyek ini.
 Proteksi tidak diubah. Alias utama dapat dibaca tanpa login dan akan diperiksa setelah merge.
 Hasil smoke live setelah merge disimpan lokal di artifacts/live-report.json.
+
+## Smoke live pasca-merge (9 Oktober 2026, sesi Kimi Code)
+PR #4 di-merge squash ke `main` (b694bc3), branch kerja dihapus. Redeploy alias utama berjalan
+otomatis. `node scripts/check-live.mjs` terhadap https://rt05takeda.vercel.app: 21/21 rute
+menyajikan HTML yang identik dengan preview/ lokal, 25 aset cocok, rute tak dikenal 404,
+smoke browser mobile PASS, tanpa browser error. Laporan lengkap: artifacts/live-report.json
+(lokal, tidak masuk Git).
