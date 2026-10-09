@@ -41,3 +41,14 @@ Vercel melayani hasil statis, bukan proses PHP. Pemeriksaan otomatis tidak menya
 sempurna, persetujuan seluruh konten mitra, atau kesiapan layanan operasional.
 
 PR, hasil CI, dan deployment dapat dilihat pada tautan GitHub/Vercel yang dilaporkan setelah push.
+
+## Tautan pemeriksaan jarak jauh
+- PR: https://github.com/morrispes5/RT-05-TAKEDA/pull/4
+- Workflow: https://github.com/morrispes5/RT-05-TAKEDA/actions/workflows/frontend.yml
+- Preview branch: https://rt05takeda-git-codex-frontend-refactor-morrizshkki.vercel.app
+- Alias utama: https://rt05takeda.vercel.app
+
+Vercel melaporkan preview branch Ready melalui check GitHub. Pemeriksaan isi preview branch
+terhambat Vercel Authentication: konektor Vercel mengembalikan 403 untuk team/proyek ini.
+Proteksi tidak diubah. Alias utama dapat dibaca tanpa login dan akan diperiksa setelah merge.
+Hasil smoke live setelah merge disimpan lokal di artifacts/live-report.json.

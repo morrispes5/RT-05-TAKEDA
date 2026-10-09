@@ -203,6 +203,7 @@ dialog :focus-visible { outline-color:var(--yellow); }
 .management-nav svg { width:19px; height:19px; color:#5c7687; }
 .management-nav a[aria-current] { background:#e7f0f7; color:var(--navy); font-weight:650; }
 .management-nav a:hover { background:#f0f5f8; }
+.management-nav .mobile-site-link { display:none; }
 .sidebar-foot { margin-top:auto; padding:28px 12px 0; font-size:12px; }
 .sidebar-foot > svg { width:20px; float:left; margin-right:10px; margin-top:4px; }
 .sidebar-foot small { font-size:10px; color:var(--muted); }
@@ -369,6 +370,7 @@ dialog :focus-visible { outline-color:var(--yellow); }
     .management-sidebar { height:auto; position:relative; display:flex; flex-direction:row; align-items:center; justify-content:space-between; flex-wrap:wrap; padding:18px 20px; border-right:0; border-bottom:1px solid var(--line); overflow:visible; }
     .management-sidebar .menu-toggle { display:flex; }
     .management-nav { width:100%; margin-top:20px; }
+    .management-nav .mobile-site-link { display:flex; border-top:1px solid var(--line); margin-top:12px; border-radius:0; }
     .js .management-nav:not(.is-open) { display:none; }
     .sidebar-foot { display:none; }
     .management-topbar { min-height:62px; }
