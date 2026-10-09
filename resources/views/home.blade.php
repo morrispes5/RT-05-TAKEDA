@@ -1,18 +1,40 @@
 @extends('layouts.app')
 @section('content')
 <section class="home-hero">
-    <div class="wrap hero-intro">
-        <p class="place-line"><span></span> RT 05 RW 07 · Taman Kedaung, Ciputat</p>
-        <h1>Tempat tinggal.<br>Tempat kita bertetangga.</h1>
-        <p>Selamat datang di RT 05 Takeda. Kenali lingkungan, ruang bersama,<br class="desktop-break"> dan hal-hal kecil yang membuat kita merasa di rumah.</p>
-        <a class="button primary" href="/profil">Kenali lingkungan kami <x-ikon nama="panah" /></a>
+    <div class="wrap hero-grid">
+        <div class="hero-copy">
+            <p class="place-line"><span></span> RT 05 RW 07 · Taman Kedaung, Ciputat</p>
+            <h1>Tempat tinggal.<br><span class="hollow">Tempat kita bertetangga.</span></h1>
+            <p>Selamat datang di RT 05 Takeda. Kenali lingkungan, ruang bersama, dan hal-hal kecil yang membuat kita merasa di rumah.</p>
+            <div class="hero-cta">
+                <a class="button primary" href="/profil">Kenali lingkungan kami <x-ikon nama="panah" /></a>
+                <a class="text-link" href="/dokumentasi">Lihat dokumentasi <x-ikon nama="panah" /></a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <figure class="hero-arch">
+                <x-foto slug="gapura" :data="$foto['gapura']" :utama="true" sizes="(max-width: 1024px) 92vw, 46vw" />
+                <figcaption><span>Selamat datang di Takeda</span><x-ikon nama="lokasi" /></figcaption>
+            </figure>
+            <figure class="hero-tuck">
+                <x-foto slug="taman-bermain" :data="$foto['taman-bermain']" sizes="(max-width: 1024px) 40vw, 220px" />
+                <figcaption>Ruang bermain, di bawah rindang pohon.</figcaption>
+            </figure>
+            <div class="hero-badge" aria-hidden="true">
+                <svg viewBox="0 0 132 132">
+                    <defs><path id="badge-circle" d="M66 66 m -46 0 a 46 46 0 1 1 92 0 a 46 46 0 1 1 -92 0"/></defs>
+                    <text><textPath href="#badge-circle">Selamat datang di Takeda · RT 05 RW 07 · Taman Kedaung ·</textPath></text>
+                </svg>
+                <img src="/images/logo/rt05-mark.svg" alt="" width="40" height="40">
+            </div>
+        </div>
     </div>
-    <div class="wrap hero-collage">
-        <figure class="hero-side hero-garden"><x-foto slug="taman-bermain" :data="$foto['taman-bermain']" sizes="(max-width: 600px) 43vw, 25vw" /><figcaption>Ruang bermain, di bawah rindang pohon.</figcaption></figure>
-        <figure class="hero-main"><x-foto slug="gapura" :data="$foto['gapura']" :utama="true" sizes="(max-width: 600px) 94vw, 50vw" /><figcaption><span>Selamat datang di Takeda</span><x-ikon nama="lokasi" /></figcaption></figure>
-        <figure class="hero-side hero-post"><x-foto slug="sekretariat" :data="$foto['sekretariat']" sizes="(max-width: 600px) 43vw, 25vw" /><figcaption>Sudut untuk bertemu dan berbincang.</figcaption></figure>
+    <div class="hero-marquee" aria-hidden="true">
+        <div class="hero-marquee-track">
+            <span>Selamat datang di Takeda · RT 05 RW 07 · Taman Kedaung, Ciputat · Ruang bersama kita jaga bersama · Selamat datang di Takeda · RT 05 RW 07 · Taman Kedaung, Ciputat · Ruang bersama kita jaga bersama · </span>
+            <span>Selamat datang di Takeda · RT 05 RW 07 · Taman Kedaung, Ciputat · Ruang bersama kita jaga bersama · Selamat datang di Takeda · RT 05 RW 07 · Taman Kedaung, Ciputat · Ruang bersama kita jaga bersama · </span>
+        </div>
     </div>
-    <div class="wrap hero-foot"><span>Sepotong cerita dari lingkungan kami</span><a href="/dokumentasi">Lihat dari dekat <x-ikon nama="panah" /></a></div>
 </section>
 <section class="wrap section intro-grid">
     <div><p class="section-label">Tentang Takeda</p><h2>Dekat rumah,<br>dekat satu sama lain.</h2></div>
