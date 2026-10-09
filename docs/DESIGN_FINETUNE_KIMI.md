@@ -156,3 +156,62 @@ HUT RI ke-81, dua pilar, tulisan "Selamat datang di RT 05 RW 07 Takeda").
 - Catatan: screenshot QA (`artifacts/screenshots/`) menangkap hero di tengah animasi pembuka
   sehingga tampak pudar; status akhir diverifikasi manual lewat screenshot terpisah
   (`artifacts/hero-final-desktop.png`, `artifacts/hero-final-mobile.png`) setelah 2,5 detik.
+
+---
+
+# Putaran 3 — Hero premium interaktif & pembersihan AI slop (9 Oktober 2026, sesi Kimi Code)
+
+## Latar
+Pemilik menilai eyebrow "RT 05 RW 07 · Taman Kedaung, Ciputat" + dot kuning sebagai pola AI generik,
+meminta lebih banyak animasi, gambar hero yang interaktif, background yang tidak kosong, lebih banyak
+SVG/garis, dan referensi desain kelas Awwwards. Riset referensi: pola SOTD 2025–2026 (kinetic type,
+pointer parallax, drag interaction, mesh gradient + grain) dan skill `.claude/skills/frontend-design/SKILL.md`.
+
+## Perubahan
+
+### Dibuang (pola AI slop)
+- `.place-line` (dot kuning + teks lokasi) dihapus total dari markup dan semua media query.
+  Identitas lokasi tetap hidup di marquee, badge melingkar, dan footer.
+- Separator "·" di marquee diganti ikon mini-gapura SVG (`.mq-gapura`, inline di home.blade.php).
+
+### Hero interaktif (resources/js/app.js)
+- Parallax pointer 3 lapis: `[data-parallax-scene]` dengan `[data-parallax]` = 14/30/46 px untuk
+  arch/tuck/badge; lerp rAF 0.08; hanya `pointer:fine`; transform translate3d only.
+- Drag-to-pan: `[data-drag-pan]` pada `.hero-arch`; geser memindahkan foto via properti CSS
+  `translate` pada img (dibatasi ±70/±45px; img `scale:1.12` agar tak ada celah); kursor grab/grabbing.
+- Listener `animationend` (once) membersihkan animasi pembuka agar fill-mode `both` tidak
+  menahan transform inline parallax.
+- Semua interaksi non-aktif saat `prefers-reduced-motion`.
+
+### Background premium (app.css)
+- `.home-hero`: 4 lapis mesh gradient (biru muda atas-kanan, kuning lembut kiri-bawah, wash biru
+  kiri-atas, linear ke putih) + pola garis pilar 0.028 opacity + grain `feTurbulence` inline
+  data-URI via `::after` (tanpa aset baru).
+- `.hero-watermark`: dua pasang outline arch raksasa kiri-kanan (stroke navy 0.07) — motif gapura.
+- `.hero-marquee`: gradasi navy 3 titik; `.facility-section`: gradasi hijau-putih lembut.
+
+### Tipografi kinetik & SVG
+- Headline per-baris: `.line` overflow-hidden + `line-up` (translateY 112%→0, stagger 0/.14s).
+- `.hero-arc-line`: garis lengkung kuning di atas headline, digambar via `stroke-dashoffset`
+  (arc-draw 1.1s, delay .55s) — melengkapi siluet gapura.
+- `.intro-art`: ilustrasi line-art original (rumah, dua warga berpegangan tangan, pohon, matahari
+  kuning) di section Tentang Takeda. Digambar tangan, stroke navy 2.4.
+- `.squiggle`: garis gelombang kuning di bawah h2 section fasilitas & jurnal.
+
+### Motion tambahan
+- Scroll reveal: `[data-reveal]` + IntersectionObserver (reveal-init → reveal-in, sekali,
+  threshold .12) pada intro/fasilitas/jurnal/mobile-note. Tanpa JS/reduced-motion konten tampil normal.
+- Sheen sweep pada `.primary` saat hover (`::after` gradient translate).
+
+## Verifikasi putaran 3
+- `php artisan test`: 8/167 PASS · Pint PASS.
+- `npm run build` + `build-preview.sh`: 21 rute + 404.
+- `npm run test:preview`: 105/105 responsive, 42 axe WCAG, 30 tautan, interaksi PASS, tanpa error.
+- Screenshot manual pasca-animasi: `artifacts/hero-v3-desktop.png` (parallax terverifikasi visual
+  via `hero-v3-desktop-parallax.png`), `artifacts/hero-v3-mobile.png`.
+
+## Foto dokumentasi Drive
+Pencarian folder "DOKUMENTASI RT 05"/Kelompok 8/foto 17 Agustusan via rclone (My Drive +
+shared-with-me, kedalaman 3–4) TIDAK menemukan folder tersebut — kemungkinan akses Codex dulu
+memakai konektor Drive dengan izin berbeda. Tidak ada foto baru yang ditambahkan; menunggu pemilik
+membagikan/menunjuk lokasi folder. Jangan menambah foto tanpa sumber asli.
