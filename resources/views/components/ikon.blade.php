@@ -3,6 +3,11 @@
 @php
     // Ikon garis 24px, stroke 2px (gaya Lucide), sesuai design system.
     $paths = [
+        'panah' => '<path d="M5 12h14M13 6l6 6-6 6"/>',
+        'menu' => '<path d="M4 6h16M4 12h16M4 18h16"/>',
+        'warga' => '<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 5"/>',
+        'rumah' => '<path d="m3 10 9-7 9 7v11H3zM9 21v-8h6v8"/>',
+        'buku' => '<path d="M12 6c-3-2-6-2-9-1v15c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1zM12 6v15"/>',
         'pengaduan' => '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
         'aspirasi' => '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/>',
         'agenda' => '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',

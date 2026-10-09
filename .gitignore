@@ -21,6 +21,8 @@
 /storage/*.key
 /storage/pail
 /vendor
+/.preview-stage
+/artifacts
 _ide_helper.php
 Homestead.json
 Homestead.yaml
