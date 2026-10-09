@@ -1,73 +1,88 @@
 # RT 05 Takeda — website publik
 
-Website publik RT 05 RW 07 Taman Kedaung (Takeda), Ciputat. Bagian dari Capstone Project PG194
-Kelompok 8 "Layanan Pintar": website untuk informasi umum, aplikasi mobile untuk warga, dan dashboard
-untuk pengurus. Repo ini saat ini berisi halaman Beranda.
+Website informasi RT 05 RW 07 Taman Kedaung, Ciputat. Laravel 13 + Blade + Tailwind CSS 4 + Vite.
+Website publik tidak memerlukan akun. Area pengurus saat ini **pratinjau antarmuka**, bukan sistem operasional.
 
-Stack: Laravel 13 (Blade) + Tailwind CSS 4, sesuai Dokumen Perancangan Solusi.
+## Menjalankan secara lokal
+PHP 8.3+, Composer, Node.js 22.12+ (atau 24+).
 
-## Menjalankan di lokal
-
-Butuh PHP 8.3+, Composer, dan Node.js 20+.
-
-```bash
+```powershell
 composer install
-cp .env.example .env
+Copy-Item .env.example .env
 php artisan key:generate
-npm install
-npm run build        # atau `npm run dev` saat mengembangkan
-php artisan serve    # buka http://127.0.0.1:8000
+npm.cmd ci
+npm.cmd run build
+php artisan serve
 ```
 
-## Struktur penting
+Buka http://127.0.0.1:8000. Tidak perlu migrasi database untuk website publik dan shell ini.
+Gunakan SESSION_DRIVER=file dan CACHE_STORE=file untuk penggunaan lokal (sudah di .env.example).
+Jangan jalankan composer setup untuk sekadar frontend: script bawaan tersebut juga menjalankan migrasi.
 
-| Path | Isi |
-|---|---|
-| `resources/views/home.blade.php` | Halaman Beranda |
-| `resources/views/components/foto.blade.php` | Komponen `<x-foto>`: gambar responsif (`srcset`, lazy load) |
-| `resources/views/components/ikon.blade.php` | Komponen `<x-ikon>`: ikon garis gaya Lucide |
-| `resources/views/layouts`, `resources/views/partials` | Layout, navbar, footer |
-| `resources/css/app.css` | Token desain (warna, font) dan komponen kecil |
-| `resources/js/app.js` | Menu mobile dan lightbox foto |
-| `resources/data/dokumentasi.json` | Data foto: alt text, keterangan, ukuran |
-| `app/Http/Controllers/HomeController.php` | Membaca data foto untuk Beranda |
+## Halaman
+- / — Beranda
+- /profil — lingkungan dan pengurus; Agus Ferdiansyah sebagai ketua, sekretaris/bendahara anonim
+- /fasilitas — sarana dengan foto asli
+- /dokumentasi — 11 foto, filter subjek, dan lightbox
+- /artikel + /artikel/{slug} — 5 bacaan edukasi dengan SVG original dan waktu baca terhitung
+- /kontak — informasi wilayah dan status kontak yang belum diumumkan
+- /pengurus — ringkasan; warga, pengaduan, aspirasi, agenda, pengumuman, iuran, keuangan, konten, pengaturan
 
-## Desain
+Pengurus: tombol operasional benar-benar disabled; tidak ada formulir, autentikasi palsu, catatan warga,
+angka saldo atau status pembayaran yang direkayasa. Pembayaran iuran direncanakan offline.
 
-Design system resmi ada di artifact Claude Design **RT 05 Takeda Design System**
-(<https://claude.ai/artifact/UxTQtV5HPZbyFHkVciKYN9>): token warna terang/gelap, tipografi, spasi,
-radius, bayangan, logo gapura, dan komponen `rt-` beserta aturannya. Ringkasnya:
+## Preview Vercel
+Vercel menyajikan direktori statis preview/ yang di-commit. **Vercel tidak menjalankan Laravel/PHP**.
+Sumber perubahan tetap Blade, CSS, JS, dan data; jangan edit HTML hasil ekspor secara manual.
 
-- Biru muda (`surface-sky`, `sky-100`, `sky-200`) mengisi 20 sampai 70 persen elemen setiap layar.
-- `brand` (`#0B3F8C`, biru cat sekretariat) untuk tombol dan tautan; `kuning` (pipa pos) satu aksen per layar.
-- Judul Bricolage Grotesque, teks Public Sans, keduanya di-host sendiri lewat `@fontsource`.
-- Kelas komponen (`rt-btn`, `rt-badge`, `rt-label`, `rt-service`, `rt-float`, `rt-photo`) ada di
-  `resources/css/app.css` dan sama dengan di design system. Ikon garis lewat `<x-ikon nama="...">`.
-- Logo: `public/images/logo/rt05-mark.svg` (latar terang) dan `rt05-mark-terang.svg` (latar gelap).
-
-Skill `frontend-design` dari [anthropics/skills](https://github.com/anthropics/skills) (Apache-2.0)
-disimpan di `.claude/skills/frontend-design/` sebagai aturan desain repo.
-
-## Foto dokumentasi
-
-Foto asli diambil Kelompok 8 pada Oktober 2026 (Drive: `DOKUMENTASI RT 05`). Yang di-commit hanya
-versi web di `public/images/dokumentasi/` (WebP 480/960/1600 px, metadata EXIF/GPS dibuang). Untuk
-menambah atau mengganti foto:
-
-1. Taruh foto asli di `storage/app/dokumentasi-src/` (folder ini tidak ikut git).
-2. Tambahkan entrinya di `resources/data/dokumentasi.json` (nama berkas, alt text, keterangan).
-3. Jalankan `node scripts/optimize-images.mjs`.
-
-Sebelum memasang foto yang menampilkan wajah warga, terutama anak-anak, minta izin pengurus RT.
-
-## Preview di Vercel
-
-Vercel tidak menjalankan PHP, jadi `preview/` berisi hasil render statis Beranda yang dilayani lewat
-`vercel.json` (dengan header `noindex`). Folder ini **bukan sumber kebenaran**: ubah
-`resources/views`, lalu buat ulang dengan:
-
-```bash
-scripts/build-preview.sh
+```powershell
+npm.cmd run build:preview
+npm.cmd run preview
 ```
 
-Saat deploy sungguhan (VPS + Docker sesuai rancangan), `preview/` dan `vercel.json` bisa dihapus.
+Preview lokal: http://127.0.0.1:8123. Ekspor mengunjungi semua rute melalui kernel Laravel tanpa server
+background dan tanpa database. Output 21 halaman + 404, aset build, dan foto. Setiap URL menggunakan
+cleanUrls pada Vercel, sehingga artikel dan modul pengurus dapat dibuka langsung.
+scripts/build-preview.sh adalah wrapper untuk lingkungan Bash.
+
+Workflow GitHub memeriksa bahwa preview/ sesuai sumber. Push PR memicu deployment preview melalui integrasi
+Vercel yang sudah ada; merge main memicu redeploy alias branch utama sesuai konfigurasi proyek Vercel.
+
+## Pemeriksaan
+```powershell
+php artisan test
+php vendor/bin/pint --test
+npm.cmd run build:preview
+npx.cmd playwright install chromium
+npm.cmd run test:preview
+npm.cmd audit
+```
+
+Tes browser memeriksa seluruh rute pada 360, 390, 768, 1024, dan 1440 px, overflow, gambar,
+tautan internal/anchor, error browser, filter, lightbox, fokus, menu mobile, dan reduced motion.
+Axe memeriksa WCAG A/AA di 390 dan 1440 px. Screenshot dan JSON disimpan di artifacts/ (diabaikan Git).
+Pemeriksaan otomatis tidak menggantikan penilaian manusia atas aksesibilitas atau persetujuan konten mitra.
+
+## Struktur
+| Lokasi | Isi |
+| --- | --- |
+| app/Support/SiteContent.php | Katalog konten, modul, dan rute ekspor |
+| app/Http/Controllers/PublicPageController.php | Render halaman publik dan shell |
+| resources/views | Layout, halaman, komponen foto/ikon/SVG artikel |
+| resources/data/dokumentasi.json | Manifest foto asli, dimensi, alt, caption |
+| resources/data/artikel.json | Bacaan edukasi; tidak mengaku sebagai berita RT |
+| resources/css/app.css | Token dan layout responsif publik/pengurus |
+| resources/js/app.js | Menu, filter, dialog foto |
+| scripts/export-preview.php | Ekspor semua rute dengan lingkungan tanpa database |
+| scripts/check-preview.mjs | QA browser dan aksesibilitas |
+| docs/FRONTEND_REFACTOR.md | Audit, keputusan produk, sumber, arah desain |
+| docs/QA_FRONTEND.md | Bukti pemeriksaan dan batas yang masih berlaku |
+
+## Media dan konten
+Hanya foto asli dalam katalog repo yang digunakan. WebP memiliki varian 480/960/1600 sesuai manifest;
+foto papan peraturan memiliki maksimal 960 px. Foto asli tidak di-commit; versi web telah dibuang EXIF/GPS.
+Jangan menambah foto wajah warga/anak tanpa izin. Untuk aset baru gunakan scripts/optimize-images.mjs
+dan perbarui manifest. Ikon dan ilustrasi artikel adalah SVG; tidak ada gambar raster AI atau foto stok.
+
+Arahan visual **Halaman Bersama** mempertahankan Bricolage Grotesque, Public Sans, dan logo gapura repo,
+dengan hero tengah dan kolase lingkungan. Font di-host sendiri. Lihat dokumentasi refactor untuk detail.
