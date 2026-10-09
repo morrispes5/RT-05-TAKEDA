@@ -1,5 +1,80 @@
 document.documentElement.classList.add('js');
 
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Hapus sisa animasi pembuka setelah selesai agar transform inline (parallax) bebas bekerja.
+document.querySelectorAll('.hero-copy > p, .hero-cta, .hero-visual, .hero-badge, .hero-arc-line path').forEach(el =>
+    el.addEventListener('animationend', () => { el.style.animation = 'none'; }, { once: true }));
+
+// Parallax pointer 3 lapis pada hero.
+const scene = document.querySelector('[data-parallax-scene]');
+if (scene && !reduceMotion && matchMedia('(pointer: fine)').matches) {
+    const hero = scene.closest('.home-hero');
+    const layers = [...scene.querySelectorAll('[data-parallax]')];
+    let tx = 0, ty = 0, cx = 0, cy = 0, raf = null;
+    const tick = () => {
+        cx += (tx - cx) * 0.08;
+        cy += (ty - cy) * 0.08;
+        layers.forEach(layer => {
+            const depth = +layer.dataset.parallax;
+            layer.style.transform = `translate3d(${(-cx * depth).toFixed(2)}px, ${(-cy * depth).toFixed(2)}px, 0)`;
+        });
+        raf = (Math.abs(tx - cx) > 0.001 || Math.abs(ty - cy) > 0.001) ? requestAnimationFrame(tick) : null;
+    };
+    hero.addEventListener('pointermove', e => {
+        const r = hero.getBoundingClientRect();
+        tx = (e.clientX - r.left) / r.width - 0.5;
+        ty = (e.clientY - r.top) / r.height - 0.5;
+        if (!raf) raf = requestAnimationFrame(tick);
+    });
+    hero.addEventListener('pointerleave', () => {
+        tx = 0; ty = 0;
+        if (!raf) raf = requestAnimationFrame(tick);
+    });
+}
+
+// Drag-to-pan foto gapura di dalam arch.
+const dragPan = document.querySelector('[data-drag-pan]');
+if (dragPan) {
+    const img = dragPan.querySelector('img');
+    let baseX = 0, baseY = 0, startX = 0, startY = 0, dragging = false;
+    dragPan.addEventListener('pointerdown', e => {
+        dragging = true;
+        startX = e.clientX; startY = e.clientY;
+        dragPan.classList.add('is-dragging');
+        dragPan.setPointerCapture(e.pointerId);
+    });
+    dragPan.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        const x = Math.max(-70, Math.min(70, baseX + (e.clientX - startX) * 0.35));
+        const y = Math.max(-45, Math.min(45, baseY + (e.clientY - startY) * 0.35));
+        img.style.translate = `${x}px ${y}px`;
+        dragPan.dataset.panX = x; dragPan.dataset.panY = y;
+    });
+    const endDrag = () => {
+        if (!dragging) return;
+        dragging = false;
+        dragPan.classList.remove('is-dragging');
+        baseX = +(dragPan.dataset.panX || 0); baseY = +(dragPan.dataset.panY || 0);
+    };
+    dragPan.addEventListener('pointerup', endDrag);
+    dragPan.addEventListener('pointercancel', endDrag);
+}
+
+// Scroll reveal sekali jalan untuk section beranda.
+const revealEls = document.querySelectorAll('[data-reveal]');
+if (revealEls.length && 'IntersectionObserver' in window && !reduceMotion) {
+    revealEls.forEach(el => el.classList.add('reveal-init'));
+    const io = new IntersectionObserver(entries => entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('reveal-in');
+            io.unobserve(entry.target);
+        }
+    }), { threshold: 0.12 });
+    revealEls.forEach(el => io.observe(el));
+}
+
+
 const toggle = document.querySelector('[data-menu-toggle]');
 const menu = document.querySelector('[data-menu]');
 if (toggle && menu) {
