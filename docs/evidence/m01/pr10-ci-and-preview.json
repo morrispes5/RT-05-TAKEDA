@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-10-10",
+  "pullRequest": "https://github.com/morrispes5/RT-05-TAKEDA/pull/10",
+  "headCommit": "1ccc932",
+  "githubActions": {
+    "Repository checks / hygiene": { "run": 38045547706, "result": "pass" },
+    "Website verification / verify": {
+      "run": 38045547743,
+      "result": "pass",
+      "routesExported": 19,
+      "responsiveCases": 95,
+      "a11yCases": 41,
+      "browserErrors": 0
+    }
+  },
+  "vercelPreview": {
+    "deployment": "dpl_7TmjL5n7RZkFdBiQF2uchf558nEQ",
+    "branchAlias": "rt05takeda-git-codex-m01-monorepo-foundation-morrizshkki.vercel.app",
+    "projectRootDirectory": "unchanged (repo root); served via root vercel.json bridge, outputDirectory website/preview",
+    "access": "Vercel Deployment Protection (SSO); checked from owner's logged-in Chrome session",
+    "method": "fetch every file of website/preview (clean URLs) and compare SHA-256 with local build",
+    "filesCompared": 67,
+    "htmlFiles": 20,
+    "exactMatches": 66,
+    "matchesAfterRemovingVercelToolbar": 67,
+    "note": "Root '/' carries Vercel Live feedback script appended by Vercel on preview deployments; content identical after removing that injected tag.",
+    "statusCodes": "66 x 200, unknown route 404",
+    "redirectPengurusKonten": "redirect (opaqueredirect)",
+    "xRobotsTag": "noindex"
+  }
+}

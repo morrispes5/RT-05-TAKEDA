@@ -9,7 +9,7 @@ Paket konteks diimpor ke repository pada M01 (10 Oktober 2026). Belum ada kode A
 | Milestone | Status | Bukti/ketergantungan |
 | --- | --- | --- |
 | M00 | accepted_baseline | Handoff repo menyatakan desain accepted; M01 rerun QA baseline pada 34e9b21 dan dari website/ (lihat M01) |
-| M01 | in_progress | Scope lokal selesai dan teruji; menunggu push/PR untuk gate CI GitHub dan deployment preview Vercel PR |
+| M01 | passed | PR #10: CI hygiene + verify hijau; preview Vercel PR 67/67 file cocok build lokal; lihat M01 |
 | M02 | planned | API/Neon integration belum dilakukan |
 | M03 | planned | Redis/worker/outbox belum dilakukan |
 | M04 | planned | Staging Hostinger belum diinspeksi/deploy |
@@ -30,12 +30,12 @@ M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. 
 
 ## Milestone aktif
 
-M01 — scope lokal selesai; sisa gate eksternal: push branch, CI GitHub, preview Vercel PR. M02 dapat dimulai setelahnya.
+Belum ada. M01 passed (PR #10 menunggu merge pemilik). Berikutnya M02.
 
 ### M01 — Monorepo foundation
 
-- Status: in_progress (semua gate lokal passed; gate CI GitHub dan preview Vercel PR belum dijalankan karena branch belum di-push).
-- Branch/commit/PR: `codex/m01-monorepo-foundation` dari `main` 34e9b212a3948a52e5f705a561691fac10103ae9. Commit: 30e3903 (rename murni 219 file, 100% identik), 8b36540 (adaptasi monorepo), 350390a (perbaikan script paket), commit progress ini. PR: belum dibuat.
+- Status: passed (10 Oktober 2026). Gate lokal, CI GitHub, dan preview Vercel PR terbukti. PR belum di-merge; setelah merge, Root Directory Vercel diubah pemilik (docs/website/VERCEL_ROOT.md).
+- Branch/commit/PR: `codex/m01-monorepo-foundation` dari `main` 34e9b212a3948a52e5f705a561691fac10103ae9. Commit: 30e3903 (rename murni 219 file, 100% identik), 8b36540 (adaptasi monorepo), 350390a (perbaikan script paket), 1ccc932 (progress), commit penutupan ini. PR: https://github.com/morrispes5/RT-05-TAKEDA/pull/10.
 - Tanggal: 10 Oktober 2026.
 - Scope dan FR/BR: FR01 (rute/layout baseline), BR01/BR02 dipertahankan; tidak ada fitur baru.
 - Dependency verified: M00. `git status` bersih di `main`; tag `web-frontend-approved-2026-10-10` = HEAD; branch remote `claude/hopeful-ptolemy-acq64b` tidak memuat commit tambahan; tidak ada perubahan pengguna yang belum di-commit. Repo publik, `main` tanpa branch protection.
@@ -65,15 +65,22 @@ M01 — scope lokal selesai; sisa gate eksternal: push branch, CI GitHub, previe
   | Uji negatif `check-repo.mjs` (DSN berpassword, `.git` bersarang, tautan rusak) | Exit 1, ketiganya tertangkap; dibersihkan |
   | Parse YAML `.github/workflows/*.yml` (paket `yaml` di scratchpad) | Valid; `website.yml` 13 step working-directory `website`; `repo.yml` 3 step |
   | `git log --follow -- website/README.md` | History berlanjut ke commit sebelum migrasi |
+  | `git push -u origin codex/m01-monorepo-foundation`; `gh pr create` | PR #10 dibuat, mergeable/clean |
+  | GitHub Actions run 38045547706 (Repository checks / hygiene) | pass |
+  | GitHub Actions run 38045547743 (Website verification / verify) | pass: 19 rute, 95 responsif, 41 Axe, 0 error browser |
+  | Vercel deployment PR (dpl_7TmjL5n7RZkFdBiQF2uchf558nEQ), Root Directory belum diubah | Ready; dilayani lewat jembatan `vercel.json` root |
+  | Fetch + SHA-256 seluruh 67 file preview PR dari Chrome pemilik (preview dilindungi SSO Vercel) | 66 exact; `/` cocok setelah membuang script toolbar Vercel Live yang disisipkan Vercel; 404 untuk rute tak dikenal; `/pengurus/konten` redirect; `X-Robots-Tag: noindex` |
 
-- Evidence path: `docs/evidence/m01/local-qa.json`, `docs/evidence/m01/live-web-before-migration.json`.
-- Acceptance gates passed: struktur normal tanpa `.git` bersarang; routes/desain unchanged; preview export sesuai source; test web relevan lulus; credential tidak ikut (check-repo); dokumen/prompt dipasang; PROGRESS memuat commit baseline.
-- Acceptance gates blocked/pending: "workflow valid" baru dibuktikan secara sintaks lokal, belum dijalankan di GitHub Actions; preview Vercel untuk branch/PR belum diamati. Keduanya memerlukan push branch (belum dilakukan, menunggu persetujuan pemilik).
+- Evidence path: `docs/evidence/m01/local-qa.json`, `docs/evidence/m01/live-web-before-migration.json`, `docs/evidence/m01/pr10-ci-and-preview.json`.
+- Acceptance gates passed: struktur normal tanpa `.git` bersarang; routes/desain unchanged; preview export sesuai source; test web relevan lulus; workflow valid (dijalankan di GitHub Actions); credential tidak ikut (check-repo); dokumen/prompt dipasang; PROGRESS memuat commit baseline; konfigurasi Vercel eksternal yang belum diubah dicatat terpisah (VERCEL_ROOT.md).
+- Acceptance gates blocked/pending: tidak ada untuk M01. Tindak lanjut di luar gate: merge PR #10, ubah Root Directory Vercel, hapus jembatan `vercel.json` root.
 - Security/finance/privacy implications: tidak ada data warga/credential. `.gitignore` root menolak `.env*`, kunci, signing, dump.
-- External mutation performed dan dasar otorisasi: tidak ada. Hanya baca: GitHub API (branch protection), Vercel API (daftar team/proyek), HTTP GET preview live.
+- External mutation performed dan dasar otorisasi: push branch `codex/m01-monorepo-foundation` dan pembuatan PR #10 atas instruksi langsung pemilik ("push aja terus bikin PR nya"). Tidak ada merge, perubahan setelan Vercel, DNS, atau VPS. Baca saja: GitHub API, Vercel API, HTTP GET preview, fetch preview PR melalui Chrome pemilik.
 - Known limitations:
   - Proyek Vercel preview tidak terlihat dari connector agent pada team `morriz`; Root Directory aktual belum dibaca. Jembatan `vercel.json` root menjaga preview sampai pemilik mengubahnya (docs/website/VERCEL_ROOT.md).
   - Commit 30e3903 sendiri berisi workflow dengan path lama; branch dinilai sebagai satu PR.
+  - Preview PR Vercel memakai Deployment Protection; `scripts/check-live.mjs` dari luar mendapat 302 SSO. Verifikasi preview PR memakai sesi Chrome pemilik. Alias production `rt05takeda.vercel.app` publik dan tetap dapat diperiksa dengan `check-live`.
+  - Connector Vercel agent tidak berizin membaca deployment proyek `morrizshkki/rt05takeda` (403).
   - Flutter SDK belum terpasang (prasyarat M05).
 - ADR/doc updates: ADR11, ADR12, P13, P14; koreksi FRONTEND.md (34e9b21 adalah commit, tree 37510826bfedb447ea572f0b72cd5577f7bd0270).
 - Next milestone: M02 (Laravel API + Neon dev). Tutup M01 setelah push/PR: CI hijau dan preview Vercel PR cocok dengan `check-live`.
@@ -103,7 +110,7 @@ M01 — scope lokal selesai; sisa gate eksternal: push branch, CI GitHub, previe
 
 ## Checkpoint sesi
 
-10 Oktober 2026 (M01): checkout lokal pemilik berada di `Documents/RT X TAKEDA/RT-05-TAKEDA/`; folder induk `RT X TAKEDA/` berisi paket MD asli (tidak di-commit). Branch `codex/m01-monorepo-foundation` belum di-push. Tidak ada migration, image, atau job. Input belum tersedia: credential Neon, akses VPS/DNS (ditawarkan pemilik via Chrome untuk M04), SMTP, FCM, signing key, Flutter SDK.
+10 Oktober 2026 (M01): checkout lokal pemilik berada di `Documents/RT X TAKEDA/RT-05-TAKEDA/`; folder induk `RT X TAKEDA/` berisi paket MD asli (tidak di-commit). Branch `codex/m01-monorepo-foundation` di-push; PR #10 terbuka, CI hijau, belum di-merge. Tidak ada migration, image, atau job. Input belum tersedia: credential Neon, akses VPS/DNS (ditawarkan pemilik via Chrome untuk M04), SMTP, FCM, signing key, Flutter SDK.
 
 Catat Git status, perubahan pengguna yang belum commit, migration yang sudah applied,
 image/tag deploy, jobs pending, dan credential input missing tanpa menuliskan nilainya.

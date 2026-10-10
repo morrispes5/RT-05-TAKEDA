@@ -81,6 +81,6 @@ node infra/scripts/check-repo.mjs
 
 ## Status
 
-Lihat [docs/PROGRESS.md](docs/PROGRESS.md). M00 accepted baseline; M01 dikerjakan pada branch `codex/m01-monorepo-foundation`; M02–M16 planned. Backend, mobile, server, DNS, Neon, Redis, SMTP, FCM, dan backup belum operasional.
+Lihat [docs/PROGRESS.md](docs/PROGRESS.md). M00 accepted baseline; M01 passed (PR #10); M02–M16 planned. Backend, mobile, server, DNS, Neon, Redis, SMTP, FCM, dan backup belum operasional.
 
 Jumlah developer tidak menentukan rancangan. Pekerjaan dapat dibagi per issue/domain, dengan kontrak API serta dependency milestone sebagai acuan bersama.
