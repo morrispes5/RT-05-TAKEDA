@@ -21,8 +21,10 @@ try {
     $manifestPath = Join-Path $outputDir "$name.manifest.json"
     $checksumPath = Join-Path $outputDir "$name.sha256"
 
+    # ls-tree/archive yang dijalankan dari subfolder dibatasi ke prefix folder itu; jalankan dari root repo.
+    $gitTop = (git rev-parse --show-toplevel).Trim()
     $blobs = @{}
-    foreach ($line in @(git ls-tree -r $tree)) {
+    foreach ($line in @(git -C $gitTop ls-tree -r --full-tree $tree)) {
         if ($line -notmatch '^\d+ blob ([a-f0-9]+)\t(.+)$') { throw "Jenis entry Git tidak didukung: $line" }
         $blobId = $Matches[1]
         $filePath = $Matches[2]
@@ -34,7 +36,9 @@ try {
         $blobs[$filePath] = $blobId
     }
     if ($LASTEXITCODE -ne 0) { throw 'Tidak dapat membaca inventaris Git.' }
-    git archive --format=zip --prefix=web/ --output=$zipPath $tree
+    if (-not $blobs.Count) { throw 'Subtree website/ kosong; paket dibatalkan.' }
+    # Arsip tree subfolder tidak membawa .gitattributes root; cegah konversi CRLF agar isi sama dengan blob.
+    git -C $gitTop -c core.autocrlf=false archive --format=zip --prefix=web/ --output=$zipPath $tree
     if ($LASTEXITCODE -ne 0) { throw 'Git archive gagal.' }
 
     Add-Type -AssemblyName System.IO.Compression.FileSystem
