@@ -1,0 +1,164 @@
+<?php
+
+namespace App\Domain\Community;
+
+use App\Models\Agenda;
+use App\Models\Akun;
+use App\Models\AlokasiPembayaran;
+use App\Models\Aspirasi;
+use App\Models\OutboxEvent;
+use App\Models\Pengaduan;
+use App\Models\Pengumuman;
+use App\Models\PermohonanAkun;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+/**
+ * Konsumen outbox → inbox notifikasi (FR20, BR21). Idempotent: UNIQUE(event_id, penerima_id)
+ * sehingga replay event tidak menggandakan notifikasi. Teks aman: tidak memuat identitas pelapor
+ * anonim, data keluarga, atau nominal pribadi rumah lain. Push FCM menyusul (adapter M10).
+ */
+final class Notifications
+{
+    /** Proses event pending dengan lease (SKIP LOCKED) agar beberapa dispatcher aman berjalan. */
+    public static function dispatch(int $limit = 100): int
+    {
+        $processed = 0;
+        // Semua pembanding waktu memakai jam database agar selisih jam host tidak menahan event.
+        $events = DB::transaction(function () use ($limit) {
+            $ids = DB::table('outbox_events')
+                ->whereNull('completed_at')
+                ->whereRaw('available_at <= now()')
+                ->where(fn ($q) => $q->whereNull('dispatch_lease_until')->orWhereRaw('dispatch_lease_until < now()'))
+                ->orderBy('created_at')
+                ->limit($limit)
+                ->lock('for update skip locked')
+                ->pluck('id');
+            DB::table('outbox_events')->whereIn('id', $ids)->update([
+                'dispatch_lease_until' => DB::raw("now() + interval '5 minutes'"),
+                'attempts' => DB::raw('attempts + 1'),
+                'published_at' => DB::raw('now()'),
+            ]);
+
+            return OutboxEvent::whereIn('id', $ids)->orderBy('created_at')->get();
+        });
+
+        foreach ($events as $event) {
+            try {
+                DB::transaction(function () use ($event) {
+                    self::handle($event);
+                    DB::table('outbox_events')->where('id', $event->id)->update(['completed_at' => DB::raw('greatest(now(), created_at)'), 'last_error_code' => null]);
+                });
+                $processed++;
+            } catch (\Throwable $e) {
+                // Event tetap pending; lease habis → dicoba ulang. Simpan kelas error saja (tanpa PII).
+                DB::table('outbox_events')->where('id', $event->id)->update([
+                    'last_error_code' => substr(class_basename($e), 0, 100),
+                    'available_at' => DB::raw("now() + interval '".min(60, 2 ** min($event->attempts, 6))." minutes'"),
+                ]);
+                report($e);
+            }
+        }
+
+        return $processed;
+    }
+
+    public static function handle(OutboxEvent $event): void
+    {
+        $id = $event->aggregate_id;
+        match ($event->type) {
+            'pengaduan.dibuat' => self::toPengurus($event, 'pengaduan', ['pengaduan_id' => $id], 'Pengaduan baru', 'Ada pengaduan baru yang perlu ditindaklanjuti.'),
+            'pengaduan.status_berubah' => ($p = Pengaduan::find($id)) && self::send($event, [$p->pelapor_id], 'pengaduan', ['pengaduan_id' => $id],
+                'Status pengaduan diperbarui', 'Pengaduan "'.Str::limit($p->judul, 60).'" kini berstatus '.self::label($p->status).'.'),
+            'aspirasi.dibuat' => self::toPengurus($event, 'aspirasi', ['aspirasi_id' => $id], 'Aspirasi baru', 'Ada aspirasi baru dari warga.'),
+            'aspirasi.status_berubah' => ($a = Aspirasi::find($id)) && self::send($event, [$a->pengirim_id], 'aspirasi', ['aspirasi_id' => $id],
+                'Status aspirasi diperbarui', 'Aspirasi "'.Str::limit($a->judul, 60).'" kini berstatus '.self::label($a->status).'.'),
+            'pengumuman.terbit' => ($p = Pengumuman::find($id)) && self::send($event, self::activeResidents(), 'pengumuman', ['pengumuman_id' => $id],
+                Str::limit($p->judul, 150), Str::limit(strip_tags($p->isi), 180)),
+            'agenda.dibuat', 'agenda.pengingat' => self::agenda($event),
+            'akun.permohonan_tambahan' => self::toPengurus($event, 'sistem', [], 'Permohonan akun tambahan', 'Ada permohonan akun tambahan yang menunggu persetujuan.'),
+            'akun.permohonan_disetujui' => self::send($event, [$id], 'sistem', [], 'Akun disetujui', 'Akun Anda telah disetujui pengurus. Selamat datang di RT05 TAKEDA.'),
+            'iuran.pembayaran_dicatat' => self::paymentRecorded($event),
+            'iuran.pengingat' => self::send($event, $event->safe_payload['penerima'] ?? [], 'iuran', ['tagihan_id' => $event->safe_payload['tagihan_id'] ?? null],
+                'Pengingat iuran', 'Iuran RT bulan ini belum tercatat. Abaikan bila sudah membayar kepada pengurus.'),
+            default => null,
+        };
+    }
+
+    private static function agenda(OutboxEvent $event): bool
+    {
+        $agenda = Agenda::find($event->aggregate_id);
+        if (! $agenda || $agenda->archived_at) {
+            return false;
+        }
+        $when = $agenda->mulai_at->setTimezone('Asia/Jakarta')->translatedFormat('l, d F Y H:i');
+        $title = $event->type === 'agenda.pengingat' ? 'Pengingat agenda besok' : 'Agenda baru';
+
+        return self::send($event, self::activeResidents(), 'agenda', ['agenda_id' => $agenda->id], $title, Str::limit($agenda->nama, 80).' — '.$when.' WIB, '.Str::limit($agenda->lokasi, 60).'.');
+    }
+
+    private static function paymentRecorded(OutboxEvent $event): bool
+    {
+        $alokasi = AlokasiPembayaran::where('pembayaran_id', $event->aggregate_id)->first();
+        $periods = implode(', ', $event->safe_payload['periode'] ?? []);
+
+        return self::send($event, self::primaryAccountsOf($event->safe_payload['rumah_id'] ?? null), 'iuran', ['tagihan_id' => $alokasi?->tagihan_id],
+            'Pembayaran iuran tercatat', 'Pembayaran iuran periode '.$periods.' telah dicatat pengurus.');
+    }
+
+    private static function toPengurus(OutboxEvent $event, string $jenis, array $context, string $title, string $body): bool
+    {
+        return self::send($event, Akun::where('peran', 'pengurus')->where('status', 'aktif')->pluck('id')->all(), $jenis, $context, $title, $body);
+    }
+
+    /** @param iterable<string> $recipients */
+    public static function send(OutboxEvent $event, iterable $recipients, string $jenis, array $context, string $title, string $body): bool
+    {
+        $rows = collect($recipients)->filter()->unique()->map(fn ($akunId) => array_merge([
+            'id' => (string) Str::uuid(),
+            'event_id' => $event->id,
+            'penerima_id' => $akunId,
+            'jenis' => $jenis,
+            'judul' => $title,
+            'isi' => $body,
+        ], $context))->values();
+        foreach ($rows->chunk(500) as $chunk) {
+            DB::table('notifikasi')->insertOrIgnore($chunk->all());
+        }
+
+        return true;
+    }
+
+    public static function activeResidents(): Collection
+    {
+        return Akun::where('status', 'aktif')->pluck('id');
+    }
+
+    /** Akun utama aktif pada keluarga yang menghuni rumah (penerima pengingat iuran, BR v1). */
+    public static function primaryAccountsOf(?string $rumahId): Collection
+    {
+        if (! $rumahId) {
+            return collect();
+        }
+
+        return DB::table('akun')
+            ->join('warga', 'warga.id', '=', 'akun.warga_id')
+            ->join('penghunian', 'penghunian.keluarga_id', '=', 'warga.keluarga_id')
+            ->where('penghunian.rumah_id', $rumahId)
+            ->whereNull('penghunian.selesai_tanggal')
+            ->where('akun.jenis', 'utama')
+            ->where('akun.status', 'aktif')
+            ->pluck('akun.id');
+    }
+
+    public static function label(string $status): string
+    {
+        return ['diajukan' => 'Diajukan', 'diproses' => 'Diproses', 'ditinjau' => 'Ditinjau', 'selesai' => 'Selesai'][$status] ?? $status;
+    }
+
+    public static function pendingRequests(): int
+    {
+        return PermohonanAkun::where('status', 'diajukan')->count();
+    }
+}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Responses;
 
+use App\Exceptions\DomainConflict;
 use App\Http\Middleware\AssignRequestId;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -59,6 +60,7 @@ final class ApiError
     public static function fromThrowable(Throwable $e, Request $request): JsonResponse
     {
         return match (true) {
+            $e instanceof DomainConflict => self::make($e->status, $e->errorCode, $e->getMessage()),
             $e instanceof ValidationException => self::make(422, fields: $e->errors()),
             $e instanceof AuthenticationException => self::make(401),
             $e instanceof AuthorizationException, $e instanceof AccessDeniedHttpException => self::make(403),
