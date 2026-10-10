@@ -41,10 +41,6 @@
                     <button type="button" data-hero-select="{{ $loop->index }}" aria-label="Lihat foto {{ $foto[$slug]['label'] }}" aria-controls="hero-photo-{{ $loop->index }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}"><span aria-hidden="true"></span></button>
                     @endforeach
                 </div>
-                <button type="button" class="hero-slideshow-toggle" data-hero-toggle aria-label="Jeda pergantian foto">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path data-hero-pause-icon d="M9 5v14M15 5v14"/><path data-hero-play-icon d="m8 5 11 7-11 7z" hidden/></svg>
-                    <span data-hero-toggle-label>Jeda</span>
-                </button>
             </div>
             <div class="hero-badge" data-parallax="46" aria-hidden="true">
                 <svg viewBox="0 0 132 132">

@@ -15,7 +15,7 @@ Tanggal: 10 Oktober 2026, Asia/Jakarta. Sumber: Blade, Tailwind, JavaScript pada
 | Artikel publik | Pencarian judul, kombinasi filter kategori, hasil kosong |
 | Dokumentasi | Tab Kegiatan/Lingkungan, keyboard panah/Home, filter foto, dialog perbesar, berikutnya/Escape |
 | Motion dan zoom | Reduced motion; reflow 720 CSS px setara jendela 1440 px pada zoom 200% |
-| Slideshow Beranda | 4 foto; batas 2.999/3.000 ms, putaran kembali, caption, Jeda/Putar, pilihan foto, keyboard/hover, di luar viewport, reduced motion awal/perubahan preferensi, fallback tanpa JavaScript |
+| Slideshow Beranda | 4 foto; batas 2.999/3.000 ms, putaran kembali, caption, tanpa tombol Jeda/Putar, pilihan foto diikuti autoplay, autoplay saat keyboard/hover, di luar viewport, reduced motion awal/perubahan preferensi, fallback tanpa JavaScript |
 | Artikel Pengurus | Validasi, tambah/urut/hapus bagian, sampul dan sumber, simpan, muat ulang, pratinjau |
 | Album Pengurus | Validasi album kosong/jenis berkas, unggah dua foto, caption/alt, sampul, urut, muat ulang, pratinjau/dialog |
 | Kesalahan simpan | Simulasi QuotaExceededError; isian utuh, peringatan sebelum keluar, dan simpan ulang berhasil |
@@ -27,6 +27,8 @@ Tanggal: 10 Oktober 2026, Asia/Jakarta. Sumber: Blade, Tailwind, JavaScript pada
 `scripts/check-preview.mjs` menyimpan laporan di `artifacts/qa-report.json` dan 95 screenshot halaman/viewport di `artifacts/screenshots/`. Editor berisi data dan hasil draf mempunyai screenshot tambahan. Foto dipaksa selesai decode sebelum screenshot; ini menghindari kotak kosong dari decoding gambar di luar viewport.
 
 Penyempurnaan slideshow pada `codex/hero-photo-slideshow`, 10 Oktober 2026: seluruh 95 kasus responsif, 41 pemeriksaan Axe, 9 tes Laravel/155 assertions, Pint, dan alur editor tetap lulus. `scripts/check-hero-slideshow.mjs` menguji interval dan interaksi slideshow dengan jam browser terkontrol; `heroSlideshow` dalam laporan mencatat hasilnya. Crop dan kontrol keempat foto diperiksa pada 390 dan 1440 px melalui `artifacts/hero-slideshow-contact.png`. Screenshot beranda yang diperbarui di `docs/screenshots/` memakai reduced motion sehingga foto pertama tetap stabil.
+
+Penyesuaian `codex/hero-autoplay-only`: tombol Jeda/Putar beserta CSS dan handler-nya dihapus. Uji slideshow diperbarui untuk memastikan autoplay berlanjut ketika hover, fokus keyboard, dan setelah pilihan manual. Screenshot beranda diperbarui tanpa tombol jeda; reduced motion dan fallback tanpa JavaScript tetap diperiksa.
 
 Screenshot diperiksa untuk crop foto, keterbacaan, jarak, dekorasi, dan konsistensi. Sampel terkurasi tersedia dalam `docs/screenshots/`; seluruh bukti browser diunggah CI sebagai `frontend-evidence`. Pemeriksaan otomatis memakai Chromium; perangkat fisik, Safari/Firefox, screen reader, serta zoom melalui kontrol browser secara manual belum diverifikasi. Reflow diuji melalui ukuran viewport ekuivalen, bukan properti CSS `zoom`.
 
