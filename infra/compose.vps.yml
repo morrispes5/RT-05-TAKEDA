@@ -1,0 +1,25 @@
+# Override untuk VPS Hostinger dengan Coolify: gateway RT05 ditempelkan ke proxy Traefik milik Coolify
+# (jaringan docker "coolify") lewat label, sehingga port 80/443 tetap dipegang Coolify dan service lain
+# tidak terganggu. HTTPS Let's Encrypt diterbitkan Traefik untuk ${RT05_HOST}.
+#   docker compose -p rt05-<env> --env-file env/.env.<env> -f compose.production.yml -f compose.vps.yml up -d
+
+services:
+  gateway:
+    networks: [default, coolify]
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: coolify
+      traefik.http.routers.rt05-${RT05_ENV}-https.rule: Host(`${RT05_HOST}`)
+      traefik.http.routers.rt05-${RT05_ENV}-https.entrypoints: https
+      traefik.http.routers.rt05-${RT05_ENV}-https.tls: "true"
+      traefik.http.routers.rt05-${RT05_ENV}-https.tls.certresolver: letsencrypt
+      traefik.http.routers.rt05-${RT05_ENV}-https.service: rt05-${RT05_ENV}
+      traefik.http.routers.rt05-${RT05_ENV}-http.rule: Host(`${RT05_HOST}`)
+      traefik.http.routers.rt05-${RT05_ENV}-http.entrypoints: http
+      traefik.http.routers.rt05-${RT05_ENV}-http.middlewares: rt05-${RT05_ENV}-redirect
+      traefik.http.middlewares.rt05-${RT05_ENV}-redirect.redirectscheme.scheme: https
+      traefik.http.services.rt05-${RT05_ENV}.loadbalancer.server.port: "80"
+
+networks:
+  coolify:
+    external: true
