@@ -106,11 +106,35 @@ Keputusan: `website/vercel.json` kanonik (`outputDirectory: preview`). `vercel.j
 Alasan: M01 tidak boleh mengubah integrasi Vercel eksternal, tetapi merge ke `main` tidak boleh memutus preview live.
 Penghapusan: setelah Root Directory diubah dan `check-live` lulus, hapus file root dalam PR terpisah. Instruksi: docs/website/VERCEL_ROOT.md.
 
+### ADR13 — Neon: satu project, branch per lingkungan, role runtime via SQL
+
+Tanggal/status: 10 Oktober 2026, diterapkan M02 (dev).
+Keputusan: project Neon `rt05-takeda` (id raspy-sky-23605923, aws-ap-southeast-1, Postgres 17, paket gratis) dibuat atas persetujuan pemilik di sesi M02. Branch `production` (default, kosong sampai M16) dan `dev` (sintetis). Staging dibuat sebagai branch terpisah pada M04. Role `rt05_owner` = pemilik schema/migration (endpoint direct); role `rt05_app` = runtime DML (endpoint pooled), dibuat lewat SQL agar bukan anggota `neon_superuser`. Hak runtime berasal dari satu sumber `infra/sql/grant-runtime-role.sql`.
+Alasan: isolasi data/credential per branch tanpa layanan berbayar; least privilege runtime. Production dapat dipindah ke project terpisah lewat ADR bila kuota/isolasi menuntut.
+Catatan: Neon menolak verifier SCRAM pada CREATE ROLE ("only supports plaintext passwords"); password acak dikirim lewat TLS dan tidak dicetak.
+
+### ADR14 — Pooler Neon tanpa named prepared statement
+
+Tanggal/status: 10 Oktober 2026, diterapkan M02.
+Trigger: `rt05:db-smoke` di endpoint pooled gagal 25P02 — pdo_pgsql mengirim DEALLOCATE SQL yang ditolak PgBouncer mode transaksi.
+Keputusan: `PGSQL_ATTR_DISABLE_PREPARES=true` untuk kedua koneksi; parameter tetap terpisah (PQexecParams), bukan emulasi string. Tes CI memastikan `pg_prepared_statements` tetap 0 pada koneksi direct.
+
+### ADR15 — TLS verify-full dan CA bundle
+
+Tanggal/status: 10 Oktober 2026, diterapkan M02.
+Keputusan: staging/production wajib `sslmode=verify-full` + `sslrootcert`; `/health/ready` (503 misconfigured) dan `rt05:db-smoke` gagal tertutup bila tidak. Parameter URL Neon mengalahkan env, sehingga kebijakan diperiksa pada konfigurasi akhir (`TlsPolicy`). PHP Windows tidak mendukung `sslrootcert=system`; dev Windows memakai salinan CA bundle pada path tanpa spasi.
+Bukti: CA asli tersambung; CA palsu ditolak "certificate verify failed"; tanpa TLS ditolak Neon.
+
+### ADR16 — Tabel users ditunda ke M06
+
+Tanggal/status: 10 Oktober 2026, diterapkan M02.
+Keputusan: migration default Laravel (users/sessions/cache/jobs bigint) dihapus. users UUID dengan role/status dibuat M06; `audit_logs.actor_id` dan `idempotency_requests.actor_id` mendapat FK pada migration M06. Sesi/cache/queue memakai Redis (M03), bukan tabel database.
+
 ## Input operasional yang belum tersedia
 
 | Input | Ditangani pada | Dampak |
 | --- | --- | --- |
-| Neon project/branches/credentials actual | M02/M04 | Local bisa jalan; Neon gate blocked sampai tersedia |
+| Neon project/branches/credentials actual | M02/M04 | Tersedia untuk dev sejak M02 (ADR13); staging/production branch belum dibuat |
 | VPS access/proxy/resources actual | M04 | Images/runbook bisa dibuat; deploy live perlu akses |
 | DNS morriz.tech dan otorisasi record | M04/M16 | Tidak menebak IP atau mengubah apex |
 | SMTP credentials | M06/M10 | Adapter local tersedia; reset real belum passed |

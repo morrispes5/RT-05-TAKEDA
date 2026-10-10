@@ -31,6 +31,8 @@ DB_SSLROOTCERT=<path-ca-bundle-runtime>
 
 Ini template, bukan credential. Laravel tidak otomatis membaca nama custom tersebut: M02 harus memetakan DATABASE_URL pada config/database.php connection pgsql dan DATABASE_URL_UNPOOLED pada connection pgsql_migrations. DB_SSLMODE/root cert dipetakan eksplisit. Migration runner memanggil connection migrations; jangan menimpa env runtime dengan direct URL.
 
+Implementasi M02 (rest-api/config/database.php): kedua koneksi memakai `timezone=UTC`, `application_name` (rt05-api / rt05-migrations), `connect_timeout` dari DB_CONNECT_TIMEOUT, dan named prepares dimatikan untuk pooler (ADR14). Parameter query pada URL (Neon: `sslmode=require`) mengalahkan DB_SSLMODE, jadi URL staging/production harus memuat `sslmode=verify-full` (ADR15). `composer migrate` = `php artisan migrate --database=pgsql_migrations --force`. Hak runtime: `infra/sql/grant-runtime-role.sql` (psql) atau `php artisan rt05:db-grant-runtime-role <role>`.
+
 Role runtime memiliki DML yang diperlukan, bukan superuser/DDL. Role migration terpisah. Website/mobile tidak menerima URL database. Credential direct hanya diberikan kepada migration/backup job/operator, bukan bundle frontend.
 
 ## Tipe dan identitas

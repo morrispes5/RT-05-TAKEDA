@@ -95,6 +95,10 @@ FK transaksi ke user/house tidak ON DELETE CASCADE. Arsip parent tidak menghapus
 
 Total rancangan awal 35 tabel termasuk tabel autentikasi dan failed_jobs. Jumlah ini tidak menjadi sasaran implementasi; tabel tambahan hanya jika requirement nyata. UUID/foreign key di tabel framework mengikuti adapter/model yang kompatibel dengan user UUID.
 
+### Implementasi M02
+
+Dibuat di `rest-api/database/migrations`: `failed_jobs` (driver database-uuids), `audit_logs` (trigger menolak UPDATE/DELETE/TRUNCATE), `outbox_events` (CHECK attempts ≥0, completed ≥ created, partial index pending), `idempotency_requests` (unique actor/route_scope/key, CHECK state processing|completed, hash hex 64, completed wajib response), `system_settings` (CHECK version ≥1, format key). Semua timestamp `timestamptz`, ID UUID dengan default `gen_random_uuid()`. `actor_id`/`updated_by` belum ber-FK sampai tabel users M06. export_requests dibuat bersama ekspor (M12).
+
 ## State media dan ekspor
 
 Media: uploaded → processing → ready atau failed → archived.
