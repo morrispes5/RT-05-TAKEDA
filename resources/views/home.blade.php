@@ -28,10 +28,6 @@
                 <x-foto slug="gapura" :data="$foto['gapura']" :utama="true" sizes="(max-width: 1024px) 92vw, 46vw" />
                 <figcaption><span>Selamat datang di Takeda</span><x-ikon nama="lokasi" /></figcaption>
             </figure>
-            <figure class="hero-tuck" data-parallax="30">
-                <x-foto slug="taman-bermain" :data="$foto['taman-bermain']" sizes="(max-width: 1024px) 40vw, 220px" />
-                <figcaption>Ruang bermain, di bawah rindang pohon.</figcaption>
-            </figure>
             <div class="hero-badge" data-parallax="46" aria-hidden="true">
                 <svg viewBox="0 0 132 132">
                     <defs><path id="badge-circle" d="M66 66 m -46 0 a 46 46 0 1 1 92 0 a 46 46 0 1 1 -92 0"/></defs>
