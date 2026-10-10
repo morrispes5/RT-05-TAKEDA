@@ -10,17 +10,17 @@ Paket konteks diimpor ke repository pada M01 (10 Oktober 2026). Belum ada kode A
 | --- | --- | --- |
 | M00 | accepted_baseline | Handoff repo menyatakan desain accepted; M01 rerun QA baseline pada 34e9b21 dan dari website/ (lihat M01) |
 | M01 | passed | PR #10 merged (02d92a1); production alias rt05takeda.vercel.app 19/19 HTML + 26 aset cocok setelah merge |
-| M02 | passed | PR #11: API foundation, OpenAPI 3.1, CI Postgres 33 tes; Neon dev migration direct + runtime pooled verify-full; lihat M02 |
-| M03 | planned | Redis/worker/outbox belum dilakukan |
-| M04 | planned | Staging Hostinger belum diinspeksi/deploy |
-| M05 | planned | Flutter belum dibuat |
-| M06 | planned | Auth/registrasi belum operasional |
-| M07 | planned | Pendataan/akun tambahan belum operasional |
-| M08 | planned | Pengaduan/media belum operasional |
-| M09 | planned | Aspirasi belum operasional |
-| M10 | planned | Agenda/pengumuman/push belum operasional |
-| M11 | planned | Tagihan/tarif belum operasional |
-| M12 | planned | Payment offline/kas/export belum operasional |
+| M02 | passed | PR #11 merged (321db0d) |
+| M03 | in_progress | Outbox dispatcher + inbox + scheduler + Redis di compose production; queue worker belum diuji di server (PR #12) |
+| M04 | in_progress | Image API/web + gateway + compose Coolify dibangun & smoke di CI; deploy VPS dan DNS belum (lihat sesi 3) |
+| M05 | in_progress | Flutter 3.47.7 app warga/pengurus, 13 tes, analyze bersih; APK via CI; belum diuji di emulator |
+| M06 | in_progress | Registrasi/login/token/approval + tes CI lulus; SMTP reset belum (log) |
+| M07 | in_progress | Rumah/keluarga/akun/permohonan API + layar mobile; tes CI lulus |
+| M08 | in_progress | Pengaduan + foto privat + anonim + status; tes CI lulus |
+| M09 | in_progress | Aspirasi terpisah; tes CI lulus |
+| M10 | in_progress | Agenda/ICS/Google Calendar, pengumuman, inbox; push FCM blocked (tanpa project Firebase) |
+| M11 | in_progress | Tarif/tagihan idempotent/catch-up/transparansi; tes CI lulus |
+| M12 | in_progress | Pembayaran offline/idempotency/pembalikan/koreksi/kas/CSV; tes CI lulus |
 | M13 | planned | CMS API belum operasional |
 | M14 | planned | Website real publication belum terintegrasi |
 | M15 | planned | UAT/full QA belum dilakukan |
@@ -149,6 +149,23 @@ Belum ada. M02 passed (PR #11 menunggu merge). Berikutnya M03 (Redis/worker/outb
 - Known limitations:
 - ADR/doc updates:
 - Next milestone:
+
+### Sesi 3 (10 Oktober 2026) — layanan inti, mobile, artefak deploy
+
+- Instruksi pemilik: kerjakan semampunya lintas milestone (izin VPS/Docker/PC), hemat SSD, desain mobile boleh kolaborasi Google Stitch. Dicatat sebagai P15.
+- Branch `codex/m06-m12-layanan-inti`, PR https://github.com/morrispes5/RT-05-TAKEDA/pull/12 (belum merge).
+- Logbook #1–#4, Tugas 03/04, ERD v1.1 (31 tabel) dibaca dari Google Drive. Tabel domain mengikuti nama ERD v1.1 (ADR17 rencana): akun, token_registrasi, permohonan_akun, rumah, pemilik_rumah, keluarga, warga, penghunian, kategori/pengaduan/foto/riwayat, aspirasi/riwayat, agenda, pengumuman, notifikasi, preferensi, tarif/tagihan/pembayaran/alokasi iuran, transaksi_kas/riwayat. Penyesuaian v1: rupiah bigint, outbox/idempotency/audit_logs.
+- API: 82 route implemented (OpenAPI 1.0.0-m12, 33 planned: konten publik CMS M13/M14, media terpisah, device push, app-version).
+- Bukti:
+  - CI API (Postgres 17, role runtime): 71 tes lulus termasuk identitas, keuangan (snapshot tarif, multi-bulan, parsial ditolak, idempotency replay/409, alokasi ganda ditolak DB, pembalikan sekali, koreksi atomik, ledger immutable), layanan (anonimitas feed/detail/riwayat/notifikasi, edit pemilik, versi 409, foto re-encode & spoof 415, outbox dedup).
+  - Smoke HTTP lokal → Neon dev: 24/24 lulus (login, keluarga, iuran Rp75.000, transparansi tanpa PII, saldo kas 530.000, anonim, 403 warga, akun menunggu, token no-store, AMOUNT_MISMATCH, replay, 409, pembalikan, inbox, Google Calendar).
+  - CI Infra images: compose valid, image API + website build, smoke gateway (/health/live, /api/v1, /profil, 404 JSON) lulus.
+  - Mobile: `flutter analyze` bersih, `flutter test` 13 lulus (lokal); CI build APK debug berjalan.
+- Bug nyata ditemukan & diperbaiki: catch-up tagihan melewatkan bulan berjalan (konversi Asia/Jakarta→UTC); timestamptz(0) membulatkan ke atas sehingga outbox tertahan; FK self-reference sebelum PK; Sanctum provider tidak terdaftar karena --no-scripts.
+- Lingkungan PC: Flutter di C:\Users\USER\dev\flutter (1,4 GB, Android saja). WSL/Docker lokal sengaja TIDAK dipasang (hemat SSD); tes Postgres/Redis/Docker di GitHub CI. Emulator Pixel_8a dinyalakan.
+- Neon dev di-reset (migrate:fresh, branch dev sintetis) dan di-seed `rt05:demo-seed`; password akun demo hanya ada di `/tmp/demo-seed.txt` lokal (Git Bash), tidak di repo.
+- VPS: Hostinger KVM 2 srv2030339.hstgr.cloud 187.77.113.136, Ubuntu 24.04 + Coolify. SSH dari agent ditolak pengaman otomatis; port 8000 (panel Coolify) tidak terjangkau dari luar. DNS morriz.tech: @ → 2.57.91.91, www CNAME; record `takeda` BELUM dibuat (sesi terhenti karena batas pemakaian).
+- Blocked/tersisa: DNS takeda + takeda-staging; deploy Coolify (butuh URL/akses panel Coolify; credential production dimasukkan pemilik sendiri ke Coolify); branch Neon production role rt05_app; SMTP; FCM; signing key rilis; website CMS ke API (M13/M14); UAT.
 
 ## Checkpoint sesi
 
