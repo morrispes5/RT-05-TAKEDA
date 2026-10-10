@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Akun;
 use Closure;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -30,7 +31,7 @@ class DatabaseFoundationTest extends TestCase
 
     private function actor(string $email = 'aktor@contoh.test'): string
     {
-        return AppModelsAkun::firstOrCreate(['email' => $email], ['nama' => 'Uji Aktor', 'password_hash' => 'Rahasia123'])->id;
+        return Akun::firstOrCreate(['email' => $email], ['nama' => 'Uji Aktor', 'password_hash' => 'Rahasia123'])->id;
     }
 
     private function idempotency(array $overrides = []): array
