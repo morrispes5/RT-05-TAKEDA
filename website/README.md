@@ -1,9 +1,9 @@
-# RT 05 Takeda — website publik
+# RT05 TAKEDA — modul website publik (`website/`)
 
 Website informasi RT 05 RW 07 Taman Kedaung, Ciputat. Laravel 13 + Blade + Tailwind CSS 4 + Vite.
 Website publik tidak memerlukan akun. Area pengurus saat ini **pratinjau antarmuka**, bukan sistem operasional.
 
-**Desain diterima pada 10 Oktober 2026.** Mulai dari [serah terima frontend dan monorepo](docs/FRONTEND_HANDOFF.md) untuk melanjutkan dengan agent lain. Paket lengkap tersedia pada [release frontend](https://github.com/morrispes5/RT-05-TAKEDA/releases/tag/web-frontend-approved-2026-10-10), dengan isi folder `web/`, manifest, dan checksum. Aplikasi mobile serta REST API/backend adalah tahap berikutnya.
+**Desain diterima pada 10 Oktober 2026.** Mulai dari [serah terima frontend](../docs/website/FRONTEND_HANDOFF.md) untuk melanjutkan dengan agent lain. Paket lengkap tersedia pada [release frontend](https://github.com/morrispes5/RT-05-TAKEDA/releases/tag/web-frontend-approved-2026-10-10), dengan isi folder `web/`, manifest, dan checksum. Sejak M01 website berada di folder `website/` dalam monorepo; konteks lintas modul ada di [README root](../README.md) dan [docs/](../docs/PRD.md). Semua perintah di bawah dijalankan dari folder `website/`. Folder `website/` bukan prefix URL: rute tetap `/profil`, `/artikel`, dan seterusnya.
 
 ## Menjalankan secara lokal
 PHP 8.3+, Composer, Node.js 22.12+ (atau 24+).
@@ -54,8 +54,13 @@ background dan tanpa database. Output 19 halaman + 404, aset build, dan foto. Se
 cleanUrls pada Vercel, sehingga artikel, album, dan editor dapat dibuka langsung.
 scripts/build-preview.sh adalah wrapper untuk lingkungan Bash.
 
-Workflow GitHub memeriksa bahwa preview/ sesuai sumber. Push PR memicu deployment preview melalui integrasi
+Workflow GitHub (`.github/workflows/website.yml` di root repo) memeriksa bahwa preview/ sesuai sumber. Push PR memicu deployment preview melalui integrasi
 Vercel yang sudah ada; merge main memicu redeploy alias branch utama sesuai konfigurasi proyek Vercel.
+
+Konfigurasi Vercel kanonik adalah `website/vercel.json` (dipakai bila Root Directory proyek Vercel = `website`).
+Selama Root Directory proyek masih root repo, `vercel.json` di root menjadi jembatan transisi dengan
+`outputDirectory: website/preview`. `infra/scripts/check-repo.mjs` memastikan kedua file setara. Langkah
+mengubah Root Directory ada di [docs/website/VERCEL_ROOT.md](../docs/website/VERCEL_ROOT.md).
 
 ## Pemeriksaan
 ```powershell
@@ -87,10 +92,10 @@ Pemeriksaan otomatis tidak menggantikan penilaian manusia atas aksesibilitas ata
 | resources/js/cms-preview.js | Editor dan hasil pratinjau |
 | scripts/export-preview.php | Ekspor semua rute dengan lingkungan tanpa database |
 | scripts/check-preview.mjs | QA browser dan aksesibilitas |
-| docs/FRONTEND_REFACTOR.md | Audit, keputusan produk, sumber, arah desain |
-| docs/CONTENT_PREVIEW.md | Perilaku editor dan arah adapter Laravel |
-| docs/STITCH_SCREENS.md | Inventaris layar Google Stitch |
-| docs/QA_STITCH_PREVIEW.md | Bukti pemeriksaan terbaru |
+| ../docs/website/FRONTEND_REFACTOR.md | Audit, keputusan produk, sumber, arah desain |
+| ../docs/website/CONTENT_PREVIEW.md | Perilaku editor dan arah adapter Laravel |
+| ../docs/website/STITCH_SCREENS.md | Inventaris layar Google Stitch |
+| ../docs/website/QA_STITCH_PREVIEW.md | Bukti pemeriksaan terbaru |
 
 ## Media dan konten
 Hanya foto asli dalam katalog repo yang digunakan. WebP memiliki varian 480/960/1600 sesuai manifest;

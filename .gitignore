@@ -1,0 +1,23 @@
+# Root monorepo. Aturan per modul ada di website/.gitignore dan (nanti) mobile/, rest-api/.
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+!.env.example
+/artifacts
+/.idea
+/.vscode
+/.codex
+/.cursor/
+/.zed
+node_modules/
+vendor/
+# Kunci, dump, dan berkas signing tidak pernah di-commit.
+*.pem
+*.jks
+*.keystore
+key.properties
+*.sql
+*.sql.gz
+*.dump

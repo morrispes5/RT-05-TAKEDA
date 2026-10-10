@@ -1,4 +1,5 @@
 param([string]$Revision = 'HEAD')
+# Mengarsipkan subtree website/ dari commit monorepo menjadi ZIP berawalan web/.
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
@@ -9,7 +10,8 @@ try {
     if ($dirty.Count) { throw 'Commit atau rapikan perubahan terlebih dahulu; paket harus berasal dari checkout bersih.' }
     $commit = (git rev-parse --verify "${Revision}^{commit}").Trim()
     if ($LASTEXITCODE -ne 0) { throw 'Commit sumber tidak ditemukan.' }
-    $tree = (git rev-parse "${commit}^{tree}").Trim()
+    $tree = (git rev-parse "${commit}:website").Trim()
+    if ($LASTEXITCODE -ne 0) { throw 'Folder website/ tidak ada pada commit sumber.' }
     $date = (git show -s --format=%cs $commit).Trim()
     $shortCommit = $commit.Substring(0, 8)
     $name = "RT05_TAKEDA_WEB_FRONTEND_${date}_${shortCommit}"
@@ -20,7 +22,7 @@ try {
     $checksumPath = Join-Path $outputDir "$name.sha256"
 
     $blobs = @{}
-    foreach ($line in @(git ls-tree -r --full-tree $commit)) {
+    foreach ($line in @(git ls-tree -r $tree)) {
         if ($line -notmatch '^\d+ blob ([a-f0-9]+)\t(.+)$') { throw "Jenis entry Git tidak didukung: $line" }
         $blobId = $Matches[1]
         $filePath = $Matches[2]
@@ -32,7 +34,7 @@ try {
         $blobs[$filePath] = $blobId
     }
     if ($LASTEXITCODE -ne 0) { throw 'Tidak dapat membaca inventaris Git.' }
-    git archive --format=zip --prefix=web/ --output=$zipPath $commit
+    git archive --format=zip --prefix=web/ --output=$zipPath $tree
     if ($LASTEXITCODE -ne 0) { throw 'Git archive gagal.' }
 
     Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -69,6 +71,7 @@ try {
         designAccepted = '2026-10-10'
         designBaseline = '0658d5d4351eb6d1409baab5835cdc5e137533db'
         sourceCommit = $commit
+        sourcePath = 'website'
         sourceTree = $tree
         archive = "$name.zip"
         archiveSha256 = $archiveHash
