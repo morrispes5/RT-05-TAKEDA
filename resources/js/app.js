@@ -1,3 +1,5 @@
+import { setupHeroSlideshow } from './hero-slideshow';
+
 document.documentElement.classList.add('js');
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -6,7 +8,7 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.querySelectorAll('.hero-copy > p, .hero-cta, .hero-visual, .hero-badge, .hero-arc-line path').forEach(el =>
     el.addEventListener('animationend', () => { el.style.animation = 'none'; }, { once: true }));
 
-// Parallax pointer 3 lapis pada hero.
+// Parallax pointer pada foto dan badge hero.
 const scene = document.querySelector('[data-parallax-scene]');
 if (scene && !reduceMotion && matchMedia('(pointer: fine)').matches) {
     const hero = scene.closest('.home-hero');
@@ -33,33 +35,7 @@ if (scene && !reduceMotion && matchMedia('(pointer: fine)').matches) {
     });
 }
 
-// Drag-to-pan foto gapura di dalam arch.
-const dragPan = document.querySelector('[data-drag-pan]');
-if (dragPan && !reduceMotion && matchMedia('(pointer: fine)').matches) {
-    const img = dragPan.querySelector('img');
-    let baseX = 0, baseY = 0, startX = 0, startY = 0, dragging = false;
-    dragPan.addEventListener('pointerdown', e => {
-        dragging = true;
-        startX = e.clientX; startY = e.clientY;
-        dragPan.classList.add('is-dragging');
-        dragPan.setPointerCapture(e.pointerId);
-    });
-    dragPan.addEventListener('pointermove', e => {
-        if (!dragging) return;
-        const x = Math.max(-70, Math.min(70, baseX + (e.clientX - startX) * 0.35));
-        const y = Math.max(-45, Math.min(45, baseY + (e.clientY - startY) * 0.35));
-        img.style.translate = `${x}px ${y}px`;
-        dragPan.dataset.panX = x; dragPan.dataset.panY = y;
-    });
-    const endDrag = () => {
-        if (!dragging) return;
-        dragging = false;
-        dragPan.classList.remove('is-dragging');
-        baseX = +(dragPan.dataset.panX || 0); baseY = +(dragPan.dataset.panY || 0);
-    };
-    dragPan.addEventListener('pointerup', endDrag);
-    dragPan.addEventListener('pointercancel', endDrag);
-}
+setupHeroSlideshow(document.querySelector('[data-hero-slideshow]'));
 
 // Scroll reveal sekali jalan untuk section beranda.
 const revealEls = document.querySelectorAll('[data-reveal]');
