@@ -32,6 +32,10 @@ $pgsql = fn (?string $url, string $appName) => [
     'options' => [
         // pdo_pgsql memetakan ATTR_TIMEOUT ke libpq connect_timeout (detik).
         PDO::ATTR_TIMEOUT => (int) env('DB_CONNECT_TIMEOUT', 5),
+        // Pooler Neon (PgBouncer mode transaksi) menolak DEALLOCATE SQL yang dikirim pdo_pgsql untuk
+        // named prepared statement, sehingga transaksi gugur (25P02). Nonaktifkan named prepares;
+        // parameter tetap dikirim terpisah lewat PQexecParams, bukan emulasi string.
+        (defined('Pdo\Pgsql::ATTR_DISABLE_PREPARES') ? Pdo\Pgsql::ATTR_DISABLE_PREPARES : PDO::PGSQL_ATTR_DISABLE_PREPARES) => true,
     ],
 ];
 

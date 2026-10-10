@@ -130,8 +130,10 @@ class DatabaseFoundationTest extends TestCase
     public function test_db_smoke_command_passes_on_runtime_connection(): void
     {
         $exit = Artisan::call('rt05:db-smoke', ['--connection' => 'pgsql']);
+        $output = Artisan::output();
 
-        $this->assertSame(0, $exit, Artisan::output());
-        $this->assertStringContainsString('denied', Artisan::output());
+        $this->assertSame(0, $exit, $output);
+        $this->assertStringContainsString('denied', $output);
+        $this->assertStringNotContainsString('local-dev-only', $output);
     }
 }

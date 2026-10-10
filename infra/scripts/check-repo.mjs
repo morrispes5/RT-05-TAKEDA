@@ -23,7 +23,8 @@ const forbidden = [
     [/(^|\/)storage\/[^/]*\.key$/],
     [/(^|\/)(key\.properties|auth\.json|google-services\.json|GoogleService-Info\.plist)$/],
     [/service[-_]?account[^/]*\.json$/i],
-    [/\.sql(\.gz)?$/i],
+    // Dump/backup SQL dilarang; SQL skema/role sumber di infra/sql dan init Postgres lokal diizinkan.
+    [/\.sql(\.gz)?$/i, f => !/^infra\/(sql|docker\/postgres\/init)\/[^/]+\.sql$/.test(f)],
 ];
 for (const f of files) {
     for (const [pattern, extra] of forbidden) {
