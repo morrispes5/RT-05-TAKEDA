@@ -1,0 +1,16 @@
+{
+  "url": "https://rt05takeda.vercel.app",
+  "verifiedAt": "2026-10-10T08:28:10.460Z",
+  "heroSlideshow": {
+    "intervalMs": 3000,
+    "photos": 4,
+    "timing": "PASS",
+    "wraparound": "PASS",
+    "noPauseButton": "PASS",
+    "selectThenAutoplay": "PASS",
+    "keyboardAndHoverAutoplay": "PASS",
+    "offscreen": "PASS",
+    "reducedMotion": "PASS",
+    "noJavaScript": "PASS"
+  }
+}
