@@ -1,0 +1,508 @@
+{
+  "routes": 19,
+  "responsiveCases": 95,
+  "a11yCases": 41,
+  "internalLinks": 33,
+  "browserErrors": [],
+  "interactions": "PASS",
+  "contentPreview": {
+    "article": "PASS",
+    "album": "PASS",
+    "persistence": "PASS",
+    "isolation": "PASS",
+    "failedSaveRecovery": "PASS",
+    "textSafety": "PASS",
+    "reset": "PASS",
+    "networkWrites": 0,
+    "a11yCases": 3
+  },
+  "heroSlideshow": {
+    "intervalMs": 3000,
+    "photos": 4,
+    "timing": "PASS",
+    "wraparound": "PASS",
+    "noPauseButton": "PASS",
+    "selectThenAutoplay": "PASS",
+    "keyboardAndHoverAutoplay": "PASS",
+    "offscreen": "PASS",
+    "reducedMotion": "PASS",
+    "noJavaScript": "PASS"
+  },
+  "results": [
+    {
+      "route": "/artikel",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/dokumentasi",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/fasilitas",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/kontak",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/pengurus",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/profil",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/artikel",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/dokumentasi",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/masuk",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/pratinjau",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/dokumentasi/editor",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/artikel/editor",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/dokumentasi/perayaan-17-agustus",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/artikel/bertetangga-dengan-peduli",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/artikel/cara-mencuci-tangan",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/artikel/memilah-sampah-rumah",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/artikel/menjaga-aliran-air",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/artikel/merawat-fasilitas-bersama",
+      "width": 360,
+      "passed": true
+    },
+    {
+      "route": "/artikel",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/dokumentasi",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/fasilitas",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/kontak",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/pengurus",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/profil",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/artikel",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/dokumentasi",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/masuk",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/pratinjau",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/dokumentasi/editor",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/artikel/editor",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/dokumentasi/perayaan-17-agustus",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/artikel/bertetangga-dengan-peduli",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/artikel/cara-mencuci-tangan",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/artikel/memilah-sampah-rumah",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/artikel/menjaga-aliran-air",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/artikel/merawat-fasilitas-bersama",
+      "width": 390,
+      "passed": true
+    },
+    {
+      "route": "/artikel",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/dokumentasi",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/fasilitas",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/kontak",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/pengurus",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/profil",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/artikel",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/dokumentasi",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/masuk",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/pratinjau",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/dokumentasi/editor",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/artikel/editor",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/dokumentasi/perayaan-17-agustus",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/artikel/bertetangga-dengan-peduli",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/artikel/cara-mencuci-tangan",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/artikel/memilah-sampah-rumah",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/artikel/menjaga-aliran-air",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/artikel/merawat-fasilitas-bersama",
+      "width": 768,
+      "passed": true
+    },
+    {
+      "route": "/artikel",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/dokumentasi",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/fasilitas",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/kontak",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/pengurus",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/profil",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/artikel",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/dokumentasi",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/masuk",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/pratinjau",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/dokumentasi/editor",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/artikel/editor",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/dokumentasi/perayaan-17-agustus",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/artikel/bertetangga-dengan-peduli",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/artikel/cara-mencuci-tangan",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/artikel/memilah-sampah-rumah",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/artikel/menjaga-aliran-air",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/artikel/merawat-fasilitas-bersama",
+      "width": 1024,
+      "passed": true
+    },
+    {
+      "route": "/artikel",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/dokumentasi",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/fasilitas",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/kontak",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/pengurus",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/profil",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/artikel",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/dokumentasi",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/masuk",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/pratinjau",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/dokumentasi/editor",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/pengurus/artikel/editor",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/dokumentasi/perayaan-17-agustus",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/artikel/bertetangga-dengan-peduli",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/artikel/cara-mencuci-tangan",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/artikel/memilah-sampah-rumah",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/artikel/menjaga-aliran-air",
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "route": "/artikel/merawat-fasilitas-bersama",
+      "width": 1440,
+      "passed": true
+    }
+  ]
+}

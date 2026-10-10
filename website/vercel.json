@@ -2,7 +2,7 @@
   "framework": null,
   "installCommand": "echo skip",
   "buildCommand": "echo skip",
-  "outputDirectory": "website/preview",
+  "outputDirectory": "preview",
   "cleanUrls": true,
   "redirects": [{ "source": "/pengurus/konten", "destination": "/pengurus", "permanent": false }],
   "headers": [
