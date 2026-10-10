@@ -1,0 +1,55 @@
+name: Infra images
+on:
+  pull_request:
+    paths:
+      - 'infra/**'
+      - 'rest-api/**'
+      - 'website/**'
+      - '.github/workflows/infra.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - 'rest-api/**'
+      - 'website/**'
+      - '.github/workflows/infra.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validasi compose production + override VPS
+        env:
+          API_APP_KEY: x
+          WEB_APP_KEY: x
+          APP_URL: https://example.test
+          DATABASE_URL: x
+          DATABASE_URL_UNPOOLED: x
+          RT05_ENV: ci
+          RT05_HOST: example.test
+        run: |
+          docker compose -f infra/compose.production.yml config --quiet
+          docker compose -f infra/compose.production.yml -f infra/compose.vps.yml config > /tmp/merged.yml
+          grep -q 'rt05-ci-https.rule' /tmp/merged.yml && grep -q 'example.test' /tmp/merged.yml
+          bash -n infra/scripts/deploy-vps.sh
+      - name: Build image API
+        run: docker build -f infra/docker/api.Dockerfile -t rt05-api:ci .
+      - name: Build image website
+        run: docker build -f infra/docker/web.Dockerfile -t rt05-web:ci .
+      - name: Smoke image (tanpa database)
+        run: |
+          docker network create rt05ci
+          docker run -d --name web --network rt05ci -e APP_KEY=base64:$(openssl rand -base64 32) -e APP_URL=http://localhost rt05-web:ci
+          docker run -d --name api --network rt05ci -e APP_KEY=base64:$(openssl rand -base64 32) -e APP_URL=http://localhost \
+            -e DATABASE_URL=postgresql://u:p@127.0.0.1:1/x -e CACHE_STORE=array -e SESSION_DRIVER=array -e QUEUE_CONNECTION=sync rt05-api:ci
+          docker run -d --name gateway --network rt05ci -p 8080:80 -v $PWD/infra/docker/gateway.Caddyfile:/etc/caddy/Caddyfile:ro caddy:2-alpine
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8080/health/live && break; sleep 2; done
+          echo; curl -fsS http://127.0.0.1:8080/api/v1 | tee /tmp/api.json; echo
+          grep -q '"api_version":"v1"' /tmp/api.json
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/health/ready); echo "ready=$code"; test "$code" = "503"
+          curl -fsS http://127.0.0.1:8080/profil -o /tmp/profil.html && grep -q 'Agus Ferdiansyah' /tmp/profil.html && echo "website /profil OK"
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/api/v1/tidak-ada); echo "api 404=$code"; test "$code" = "404"
+      - if: failure()
+        run: docker logs api; docker logs web; docker logs gateway

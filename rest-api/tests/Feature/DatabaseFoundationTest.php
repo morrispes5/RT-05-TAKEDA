@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Akun;
 use Closure;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -28,10 +29,15 @@ class DatabaseFoundationTest extends TestCase
         }
     }
 
+    private function actor(string $email = 'aktor@contoh.test'): string
+    {
+        return Akun::firstOrCreate(['email' => $email], ['nama' => 'Uji Aktor', 'password_hash' => 'Rahasia123'])->id;
+    }
+
     private function idempotency(array $overrides = []): array
     {
         return array_merge([
-            'actor_id' => (string) Str::uuid(),
+            'actor_id' => $this->actor(),
             'route_scope' => 'dues-payments.store',
             'key' => (string) Str::uuid(),
             'request_hash' => hash('sha256', 'payload'),
@@ -112,7 +118,7 @@ class DatabaseFoundationTest extends TestCase
 
         // Key sama untuk scope lain atau actor lain diperbolehkan.
         DB::table('idempotency_requests')->insert(array_merge($row, ['route_scope' => 'cash.store']));
-        DB::table('idempotency_requests')->insert(array_merge($row, ['actor_id' => (string) Str::uuid()]));
+        DB::table('idempotency_requests')->insert(array_merge($row, ['actor_id' => $this->actor('lain@contoh.test')]));
         $this->assertSame(3, DB::table('idempotency_requests')->where('key', $row['key'])->count());
     }
 
