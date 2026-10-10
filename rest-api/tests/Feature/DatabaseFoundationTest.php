@@ -49,6 +49,16 @@ class DatabaseFoundationTest extends TestCase
         $this->assertFalse((bool) DB::selectOne('select rolsuper from pg_roles where rolname = current_user')->rolsuper);
     }
 
+    public function test_no_named_prepared_statements_so_neon_pooler_is_safe(): void
+    {
+        // Pooler Neon (PgBouncer mode transaksi) gagal saat pdo_pgsql mengirim DEALLOCATE.
+        foreach (range(1, 3) as $i) {
+            DB::select('select ? as n', [$i]);
+        }
+
+        $this->assertSame(0, DB::selectOne('select count(*) as n from pg_prepared_statements')->n);
+    }
+
     public function test_runtime_role_cannot_run_ddl(): void
     {
         $this->assertSqlState('42501', fn () => DB::statement('create table rt05_ddl_probe (id int)'));
