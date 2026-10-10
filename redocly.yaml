@@ -1,0 +1,7 @@
+# Konfigurasi lint docs/openapi.yaml (npx @redocly/cli lint docs/openapi.yaml).
+extends:
+  - recommended
+rules:
+  # Endpoint planned memakai respons error `default` sampai milestone-nya; health tidak punya 4xx.
+  # Endpoint implemented tetap diuji bentuk error-nya oleh OpenApiContractTest.
+  operation-4xx-response: off
