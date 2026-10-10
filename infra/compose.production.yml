@@ -1,0 +1,104 @@
+# Production/staging RT05 TAKEDA untuk Coolify (Docker Compose dari repo GitHub).
+# Domain Coolify diarahkan HANYA ke service "gateway" (port 80): takeda.morriz.tech / takeda-staging.morriz.tech.
+# Semua nilai ${...} diisi di Coolify → Environment Variables (lihat infra/env/production.env.example).
+# Redis/API/web tidak dipublikasikan ke internet; hanya gateway yang menerima trafik dari proxy Coolify.
+
+services:
+  gateway:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    volumes:
+      - ./docker/gateway.Caddyfile:/etc/caddy/Caddyfile:ro
+      - apk-downloads:/srv/unduh:ro
+    depends_on: [api, web]
+    expose: ["80"]
+
+  api: &api
+    build:
+      context: ..
+      dockerfile: infra/docker/api.Dockerfile
+    restart: unless-stopped
+    environment: &api-env
+      APP_NAME: "RT05 TAKEDA API"
+      APP_ENV: ${APP_ENV:-production}
+      APP_KEY: ${API_APP_KEY}
+      APP_URL: ${APP_URL}
+      APP_TIMEZONE: UTC
+      DB_CONNECTION: pgsql
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_UNPOOLED: ${DATABASE_URL_UNPOOLED}
+      DB_SSLMODE: verify-full
+      DB_SSLROOTCERT: /etc/ssl/certs/ca-certificates.crt
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PREFIX: ${REDIS_PREFIX:-rt05prod_}
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: redis
+      TRUSTED_PROXIES: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@takeda.morriz.tech}
+    volumes:
+      - api-storage:/app/storage/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    expose: ["80"]
+
+  worker:
+    <<: *api
+    command: ["php", "artisan", "queue:work", "redis", "--sleep=3", "--tries=3", "--max-time=3600"]
+    healthcheck:
+      disable: true
+    expose: []
+
+  scheduler:
+    <<: *api
+    command: ["php", "artisan", "schedule:work"]
+    healthcheck:
+      disable: true
+    expose: []
+
+  # Sekali jalan per deploy: migration additive lewat endpoint direct, lalu hak role runtime.
+  migrate:
+    <<: *api
+    restart: "no"
+    command: ["sh", "-c", "php artisan migrate --database=pgsql_migrations --force && php artisan rt05:db-grant-runtime-role ${DB_RUNTIME_ROLE:-rt05_app}"]
+    healthcheck:
+      disable: true
+    expose: []
+    exclude_from_hc: true
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/docker/web.Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_NAME: "RT 05 Takeda"
+      APP_KEY: ${WEB_APP_KEY}
+      APP_URL: ${APP_URL}
+      APP_LOCALE: id
+    expose: ["80"]
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  api-storage:
+  redis-data:
+  apk-downloads:
