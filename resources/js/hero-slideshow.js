@@ -3,23 +3,18 @@ export function setupHeroSlideshow(root) {
     const slides = [...root.querySelectorAll('[data-hero-slide]')];
     const choices = [...root.querySelectorAll('[data-hero-select]')];
     const controls = root.querySelector('[data-hero-controls]');
-    const toggle = root.querySelector('[data-hero-toggle]');
     const caption = root.querySelector('[data-hero-caption]');
     const motion = matchMedia('(prefers-reduced-motion: reduce)');
-    let index = 0, paused = motion.matches, hovered = false, visible = true, timer;
+    let index = 0, visible = true, timer;
+    const failed = new Set();
 
     // Load the other photos ahead of time; keep the current photo if a file fails.
     slides.forEach(slide => { slide.querySelector('img').loading = 'eager'; });
-    const updateToggle = () => {
-        toggle.setAttribute('aria-label', paused ? 'Putar pergantian foto' : 'Jeda pergantian foto');
-        toggle.querySelector('[data-hero-toggle-label]').textContent = paused ? 'Putar' : 'Jeda';
-        toggle.querySelector('[data-hero-pause-icon]').toggleAttribute('hidden', paused);
-        toggle.querySelector('[data-hero-play-icon]').toggleAttribute('hidden', !paused);
-    };
     const schedule = () => {
         clearTimeout(timer);
-        if (!paused && !hovered && visible && !document.hidden) {
-            timer = setTimeout(() => { show((index + 1) % slides.length, true); }, 3000);
+        if (!motion.matches && visible && !document.hidden) {
+            const next = Array.from({ length: slides.length - 1 }, (_, i) => (index + i + 1) % slides.length).find(i => !failed.has(i));
+            if (next !== undefined) timer = setTimeout(() => { show(next, true); }, 3000);
         }
     };
     let request = 0;
@@ -30,12 +25,13 @@ export function setupHeroSlideshow(root) {
             await slides[next].querySelector('img').decode();
         } catch {
             if (currentRequest !== request) return;
-            paused = true;
-            updateToggle();
+            failed.add(next);
+            schedule();
             return;
         }
         if (currentRequest !== request) return;
-        if (automatic && (paused || hovered || !visible || document.hidden)) { schedule(); return; }
+        if (automatic && (motion.matches || !visible || document.hidden)) { schedule(); return; }
+        failed.delete(next);
         index = next;
         slides.forEach((slide, i) => {
             slide.classList.toggle('is-active', i === index);
@@ -45,36 +41,10 @@ export function setupHeroSlideshow(root) {
         caption.textContent = slides[index].dataset.caption;
         schedule();
     };
-    const pause = () => {
-        paused = true;
-        ++request; // Cancel any photo still decoding.
-        clearTimeout(timer);
-        updateToggle();
-    };
-    choices.forEach((button, i) => button.addEventListener('click', () => { pause(); show(i); }));
-    toggle.addEventListener('click', () => {
-        if (!paused) { pause(); return; }
-        paused = false;
-        updateToggle();
-        schedule();
-    });
-    // Keyboard interaction stops autoplay until the visitor explicitly presses Putar.
-    root.addEventListener('focusin', event => {
-        // Mouse focus on Jeda must not turn the same click into Putar.
-        if (event.target !== toggle || toggle.matches(':focus-visible')) pause();
-    });
-    root.addEventListener('pointerenter', e => {
-        if (e.pointerType !== 'mouse') return;
-        hovered = true;
-        clearTimeout(timer);
-    });
-    root.addEventListener('pointerleave', e => {
-        if (e.pointerType !== 'mouse') return;
-        hovered = false;
-        schedule();
-    });
+    // Selecting a photo restarts its 3-second interval without stopping autoplay.
+    choices.forEach((button, i) => button.addEventListener('click', () => { show(i); }));
     document.addEventListener('visibilitychange', schedule);
-    motion.addEventListener('change', () => { if (motion.matches) pause(); });
+    motion.addEventListener('change', schedule);
     if ('IntersectionObserver' in window) {
         new IntersectionObserver(([entry]) => {
             if (visible === entry.isIntersecting) return;
@@ -83,6 +53,5 @@ export function setupHeroSlideshow(root) {
         }, { threshold: 0 }).observe(root.querySelector('.hero-arch'));
     }
     controls.hidden = false;
-    updateToggle();
     schedule();
 }

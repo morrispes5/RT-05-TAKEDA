@@ -9,6 +9,3 @@
 .hero-slide-choices span { width:8px; height:8px; border:1px solid var(--navy); border-radius:50%; background:transparent; transition:width .2s var(--ease),background-color .2s var(--ease); }
 .hero-slide-choices [aria-pressed="true"] span { width:24px; border-radius:8px; background:var(--navy); }
 .hero-slide-choices button:hover { background:#123e650a; }
-.hero-slideshow-toggle { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-width:92px; min-height:48px; padding:8px 12px; border:1px solid var(--line); border-radius:24px; color:var(--navy); background:white; font-size:14px; font-weight:600; }
-.hero-slideshow-toggle svg { width:18px; height:18px; }
-.hero-slideshow-toggle:hover { border-color:var(--navy); }
