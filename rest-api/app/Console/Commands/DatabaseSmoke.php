@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Support\Database\TlsPolicy;
 use Illuminate\Console\Command;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\ConfigurationUrlParser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Throwable;
@@ -68,7 +69,7 @@ class DatabaseSmoke extends Command
                 }
             }
         } catch (Throwable $e) {
-            $failures[] = 'tulis/baca sintetis gagal: '.$e::class;
+            $failures[] = 'tulis/baca sintetis gagal: '.$e::class.' SQLSTATE '.$e->getCode();
         } finally {
             if ($db->transactionLevel() > 0) {
                 $db->rollBack();
@@ -77,7 +78,9 @@ class DatabaseSmoke extends Command
 
         $leftover = $db->selectOne('select count(*) as n from system_settings where key = ?', [$key])->n;
         $tls = TlsPolicy::effective($name);
-        $pooled = str_contains((string) $db->getConfig('host'), '-pooler');
+        $host = (string) (new ConfigurationUrlParser)->parseConfiguration($db->getConfig())['host'];
+        $pooled = str_contains($host, '-pooler');
+        $neon = str_ends_with($host, '.neon.tech');
 
         $this->table(['Pemeriksaan', 'Hasil'], [
             ['connection', $name],
@@ -86,7 +89,9 @@ class DatabaseSmoke extends Command
             ['database', $info->database],
             ['application_name', $info->application_name],
             ['endpoint', $pooled ? 'pooled' : 'direct/lokal'],
-            ['ssl', $info->ssl ? 'on ('.$info->tls_version.')' : 'off'],
+            // Neon mengakhiri TLS di proxy/pooler, sehingga pg_stat_ssl melihat koneksi internal ke
+            // compute. TLS client→Neon dijamin libpq oleh sslmode (verify-full menolak sertifikat salah).
+            ['ssl (sisi server)', $info->ssl ? 'on ('.$info->tls_version.')' : ($neon ? 'n/a (TLS diakhiri proxy Neon)' : 'off')],
             ['sslmode efektif', $tls['sslmode']],
             ['tulis+baca dalam transaksi', $readBack !== null ? 'ok' : 'gagal'],
             ['baris tersisa setelah rollback', (string) $leftover],

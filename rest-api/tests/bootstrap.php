@@ -7,6 +7,7 @@
 */
 
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Foundation\Bootstrap\HandleExceptions;
 use Illuminate\Support\ConfigurationUrlParser;
 
 require __DIR__.'/../vendor/autoload.php';
@@ -32,3 +33,5 @@ if (getenv('RT05_SKIP_TEST_MIGRATIONS') !== '1') {
 }
 
 $app->flush();
+// Kembalikan error/exception handler global agar PHPUnit tidak menandai tes sebagai risky.
+HandleExceptions::flushState();
