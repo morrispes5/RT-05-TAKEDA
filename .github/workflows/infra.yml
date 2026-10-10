@@ -20,13 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validasi compose production (Coolify)
+      - name: Validasi compose production + override VPS
+        env:
+          API_APP_KEY: x
+          WEB_APP_KEY: x
+          APP_URL: https://example.test
+          DATABASE_URL: x
+          DATABASE_URL_UNPOOLED: x
+          RT05_ENV: ci
+          RT05_HOST: example.test
         run: |
-          # exclude_from_hc adalah kunci khusus Coolify; dihapus untuk validasi docker compose biasa.
-          sed '/exclude_from_hc/d' infra/compose.production.yml > /tmp/compose.yml
-          cp -r infra/docker /tmp/docker
-          API_APP_KEY=x WEB_APP_KEY=x APP_URL=https://example.test DATABASE_URL=x DATABASE_URL_UNPOOLED=x \
-            docker compose -f /tmp/compose.yml config --quiet
+          docker compose -f infra/compose.production.yml config --quiet
+          docker compose -f infra/compose.production.yml -f infra/compose.vps.yml config > /tmp/merged.yml
+          grep -q 'rt05-ci-https.rule' /tmp/merged.yml && grep -q 'example.test' /tmp/merged.yml
+          bash -n infra/scripts/deploy-vps.sh
       - name: Build image API
         run: docker build -f infra/docker/api.Dockerfile -t rt05-api:ci .
       - name: Build image website

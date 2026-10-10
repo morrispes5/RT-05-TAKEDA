@@ -72,7 +72,6 @@ services:
     healthcheck:
       disable: true
     expose: []
-    exclude_from_hc: true
 
   web:
     build:
