@@ -3,6 +3,8 @@
 Website informasi RT 05 RW 07 Taman Kedaung, Ciputat. Laravel 13 + Blade + Tailwind CSS 4 + Vite.
 Website publik tidak memerlukan akun. Area pengurus saat ini **pratinjau antarmuka**, bukan sistem operasional.
 
+**Desain diterima pada 10 Oktober 2026.** Mulai dari [serah terima frontend dan monorepo](docs/FRONTEND_HANDOFF.md) untuk melanjutkan dengan agent lain. Paket lengkap tersedia pada [release frontend](https://github.com/morrispes5/RT-05-TAKEDA/releases/tag/web-frontend-approved-2026-10-10), dengan isi folder `web/`, manifest, dan checksum. Aplikasi mobile serta REST API/backend adalah tahap berikutnya.
+
 ## Menjalankan secara lokal
 PHP 8.3+, Composer, Node.js 22.12+ (atau 24+).
 
