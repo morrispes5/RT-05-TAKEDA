@@ -25,6 +25,11 @@ class ServicesTest extends TestCase
         Storage::fake('local');
     }
 
+    private function outboxDiagnostics(): string
+    {
+        return json_encode(DB::table('outbox_events')->get(['type', 'attempts', 'completed_at', 'last_error_code', 'available_at', 'created_at'])->all()).' now='.DB::selectOne('select now() as n')->n;
+    }
+
     private function complaint($akun, bool $anon = true, array $photos = [])
     {
         return $this->as($akun)->post('/api/v1/complaints', [
@@ -89,7 +94,7 @@ class ServicesTest extends TestCase
         DB::table('outbox_events')->update(['completed_at' => null, 'dispatch_lease_until' => null]);
         Notifications::dispatch();
 
-        $this->assertSame(1, DB::table('notifikasi')->where('penerima_id', $a->id)->where('pengaduan_id', $id)->count());
+        $this->assertSame(1, DB::table('notifikasi')->where('penerima_id', $a->id)->where('pengaduan_id', $id)->count(), $this->outboxDiagnostics());
         $this->assertSame(1, DB::table('notifikasi')->where('penerima_id', $admin->id)->where('pengaduan_id', $id)->count(), 'pengurus diberi tahu pengaduan baru');
         $text = DB::table('notifikasi')->where('pengaduan_id', $id)->pluck('isi')->implode(' ');
         $this->assertStringNotContainsString('Uji Kepala 6', $text);
@@ -149,6 +154,7 @@ class ServicesTest extends TestCase
         $this->as($a)->get('/api/v1/agendas/'.$agenda->json('data.id').'/calendar')->assertOk()->assertHeader('Content-Type', 'text/calendar; charset=utf-8');
         $this->assertStringStartsWith('https://calendar.google.com/', $agenda->json('data.google_calendar_url'));
         $inbox = $this->as($a)->getJson('/api/v1/notifications')->assertOk();
+        $this->assertSame(['agenda', 'pengumuman'], collect($inbox->json('data'))->pluck('jenis')->sort()->values()->all(), $this->outboxDiagnostics());
         $this->assertSame(['agenda', 'pengumuman'], collect($inbox->json('data'))->pluck('jenis')->sort()->values()->all());
         $this->assertSame(2, $inbox->json('meta.belum_dibaca'));
         $this->as($a)->postJson('/api/v1/notifications/read-all')->assertOk()->assertJsonPath('data.ditandai', 2);
