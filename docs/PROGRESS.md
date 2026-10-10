@@ -9,8 +9,8 @@ Paket konteks diimpor ke repository pada M01 (10 Oktober 2026). Belum ada kode A
 | Milestone | Status | Bukti/ketergantungan |
 | --- | --- | --- |
 | M00 | accepted_baseline | Handoff repo menyatakan desain accepted; M01 rerun QA baseline pada 34e9b21 dan dari website/ (lihat M01) |
-| M01 | passed | PR #10: CI hygiene + verify hijau; preview Vercel PR 67/67 file cocok build lokal; lihat M01 |
-| M02 | planned | API/Neon integration belum dilakukan |
+| M01 | passed | PR #10 merged (02d92a1); production alias rt05takeda.vercel.app 19/19 HTML + 26 aset cocok setelah merge |
+| M02 | passed | PR #11: API foundation, OpenAPI 3.1, CI Postgres 33 tes; Neon dev migration direct + runtime pooled verify-full; lihat M02 |
 | M03 | planned | Redis/worker/outbox belum dilakukan |
 | M04 | planned | Staging Hostinger belum diinspeksi/deploy |
 | M05 | planned | Flutter belum dibuat |
@@ -30,7 +30,49 @@ M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. 
 
 ## Milestone aktif
 
-Belum ada. M01 passed (PR #10 menunggu merge pemilik). Berikutnya M02.
+Belum ada. M02 passed (PR #11 menunggu merge). Berikutnya M03 (Redis/worker/outbox) dan M05 (Flutter) dapat dimulai; M04 butuh akses VPS.
+
+### M02 — Laravel API dan Neon foundation
+
+- Status: passed (10 Oktober 2026), dengan catatan Postgres lokal di PC pemilik belum tersedia (lihat limitations).
+- Branch/commit/PR: `codex/m02-api-neon-foundation` dari main 02d92a1; PR https://github.com/morrispes5/RT-05-TAKEDA/pull/11.
+- Scope dan FR/BR: fondasi untuk FR18 (audit), FR23 (health), DATABASE.md/API.md/SECURITY.md konvensi; tidak ada fitur warga.
+- Dependency verified: M01 merged; live preview cocok setelah merge (`check-live`: 19/19 HTML, 26 aset, HP PASS, 0 error).
+- Runtime: Laravel 13.35.0 (sama dengan website), PHP 8.4.13 + pdo_pgsql/pgsql/intl/sodium (diaktifkan di php.ini lokal; backup `php.ini.bak-rt05-m02`), libpq 16.9, Postgres 17 (CI dan Neon 17.11).
+- File berubah: `rest-api/` (skeleton Laravel dipangkas: tanpa frontend/Vite, users default, sessions/cache/jobs tables, rute storage otomatis), `docs/openapi.yaml`, `redocly.yaml`, `.github/workflows/api.yml`, `infra/compose.local.yml`, `infra/sql/grant-runtime-role.sql`, `infra/docker/postgres/init/01-rt05-roles.sql`, `infra/scripts/check-repo.mjs` (DSN lokal & SQL sumber diizinkan), `.gitignore`, docs DECISIONS (ADR13–16), DATABASE, ERD, README, infra/README, PROGRESS.
+- Endpoint: `GET /health/live`, `GET /health/ready`, `GET /api/v1` (implemented). 102 operasi lain `x-status: planned` per milestone dan menghasilkan 404 JSON.
+- Migration: failed_jobs, audit_logs (append-only trigger), outbox_events, idempotency_requests, system_settings.
+- Environment/data: Neon project `rt05-takeda` (raspy-sky-23605923, aws-ap-southeast-1, PG17, gratis) dibuat dengan persetujuan pemilik; branch `production` (kosong) dan `dev` (br-crimson-art-b31mz59n). Data hanya sintetis/rollback; tidak ada data warga.
+- Commands dan actual results:
+
+  | Command | Hasil |
+  | --- | --- |
+  | CI `api.yml` (Postgres 17 service, role dari init SQL): `php artisan test` | 33 passed (370 assertions), 0 risky |
+  | CI `rt05:db-smoke --connection=pgsql` / `pgsql_migrations` | rt05_app: tulis+baca ok, sisa 0, DDL denied; rt05_migrator: ok |
+  | CI `npx @redocly/cli lint docs/openapi.yaml` | valid, 0 warning (operation-4xx-response off, ADR di redocly.yaml) |
+  | Neon dev `composer migrate` (direct, rt05_owner) | 5 migration DONE |
+  | Neon dev `rt05:db-grant-runtime-role rt05_app` | hak DML diterapkan |
+  | Neon dev `rt05:db-smoke` (pooled, rt05_app) | server 17.11, endpoint pooled, sslmode verify-full, tulis+baca ok, sisa 0, DDL denied |
+  | Neon dev `rt05:db-smoke --connection=pgsql_migrations` (direct) | ok, sisa 0 |
+  | `APP_ENV=staging rt05:db-smoke` | exit 0 dengan verify-full; dengan URL `sslmode=require` exit 1 "sslmode harus verify-full" |
+  | TLS negatif ke Neon | CA palsu: "certificate verify failed"; sslmode=disable: ditolak Neon "connection is insecure" |
+  | `php artisan serve` → Neon dev | /health/live 200 ok; /health/ready 200 database ok; /api/v1 200 + request_id; /api/v1/auth/register 404 NOT_FOUND; Cache-Control no-store; body tanpa host/role |
+  | Role check | rt05_app anggota neon_superuser: 0 |
+  | `node infra/scripts/check-repo.mjs` | OK; uji negatif DSN Neon berpassword tertangkap |
+
+- Evidence path: log CI PR #11 (API verification), tabel di atas.
+- Acceptance gates passed: migration Postgres CI + Neon dev direct sukses; runtime pooled read/write sintetis terverifikasi; SSL verify-full terbukti (positif + negatif); client publik tidak menerima DSN (tes no-leak health/error); health/error schema diuji terhadap OpenAPI; role minimal (DDL denied, bukan superuser).
+- Acceptance gates blocked/failed: tidak ada untuk gate ROADMAP. Catatan: Postgres lokal pada PC pemilik belum berjalan (Docker Desktop butuh WSL2 yang belum terpasang); tes Postgres dijalankan di CI.
+- Security/finance/privacy implications: role runtime tanpa DDL; audit append-only; error tanpa stack trace/host; rute `storage/{path}` bawaan dimatikan; tes menolak database selain *_test lokal sehingga tidak menyentuh Neon.
+- External mutation performed dan dasar otorisasi: merge PR #10 (instruksi "oke merge"); pembuatan project Neon rt05-takeda + branch dev + role rt05_app + migration fondasi di branch dev (persetujuan eksplisit di pertanyaan sesi M02); push branch + PR #11. Tidak ada perubahan Vercel/DNS/VPS. Branch production Neon tidak disentuh.
+- Known limitations:
+  - Tidak ada Postgres di PC pemilik sampai WSL2/Docker atau Postgres portabel disiapkan.
+  - `sslrootcert=system` tidak didukung PHP Windows; dev memakai salinan CA bundle Git di `%USERPROFILE%\.rt05\ca-bundle.crt` (path tanpa spasi). Bundle salinan tidak otomatis ter-update.
+  - `pg_prepared_statements` via pooler menampilkan statement milik pooler; tes nol-prepared hanya berarti pada koneksi direct.
+  - Password Neon ada di `rest-api/.env` lokal (di-gitignore). Credential owner pernah tampil di keluaran tool agent saat diambil; pertimbangkan reset password rt05_owner branch dev setelah sesi.
+  - FK actor_id ke users menunggu M06. Redis/queue/session menunggu M03.
+- ADR/doc updates: ADR13–ADR16; DATABASE.md, ERD.md (implementasi M02), rest-api/README, infra/README, README root, openapi.yaml.
+- Next milestone: M03 (Redis queue/cache, worker, scheduler, outbox dispatcher). Prasyarat lokal Redis juga butuh Docker/WSL atau Redis di CI.
 
 ### M01 — Monorepo foundation
 
@@ -110,7 +152,7 @@ Belum ada. M01 passed (PR #10 menunggu merge pemilik). Berikutnya M02.
 
 ## Checkpoint sesi
 
-10 Oktober 2026 (M01): checkout lokal pemilik berada di `Documents/RT X TAKEDA/RT-05-TAKEDA/`; folder induk `RT X TAKEDA/` berisi paket MD asli (tidak di-commit). Branch `codex/m01-monorepo-foundation` di-push; PR #10 terbuka, CI hijau, belum di-merge. Tidak ada migration, image, atau job. Input belum tersedia: credential Neon, akses VPS/DNS (ditawarkan pemilik via Chrome untuk M04), SMTP, FCM, signing key, Flutter SDK.
+10 Oktober 2026 (M01): checkout lokal pemilik berada di `Documents/RT X TAKEDA/RT-05-TAKEDA/`; folder induk `RT X TAKEDA/` berisi paket MD asli (tidak di-commit). PR #10 merged. Sesi M02: branch `codex/m02-api-neon-foundation`, PR #11. Neon dev sudah dimigrasi (5 migration fondasi). `rest-api/.env` lokal menunjuk Neon dev. php.ini lokal: pdo_pgsql/pgsql/intl/sodium diaktifkan. Tidak ada migration, image, atau job. Input belum tersedia: credential Neon, akses VPS/DNS (ditawarkan pemilik via Chrome untuk M04), SMTP, FCM, signing key, Flutter SDK.
 
 Catat Git status, perubahan pengguna yang belum commit, migration yang sudah applied,
 image/tag deploy, jobs pending, dan credential input missing tanpa menuliskan nilainya.
@@ -126,6 +168,9 @@ Selesaikan perubahan pengguna dengan hati-hati; tidak reset/force-push.
 | R02 | low | docs | FRONTEND.md/SOURCES.md menyebut 34e9b21 sebagai Git tree; sebenarnya commit | M01 | fixed |
 | R03 | medium | deploy preview | Root Directory Vercel belum diubah; tanpa jembatan root, merge akan memutus preview | M01 | mitigated (ADR12), menunggu pemilik |
 | R04 | medium | mobile | Flutter SDK tidak terpasang | M05 | open |
+| R05 | high | database | pdo_pgsql named prepares + pooler Neon → transaksi gugur 25P02 pada tulis pertama | M02 | fixed (ADR14), terverifikasi di Neon pooled |
+| R06 | medium | dev env | Docker Desktop tidak jalan: WSL2 belum terpasang (Windows Home) | M02/M03 | open, menunggu pemilik |
+| R07 | low | security | Credential owner Neon dev tampil di keluaran tool agent saat pengambilan connection string | M02 | open: reset password rt05_owner (dev) disarankan |
 
 ## Bukti historis frontend
 

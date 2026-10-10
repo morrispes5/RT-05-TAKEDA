@@ -23,7 +23,8 @@ const forbidden = [
     [/(^|\/)storage\/[^/]*\.key$/],
     [/(^|\/)(key\.properties|auth\.json|google-services\.json|GoogleService-Info\.plist)$/],
     [/service[-_]?account[^/]*\.json$/i],
-    [/\.sql(\.gz)?$/i],
+    // Dump/backup SQL dilarang; SQL skema/role sumber di infra/sql dan init Postgres lokal diizinkan.
+    [/\.sql(\.gz)?$/i, f => !/^infra\/(sql|docker\/postgres\/init)\/[^/]+\.sql$/.test(f)],
 ];
 for (const f of files) {
     for (const [pattern, extra] of forbidden) {
@@ -34,7 +35,8 @@ for (const f of files) {
 // 2. Pola secret pada file teks.
 const secretPatterns = [
     ['private-key', /-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----/],
-    ['postgres-dsn-with-password', /postgres(ql)?:\/\/[^\s:@/]+:[^\s@/]{6,}@[^\s]+/i],
+    // DSN berpassword ke host mana pun selain Postgres lokal/CI (127.0.0.1, localhost, service "postgres").
+    ['postgres-dsn-with-password', /postgres(ql)?:\/\/[^\s:@/]+:[^\s@/]{6,}@(?!(127\.0\.0\.1|localhost|postgres)[:/])[^\s]+/i],
     ['neon-password', /\bnpg_[A-Za-z0-9]{12,}/],
     ['github-token', /\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{30,}/],
     ['aws-access-key', /\bAKIA[0-9A-Z]{16}\b/],
