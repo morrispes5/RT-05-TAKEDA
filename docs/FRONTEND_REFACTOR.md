@@ -1,5 +1,7 @@
 # Refactor frontend RT 05 Takeda
 
+Catatan fondasi refactor. Lingkup Pengurus terbaru hanya Artikel dan Dokumentasi; lihat [CONTENT_PREVIEW.md](CONTENT_PREVIEW.md) dan [QA_STITCH_PREVIEW.md](QA_STITCH_PREVIEW.md). Daftar modul dalam audit lama bukan lingkup website saat ini.
+
 ## Batas dan keputusan
 - Arahan pemilik, 9 Oktober 2026: refactor aplikasi yang sama, bukan produk/branding V2.
 - Stack dipertahankan: Laravel 13, Blade, Tailwind 4, Vite; Vercel tetap ekspor statis.

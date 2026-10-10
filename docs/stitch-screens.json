@@ -1,0 +1,340 @@
+{
+  "project": "projects/7802748177711352102",
+  "title": "RT 05 Takeda — Penyempurnaan Website",
+  "model": "GEMINI_3_8_FLASH",
+  "designSystem": "assets/73f0b48e32a64bde9d1c8f5afb036452",
+  "verifiedAt": "2026-10-10T06:49:13.583Z",
+  "counts": {
+    "Publik desktop": 9,
+    "Pengurus desktop": 14,
+    "HP": 9
+  },
+  "screens": [
+    {
+      "name": "projects/7802748177711352102/screens/c2cde7ffad61450f8bdbc8def53c183d",
+      "title": "Beranda - RT 05 Takeda",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "10380",
+      "group": "Publik desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/4558a3aa2302442891c609d51b08296f",
+      "title": "Detail album — Perayaan 17 Agustus",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "3576",
+      "group": "Publik desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/66049cb43acd46348c22f0a4b0f57426",
+      "title": "Pengurus — Artikel baru",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/d817b6a844b54ab3824c4661fc474a53",
+      "title": "Profil RT — RT 05 RW 07",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "6396",
+      "group": "Publik desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/c50b4c7c2d524cf8ae36c456f8d0b4e7",
+      "title": "Fasilitas — RT 05 RW 07",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "7048",
+      "group": "Publik desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/369721c7c5e345ba9254dbf6e3a28c80",
+      "title": "Dokumentasi Kegiatan — RT 05 RW 07",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "8084",
+      "group": "Publik desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/734ab016df28416cb8d86677ce89245d",
+      "title": "Dokumentasi Lingkungan — RT 05 RW 07",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "5002",
+      "group": "Publik desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/eef701ebfa644f7ea5071705531c090b",
+      "title": "Artikel — RT 05 RW 07",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "4816",
+      "group": "Publik desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/065a6e290aa54261b1f2949674f5672e",
+      "title": "Detail Artikel — RT 05 RW 07",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "6678",
+      "group": "Publik desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/582a019aedc24549a7fa159dd2f91ec5",
+      "title": "Kontak — RT 05 RW 07",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "5940",
+      "group": "Publik desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/35d7a4ef82964e6186f912a346eced5a",
+      "title": "Pengurus — Susun foto",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "3508",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/119a79d29aeb4ca98e3028a5e93589c7",
+      "title": "Pengurus — Unggah foto",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "3380",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/1cb08ef17c89412089e308609a4f4995",
+      "title": "Pengurus — Pratinjau album",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "4430",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/c695ff8af2a3444bb891e8507865c7dc",
+      "title": "Pengurus — Draf tersimpan",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "2780",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/ac77547ad92749aaa53ce07eebf27843",
+      "title": "Pengurus — Konfirmasi pratinjau",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "2198",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/8d5998bdf5cb4519aba6457142738e55",
+      "title": "Pengurus — Simpan gagal",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "3604",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/d003c2ac2b714ce7830ee2cd27c00980",
+      "title": "HP — Menu",
+      "verified": true,
+      "device": "MOBILE",
+      "width": "780",
+      "height": "2026",
+      "group": "HP",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/72802cb596564e05907469fe810852fb",
+      "title": "HP — Detail album",
+      "verified": true,
+      "device": "MOBILE",
+      "width": "780",
+      "height": "4222",
+      "group": "HP",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/2b07f0e961144fac8b60bb89614fbf9f",
+      "title": "HP — Dokumentasi",
+      "verified": true,
+      "device": "MOBILE",
+      "width": "780",
+      "height": "3690",
+      "group": "HP",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/974654bb027b472cbe4e712c0fdb6b2d",
+      "title": "HP — Beranda",
+      "verified": true,
+      "device": "MOBILE",
+      "width": "780",
+      "height": "6952",
+      "group": "HP",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/e1993109eb5649838c6c33d19875d3b5",
+      "title": "HP — Membaca artikel",
+      "verified": true,
+      "device": "MOBILE",
+      "width": "780",
+      "height": "7300",
+      "group": "HP",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/96a18a09eef54baeba76188dc82fade0",
+      "title": "HP — Ringkasan pengurus",
+      "verified": true,
+      "device": "MOBILE",
+      "width": "780",
+      "height": "4282",
+      "group": "HP",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/8767f8951a21454f9ecd44a95d37bd2f",
+      "title": "HP — Editor artikel",
+      "verified": true,
+      "device": "MOBILE",
+      "width": "780",
+      "height": "3852",
+      "group": "HP",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/ab7edbf67e6b4ae7b9d2183a46a3042c",
+      "title": "HP — Unggah album",
+      "verified": true,
+      "device": "MOBILE",
+      "width": "780",
+      "height": "4290",
+      "group": "HP",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/31d7691ced894fe1b58db0b9b863a6ca",
+      "title": "HP — Pratinjau hasil",
+      "verified": true,
+      "device": "MOBILE",
+      "width": "780",
+      "height": "4418",
+      "group": "HP",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/df04c8bfcfed4ef19c15d47fa445c668",
+      "title": "Pengurus — Desain akses",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/8b4134dbbf3849de8d8b27cd2aaa711d",
+      "title": "Pengurus — Daftar artikel",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/cb790a23f86f4bd0ba2b49af8d86ae6a",
+      "title": "Pengurus — Ringkasan",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/b05892571fc34cdfbbb514b231135339",
+      "title": "Pengurus — Edit artikel",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "2048",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/67aecf0f91e04e239332696f24ef910b",
+      "title": "Pengurus — Pratinjau artikel",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "6068",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/efd138478ff848b19766f44bb8215fe1",
+      "title": "Pengurus — Daftar album",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "2436",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    },
+    {
+      "name": "projects/7802748177711352102/screens/42bdab872d564566b687849a65bed3d8",
+      "title": "Pengurus — Editor album",
+      "verified": true,
+      "device": "DESKTOP",
+      "width": "2560",
+      "height": "5036",
+      "group": "Pengurus desktop",
+      "model": "GEMINI_3_8_FLASH"
+    }
+  ],
+  "bonus": [
+    {
+      "name": "projects/7802748177711352102/screens/db67965bc37744efa381abb88a4c982f",
+      "title": "Logo Lambang Gerbang RT 05"
+    }
+  ]
+}

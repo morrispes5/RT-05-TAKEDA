@@ -3,6 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { mkdir, readdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import { previewServer } from './serve-preview.mjs';
+import { checkContentPreview } from './check-content-preview.mjs';
 
 const server = previewServer();
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -15,7 +16,7 @@ const errors = [];
 const results = [];
 const links = new Set();
 try {
-    const context = await browser.newContext();
+    const context = await browser.newContext({ reducedMotion: 'reduce' });
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
     page.on('response', response => { if (response.status() >= 400) errors.push(response.status() + ' ' + response.url()); });
@@ -24,6 +25,7 @@ try {
         for (const route of routes) {
             await page.goto(base + route);
             await page.evaluate(() => document.fonts.ready);
+            if (route.startsWith('/pengurus')) await page.locator('[data-cms-ready]').waitFor();
             assert.equal(await page.locator('h1').count(), 1, route);
             const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
             assert.equal(overflow, false, route + ' overflows at ' + width);
@@ -34,12 +36,10 @@ try {
                 assert.deepEqual(a11y.violations.map(v => ({ id: v.id, impact: v.impact, targets: v.nodes.map(n => n.target) })), [], 'a11y ' + route + ' at ' + width);
             }
             // Force offscreen images to load, then validate every image.
-            await page.locator('img').evaluateAll(images => images.forEach(image => image.loading = 'eager'));
+            await page.locator('img').evaluateAll(async images => { images.forEach(image => image.loading = 'eager'); await Promise.all(images.filter(image => image.currentSrc).map(image => image.decode().catch(() => {}))); });
             await page.waitForFunction(() => [...document.images].every(img => img.complete));
             assert.deepEqual(await page.locator('img:not([data-lightbox-img])').evaluateAll(images => images.filter(i => !i.naturalWidth || !i.hasAttribute('alt')).map(i => i.src)), [], route + ' images');
-            if (['/', '/profil', '/dokumentasi', '/artikel', '/artikel/cara-mencuci-tangan', '/pengurus', '/pengurus/iuran'].includes(route)) {
-                await page.screenshot({ path: 'artifacts/screenshots/' + (route === '/' ? 'home' : route.slice(1).replaceAll('/', '-')) + '-' + width + '.png', fullPage: true });
-            }
+            await page.screenshot({ path: 'artifacts/screenshots/' + (route === '/' ? 'home' : route.slice(1).replaceAll('/', '-')) + '-' + width + '.png', fullPage: true });
             results.push({ route, width, passed: true });
         }
     }
@@ -50,7 +50,7 @@ try {
         if (hash) assert.ok((await response.text()).includes('id="' + hash + '"'), 'missing fragment: ' + link);
     }
     await page.setViewportSize({ width: 390, height: 844 });
-    for (const route of ['/', '/pengurus', '/pengurus/iuran']) {
+    for (const route of ['/', '/pengurus', '/pengurus/artikel']) {
         await page.goto(base + route);
         const toggle = page.locator('[data-menu-toggle]');
         await toggle.click();
@@ -63,6 +63,7 @@ try {
         assert.equal(await page.locator('[data-menu-toggle]').getAttribute('aria-expanded'), 'false');
     }
     await page.goto(base + '/dokumentasi');
+    await page.getByRole('tab', { name: 'Lingkungan', exact: true }).click();
     await page.getByRole('button', { name: 'Ruang bermain', exact: true }).click();
     assert.equal(await page.locator('[data-filter-item="photos"]:visible').count(), 3);
     const opener = page.locator('[data-lightbox]:visible').first();
@@ -77,11 +78,31 @@ try {
     await page.goto(base + '/artikel');
     await page.getByRole('button', { name: 'Lingkungan', exact: true }).click();
     assert.equal(await page.locator('[data-filter-item="articles"]:visible').count(), 2);
+    await page.getByLabel('Cari bacaan').fill('sampah');
+    assert.equal(await page.locator('[data-filter-item="articles"]:visible').count(), 1);
+    await page.getByLabel('Cari bacaan').fill('tidak cocok');
+    assert.equal(await page.locator('[data-filter-item="articles"]:visible').count(), 0);
+    assert.equal(await page.locator('[data-search-empty]').isVisible(), true);
+    await page.goto(base + '/dokumentasi');
+    await page.getByRole('tab', { name: 'Kegiatan', exact: true }).focus();
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.getByRole('tab', { name: 'Lingkungan', exact: true }).getAttribute('aria-selected'), 'true');
+    await page.keyboard.press('Home');
+    assert.equal(await page.getByRole('tab', { name: 'Kegiatan', exact: true }).getAttribute('aria-selected'), 'true');
+    // Browser zoom at 200% changes a 1440px window to a 720 CSS-pixel layout.
+    // CSS zoom does not change viewport media queries and is not a browser zoom simulation.
+    await page.setViewportSize({ width: 720, height: 500 });
+    for (const route of ['/', '/artikel/cara-mencuci-tangan', '/pengurus/artikel/editor']) {
+        await page.goto(base + route);
+        if (route.startsWith('/pengurus')) await page.locator('[data-cms-ready]').waitFor();
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, '200% zoom reflow ' + route);
+    }
     await page.emulateMedia({ reducedMotion: 'reduce' });
     assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior), 'auto');
     assert.deepEqual(errors, [], 'browser errors');
     for (const route of ['/admin', '/pengurus/tidak-ada', '/artikel/tidak-ada']) assert.equal((await fetch(base + route)).status, 404);
-    const report = { routes: routes.length, responsiveCases: results.length, a11yCases: routes.length * 2, internalLinks: links.size, browserErrors: errors, interactions: 'PASS', results };
+    const contentPreview = await checkContentPreview(browser, base);
+    const report = { routes: routes.length, responsiveCases: results.length, a11yCases: routes.length * 2 + contentPreview.a11yCases, internalLinks: links.size, browserErrors: errors, interactions: 'PASS', contentPreview, results };
     await writeFile('artifacts/qa-report.json', JSON.stringify(report, null, 2));
     console.log(JSON.stringify({ ...report, results: undefined }, null, 2));
 } finally {
