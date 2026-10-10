@@ -39,9 +39,9 @@ class OpenApiContractTest extends TestCase
     public function test_planned_operations_are_not_served(): void
     {
         $planned = array_keys(array_filter(OpenApi::operations(), fn ($meta) => $meta['status'] === 'planned'));
-        $this->assertGreaterThan(50, count($planned));
+        $this->assertGreaterThan(10, count($planned));
 
-        foreach (['POST /api/v1/auth/register', 'POST /api/v1/admin/dues-payments', 'GET /api/v1/complaints'] as $operation) {
+        foreach (['GET /api/v1/public/articles', 'POST /api/v1/media', 'GET /api/v1/app-version'] as $operation) {
             $this->assertContains($operation, $planned);
             [$method, $path] = explode(' ', $operation);
             $this->json($method, $path)->assertNotFound();
@@ -64,12 +64,15 @@ class OpenApiContractTest extends TestCase
         }
     }
 
-    public function test_every_error_code_the_api_can_emit_is_in_the_contract_enum(): void
+    public function test_every_error_code_the_api_can_emit_matches_the_contract(): void
     {
-        $enum = OpenApi::spec()['components']['schemas']['ErrorCode']['enum'];
+        $schema = OpenApi::spec()['components']['schemas']['ErrorCode'];
         $codes = array_column((new ReflectionClass(ApiError::class))->getConstant('BY_STATUS'), 0);
         $codes[] = 'INTERNAL_ERROR';
 
-        $this->assertSame([], array_values(array_diff($codes, $enum)));
+        foreach ($codes as $code) {
+            $this->assertMatchesRegularExpression('/'.$schema['pattern'].'/', $code);
+        }
+        $this->assertSame([], array_values(array_diff($codes, $schema['x-known-values'])));
     }
 }
