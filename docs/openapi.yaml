@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: RT05 TAKEDA REST API
-  version: 1.0.0-m02
+  version: 1.0.0-m12
   summary: Kontrak HTTP v1 untuk website CMS, aplikasi mobile, dan worker.
   description: |
     Desain manusia ada di docs/API.md; file ini kontrak mesin.
@@ -40,320 +40,1590 @@ tags:
     description: Profil, fasilitas, artikel, album publik dan CMS
   - name: Media
     description: Upload privat dan pemrosesan foto
-
 paths:
-  /health/live:
-    get:
-      operationId: healthLive
-      tags: [Operations]
-      summary: Liveness proses HTTP; tidak memanggil database.
-      x-status: implemented
-      x-milestone: M02
-      security: []
-      responses:
-        '200':
-          description: Proses sehat.
-          headers:
-            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/HealthLive' }
-              example: { status: ok }
-  /health/ready:
-    get:
-      operationId: healthReady
-      tags: [Operations]
-      summary: Readiness dependency dengan timeout; body tanpa hostname/credential.
-      x-status: implemented
-      x-milestone: M02
-      security: []
-      responses:
-        '200':
-          description: Semua dependency siap.
-          headers:
-            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/HealthReady' }
-              example: { status: ready, checks: { database: ok } }
-        '503':
-          description: Dependency belum siap atau konfigurasi TLS database salah.
-          headers:
-            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/HealthReady' }
-              example: { status: not_ready, checks: { database: unavailable } }
   /api/v1:
     get:
       operationId: serviceInfo
-      tags: [Operations]
+      tags:
+        - Operations
       summary: Identitas layanan API v1.
       x-status: implemented
       x-milestone: M02
       security: []
       responses:
-        '200':
+        "200":
           description: Informasi layanan.
           headers:
-            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ServiceInfoEnvelope' }
+              schema:
+                $ref: "#/components/schemas/ServiceInfoEnvelope"
               example:
-                data: { name: RT05 TAKEDA API, api_version: v1 }
-                meta: { request_id: 0f8e6c1e-7d3b-4c55-9a40-6f1f2d3e4b5a }
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  # ---------------------------------------------------------------- planned: Identity (M06/M07)
-  /api/v1/auth/register:
-    post: { operationId: authRegister, tags: [Identity], summary: "Registrasi akun utama dengan token RT 6 digit", x-status: planned, x-milestone: M06, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/auth/additional-register:
-    post: { operationId: authAdditionalRegister, tags: [Identity], summary: "Registrasi akun tambahan (pending sampai disetujui)", x-status: planned, x-milestone: M07, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/auth/mobile-login:
-    post: { operationId: authMobileLogin, tags: [Identity], summary: "Login mobile, bearer token per perangkat", x-status: planned, x-milestone: M06, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/auth/web-login:
-    post: { operationId: authWebLogin, tags: [Identity], summary: "Login CMS dengan sesi cookie dan CSRF", x-status: planned, x-milestone: M06, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/auth/me:
-    get: { operationId: authMe, tags: [Identity], summary: "Profil akun tersanitasi", x-status: planned, x-milestone: M06, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/auth/logout:
-    post: { operationId: authLogout, tags: [Identity], summary: "Cabut token/sesi saat ini", x-status: planned, x-milestone: M06, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/auth/logout-all:
-    post: { operationId: authLogoutAll, tags: [Identity], summary: "Cabut semua token/sesi", x-status: planned, x-milestone: M06, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/auth/forgot-password:
-    post: { operationId: authForgotPassword, tags: [Identity], summary: "Permintaan reset (respons generik)", x-status: planned, x-milestone: M06, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/auth/reset-password:
-    post: { operationId: authResetPassword, tags: [Identity], summary: "Reset password dan cabut sesi lain", x-status: planned, x-milestone: M06, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/auth/password:
-    patch: { operationId: authChangePassword, tags: [Identity], summary: "Ganti password", x-status: planned, x-milestone: M06, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/auth/additional-account-status:
-    get: { operationId: authAdditionalAccountStatus, tags: [Identity], summary: "Status permohonan akun tambahan sendiri", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/registration-token:
-    get: { operationId: adminRegistrationToken, tags: [Identity], summary: "Lihat token registrasi aktif (no-store)", x-status: planned, x-milestone: M06, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/registration-token/rotate:
-    post: { operationId: adminRotateRegistrationToken, tags: [Identity], summary: "Rotasi manual token registrasi", x-status: planned, x-milestone: M06, responses: { default: { $ref: '#/components/responses/Error' } } }
-
-  # ---------------------------------------------------------------- planned: Residents (M07)
-  /api/v1/household:
-    get: { operationId: householdShow, tags: [Residents], summary: "Rumah/keluarga akun sendiri", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-    patch: { operationId: householdUpdate, tags: [Residents], summary: "Akun utama memperbarui data keluarga (version)", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/household/members:
-    post: { operationId: householdMemberCreate, tags: [Residents], summary: "Tambah anggota keluarga sendiri", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/household/members/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    patch: { operationId: householdMemberUpdate, tags: [Residents], summary: "Ubah anggota keluarga sendiri", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-    delete: { operationId: householdMemberEnd, tags: [Residents], summary: "Akhiri keanggotaan (arsip, bukan hapus)", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/houses:
-    get: { operationId: adminHousesIndex, tags: [Residents], summary: "Daftar rumah", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post: { operationId: adminHousesStore, tags: [Residents], summary: "Tambah rumah", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/houses/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: adminHousesShow, tags: [Residents], summary: "Detail rumah", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-    patch: { operationId: adminHousesUpdate, tags: [Residents], summary: "Ubah rumah", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/houses/{id}/archive:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    post: { operationId: adminHousesArchive, tags: [Residents], summary: "Arsip rumah; histori keuangan tetap", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/families:
-    get: { operationId: adminFamiliesIndex, tags: [Residents], summary: "Daftar keluarga", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post: { operationId: adminFamiliesStore, tags: [Residents], summary: "Tambah keluarga", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/families/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    patch: { operationId: adminFamiliesUpdate, tags: [Residents], summary: "Ubah keluarga", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/residents/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: adminResidentsShow, tags: [Residents], summary: "Detail anggota", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-    patch: { operationId: adminResidentsUpdate, tags: [Residents], summary: "Ubah anggota", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/users/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: adminUsersShow, tags: [Residents], summary: "Detail akun", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-    patch: { operationId: adminUsersUpdate, tags: [Residents], summary: "Ubah status akun (tanpa role mass-assignment)", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/users/{id}/archive:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    post: { operationId: adminUsersArchive, tags: [Residents], summary: "Arsip akun dan cabut akses", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/occupancies:
-    post: { operationId: adminOccupanciesStore, tags: [Residents], summary: "Mulai hunian/link", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/occupancies/{id}/end:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    post: { operationId: adminOccupanciesEnd, tags: [Residents], summary: "Akhiri hunian", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
+                data:
+                  name: RT05 TAKEDA API
+                  api_version: v1
+                meta:
+                  request_id: 0f8e6c1e-7d3b-4c55-9a40-6f1f2d3e4b5a
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/accounts:
+    get:
+      operationId: getAccountsAdminAccounts
+      tags:
+        - Residents
+      summary: accounts /admin/accounts
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/accounts/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    patch:
+      operationId: patchUpdateAccountAdminAccounts
+      tags:
+        - Residents
+      summary: updateAccount /admin/accounts/{id}
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/additional-account-requests:
-    get: { operationId: adminAdditionalRequestsIndex, tags: [Residents], summary: "Daftar permohonan akun tambahan", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
+    get:
+      operationId: adminAdditionalRequestsIndex
+      tags:
+        - Residents
+      summary: Daftar permohonan akun tambahan
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/additional-account-requests/{id}/approve:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    post: { operationId: adminAdditionalRequestsApprove, tags: [Residents], summary: "Setujui permohonan", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminAdditionalRequestsApprove
+      tags:
+        - Residents
+      summary: Setujui permohonan
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/additional-account-requests/{id}/reject:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    post: { operationId: adminAdditionalRequestsReject, tags: [Residents], summary: "Tolak permohonan dengan alasan", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-
-  # ---------------------------------------------------------------- planned: Complaints (M08) / Aspirations (M09)
-  /api/v1/complaints:
-    get: { operationId: complaintsIndex, tags: [Complaints], summary: "Feed pengaduan tersanitasi", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post: { operationId: complaintsStore, tags: [Complaints], summary: "Buat pengaduan", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/complaints/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: complaintsShow, tags: [Complaints], summary: "Detail pengaduan role-aware", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-    patch: { operationId: complaintsUpdate, tags: [Complaints], summary: "Pemilik mengubah saat submitted", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/complaints/{id}/history:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: complaintsHistory, tags: [Complaints], summary: "Histori status aman", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/complaints/{id}/status:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    post: { operationId: adminComplaintsStatus, tags: [Complaints], summary: "Ubah status dengan catatan dan expected_version", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/complaints/{id}/archive:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    post: { operationId: adminComplaintsArchive, tags: [Complaints], summary: "Arsip pengaduan dengan alasan", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/aspirations:
-    get: { operationId: aspirationsIndex, tags: [Aspirations], summary: "Feed aspirasi", x-status: planned, x-milestone: M09, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post: { operationId: aspirationsStore, tags: [Aspirations], summary: "Kirim aspirasi", x-status: planned, x-milestone: M09, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/aspirations/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: aspirationsShow, tags: [Aspirations], summary: "Detail aspirasi", x-status: planned, x-milestone: M09, responses: { default: { $ref: '#/components/responses/Error' } } }
-    patch: { operationId: aspirationsUpdate, tags: [Aspirations], summary: "Pemilik mengubah saat submitted", x-status: planned, x-milestone: M09, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/aspirations/{id}/history:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: aspirationsHistory, tags: [Aspirations], summary: "Histori aspirasi", x-status: planned, x-milestone: M09, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/aspirations/{id}/status:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    post: { operationId: adminAspirationsStatus, tags: [Aspirations], summary: "Ubah status aspirasi", x-status: planned, x-milestone: M09, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/aspirations/{id}/archive:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    post: { operationId: adminAspirationsArchive, tags: [Aspirations], summary: "Arsip aspirasi", x-status: planned, x-milestone: M09, responses: { default: { $ref: '#/components/responses/Error' } } }
-
-  # ---------------------------------------------------------------- planned: Community (M10)
-  /api/v1/agendas:
-    get: { operationId: agendasIndex, tags: [Community], summary: "Agenda published", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/agendas/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: agendasShow, tags: [Community], summary: "Detail agenda", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/agendas/{id}/calendar:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: agendasCalendar, tags: [Community], summary: "Link Google Calendar / ICS", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/announcements:
-    get: { operationId: announcementsIndex, tags: [Community], summary: "Pengumuman", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/announcements/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: announcementsShow, tags: [Community], summary: "Detail pengumuman", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/notifications:
-    get: { operationId: notificationsIndex, tags: [Community], summary: "Inbox notifikasi", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/notifications/{id}/read:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    patch: { operationId: notificationsRead, tags: [Community], summary: "Tandai dibaca", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/notifications/read-all:
-    post: { operationId: notificationsReadAll, tags: [Community], summary: "Tandai semua dibaca", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/devices/{device_identifier}:
-    parameters: [{ name: device_identifier, in: path, required: true, schema: { type: string, maxLength: 200 } }]
-    put: { operationId: devicesUpsert, tags: [Community], summary: "Daftarkan token push perangkat", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-    delete: { operationId: devicesDelete, tags: [Community], summary: "Hapus token push perangkat", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/notification-preferences:
-    patch: { operationId: notificationPreferencesUpdate, tags: [Community], summary: "Preferensi push nonkritis", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminAdditionalRequestsReject
+      tags:
+        - Residents
+      summary: Tolak permohonan dengan alasan
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/agendas:
-    get: { operationId: adminAgendasIndex, tags: [Community], summary: "Kelola agenda", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post: { operationId: adminAgendasStore, tags: [Community], summary: "Buat agenda", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
+    get:
+      operationId: adminAgendasIndex
+      tags:
+        - Community
+      summary: Kelola agenda
+      x-status: planned
+      x-milestone: M10
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminAgendasStore
+      tags:
+        - Community
+      summary: Buat agenda
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/agendas/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    put:
+      operationId: putUpdateAgendaAdminAgendas
+      tags:
+        - Community
+      summary: updateAgenda /admin/agendas/{id}
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/agendas/{id}/archive:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: postArchiveAgendaAdminAgendas
+      tags:
+        - Community
+      summary: archiveAgenda /admin/agendas/{id}/archive
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "204":
+          description: Berhasil tanpa body.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/albums:
+    get:
+      operationId: adminAlbumsIndex
+      tags:
+        - Content
+      summary: Kelola album
+      x-status: planned
+      x-milestone: M13
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminAlbumsStore
+      tags:
+        - Content
+      summary: Buat draf album
+      x-status: planned
+      x-milestone: M13
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/announcements:
-    get: { operationId: adminAnnouncementsIndex, tags: [Community], summary: "Kelola pengumuman", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post: { operationId: adminAnnouncementsStore, tags: [Community], summary: "Buat pengumuman", x-status: planned, x-milestone: M10, responses: { default: { $ref: '#/components/responses/Error' } } }
-
-  # ---------------------------------------------------------------- planned: Finance (M11/M12) — tanpa payment gateway
-  /api/v1/dues/my:
-    get: { operationId: duesMy, tags: [Finance], summary: "Tagihan dan histori rumah akun", x-status: planned, x-milestone: M11, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/dues/transparency:
-    get: { operationId: duesTransparency, tags: [Finance], summary: "Kode rumah, periode, nominal, status (tanpa PII)", x-status: planned, x-milestone: M11, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/cash/summary:
-    get: { operationId: cashSummary, tags: [Finance], summary: "Ringkasan kas tersanitasi", x-status: planned, x-milestone: M12, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/dues-rates:
-    get: { operationId: adminDuesRatesIndex, tags: [Finance], summary: "Tarif efektif per bulan", x-status: planned, x-milestone: M11, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post: { operationId: adminDuesRatesStore, tags: [Finance], summary: "Tetapkan tarif untuk periode (alasan wajib)", x-status: planned, x-milestone: M11, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/dues/generate:
-    post: { operationId: adminDuesGenerate, tags: [Finance], summary: "Generate/catch-up tagihan idempotent", x-status: planned, x-milestone: M11, responses: { default: { $ref: '#/components/responses/Error' } } }
+    get:
+      operationId: adminAnnouncementsIndex
+      tags:
+        - Community
+      summary: Kelola pengumuman
+      x-status: planned
+      x-milestone: M10
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminAnnouncementsStore
+      tags:
+        - Community
+      summary: Buat pengumuman
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/announcements/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    put:
+      operationId: putUpdateAnnouncementAdminAnnouncements
+      tags:
+        - Community
+      summary: updateAnnouncement /admin/announcements/{id}
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/announcements/{id}/archive:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: postArchiveAnnouncementAdminAnnouncements
+      tags:
+        - Community
+      summary: archiveAnnouncement /admin/announcements/{id}/archive
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "204":
+          description: Berhasil tanpa body.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/articles:
+    get:
+      operationId: adminArticlesIndex
+      tags:
+        - Content
+      summary: Kelola artikel
+      x-status: planned
+      x-milestone: M13
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminArticlesStore
+      tags:
+        - Content
+      summary: Buat draf artikel
+      x-status: planned
+      x-milestone: M13
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/aspirations/{id}/archive:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminAspirationsArchive
+      tags:
+        - Aspirations
+      summary: Arsip aspirasi
+      x-status: implemented
+      x-milestone: M09
+      responses:
+        "204":
+          description: Berhasil tanpa body.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/aspirations/{id}/status:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminAspirationsStatus
+      tags:
+        - Aspirations
+      summary: Ubah status aspirasi
+      x-status: implemented
+      x-milestone: M09
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/audit-logs:
+    get:
+      operationId: adminAuditLogs
+      tags:
+        - Operations
+      summary: Jejak audit
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/cash-transactions:
+    get:
+      operationId: adminCashIndex
+      tags:
+        - Finance
+      summary: Daftar kas
+      x-status: implemented
+      x-milestone: M12
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminCashStore
+      tags:
+        - Finance
+      summary: Pemasukan lain/pengeluaran/saldo awal (bukan iuran)
+      x-status: implemented
+      x-milestone: M12
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/cash-transactions/{id}/reverse:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - $ref: "#/components/parameters/IdempotencyKey"
+    post:
+      operationId: adminCashReverse
+      tags:
+        - Finance
+      summary: Satu pembalikan kas dengan alasan
+      x-status: implemented
+      x-milestone: M12
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+  /api/v1/admin/complaints/{id}/archive:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminComplaintsArchive
+      tags:
+        - Complaints
+      summary: Arsip pengaduan dengan alasan
+      x-status: implemented
+      x-milestone: M08
+      responses:
+        "204":
+          description: Berhasil tanpa body.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/complaints/{id}/status:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminComplaintsStatus
+      tags:
+        - Complaints
+      summary: Ubah status dengan catatan dan expected_version
+      x-status: implemented
+      x-milestone: M08
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/dashboard:
+    get:
+      operationId: adminDashboard
+      tags:
+        - Operations
+      summary: Ringkasan pengurus
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/dues-charges:
-    get: { operationId: adminDuesCharges, tags: [Finance], summary: "Daftar tagihan per rumah/periode/status", x-status: planned, x-milestone: M11, responses: { default: { $ref: '#/components/responses/Error' } } }
+    get:
+      operationId: adminDuesCharges
+      tags:
+        - Finance
+      summary: Daftar tagihan per rumah/periode/status
+      x-status: implemented
+      x-milestone: M11
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/dues-payments:
     post:
       operationId: adminDuesPaymentsStore
-      tags: [Finance]
+      tags:
+        - Finance
       summary: Catat pembayaran iuran offline (sinkron, satu transaksi)
-      x-status: planned
+      x-status: implemented
       x-milestone: M12
-      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
-      responses: { default: { $ref: '#/components/responses/Error' } }
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    get:
+      operationId: getPaymentsAdminDuesPayments
+      tags:
+        - Finance
+      summary: payments /admin/dues-payments
+      x-status: implemented
+      x-milestone: M12
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/dues-payments/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: adminDuesPaymentsShow, tags: [Finance], summary: "Detail pembayaran dan alokasi", x-status: planned, x-milestone: M12, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/dues-payments/{id}/reverse:
-    parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/IdempotencyKey' }]
-    post: { operationId: adminDuesPaymentsReverse, tags: [Finance], summary: "Pembalikan dengan alasan", x-status: planned, x-milestone: M12, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/dues-payments/{id}/correct:
-    parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/IdempotencyKey' }]
-    post: { operationId: adminDuesPaymentsCorrect, tags: [Finance], summary: "Pembalikan + pengganti atomik", x-status: planned, x-milestone: M12, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/cash-transactions:
-    get: { operationId: adminCashIndex, tags: [Finance], summary: "Daftar kas", x-status: planned, x-milestone: M12, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post:
-      operationId: adminCashStore
-      tags: [Finance]
-      summary: Pemasukan lain/pengeluaran/saldo awal (bukan iuran)
-      x-status: planned
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: adminDuesPaymentsShow
+      tags:
+        - Finance
+      summary: Detail pembayaran dan alokasi
+      x-status: implemented
       x-milestone: M12
-      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
-      responses: { default: { $ref: '#/components/responses/Error' } }
-  /api/v1/admin/cash-transactions/{id}/reverse:
-    parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/IdempotencyKey' }]
-    post: { operationId: adminCashReverse, tags: [Finance], summary: "Satu pembalikan kas dengan alasan", x-status: planned, x-milestone: M12, responses: { default: { $ref: '#/components/responses/Error' } } }
-
-  # ---------------------------------------------------------------- planned: Content (M13/M14), Media (M08), Operations
-  /api/v1/public/site-profile:
-    get: { operationId: publicSiteProfile, tags: [Content], summary: "Profil publik published", x-status: planned, x-milestone: M13, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/public/facilities:
-    get: { operationId: publicFacilities, tags: [Content], summary: "Fasilitas published", x-status: planned, x-milestone: M13, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/public/articles:
-    get: { operationId: publicArticles, tags: [Content], summary: "Artikel published", x-status: planned, x-milestone: M13, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/public/articles/{slug}:
-    parameters: [{ $ref: '#/components/parameters/Slug' }]
-    get: { operationId: publicArticleShow, tags: [Content], summary: "Detail artikel published", x-status: planned, x-milestone: M13, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/public/albums:
-    get: { operationId: publicAlbums, tags: [Content], summary: "Album published", x-status: planned, x-milestone: M13, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/public/albums/{slug}:
-    parameters: [{ $ref: '#/components/parameters/Slug' }]
-    get: { operationId: publicAlbumShow, tags: [Content], summary: "Detail album published", x-status: planned, x-milestone: M13, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/articles:
-    get: { operationId: adminArticlesIndex, tags: [Content], summary: "Kelola artikel", x-status: planned, x-milestone: M13, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post: { operationId: adminArticlesStore, tags: [Content], summary: "Buat draf artikel", x-status: planned, x-milestone: M13, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/albums:
-    get: { operationId: adminAlbumsIndex, tags: [Content], summary: "Kelola album", x-status: planned, x-milestone: M13, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post: { operationId: adminAlbumsStore, tags: [Content], summary: "Buat draf album", x-status: planned, x-milestone: M13, responses: { default: { $ref: '#/components/responses/Error' } } }
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/dues-payments/{id}/correct:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - $ref: "#/components/parameters/IdempotencyKey"
+    post:
+      operationId: adminDuesPaymentsCorrect
+      tags:
+        - Finance
+      summary: Pembalikan + pengganti atomik
+      x-status: implemented
+      x-milestone: M12
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+  /api/v1/admin/dues-payments/{id}/reverse:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - $ref: "#/components/parameters/IdempotencyKey"
+    post:
+      operationId: adminDuesPaymentsReverse
+      tags:
+        - Finance
+      summary: Pembalikan dengan alasan
+      x-status: implemented
+      x-milestone: M12
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+  /api/v1/admin/dues-rates:
+    get:
+      operationId: adminDuesRatesIndex
+      tags:
+        - Finance
+      summary: Tarif efektif per bulan
+      x-status: implemented
+      x-milestone: M11
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminDuesRatesStore
+      tags:
+        - Finance
+      summary: Tetapkan tarif untuk periode (alasan wajib)
+      x-status: implemented
+      x-milestone: M11
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/dues/generate:
+    post:
+      operationId: adminDuesGenerate
+      tags:
+        - Finance
+      summary: Generate/catch-up tagihan idempotent
+      x-status: implemented
+      x-milestone: M11
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/exports/{jenis}:
+    parameters:
+      - name: jenis
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+            - iuran
+            - kas
+            - rumah
+    get:
+      operationId: getExportAdminExports
+      tags:
+        - Operations
+      summary: Unduh CSV iuran/kas/rumah (sinkron, aman formula injection)
+      x-status: implemented
+      x-milestone: M12
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/facilities:
-    get: { operationId: adminFacilitiesIndex, tags: [Content], summary: "Kelola fasilitas", x-status: planned, x-milestone: M13, responses: { default: { $ref: '#/components/responses/Error' } } }
-    post: { operationId: adminFacilitiesStore, tags: [Content], summary: "Buat fasilitas", x-status: planned, x-milestone: M13, responses: { default: { $ref: '#/components/responses/Error' } } }
+    get:
+      operationId: adminFacilitiesIndex
+      tags:
+        - Content
+      summary: Kelola fasilitas
+      x-status: planned
+      x-milestone: M13
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminFacilitiesStore
+      tags:
+        - Content
+      summary: Buat fasilitas
+      x-status: planned
+      x-milestone: M13
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/families:
+    get:
+      operationId: adminFamiliesIndex
+      tags:
+        - Residents
+      summary: Daftar keluarga
+      x-status: planned
+      x-milestone: M07
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminFamiliesStore
+      tags:
+        - Residents
+      summary: Tambah keluarga
+      x-status: planned
+      x-milestone: M07
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/families/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    patch:
+      operationId: adminFamiliesUpdate
+      tags:
+        - Residents
+      summary: Ubah keluarga
+      x-status: planned
+      x-milestone: M07
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/families/{id}/verify:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: postVerifyFamilyAdminFamilies
+      tags:
+        - Residents
+      summary: verifyFamily /admin/families/{id}/verify
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/houses:
+    get:
+      operationId: adminHousesIndex
+      tags:
+        - Residents
+      summary: Daftar rumah
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminHousesStore
+      tags:
+        - Residents
+      summary: Tambah rumah
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/houses/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: adminHousesShow
+      tags:
+        - Residents
+      summary: Detail rumah
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: adminHousesUpdate
+      tags:
+        - Residents
+      summary: Ubah rumah
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/houses/{id}/archive:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminHousesArchive
+      tags:
+        - Residents
+      summary: Arsip rumah; histori keuangan tetap
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "204":
+          description: Berhasil tanpa body.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/houses/{id}/dues:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: getHouseDuesAdminHouses
+      tags:
+        - Finance
+      summary: houseDues /admin/houses/{id}/dues
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/occupancies:
+    post:
+      operationId: adminOccupanciesStore
+      tags:
+        - Residents
+      summary: Mulai hunian/link
+      x-status: planned
+      x-milestone: M07
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/occupancies/{id}/end:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminOccupanciesEnd
+      tags:
+        - Residents
+      summary: Akhiri hunian
+      x-status: planned
+      x-milestone: M07
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/registration-token:
+    get:
+      operationId: adminRegistrationToken
+      tags:
+        - Identity
+      summary: Lihat token registrasi aktif (no-store)
+      x-status: implemented
+      x-milestone: M06
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/registration-token/rotate:
+    post:
+      operationId: adminRotateRegistrationToken
+      tags:
+        - Identity
+      summary: Rotasi manual token registrasi
+      x-status: implemented
+      x-milestone: M06
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/residents/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: adminResidentsShow
+      tags:
+        - Residents
+      summary: Detail anggota
+      x-status: planned
+      x-milestone: M07
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: adminResidentsUpdate
+      tags:
+        - Residents
+      summary: Ubah anggota
+      x-status: planned
+      x-milestone: M07
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/site-profile:
-    put: { operationId: adminSiteProfileUpdate, tags: [Content], summary: "Fakta profil tervalidasi", x-status: planned, x-milestone: M13, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/media:
-    post: { operationId: mediaUpload, tags: [Media], summary: "Upload privat JPG/PNG/WebP (202)", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/media/{id}/status:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: mediaStatus, tags: [Media], summary: "Status pemrosesan media", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/media/{id}/download:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: mediaDownload, tags: [Media], summary: "Unduh media sesuai policy", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/media/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    delete: { operationId: mediaArchive, tags: [Media], summary: "Arsip media yang boleh dilepas", x-status: planned, x-milestone: M08, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/dashboard:
-    get: { operationId: adminDashboard, tags: [Operations], summary: "Ringkasan pengurus", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/audit-logs:
-    get: { operationId: adminAuditLogs, tags: [Operations], summary: "Jejak audit", x-status: planned, x-milestone: M07, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/exports:
-    post: { operationId: adminExportsStore, tags: [Operations], summary: "Minta ekspor CSV (worker)", x-status: planned, x-milestone: M12, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/exports/{id}:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: adminExportsShow, tags: [Operations], summary: "Status ekspor", x-status: planned, x-milestone: M12, responses: { default: { $ref: '#/components/responses/Error' } } }
-  /api/v1/admin/exports/{id}/download:
-    parameters: [{ $ref: '#/components/parameters/Id' }]
-    get: { operationId: adminExportsDownload, tags: [Operations], summary: "Unduh ekspor privat", x-status: planned, x-milestone: M12, responses: { default: { $ref: '#/components/responses/Error' } } }
+    put:
+      operationId: adminSiteProfileUpdate
+      tags:
+        - Content
+      summary: Fakta profil tervalidasi
+      x-status: planned
+      x-milestone: M13
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/users/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: adminUsersShow
+      tags:
+        - Residents
+      summary: Detail akun
+      x-status: planned
+      x-milestone: M07
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: adminUsersUpdate
+      tags:
+        - Residents
+      summary: Ubah status akun (tanpa role mass-assignment)
+      x-status: planned
+      x-milestone: M07
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/users/{id}/archive:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminUsersArchive
+      tags:
+        - Residents
+      summary: Arsip akun dan cabut akses
+      x-status: planned
+      x-milestone: M07
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/agendas:
+    get:
+      operationId: agendasIndex
+      tags:
+        - Community
+      summary: Agenda published
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/agendas/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: agendasShow
+      tags:
+        - Community
+      summary: Detail agenda
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/agendas/{id}/calendar:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: agendasCalendar
+      tags:
+        - Community
+      summary: Link Google Calendar / ICS
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/announcements:
+    get:
+      operationId: announcementsIndex
+      tags:
+        - Community
+      summary: Pengumuman
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/announcements/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: announcementsShow
+      tags:
+        - Community
+      summary: Detail pengumuman
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/app-version:
-    get: { operationId: appVersion, tags: [Operations], summary: "Versi minimum aplikasi dan tautan unduh APK", x-status: planned, x-milestone: M16, security: [], responses: { default: { $ref: '#/components/responses/Error' } } }
-
+    get:
+      operationId: appVersion
+      tags:
+        - Operations
+      summary: Versi minimum aplikasi dan tautan unduh APK
+      x-status: planned
+      x-milestone: M16
+      security: []
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/aspirations:
+    get:
+      operationId: aspirationsIndex
+      tags:
+        - Aspirations
+      summary: Feed aspirasi
+      x-status: implemented
+      x-milestone: M09
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: aspirationsStore
+      tags:
+        - Aspirations
+      summary: Kirim aspirasi
+      x-status: implemented
+      x-milestone: M09
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/aspirations/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: aspirationsShow
+      tags:
+        - Aspirations
+      summary: Detail aspirasi
+      x-status: implemented
+      x-milestone: M09
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: aspirationsUpdate
+      tags:
+        - Aspirations
+      summary: Pemilik mengubah saat submitted
+      x-status: implemented
+      x-milestone: M09
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/aspirations/{id}/history:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: aspirationsHistory
+      tags:
+        - Aspirations
+      summary: Histori aspirasi
+      x-status: implemented
+      x-milestone: M09
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/additional-account-status:
+    get:
+      operationId: authAdditionalAccountStatus
+      tags:
+        - Identity
+      summary: Status permohonan akun tambahan sendiri
+      x-status: implemented
+      x-milestone: M06
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/additional-register:
+    post:
+      operationId: authAdditionalRegister
+      tags:
+        - Identity
+      summary: Registrasi akun tambahan (pending sampai disetujui)
+      x-status: implemented
+      x-milestone: M06
+      security: []
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/forgot-password:
+    post:
+      operationId: authForgotPassword
+      tags:
+        - Identity
+      summary: Permintaan reset (respons generik)
+      x-status: implemented
+      x-milestone: M06
+      security: []
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/logout:
+    post:
+      operationId: authLogout
+      tags:
+        - Identity
+      summary: Cabut token/sesi saat ini
+      x-status: implemented
+      x-milestone: M06
+      responses:
+        "204":
+          description: Berhasil tanpa body.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/logout-all:
+    post:
+      operationId: authLogoutAll
+      tags:
+        - Identity
+      summary: Cabut semua token/sesi
+      x-status: implemented
+      x-milestone: M06
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/me:
+    get:
+      operationId: authMe
+      tags:
+        - Identity
+      summary: Profil akun tersanitasi
+      x-status: implemented
+      x-milestone: M06
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/mobile-login:
+    post:
+      operationId: authMobileLogin
+      tags:
+        - Identity
+      summary: Login mobile, bearer token per perangkat
+      x-status: implemented
+      x-milestone: M06
+      security: []
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/password:
+    patch:
+      operationId: authChangePassword
+      tags:
+        - Identity
+      summary: Ganti password
+      x-status: implemented
+      x-milestone: M06
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/register:
+    post:
+      operationId: authRegister
+      tags:
+        - Identity
+      summary: Registrasi akun utama dengan token RT 6 digit
+      x-status: implemented
+      x-milestone: M06
+      security: []
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/reset-password:
+    post:
+      operationId: authResetPassword
+      tags:
+        - Identity
+      summary: Reset password dan cabut sesi lain
+      x-status: implemented
+      x-milestone: M06
+      security: []
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/web-login:
+    post:
+      operationId: authWebLogin
+      tags:
+        - Identity
+      summary: Login CMS dengan sesi cookie dan CSRF
+      x-status: planned
+      x-milestone: M06
+      security: []
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/cash/summary:
+    get:
+      operationId: cashSummary
+      tags:
+        - Finance
+      summary: Ringkasan kas tersanitasi
+      x-status: implemented
+      x-milestone: M12
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/complaint-categories:
+    get:
+      operationId: getCategoriesComplaintCategories
+      tags:
+        - Complaints
+      summary: categories /complaint-categories
+      x-status: implemented
+      x-milestone: M08
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/complaints:
+    get:
+      operationId: complaintsIndex
+      tags:
+        - Complaints
+      summary: Feed pengaduan tersanitasi
+      x-status: implemented
+      x-milestone: M08
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: complaintsStore
+      tags:
+        - Complaints
+      summary: Buat pengaduan
+      x-status: implemented
+      x-milestone: M08
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/complaints/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: complaintsShow
+      tags:
+        - Complaints
+      summary: Detail pengaduan role-aware
+      x-status: implemented
+      x-milestone: M08
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: complaintsUpdate
+      tags:
+        - Complaints
+      summary: Pemilik mengubah saat submitted
+      x-status: implemented
+      x-milestone: M08
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/complaints/{id}/history:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: complaintsHistory
+      tags:
+        - Complaints
+      summary: Histori status aman
+      x-status: implemented
+      x-milestone: M08
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/complaints/{id}/photos/{photoId}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - name: photoId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getComplaintPhotoComplaintsId
+      tags:
+        - Complaints
+      summary: complaintPhoto /complaints/{id}/photos/{photoId}
+      x-status: implemented
+      x-milestone: M08
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/devices/{device_identifier}:
+    parameters:
+      - name: device_identifier
+        in: path
+        required: true
+        schema:
+          type: string
+          maxLength: 200
+    put:
+      operationId: devicesUpsert
+      tags:
+        - Community
+      summary: Daftarkan token push perangkat
+      x-status: planned
+      x-milestone: M10
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: devicesDelete
+      tags:
+        - Community
+      summary: Hapus token push perangkat
+      x-status: planned
+      x-milestone: M10
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/dues/my:
+    get:
+      operationId: duesMy
+      tags:
+        - Finance
+      summary: Tagihan dan histori rumah akun
+      x-status: implemented
+      x-milestone: M11
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/dues/transparency:
+    get:
+      operationId: duesTransparency
+      tags:
+        - Finance
+      summary: Kode rumah, periode, nominal, status (tanpa PII)
+      x-status: implemented
+      x-milestone: M11
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/household:
+    get:
+      operationId: householdShow
+      tags:
+        - Residents
+      summary: Rumah/keluarga akun sendiri
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: householdUpdate
+      tags:
+        - Residents
+      summary: Akun utama memperbarui data keluarga (version)
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/household/members:
+    post:
+      operationId: householdMemberCreate
+      tags:
+        - Residents
+      summary: Tambah anggota keluarga sendiri
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/household/members/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    patch:
+      operationId: householdMemberUpdate
+      tags:
+        - Residents
+      summary: Ubah anggota keluarga sendiri
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: householdMemberEnd
+      tags:
+        - Residents
+      summary: Akhiri keanggotaan (arsip, bukan hapus)
+      x-status: implemented
+      x-milestone: M07
+      responses:
+        "204":
+          description: Berhasil tanpa body.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/media:
+    post:
+      operationId: mediaUpload
+      tags:
+        - Media
+      summary: Upload privat JPG/PNG/WebP (202)
+      x-status: planned
+      x-milestone: M08
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/media/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    delete:
+      operationId: mediaArchive
+      tags:
+        - Media
+      summary: Arsip media yang boleh dilepas
+      x-status: planned
+      x-milestone: M08
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/media/{id}/download:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: mediaDownload
+      tags:
+        - Media
+      summary: Unduh media sesuai policy
+      x-status: planned
+      x-milestone: M08
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/media/{id}/status:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: mediaStatus
+      tags:
+        - Media
+      summary: Status pemrosesan media
+      x-status: planned
+      x-milestone: M08
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/notification-preferences:
+    patch:
+      operationId: notificationPreferencesUpdate
+      tags:
+        - Community
+      summary: Preferensi push nonkritis
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    get:
+      operationId: getPreferencesNotificationPreferences
+      tags:
+        - Community
+      summary: preferences /notification-preferences
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/notifications:
+    get:
+      operationId: notificationsIndex
+      tags:
+        - Community
+      summary: Inbox notifikasi
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/notifications/{id}/read:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    patch:
+      operationId: notificationsRead
+      tags:
+        - Community
+      summary: Tandai dibaca
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/notifications/read-all:
+    post:
+      operationId: notificationsReadAll
+      tags:
+        - Community
+      summary: Tandai semua dibaca
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/albums:
+    get:
+      operationId: publicAlbums
+      tags:
+        - Content
+      summary: Album published
+      x-status: planned
+      x-milestone: M13
+      security: []
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/albums/{slug}:
+    parameters:
+      - $ref: "#/components/parameters/Slug"
+    get:
+      operationId: publicAlbumShow
+      tags:
+        - Content
+      summary: Detail album published
+      x-status: planned
+      x-milestone: M13
+      security: []
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/articles:
+    get:
+      operationId: publicArticles
+      tags:
+        - Content
+      summary: Artikel published
+      x-status: planned
+      x-milestone: M13
+      security: []
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/articles/{slug}:
+    parameters:
+      - $ref: "#/components/parameters/Slug"
+    get:
+      operationId: publicArticleShow
+      tags:
+        - Content
+      summary: Detail artikel published
+      x-status: planned
+      x-milestone: M13
+      security: []
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/facilities:
+    get:
+      operationId: publicFacilities
+      tags:
+        - Content
+      summary: Fasilitas published
+      x-status: planned
+      x-milestone: M13
+      security: []
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/site-profile:
+    get:
+      operationId: publicSiteProfile
+      tags:
+        - Content
+      summary: Profil publik published
+      x-status: planned
+      x-milestone: M13
+      security: []
+      responses:
+        default:
+          $ref: "#/components/responses/Error"
+  /health/live:
+    get:
+      operationId: healthLive
+      tags:
+        - Operations
+      summary: Liveness proses HTTP; tidak memanggil database.
+      x-status: implemented
+      x-milestone: M02
+      security: []
+      responses:
+        "200":
+          description: Proses sehat.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthLive"
+              example:
+                status: ok
+  /health/ready:
+    get:
+      operationId: healthReady
+      tags:
+        - Operations
+      summary: Readiness dependency dengan timeout; body tanpa hostname/credential.
+      x-status: implemented
+      x-milestone: M02
+      security: []
+      responses:
+        "200":
+          description: Semua dependency siap.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthReady"
+              example:
+                status: ready
+                checks:
+                  database: ok
+        "503":
+          description: Dependency belum siap atau konfigurasi TLS database salah.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/X-Request-Id"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthReady"
+              example:
+                status: not_ready
+                checks:
+                  database: unavailable
 security:
   - bearerAuth: []
   - cookieAuth: []
-
 components:
   securitySchemes:
     bearerAuth:
@@ -365,57 +1635,86 @@ components:
       in: cookie
       name: rt05_api_session
       description: Sesi CMS web (M06). Mutation wajib header X-XSRF-TOKEN setelah GET /sanctum/csrf-cookie.
-
   headers:
     X-Request-Id:
       description: UUID request; sama dengan meta.request_id / error.request_id. Client boleh mengirim UUID sendiri.
-      schema: { type: string, format: uuid }
-
+      schema:
+        type: string
+        format: uuid
   parameters:
     Id:
       name: id
       in: path
       required: true
-      schema: { type: string, format: uuid }
+      schema:
+        type: string
+        format: uuid
     Slug:
       name: slug
       in: path
       required: true
-      schema: { type: string, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$', maxLength: 160 }
+      schema:
+        type: string
+        pattern: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+        maxLength: 160
     IdempotencyKey:
       name: Idempotency-Key
       in: header
       required: true
       description: UUID unik per niat transaksi. Key sama + payload sama → replay; payload beda → 409.
-      schema: { type: string, format: uuid }
-
+      schema:
+        type: string
+        format: uuid
   responses:
     Error:
       description: Error dengan bentuk standar.
       headers:
-        X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        X-Request-Id:
+          $ref: "#/components/headers/X-Request-Id"
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
     NotFound:
       description: Resource tidak tersedia atau di luar scope.
       headers:
-        X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        X-Request-Id:
+          $ref: "#/components/headers/X-Request-Id"
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
           example:
-            error: { code: NOT_FOUND, message: Data tidak ditemukan., request_id: 0f8e6c1e-7d3b-4c55-9a40-6f1f2d3e4b5a }
-
+            error:
+              code: NOT_FOUND
+              message: Data tidak ditemukan.
+              request_id: 0f8e6c1e-7d3b-4c55-9a40-6f1f2d3e4b5a
+    Data:
+      description: Sukses dengan envelope data/meta.
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/X-Request-Id"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/DataEnvelope"
   schemas:
     Meta:
       type: object
-      required: [request_id]
+      required:
+        - request_id
       properties:
-        request_id: { type: string, format: uuid }
+        request_id:
+          type: string
+          format: uuid
     ErrorCode:
       type: string
-      enum:
+      pattern: ^[A-Z][A-Z0-9_]+$
+      description: "Kode umum: BAD_REQUEST, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, METHOD_NOT_ALLOWED, CONFLICT, PAYLOAD_TOO_LARGE,
+        UNSUPPORTED_MEDIA_TYPE, CSRF_EXPIRED, VALIDATION_FAILED, TOO_MANY_REQUESTS, SERVICE_UNAVAILABLE, INTERNAL_ERROR. Kode domain:
+        VERSION_CONFLICT, CHARGE_ALREADY_PAID, AMOUNT_MISMATCH, IDEMPOTENCY_KEY_REUSED, IDEMPOTENCY_IN_PROGRESS, HOUSE_ALREADY_REGISTERED,
+        REGISTRATION_TOKEN_INVALID, PAYMENT_ALREADY_REVERSED, dll."
+      x-known-values:
         - BAD_REQUEST
         - UNAUTHENTICATED
         - FORBIDDEN
@@ -432,51 +1731,94 @@ components:
     ErrorEnvelope:
       type: object
       additionalProperties: false
-      required: [error]
+      required:
+        - error
       properties:
         error:
           type: object
           additionalProperties: false
-          required: [code, message, request_id]
+          required:
+            - code
+            - message
+            - request_id
           properties:
-            code: { $ref: '#/components/schemas/ErrorCode' }
-            message: { type: string, minLength: 1 }
+            code:
+              $ref: "#/components/schemas/ErrorCode"
+            message:
+              type: string
+              minLength: 1
             fields:
               type: object
               description: Pesan validasi per field (hanya VALIDATION_FAILED).
               additionalProperties:
                 type: array
-                items: { type: string }
-            request_id: { type: string, format: uuid }
+                items:
+                  type: string
+            request_id:
+              type: string
+              format: uuid
     HealthLive:
       type: object
       additionalProperties: false
-      required: [status]
+      required:
+        - status
       properties:
-        status: { const: ok }
+        status:
+          const: ok
     HealthReady:
       type: object
       additionalProperties: false
-      required: [status, checks]
+      required:
+        - status
+        - checks
       properties:
-        status: { type: string, enum: [ready, not_ready] }
+        status:
+          type: string
+          enum:
+            - ready
+            - not_ready
         checks:
           type: object
           additionalProperties: false
-          required: [database]
+          required:
+            - database
           properties:
-            database: { type: string, enum: [ok, unavailable, misconfigured] }
+            database:
+              type: string
+              enum:
+                - ok
+                - unavailable
+                - misconfigured
     ServiceInfo:
       type: object
       additionalProperties: false
-      required: [name, api_version]
+      required:
+        - name
+        - api_version
       properties:
-        name: { type: string }
-        api_version: { const: v1 }
+        name:
+          type: string
+        api_version:
+          const: v1
     ServiceInfoEnvelope:
       type: object
       additionalProperties: false
-      required: [data, meta]
+      required:
+        - data
+        - meta
       properties:
-        data: { $ref: '#/components/schemas/ServiceInfo' }
-        meta: { $ref: '#/components/schemas/Meta' }
+        data:
+          $ref: "#/components/schemas/ServiceInfo"
+        meta:
+          $ref: "#/components/schemas/Meta"
+    DataEnvelope:
+      type: object
+      required:
+        - data
+        - meta
+      properties:
+        data: {}
+        meta:
+          $ref: "#/components/schemas/Meta"
+        links:
+          type: object

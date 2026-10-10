@@ -1,6 +1,8 @@
 <?php
 
+use App\Exceptions\DomainConflict;
 use App\Http\Middleware\AssignRequestId;
+use App\Http\Middleware\EnsureAkun;
 use App\Http\Responses\ApiError;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,10 +21,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignRequestId::class);
+        $middleware->alias(['akun' => EnsureAkun::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Aplikasi ini hanya API: setiap error menjadi JSON envelope, tanpa halaman HTML/stack trace.
         $exceptions->shouldRenderJsonWhen(fn () => true);
         $exceptions->render(fn (Throwable $e, Request $request) => ApiError::fromThrowable($e, $request));
         $exceptions->dontReportDuplicates();
+        // Pelanggaran aturan bisnis yang wajar (nominal salah, versi basi) bukan error server.
+        $exceptions->dontReport([DomainConflict::class]);
     })->create();
