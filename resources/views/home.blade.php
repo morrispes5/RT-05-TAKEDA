@@ -23,11 +23,29 @@
                 <a class="text-link" href="/dokumentasi">Lihat dokumentasi <x-ikon nama="panah" /></a>
             </div>
         </div>
-        <div class="hero-visual" data-parallax-scene>
-            <figure class="hero-arch" data-parallax="14" data-drag-pan>
-                <x-foto slug="gapura" :data="$foto['gapura']" :utama="true" sizes="(max-width: 1024px) 92vw, 46vw" />
-                <figcaption><span>Selamat datang di Takeda</span><x-ikon nama="lokasi" /></figcaption>
+        @php
+            $heroPhotos = ['gapura' => 'Selamat datang di Takeda', 'taman-bermain' => 'Taman bermain yang teduh', 'sekretariat' => 'Sekretariat RT 05', 'lapangan' => 'Lapangan serbaguna'];
+        @endphp
+        <div class="hero-visual" data-parallax-scene data-hero-slideshow role="region" aria-roledescription="karusel" aria-label="Foto lingkungan RT 05">
+            <figure class="hero-arch" data-parallax="14">
+                @foreach($heroPhotos as $slug => $caption)
+                <div id="hero-photo-{{ $loop->index }}" class="hero-slide{{ $loop->first ? ' is-active' : '' }}" data-hero-slide data-caption="{{ $caption }}" role="group" aria-roledescription="slide" aria-label="{{ $loop->iteration }} dari {{ $loop->count }}: {{ $foto[$slug]['label'] }}" aria-hidden="{{ $loop->first ? 'false' : 'true' }}">
+                    <x-foto :slug="$slug" :data="$foto[$slug]" :utama="$loop->first" sizes="(max-width: 1024px) 92vw, 46vw" />
+                </div>
+                @endforeach
+                <figcaption><span data-hero-caption>Selamat datang di Takeda</span><x-ikon nama="lokasi" /></figcaption>
             </figure>
+            <div class="hero-slideshow-controls" data-hero-controls hidden>
+                <div class="hero-slide-choices" role="group" aria-label="Pilih foto">
+                    @foreach($heroPhotos as $slug => $caption)
+                    <button type="button" data-hero-select="{{ $loop->index }}" aria-label="Lihat foto {{ $foto[$slug]['label'] }}" aria-controls="hero-photo-{{ $loop->index }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}"><span aria-hidden="true"></span></button>
+                    @endforeach
+                </div>
+                <button type="button" class="hero-slideshow-toggle" data-hero-toggle aria-label="Jeda pergantian foto">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path data-hero-pause-icon d="M9 5v14M15 5v14"/><path data-hero-play-icon d="m8 5 11 7-11 7z" hidden/></svg>
+                    <span data-hero-toggle-label>Jeda</span>
+                </button>
+            </div>
             <div class="hero-badge" data-parallax="46" aria-hidden="true">
                 <svg viewBox="0 0 132 132">
                     <defs><path id="badge-circle" d="M66 66 m -46 0 a 46 46 0 1 1 92 0 a 46 46 0 1 1 -92 0"/></defs>
