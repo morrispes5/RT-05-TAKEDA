@@ -10,7 +10,7 @@ Website publik sudah diterima pada 10 Oktober 2026 (M00) dan live sebagai previe
 | --- | --- | --- |
 | [website/](website/README.md) | Laravel 13 + Blade + Tailwind 4 + Vite; website publik dan UI Pengurus Artikel/Dokumentasi yang diterima | Baseline accepted, dipindah utuh pada M01 |
 | [mobile/](mobile/README.md) | Flutter Android warga/pengurus | Placeholder; dibangun M05 |
-| [rest-api/](rest-api/README.md) | Laravel REST API, pemilik database Neon dan aturan bisnis | Placeholder; dibangun M02 |
+| [rest-api/](rest-api/README.md) | Laravel REST API, pemilik database Neon dan aturan bisnis | Fondasi M02: health, konvensi error, schema fondasi, Neon dev |
 | [infra/](infra/README.md) | Script, Docker, Nginx, Compose | Script pemeriksaan repo aktif; sisanya M03–M04 |
 | [docs/](docs/PRD.md) | Konteks lintas modul; dokumentasi frontend di [docs/website/](docs/website/FRONTEND_HANDOFF.md) | Aktif |
 | `.github/workflows/` | CI website dan pemeriksaan repo | Aktif |
@@ -81,6 +81,6 @@ node infra/scripts/check-repo.mjs
 
 ## Status
 
-Lihat [docs/PROGRESS.md](docs/PROGRESS.md). M00 accepted baseline; M01 passed (PR #10); M02–M16 planned. Backend, mobile, server, DNS, Neon, Redis, SMTP, FCM, dan backup belum operasional.
+Lihat [docs/PROGRESS.md](docs/PROGRESS.md). M00 accepted baseline; M01 passed (PR #10); M02 lihat PROGRESS; M03–M16 planned. Fitur warga, mobile, server, DNS, Redis, SMTP, FCM, dan backup belum operasional.
 
 Jumlah developer tidak menentukan rancangan. Pekerjaan dapat dibagi per issue/domain, dengan kontrak API serta dependency milestone sebagai acuan bersama.
