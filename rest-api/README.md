@@ -57,8 +57,8 @@ Project Neon `rt05-takeda` (aws-ap-southeast-1, Postgres 17): branch `production
 `.env` lokal untuk Neon dev:
 
 ```dotenv
-DATABASE_URL=postgresql://rt05_app:<password>@<endpoint>-pooler.<region>.aws.neon.tech/rt05_takeda?sslmode=verify-full
-DATABASE_URL_UNPOOLED=postgresql://rt05_owner:<password>@<endpoint>.<region>.aws.neon.tech/rt05_takeda?sslmode=verify-full
+DATABASE_URL=postgresql://rt05_app:***@<endpoint>-pooler.<region>.aws.neon.tech/rt05_takeda?sslmode=verify-full
+DATABASE_URL_UNPOOLED=postgresql://rt05_owner:***@<endpoint>.<region>.aws.neon.tech/rt05_takeda?sslmode=verify-full
 DB_SSLMODE=verify-full
 DB_SSLROOTCERT=C:/Users/<anda>/.rt05/ca-bundle.crt
 ```
