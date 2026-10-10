@@ -92,7 +92,7 @@ class Api {
       _wrap(() => _dio.get(path, queryParameters: query), (b) => Map<String, dynamic>.from(b as Map));
 
   Future<dynamic> post(String path, {Object? data, String? idempotencyKey}) => _wrap(
-        () => _dio.post(path, data: data, options: Options(headers: {if (idempotencyKey != null) 'Idempotency-Key': idempotencyKey})),
+        () => _dio.post(path, data: data, options: Options(headers: {'Idempotency-Key': ?idempotencyKey})),
         (b) => b is Map ? b['data'] : null,
       );
 
@@ -100,7 +100,7 @@ class Api {
 
   Future<dynamic> put(String path, {Object? data}) => _wrap(() => _dio.put(path, data: data), (b) => b is Map ? b['data'] : null);
 
-  Future<void> delete(String path) => _wrap(() => _dio.delete(path), (_) => null);
+  Future<void> delete(String path) => _wrap(() => _dio.delete(path), (_) {});
 
   Future<bool> health() async {
     try {

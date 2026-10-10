@@ -31,8 +31,9 @@ ThemeData buildTheme() {
     ),
     scaffoldBackgroundColor: Brand.sky,
   );
-  final body = GoogleFonts.publicSansTextTheme(base.textTheme).apply(bodyColor: Brand.ink, displayColor: Brand.ink);
-  TextStyle? display(TextStyle? s) => GoogleFonts.bricolageGrotesque(textStyle: s, fontWeight: FontWeight.w700, color: Brand.ink);
+  final body = base.textTheme.apply(fontFamily: GoogleFonts.publicSans().fontFamily, bodyColor: Brand.ink, displayColor: Brand.ink);
+  final displayFamily = GoogleFonts.bricolageGrotesque().fontFamily;
+  TextStyle? display(TextStyle? s) => s?.copyWith(fontFamily: displayFamily, fontWeight: FontWeight.w700, color: Brand.ink);
 
   return base.copyWith(
     textTheme: body.copyWith(
