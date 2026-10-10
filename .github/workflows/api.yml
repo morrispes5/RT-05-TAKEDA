@@ -1,0 +1,68 @@
+name: API verification
+on:
+  pull_request:
+    paths:
+      - 'rest-api/**'
+      - 'docs/openapi.yaml'
+      - 'redocly.yaml'
+      - 'infra/sql/**'
+      - 'infra/docker/postgres/**'
+      - '.github/workflows/api.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'rest-api/**'
+      - 'docs/openapi.yaml'
+      - 'redocly.yaml'
+      - 'infra/sql/**'
+      - 'infra/docker/postgres/**'
+      - '.github/workflows/api.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local-dev-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      # Postgres CI sintetis; tidak ada credential Neon pada job PR.
+      DATABASE_URL: postgresql://rt05_app:local-dev-only@127.0.0.1:5432/rt05_test
+      DATABASE_URL_UNPOOLED: postgresql://rt05_migrator:local-dev-only@127.0.0.1:5432/rt05_test
+      PGPASSWORD: local-dev-only
+    defaults:
+      run:
+        working-directory: rest-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, pgsql, intl, mbstring
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Roles dan database lokal (sumber sama dengan compose)
+        working-directory: .
+        run: psql -h 127.0.0.1 -U postgres -d postgres -f infra/docker/postgres/init/01-rt05-roles.sql
+      - run: composer validate --no-check-publish
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env && php artisan key:generate
+      - run: php vendor/bin/pint --test
+      - name: Tes (migration via pgsql_migrations, tes via role runtime)
+        run: php artisan test
+      - name: Smoke sintetis role runtime
+        run: php artisan rt05:db-smoke --connection=pgsql
+      - name: Smoke sintetis role migration
+        run: php artisan rt05:db-smoke --connection=pgsql_migrations
+      - name: Lint OpenAPI
+        working-directory: .
+        run: npx --yes @redocly/cli@2 lint docs/openapi.yaml

@@ -19,5 +19,7 @@ vendor/
 *.keystore
 key.properties
 *.sql
+!/infra/sql/*.sql
+!/infra/docker/postgres/init/*.sql
 *.sql.gz
 *.dump
