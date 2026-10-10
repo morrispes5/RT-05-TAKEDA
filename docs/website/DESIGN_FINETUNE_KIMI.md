@@ -112,7 +112,7 @@ yang aman di semua viewport. Diverifikasi ulang oleh QA browser (lihat di bawah)
 Pemilik menilai hero lama (teks tengah + kolase 3 foto) terlalu generik/"template AI" dan logo
 (ikon rumah dalam kotak biru) tidak khas. Redesign ini berpedoman pada
 `.claude/skills/frontend-design/SKILL.md` (anti-pola default AI) dan tetap mematuhi mandat
-`docs/FRONTEND_REFACTOR.md`: biru muda wajib ada, font dan warna inti tidak berubah, hanya foto asli.
+`docs/website/FRONTEND_REFACTOR.md`: biru muda wajib ada, font dan warna inti tidak berubah, hanya foto asli.
 
 ## Konsep: "Gapura"
 Elemen pembeda digali dari subjek itu sendiri: gapura masuk RT 05 (pediment garis merah-putih

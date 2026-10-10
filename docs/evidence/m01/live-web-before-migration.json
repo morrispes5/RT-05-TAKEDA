@@ -1,0 +1,107 @@
+{
+  "checkedAt": "2026-10-10T10:14:48.562Z",
+  "base": "https://rt05takeda.vercel.app",
+  "routes": 19,
+  "exactHtmlMatches": 19,
+  "assetsMatched": 26,
+  "unknownRoutes": "404",
+  "mobileBrowser": "PASS",
+  "browserErrors": [],
+  "results": [
+    {
+      "route": "/artikel",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/dokumentasi",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/fasilitas",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/kontak",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/pengurus",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/profil",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/pengurus/artikel",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/pengurus/dokumentasi",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/pengurus/masuk",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/pengurus/pratinjau",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/pengurus/dokumentasi/editor",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/pengurus/artikel/editor",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/dokumentasi/perayaan-17-agustus",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/artikel/bertetangga-dengan-peduli",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/artikel/cara-mencuci-tangan",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/artikel/memilah-sampah-rumah",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/artikel/menjaga-aliran-air",
+      "status": 200,
+      "exactHtmlMatch": true
+    },
+    {
+      "route": "/artikel/merawat-fasilitas-bersama",
+      "status": 200,
+      "exactHtmlMatch": true
+    }
+  ]
+}

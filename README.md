@@ -1,105 +1,86 @@
-# RT 05 Takeda — website publik
+# RT05 TAKEDA — monorepo
 
-Website informasi RT 05 RW 07 Taman Kedaung, Ciputat. Laravel 13 + Blade + Tailwind CSS 4 + Vite.
-Website publik tidak memerlukan akun. Area pengurus saat ini **pratinjau antarmuka**, bukan sistem operasional.
+Sistem informasi dan layanan warga RT 05 RW 07 Taman Kedaung, Ciputat. Pemilik: Morriz. Domain: morriz.tech.
 
-**Desain diterima pada 10 Oktober 2026.** Mulai dari [serah terima frontend dan monorepo](docs/FRONTEND_HANDOFF.md) untuk melanjutkan dengan agent lain. Paket lengkap tersedia pada [release frontend](https://github.com/morrispes5/RT-05-TAKEDA/releases/tag/web-frontend-approved-2026-10-10), dengan isi folder `web/`, manifest, dan checksum. Aplikasi mobile serta REST API/backend adalah tahap berikutnya.
+Website publik sudah diterima pada 10 Oktober 2026 (M00) dan live sebagai preview statis di https://rt05takeda.vercel.app. Sejak M01 repository ini menjadi monorepo: website, aplikasi mobile, REST API, dokumentasi, dan dukungan infrastruktur berada di satu Git history.
 
-## Menjalankan secara lokal
-PHP 8.3+, Composer, Node.js 22.12+ (atau 24+).
+## Struktur
+
+| Folder | Isi | Status |
+| --- | --- | --- |
+| [website/](website/README.md) | Laravel 13 + Blade + Tailwind 4 + Vite; website publik dan UI Pengurus Artikel/Dokumentasi yang diterima | Baseline accepted, dipindah utuh pada M01 |
+| [mobile/](mobile/README.md) | Flutter Android warga/pengurus | Placeholder; dibangun M05 |
+| [rest-api/](rest-api/README.md) | Laravel REST API, pemilik database Neon dan aturan bisnis | Placeholder; dibangun M02 |
+| [infra/](infra/README.md) | Script, Docker, Nginx, Compose | Script pemeriksaan repo aktif; sisanya M03–M04 |
+| [docs/](docs/PRD.md) | Konteks lintas modul; dokumentasi frontend di [docs/website/](docs/website/FRONTEND_HANDOFF.md) | Aktif |
+| `.github/workflows/` | CI website dan pemeriksaan repo | Aktif |
+
+## Target
+
+| Bagian | Target |
+| --- | --- |
+| Website | Laravel 13, Blade, Tailwind 4; pertahankan frontend yang diterima |
+| REST API | Laravel 13, Eloquent, Sanctum; pemilik seluruh aturan bisnis |
+| Mobile | Flutter/Dart; satu aplikasi dengan tampilan warga dan pengurus |
+| Database | PostgreSQL melalui Neon; lingkungan terisolasi |
+| Redis | Instance antrean dan cache terpisah |
+| Asinkron | Worker Laravel, scheduler, transactional outbox |
+| Hosting | VPS Hostinger, Docker, reverse proxy HTTPS |
+| Domain | Production `takeda.morriz.tech`, staging `takeda-staging.morriz.tech`; `/api/v1` untuk API |
+| Preview | Vercel tetap preview statis frontend selama pengembangan |
+| Distribusi mobile | APK Android bertanda tangan; bukan proses Flutter pada VPS |
+
+Iuran Rp75.000 per rumah per bulan, dibayar offline dan dicatat pengurus. Tidak ada payment gateway. Perubahan teknis dicatat sebagai ADR di [docs/DECISIONS.md](docs/DECISIONS.md).
+
+## Mulai cepat — website
+
+Prasyarat: PHP 8.3+ (CI 8.4), Composer, Node.js 22.12+. Jalankan dari folder `website/`:
 
 ```powershell
+Set-Location website
 composer install
 Copy-Item .env.example .env
 php artisan key:generate
 npm.cmd ci
-npm.cmd run build
-php artisan serve
-```
-
-Buka http://127.0.0.1:8000. Tidak perlu migrasi database untuk website publik dan shell ini.
-Gunakan SESSION_DRIVER=file dan CACHE_STORE=file untuk penggunaan lokal (sudah di .env.example).
-Jangan jalankan composer setup untuk sekadar frontend: script bawaan tersebut juga menjalankan migrasi.
-
-## Halaman
-- / — Beranda
-- /profil — lingkungan dan pengurus; Agus Ferdiansyah sebagai ketua, sekretaris/bendahara anonim
-- /fasilitas — sarana dengan foto asli
-- /dokumentasi — Kegiatan dan Lingkungan; album serta 11 foto lingkungan
-- /dokumentasi/perayaan-17-agustus — cerita album, foto asli, keterangan, dan lightbox
-- /artikel + /artikel/{slug} — 5 bacaan edukasi dengan SVG original dan waktu baca terhitung
-- /kontak — informasi wilayah dan status kontak yang belum diumumkan
-- /pengurus — Ringkasan untuk Artikel dan Dokumentasi, dengan reset draf lokal
-- /pengurus/artikel dan /pengurus/artikel/editor — daftar dan editor artikel
-- /pengurus/dokumentasi dan /pengurus/dokumentasi/editor — daftar dan editor album
-- /pengurus/pratinjau — hasil draf lokal seperti halaman publik
-- /pengurus/masuk — penjelasan akses tanpa menerima kredensial
-
-Editor dapat dicoba dengan data contoh dan foto perangkat. Draf dan foto tersimpan di IndexedDB
-browser ini, tanpa dikirim ke server. Konten publik tetap berasal dari katalog repo.
-Pendataan warga, pengaduan, aspirasi, agenda, iuran, keuangan, dan token registrasi milik aplikasi
-mobile. Publikasi online dan login operasional menjadi tahap Laravel di VPS.
-
-## Preview Vercel
-Vercel menyajikan direktori statis preview/ yang di-commit. **Vercel tidak menjalankan Laravel/PHP**.
-Sumber perubahan tetap Blade, CSS, JS, dan data; jangan edit HTML hasil ekspor secara manual.
-
-```powershell
 npm.cmd run build:preview
 npm.cmd run preview
 ```
 
-Preview lokal: http://127.0.0.1:8123. Ekspor mengunjungi semua rute melalui kernel Laravel tanpa server
-background dan tanpa database. Output 19 halaman + 404, aset build, dan foto. Setiap URL menggunakan
-cleanUrls pada Vercel, sehingga artikel, album, dan editor dapat dibuka langsung.
-scripts/build-preview.sh adalah wrapper untuk lingkungan Bash.
+Buka http://127.0.0.1:8123. Rute tetap `/profil`, `/artikel`, dan seterusnya; `website/` bukan prefix URL. Jangan menjalankan `composer setup` untuk frontend karena menjalankan migrasi. Detail pemeriksaan ada di [website/README.md](website/README.md).
 
-Workflow GitHub memeriksa bahwa preview/ sesuai sumber. Push PR memicu deployment preview melalui integrasi
-Vercel yang sudah ada; merge main memicu redeploy alias branch utama sesuai konfigurasi proyek Vercel.
+Pemeriksaan repo (secret, file terlarang, `.git` bersarang, tautan relatif, paritas Vercel):
 
-## Pemeriksaan
 ```powershell
-php artisan test
-php vendor/bin/pint --test
-npm.cmd run build:preview
-npx.cmd playwright install chromium
-npm.cmd run test:preview
-npm.cmd audit
+node infra/scripts/check-repo.mjs
 ```
 
-Tes browser memeriksa seluruh rute pada 360, 390, 768, 1024, dan 1440 px, overflow, gambar,
-tautan internal/anchor, error browser, filter, lightbox, fokus, menu mobile, dan reduced motion.
-Axe memeriksa WCAG A/AA di 390 dan 1440 px. Screenshot dan JSON disimpan di artifacts/ (diabaikan Git).
-Pemeriksaan otomatis tidak menggantikan penilaian manusia atas aksesibilitas atau persetujuan konten mitra.
+## Peta baca
 
-## Struktur
-| Lokasi | Isi |
+| Dokumen | Tujuan |
 | --- | --- |
-| app/Support/SiteContent.php | Katalog konten dan rute ekspor |
-| app/Http/Controllers/PublicPageController.php | Halaman publik dan pratinjau pengurus |
-| resources/views | Layout, halaman, komponen foto/ikon/SVG artikel |
-| resources/data/dokumentasi.json | Manifest foto asli, dimensi, alt, caption |
-| resources/data/artikel.json | Bacaan edukasi; tidak mengaku sebagai berita RT |
-| resources/data/album.json | Album, sampul, foto, keterangan, dan sumber |
-| resources/css/app.css | Token dan layout responsif publik/pengurus |
-| resources/js/app.js | Menu, filter, dialog foto |
-| resources/js/preview-content.js | Repository asinkron konten dan foto lokal |
-| resources/js/cms-preview.js | Editor dan hasil pratinjau |
-| scripts/export-preview.php | Ekspor semua rute dengan lingkungan tanpa database |
-| scripts/check-preview.mjs | QA browser dan aksesibilitas |
-| docs/FRONTEND_REFACTOR.md | Audit, keputusan produk, sumber, arah desain |
-| docs/CONTENT_PREVIEW.md | Perilaku editor dan arah adapter Laravel |
-| docs/STITCH_SCREENS.md | Inventaris layar Google Stitch |
-| docs/QA_STITCH_PREVIEW.md | Bukti pemeriksaan terbaru |
+| [AGENTS.md](AGENTS.md) | Instruksi agent dan batas keselamatan |
+| [docs/PRD.md](docs/PRD.md) | Produk, cakupan, alur, dan penerimaan |
+| [docs/BUSINESS_RULES.md](docs/BUSINESS_RULES.md) | Aturan bisnis dan invariant |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Runtime, modul, dan aliran data |
+| [docs/MONOREPO.md](docs/MONOREPO.md) | Struktur, migrasi repo, dan workflow |
+| [docs/FRONTEND.md](docs/FRONTEND.md) | Baseline web dan integrasi CMS |
+| [docs/DATABASE.md](docs/DATABASE.md) | Koneksi Neon, skema, transaksi, migrasi |
+| [docs/ERD.md](docs/ERD.md) | Relasi dan daftar tabel rancangan |
+| [docs/API.md](docs/API.md) | Kontrak HTTP dan autentikasi |
+| [docs/MOBILE.md](docs/MOBILE.md) | Layar, struktur Flutter, build |
+| [docs/ASYNC_JOBS.md](docs/ASYNC_JOBS.md) | Redis, worker, outbox, scheduler |
+| [docs/SECURITY.md](docs/SECURITY.md) | Privasi, otorisasi, secrets, abuse |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Hostinger, DNS, Docker, backup, rollback |
+| [docs/TESTING.md](docs/TESTING.md) | Pengujian perilaku, UAT, rilis |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | M00–M16; hasil dan syarat selesai |
+| [docs/CODEX_PROMPTS.md](docs/CODEX_PROMPTS.md) | Prompt tiap milestone dan lanjut sesi |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Sumber keputusan dan ADR |
+| [docs/PROGRESS.md](docs/PROGRESS.md) | Status aktual dan bukti per milestone |
+| [docs/SOURCES.md](docs/SOURCES.md) | Sumber proyek dan dokumentasi resmi |
+| [docs/website/](docs/website/FRONTEND_HANDOFF.md) | Handoff, preview konten, Stitch, QA, bukti frontend, [instruksi Vercel](docs/website/VERCEL_ROOT.md) |
 
-## Media dan konten
-Hanya foto asli dalam katalog repo yang digunakan. WebP memiliki varian 480/960/1600 sesuai manifest;
-foto papan peraturan maksimal 960 px; album 17 Agustus memiliki 480/960/1280 px.
-Foto asli tidak di-commit; versi web telah dibuang EXIF/GPS.
-Jangan menambah foto wajah warga/anak tanpa izin. Untuk aset baru gunakan scripts/optimize-images.mjs
-dan perbarui manifest. Ikon dan ilustrasi artikel adalah SVG; tidak ada gambar raster AI atau foto stok.
+## Status
 
-Arahan visual **Halaman Bersama** mempertahankan Bricolage Grotesque, Public Sans, dan logo gapura repo,
-dengan hero dua kolom Kimi, garis kuning, dan foto gapura berbentuk lengkung. Font di-host sendiri.
-Gerakan dekoratif berulang dihentikan dan headline HP memakai warna solid. Referensi Stitch
-mempertajam hierarki konten, album editorial, dan editor dengan design system yang sama.
+Lihat [docs/PROGRESS.md](docs/PROGRESS.md). M00 accepted baseline; M01 passed (PR #10); M02–M16 planned. Backend, mobile, server, DNS, Neon, Redis, SMTP, FCM, dan backup belum operasional.
+
+Jumlah developer tidak menentukan rancangan. Pekerjaan dapat dibagi per issue/domain, dengan kontrak API serta dependency milestone sebagai acuan bersama.
