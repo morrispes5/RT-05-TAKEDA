@@ -81,9 +81,6 @@ svg { width:22px; height:22px; flex-shrink:0; display:inline-block; vertical-ali
 .hero-arch.is-dragging { cursor:grabbing; }
 .hero-arch img { width:100%; height:560px; object-position:50% 40%; scale:1.12; user-select:none; -webkit-user-drag:none; }
 .hero-arch figcaption { display:flex; gap:20px; align-items:center; justify-content:space-between; position:absolute; bottom:26px; left:26px; right:26px; padding:12px 18px; background:var(--yellow); color:#183b50; border-radius:10px; font-size:12px; font-weight:600; box-shadow:0 8px 20px rgba(18,62,101,.28); }
-.hero-tuck { position:absolute; left:-58px; bottom:34px; width:196px; margin:0; }
-.hero-tuck img { width:100%; height:150px; border-radius:14px; border:5px solid #fff; box-shadow:var(--shadow-lg); }
-.hero-tuck figcaption { font-size:10px; line-height:1.55; color:var(--muted); margin:9px 4px 0; }
 .hero-badge { position:absolute; top:-46px; right:-14px; width:132px; height:132px; display:grid; place-items:center; background:#fff; border-radius:50%; box-shadow:var(--shadow-lg); animation:badge-pop .7s .9s var(--ease) both; }
 .hero-badge svg { position:absolute; inset:8px; width:calc(100% - 16px); height:calc(100% - 16px); animation:badge-spin 26s linear infinite; }
 .hero-badge text { font-family:'Public Sans Variable',sans-serif; font-size:11.5px; font-weight:600; letter-spacing:.06em; fill:var(--navy); }
@@ -330,8 +327,6 @@ dialog :focus-visible { outline-color:var(--yellow); }
     .main-nav .nav-contact { margin-left:0; }
     .hero-grid { gap:44px; }
     .hero-arch img { height:470px; }
-    .hero-tuck { left:-30px; width:168px; }
-    .hero-tuck img { height:128px; }
     .hero-badge { width:112px; height:112px; top:-36px; right:-8px; }
     .hero-badge img { width:34px; height:34px; }
     .intro-grid { gap:55px; }
@@ -373,8 +368,6 @@ dialog :focus-visible { outline-color:var(--yellow); }
     .hero-grid { grid-template-columns:1fr; gap:56px; padding-block:56px 72px; }
     .hero-copy > p { max-width:520px; }
     .hero-arch img { height:420px; }
-    .hero-tuck { left:auto; right:14px; bottom:-34px; width:158px; }
-    .hero-tuck img { height:112px; }
     .hero-badge { top:-30px; right:8px; width:98px; height:98px; }
     .hero-badge img { width:30px; height:30px; }
     .intro-grid { grid-template-columns:1fr; gap:25px; }
@@ -442,9 +435,6 @@ dialog :focus-visible { outline-color:var(--yellow); }
     .hero-arch { border-radius:170px 170px 16px 16px; outline-width:6px; outline-offset:-6px; }
     .hero-arch img { height:340px; }
     .hero-arch figcaption { left:14px; right:14px; bottom:16px; font-size:11px; padding:10px 13px; }
-    .hero-tuck { width:128px; bottom:-26px; }
-    .hero-tuck img { height:96px; border-width:4px; }
-    .hero-tuck figcaption { font-size:9px; }
     .hero-badge { width:82px; height:82px; top:-22px; }
     .hero-badge img { width:26px; height:26px; }
     .hero-marquee-track span { font-size:10px; padding-block:11px; }

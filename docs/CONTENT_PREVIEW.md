@@ -31,4 +31,6 @@ Pada tahap VPS, repository dapat diganti adapter HTTP Laravel dengan autentikasi
 
 Urutan beranda: hero → akses cepat → lingkungan → fasilitas → album → bacaan → kontak → footer. Jumlah artboard Stitch tidak menjadi jumlah section beranda. Garis kuning dan foto gapura lengkung Kimi dipertahankan; outline menjadi aksen desktop dan headline HP solid. Badge berhenti berputar, marquee disingkirkan dari tampilan, dan reduced motion menonaktifkan animasi pembuka/parallax.
 
+Penyesuaian Beranda, 10 Oktober 2026: foto kecil taman bermain yang menumpuk di depan foto gapura beserta caption-nya dihapus sesuai screenshot arahan pemilik. Gaya posisi dan ukuran overlay yang sudah tidak dipakai juga dibersihkan.
+
 Navy `#123e65`, kuning `#f2cd5a`, sky `#eef5fa`, Bricolage Grotesque, Public Sans, serta logo gapura menjadi fondasi seluruh halaman. Artikel mempunyai pencarian judul, filter kategori, dan isi baca 18 px. Dokumentasi memakai tab Kegiatan/Lingkungan, album editorial, caption, dan dialog perbesar dengan pengembalian fokus.
