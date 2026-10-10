@@ -1,5 +1,7 @@
 # Serah terima frontend RT 05 Takeda
 
+> **Catatan M01 (10 Oktober 2026):** dokumen ini historis untuk baseline frontend. Repository yang sama kini menjadi monorepo: modul web berada di `website/` (bukan `web/` seperti rencana di bawah), dokumentasi frontend di `docs/website/`, workflow di `.github/workflows/website.yml`, dan instruksi Vercel di [VERCEL_ROOT.md](VERCEL_ROOT.md). Opsi ZIP/subtree di bawah tidak dipakai karena migrasi dilakukan dengan `git mv` di repository asal agar history tetap utuh. Perintah website dijalankan dari `website/`.
+
 ## Status dan sumber utama
 
 **Desain diterima pemilik pada 10 Oktober 2026.** Tahap website frontend selesai sementara. Pekerjaan berikutnya adalah membahas monorepo, aplikasi mobile, REST API, dan backend bersama agent berikutnya. Handoff ini tidak membangun modul-modul tersebut atau mengubah tampilan yang telah diterima.
@@ -66,7 +68,7 @@ Belum ada endpoint REST bisnis, autentikasi operasional, upload media server, pu
 
 Dependencies terpasang (`vendor/`, `node_modules/`), `.env`, cache/log, database lokal, dan `artifacts/` tidak dibawa. `public/build/` dapat dibuat ulang dari source/lockfile; versi build yang diperlukan untuk hosting sudah ada di `preview/build/`. Draf IndexedDB berada dalam browser, bukan dalam repo. Foto asli Drive tetap di Drive; foto web yang dipakai website sudah ada di GitHub.
 
-File percobaan sekali pakai dalam `artifacts/` bukan sumber aplikasi. Pemeriksaan yang perlu dijalankan ulang tersedia dalam `scripts/`. Bukti QA terpilih dipindahkan ke `docs/evidence/frontend-approved/`; screenshot terkurasi ada di `docs/screenshots/`.
+File percobaan sekali pakai dalam `artifacts/` bukan sumber aplikasi. Pemeriksaan yang perlu dijalankan ulang tersedia dalam `scripts/`. Bukti QA terpilih dipindahkan ke `docs/website/evidence/frontend-approved/`; screenshot terkurasi ada di `docs/website/screenshots/`.
 
 ## Mengambil website sekarang
 
@@ -142,7 +144,7 @@ Untuk menjalankan Blade melalui Laravel: `npm.cmd run build`, lalu `php artisan 
 
 Baseline desain diterima telah lulus: 9 tes Laravel/155 assertions, Pint, build/ekspor 19 rute + 404, 95 kasus responsif di 360/390/768/1024/1440 px, 41 pemeriksaan Axe, navigasi/pencarian/filter/lightbox, alur editor artikel/album, simpan ulang, isolasi draf, serta slideshow otomatis. Alias live dicocokkan: 19/19 HTML dan 26 aset sesuai build, browser HP lulus, tanpa error browser.
 
-Sumber bukti baseline: `docs/evidence/frontend-approved/local-qa.json`, `live-web.json`, dan `live-slideshow.json`. File ini adalah snapshot pemeriksaan commit desain `0658d5d`, bukan janji bahwa deployment berikutnya akan tetap sama. CI release/handoff dan hasil pengecekan arsip dilampirkan pada release.
+Sumber bukti baseline: `docs/website/evidence/frontend-approved/local-qa.json`, `live-web.json`, dan `live-slideshow.json`. File ini adalah snapshot pemeriksaan commit desain `0658d5d`, bukan janji bahwa deployment berikutnya akan tetap sama. CI release/handoff dan hasil pengecekan arsip dilampirkan pada release.
 
 ```powershell
 php artisan test
