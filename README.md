@@ -23,13 +23,20 @@ Jangan jalankan composer setup untuk sekadar frontend: script bawaan tersebut ju
 - / — Beranda
 - /profil — lingkungan dan pengurus; Agus Ferdiansyah sebagai ketua, sekretaris/bendahara anonim
 - /fasilitas — sarana dengan foto asli
-- /dokumentasi — 11 foto, filter subjek, dan lightbox
+- /dokumentasi — Kegiatan dan Lingkungan; album serta 11 foto lingkungan
+- /dokumentasi/perayaan-17-agustus — cerita album, foto asli, keterangan, dan lightbox
 - /artikel + /artikel/{slug} — 5 bacaan edukasi dengan SVG original dan waktu baca terhitung
 - /kontak — informasi wilayah dan status kontak yang belum diumumkan
-- /pengurus — ringkasan; warga, pengaduan, aspirasi, agenda, pengumuman, iuran, keuangan, konten, pengaturan
+- /pengurus — Ringkasan untuk Artikel dan Dokumentasi, dengan reset draf lokal
+- /pengurus/artikel dan /pengurus/artikel/editor — daftar dan editor artikel
+- /pengurus/dokumentasi dan /pengurus/dokumentasi/editor — daftar dan editor album
+- /pengurus/pratinjau — hasil draf lokal seperti halaman publik
+- /pengurus/masuk — penjelasan akses tanpa menerima kredensial
 
-Pengurus: tombol operasional benar-benar disabled; tidak ada formulir, autentikasi palsu, catatan warga,
-angka saldo atau status pembayaran yang direkayasa. Pembayaran iuran direncanakan offline.
+Editor dapat dicoba dengan data contoh dan foto perangkat. Draf dan foto tersimpan di IndexedDB
+browser ini, tanpa dikirim ke server. Konten publik tetap berasal dari katalog repo.
+Pendataan warga, pengaduan, aspirasi, agenda, iuran, keuangan, dan token registrasi milik aplikasi
+mobile. Publikasi online dan login operasional menjadi tahap Laravel di VPS.
 
 ## Preview Vercel
 Vercel menyajikan direktori statis preview/ yang di-commit. **Vercel tidak menjalankan Laravel/PHP**.
@@ -41,8 +48,8 @@ npm.cmd run preview
 ```
 
 Preview lokal: http://127.0.0.1:8123. Ekspor mengunjungi semua rute melalui kernel Laravel tanpa server
-background dan tanpa database. Output 21 halaman + 404, aset build, dan foto. Setiap URL menggunakan
-cleanUrls pada Vercel, sehingga artikel dan modul pengurus dapat dibuka langsung.
+background dan tanpa database. Output 19 halaman + 404, aset build, dan foto. Setiap URL menggunakan
+cleanUrls pada Vercel, sehingga artikel, album, dan editor dapat dibuka langsung.
 scripts/build-preview.sh adalah wrapper untuk lingkungan Bash.
 
 Workflow GitHub memeriksa bahwa preview/ sesuai sumber. Push PR memicu deployment preview melalui integrasi
@@ -66,23 +73,31 @@ Pemeriksaan otomatis tidak menggantikan penilaian manusia atas aksesibilitas ata
 ## Struktur
 | Lokasi | Isi |
 | --- | --- |
-| app/Support/SiteContent.php | Katalog konten, modul, dan rute ekspor |
-| app/Http/Controllers/PublicPageController.php | Render halaman publik dan shell |
+| app/Support/SiteContent.php | Katalog konten dan rute ekspor |
+| app/Http/Controllers/PublicPageController.php | Halaman publik dan pratinjau pengurus |
 | resources/views | Layout, halaman, komponen foto/ikon/SVG artikel |
 | resources/data/dokumentasi.json | Manifest foto asli, dimensi, alt, caption |
 | resources/data/artikel.json | Bacaan edukasi; tidak mengaku sebagai berita RT |
+| resources/data/album.json | Album, sampul, foto, keterangan, dan sumber |
 | resources/css/app.css | Token dan layout responsif publik/pengurus |
 | resources/js/app.js | Menu, filter, dialog foto |
+| resources/js/preview-content.js | Repository asinkron konten dan foto lokal |
+| resources/js/cms-preview.js | Editor dan hasil pratinjau |
 | scripts/export-preview.php | Ekspor semua rute dengan lingkungan tanpa database |
 | scripts/check-preview.mjs | QA browser dan aksesibilitas |
 | docs/FRONTEND_REFACTOR.md | Audit, keputusan produk, sumber, arah desain |
-| docs/QA_FRONTEND.md | Bukti pemeriksaan dan batas yang masih berlaku |
+| docs/CONTENT_PREVIEW.md | Perilaku editor dan arah adapter Laravel |
+| docs/STITCH_SCREENS.md | Inventaris layar Google Stitch |
+| docs/QA_STITCH_PREVIEW.md | Bukti pemeriksaan terbaru |
 
 ## Media dan konten
 Hanya foto asli dalam katalog repo yang digunakan. WebP memiliki varian 480/960/1600 sesuai manifest;
-foto papan peraturan memiliki maksimal 960 px. Foto asli tidak di-commit; versi web telah dibuang EXIF/GPS.
+foto papan peraturan maksimal 960 px; album 17 Agustus memiliki 480/960/1280 px.
+Foto asli tidak di-commit; versi web telah dibuang EXIF/GPS.
 Jangan menambah foto wajah warga/anak tanpa izin. Untuk aset baru gunakan scripts/optimize-images.mjs
 dan perbarui manifest. Ikon dan ilustrasi artikel adalah SVG; tidak ada gambar raster AI atau foto stok.
 
 Arahan visual **Halaman Bersama** mempertahankan Bricolage Grotesque, Public Sans, dan logo gapura repo,
-dengan hero tengah dan kolase lingkungan. Font di-host sendiri. Lihat dokumentasi refactor untuk detail.
+dengan hero dua kolom Kimi, garis kuning, dan foto gapura berbentuk lengkung. Font di-host sendiri.
+Gerakan dekoratif berulang dihentikan dan headline HP memakai warna solid. Referensi Stitch
+mempertajam hierarki konten, album editorial, dan editor dengan design system yang sama.

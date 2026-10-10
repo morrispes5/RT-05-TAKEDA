@@ -18,19 +18,31 @@ class PublicWebsiteTest extends TestCase
 
     public function test_unknown_routes_and_unknown_content_are_not_silently_served(): void
     {
-        foreach (['/admin', '/artikel/tidak-ada', '/pengurus/tidak-ada', '/tidak-ada'] as $path) {
+        foreach (['/admin', '/artikel/tidak-ada', '/dokumentasi/tidak-ada', '/pengurus/tidak-ada', '/pengurus/iuran', '/pengurus/warga', '/tidak-ada'] as $path) {
             $this->get($path)->assertNotFound();
         }
     }
 
-    public function test_pengurus_is_read_only_and_truthful(): void
+    public function test_pengurus_prototype_only_has_content_tools_and_no_server_writes(): void
     {
-        foreach (array_keys(SiteContent::modules()) as $module) {
-            $this->get('/pengurus/'.$module)->assertOk()
-                ->assertSee('Pratinjau antarmuka — fitur belum aktif')
-                ->assertSee('disabled', false)
-                ->assertDontSee('<form', false);
-            $this->post('/pengurus/'.$module)->assertStatus(405);
+        foreach (['/pengurus', '/pengurus/artikel', '/pengurus/dokumentasi', '/pengurus/artikel/editor', '/pengurus/dokumentasi/editor'] as $path) {
+            $this->get($path)->assertOk()->assertSee('Pratinjau')
+                ->assertSee('tidak mengubah website publik')
+                ->assertDontSee('href="/pengurus/warga"', false)
+                ->assertDontSee('href="/pengurus/iuran"', false);
+            $this->post($path)->assertStatus(405);
+        }
+        $this->get('/pengurus/masuk')->assertDontSee('type="password"', false);
+    }
+
+    public function test_event_album_uses_real_assets_without_an_unconfirmed_year(): void
+    {
+        $this->get('/dokumentasi/perayaan-17-agustus')->assertOk()->assertSee('Perayaan 17 Agustus')->assertDontSee('17 Agustus 2026');
+        foreach (SiteContent::albums() as $album) {
+            foreach ($album['photos'] as $photo) {
+                $this->assertFileExists(public_path(ltrim($photo['src'], '/')));
+                $this->assertNotEmpty($photo['alt']);
+            }
         }
     }
 

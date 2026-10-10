@@ -41,7 +41,7 @@
             </div>
         </div>
     </div>
-    <div class="hero-marquee" aria-hidden="true">
+    <div class="hero-marquee" aria-hidden="true" hidden>
         <div class="hero-marquee-track">
             @foreach([0, 1] as $copy)
             <span>Selamat datang di Takeda <svg viewBox="0 0 24 24" class="mq-gapura"><path d="M3 10 12 3l9 7v1.4H3z" fill="#e0607e"/><rect x="5" y="11.4" width="3" height="8" rx=".7" fill="#c4dcee"/><rect x="16" y="11.4" width="3" height="8" rx=".7" fill="#c4dcee"/><rect x="2" y="19.4" width="20" height="1.6" rx=".8" fill="#f2cd5a"/></svg> RT 05 RW 07 <svg viewBox="0 0 24 24" class="mq-gapura"><path d="M3 10 12 3l9 7v1.4H3z" fill="#e0607e"/><rect x="5" y="11.4" width="3" height="8" rx=".7" fill="#c4dcee"/><rect x="16" y="11.4" width="3" height="8" rx=".7" fill="#c4dcee"/><rect x="2" y="19.4" width="20" height="1.6" rx=".8" fill="#f2cd5a"/></svg> Taman Kedaung, Ciputat <svg viewBox="0 0 24 24" class="mq-gapura"><path d="M3 10 12 3l9 7v1.4H3z" fill="#e0607e"/><rect x="5" y="11.4" width="3" height="8" rx=".7" fill="#c4dcee"/><rect x="16" y="11.4" width="3" height="8" rx=".7" fill="#c4dcee"/><rect x="2" y="19.4" width="20" height="1.6" rx=".8" fill="#f2cd5a"/></svg> Ruang bersama kita jaga bersama <svg viewBox="0 0 24 24" class="mq-gapura"><path d="M3 10 12 3l9 7v1.4H3z" fill="#e0607e"/><rect x="5" y="11.4" width="3" height="8" rx=".7" fill="#c4dcee"/><rect x="16" y="11.4" width="3" height="8" rx=".7" fill="#c4dcee"/><rect x="2" y="19.4" width="20" height="1.6" rx=".8" fill="#f2cd5a"/></svg> </span>
@@ -49,6 +49,7 @@
         </div>
     </div>
 </section>
+<nav class="wrap home-shortcuts" aria-label="Temukan informasi"><span>Yang ingin kamu lihat</span><a href="/artikel">Bacaan warga <x-ikon nama="buku" /></a><a href="/dokumentasi">Foto & kegiatan <x-ikon nama="foto" /></a><a href="/kontak">Kontak pengurus <x-ikon nama="panah" /></a></nav>
 <section class="wrap section intro-grid" data-reveal>
     <div>
         <p class="section-label">Tentang Takeda</p><h2>Dekat rumah,<br>dekat satu sama lain.</h2>
@@ -80,11 +81,10 @@
         </div>
     </div>
 </section>
+<section class="wrap section home-albums"><div class="section-heading"><h2>Momen yang<br>kita simpan bersama.</h2><a class="text-link" href="/dokumentasi">Semua dokumentasi <x-ikon nama="panah" /></a></div>@foreach(array_slice($albums, 0, 1) as $album) @include("partials.album-feature") @endforeach</section>
 <section class="wrap section journal-section" data-reveal>
     <div class="section-heading"><div><p class="section-label">Bacaan warga</p><h2>Kebiasaan kecil.<br>Lingkungan lebih nyaman.</h2><svg class="squiggle" viewBox="0 0 210 14" aria-hidden="true"><path d="M4 9 Q 30 2 56 8 T 108 8 T 160 8 T 206 7" fill="none" stroke="#f2cd5a" stroke-width="5" stroke-linecap="round"/></svg></div><a class="text-link" href="/artikel">Semua artikel <x-ikon nama="panah" /></a></div>
     <div class="article-grid">@foreach(array_slice($articles, 0, 3) as $article) @include('partials.article-card') @endforeach</div>
 </section>
-<section class="wrap mobile-note" data-reveal>
-    <div class="mobile-note-icon"><x-ikon nama="aspirasi" /></div><div><p class="section-label">Rencana layanan warga</p><h2>Informasi di web.<br>Layanan pribadi lewat aplikasi.</h2><p>Pengaduan, aspirasi, agenda, dan riwayat iuran direncanakan melalui aplikasi mobile warga. Saat ini, website ini menjadi tempat mengenal lingkungan RT 05.</p><a class="text-link" href="/kontak">Informasi dari pengurus <x-ikon nama="panah" /></a></div><span class="status-label">Dalam pengembangan</span>
-</section>
+<section class="wrap home-contact"><div><h2>Kenali tempat<br>kita bertemu.</h2><p>Sekretariat RT berada di sisi lapangan. Lihat informasi lingkungan dan kontak yang tersedia dari pengurus.</p><a class="button primary" href="/kontak">Informasi kontak <x-ikon nama="panah" /></a></div><figure><x-foto slug="sekretariat" :data="$foto['sekretariat']" sizes="(max-width: 768px) 92vw, 40vw" /><figcaption>Sekretariat RT 05 RW 07</figcaption></figure></section>
 @endsection

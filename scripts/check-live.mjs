@@ -32,17 +32,21 @@ for (const route of ['/admin', '/artikel/tidak-ada', '/pengurus/tidak-ada']) {
 const browser = await chromium.launch();
 const errors = [];
 try {
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
-    for (const route of ['/', '/dokumentasi', '/artikel/cara-mencuci-tangan', '/pengurus/iuran']) {
+    for (const route of ['/', '/dokumentasi', '/dokumentasi/perayaan-17-agustus', '/artikel/cara-mencuci-tangan', '/pengurus/artikel']) {
         await page.goto(base + route);
         await page.evaluate(() => document.fonts.ready);
+        if (route.startsWith('/pengurus')) await page.locator('[data-cms-ready]').waitFor();
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, route);
     }
     await page.locator('[data-menu-toggle]').click();
     await page.getByRole('link', { name: 'Kembali ke website', exact: true }).click();
     await page.waitForURL(base + '/');
+    await page.goto(base + '/pengurus/masuk');
+    await page.locator('[data-cms-ready]').waitFor();
+    assert.equal(await page.locator('input[type=password], input[type=email]').count(), 0);
     assert.deepEqual(errors, []);
 } finally {
     await browser.close();

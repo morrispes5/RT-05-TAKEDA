@@ -9,7 +9,7 @@ class PublicPageController extends Controller
 {
     public function page(string $page = 'home'): View
     {
-        return view($page, ['foto' => SiteContent::photos(), 'articles' => SiteContent::articles()]);
+        return view($page, ['foto' => SiteContent::photos(), 'articles' => SiteContent::articles(), 'albums' => SiteContent::albums()]);
     }
 
     public function article(string $slug): View
@@ -20,11 +20,16 @@ class PublicPageController extends Controller
         return view('article', ['article' => $article, 'articles' => SiteContent::articles()]);
     }
 
-    public function management(?string $module = null): View
+    public function album(string $slug): View
     {
-        $modules = SiteContent::modules();
-        abort_if($module !== null && ! isset($modules[$module]), 404);
+        $album = collect(SiteContent::albums())->firstWhere('slug', $slug);
+        abort_unless($album, 404);
 
-        return view('pengurus', compact('modules', 'module'));
+        return view('album', compact('album'));
+    }
+
+    public function management(string $screen = 'ringkasan'): View
+    {
+        return view('pengurus', ['screen' => $screen, 'articles' => SiteContent::articles(), 'albums' => SiteContent::albums()]);
     }
 }
