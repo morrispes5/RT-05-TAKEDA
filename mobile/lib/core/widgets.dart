@@ -143,7 +143,7 @@ class SectionCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(children: [
                   Expanded(child: Text(title!, style: Theme.of(context).textTheme.titleMedium)),
-                  if (trailing != null) trailing!,
+                  ?trailing,
                 ]),
               ),
             child,
