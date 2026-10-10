@@ -82,6 +82,32 @@ Deploy fondasi web/API/Redis/worker/scheduler dengan data sintetis. Uji health, 
 
 Adapter FCM/SMTP dapat fake secara eksplisit sampai credential tersedia; test nyata wajib sebelum feature disebut operational.
 
+### Kondisi aktual VPS (diinspeksi 10 Oktober 2026)
+
+- Hostinger KVM 2 `srv2030339.hstgr.cloud`, IP 187.77.113.136, Ubuntu 24.04 dengan Coolify. Pemakaian saat inspeksi: CPU 9%, memori 23%, disk 14/100 GB.
+- Proxy Coolify (Traefik) memegang port 80/443 (menjawab 404/503 untuk host tanpa aplikasi). Panel Coolify `:8000` tidak terjangkau dari luar; firewall Hostinger tanpa aturan.
+- DNS dibuat atas izin pemilik: A `takeda` dan `takeda-staging` → 187.77.113.136 (TTL 300). Apex `@` (2.57.91.91) dan `www` tidak diubah. Resolusi lewat 8.8.8.8 terverifikasi.
+- Neon: branch `production` (kosong, role runtime `rt05_app` dibuat via SQL), `staging` (salinan dev berisi data demo sintetis), `dev`.
+
+### Runbook deploy (dijalankan pemilik di Konsol web Hostinger)
+
+Stack RT05 berjalan sebagai project Docker Compose tersendiri (`rt05-staging` / `rt05-production`) di belakang proxy Coolify melalui label Traefik pada jaringan `coolify` (`infra/compose.vps.yml`). Tidak ada port host baru; service lain tidak disentuh.
+
+1. hPanel → VPS → Ringkasan → **Konsol web** (login root).
+2. Jalankan:
+
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/morrispes5/RT-05-TAKEDA/main/infra/scripts/deploy-vps.sh -o /root/rt05-deploy.sh
+   bash /root/rt05-deploy.sh staging
+   ```
+
+3. Saat diminta, tempel isi `infra/env/.env.staging` dari PC pengembang (file rahasia, di-gitignore), lalu Ctrl-D. File disimpan di `/root/.rt05/.env.staging` (mode 600).
+4. Verifikasi dari luar: `https://takeda-staging.morriz.tech/health/ready` → `{"status":"ready"...}`, `/profil` tampil, aplikasi mobile build dengan `API_BASE_URL=https://takeda-staging.morriz.tech`.
+5. Production: ulangi dengan `production` dan `.env.production`. Bootstrap pengurus pertama: `docker compose -p rt05-production ... exec api php artisan rt05:pengurus buat <email>` (password sementara tampil sekali).
+6. Update: jalankan ulang perintah langkah 2 (pull kode, build, migrasi additive, restart).
+
+Rollback cepat: `docker compose -p rt05-<env> ... down` menghentikan stack RT05 saja (volume tetap). Jangan `docker system prune` atau menghapus volume.
+
 ## Pipeline rilis
 
 1. CI lint/tests/contract/build mengeluarkan image immutable dengan tag commit SHA.

@@ -167,6 +167,15 @@ Belum ada. M02 passed (PR #11 menunggu merge). Berikutnya M03 (Redis/worker/outb
 - VPS: Hostinger KVM 2 srv2030339.hstgr.cloud 187.77.113.136, Ubuntu 24.04 + Coolify. SSH dari agent ditolak pengaman otomatis; port 8000 (panel Coolify) tidak terjangkau dari luar. DNS morriz.tech: @ → 2.57.91.91, www CNAME; record `takeda` BELUM dibuat (sesi terhenti karena batas pemakaian).
 - Blocked/tersisa: DNS takeda + takeda-staging; deploy Coolify (butuh URL/akses panel Coolify; credential production dimasukkan pemilik sendiri ke Coolify); branch Neon production role rt05_app; SMTP; FCM; signing key rilis; website CMS ke API (M13/M14); UAT.
 
+### Sesi 4 (10 Oktober 2026) — emulator, DNS, siap deploy
+
+- PR #12 merged (00cd078) setelah API, Infra images, Mobile, Repository checks hijau.
+- Emulator Pixel_8a: APK CI terpasang; login warga demo → beranda (iuran Oktober Belum dibayar), iuran (Agustus/September Lunas), layanan (pengaduan anonim "Identitas disembunyikan"), akun/keluarga; login pengurus → ringkasan (saldo Rp530.000, 3 rumah, 1 permohonan) → catat iuran Oktober A-1 → saldo Rp605.000, rekap 1 lunas/2 belum. Bukti: docs/evidence/mobile/01–08.
+- DNS: A takeda dan takeda-staging → 187.77.113.136 dibuat lewat hPanel (izin pemilik); resolusi 8.8.8.8 terverifikasi; HTTPS ke host menjawab 503 dari proxy Coolify (belum ada aplikasi).
+- Neon: branch staging (dari dev, data demo) dibuat; role rt05_app di branch production dibuat via SQL (bukan neon_superuser). Env server ditulis ke infra/env/.env.staging dan .env.production (gitignored, tidak dicetak).
+- Deploy: infra/compose.vps.yml + infra/scripts/deploy-vps.sh (ADR18). Menunggu pemilik menjalankan script di Konsol web Hostinger (agent tidak menjalankan perintah shell di server).
+- Keterbatasan: staging memakai password rt05_app yang sama dengan dev (ALTER ROLE ditolak di branch turunan); push FCM, SMTP, CMS website→API (M13/M14), signing key rilis, UAT belum.
+
 ## Checkpoint sesi
 
 10 Oktober 2026 (M01): checkout lokal pemilik berada di `Documents/RT X TAKEDA/RT-05-TAKEDA/`; folder induk `RT X TAKEDA/` berisi paket MD asli (tidak di-commit). PR #10 merged. Sesi M02: branch `codex/m02-api-neon-foundation`, PR #11. Neon dev sudah dimigrasi (5 migration fondasi). `rest-api/.env` lokal menunjuk Neon dev. php.ini lokal: pdo_pgsql/pgsql/intl/sodium diaktifkan. Tidak ada migration, image, atau job. Input belum tersedia: credential Neon, akses VPS/DNS (ditawarkan pemilik via Chrome untuk M04), SMTP, FCM, signing key, Flutter SDK.

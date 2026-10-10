@@ -28,6 +28,7 @@ Konflik tidak diselesaikan dengan menyalin keputusan lama yang tampak paling tek
 | P12 | Jumlah developer tidak membatasi rancangan | Koreksi pemilik |
 | P13 | Vercel tetap preview; production di subdomain morriz.tech (rancangan takeda.morriz.tech) pada VPS Hostinger | Instruksi pemilik di sesi M01, 10 Oktober 2026 |
 | P14 | Pemilik menawarkan akses panel Hostinger/DNS lewat Chrome dan emulator Android untuk tahap berikutnya | Instruksi pemilik di sesi M01; dipakai pada M04/M05 dengan konfirmasi per tindakan eksternal |
+| P15 | Kerjakan semampunya lintas milestone dengan izin VPS/Docker/PC; hemat SSD; desain mobile boleh kolaborasi Google Stitch | Instruksi pemilik sesi 3, 10 Oktober 2026 |
 
 ## ADR rekayasa v1
 
@@ -124,6 +125,23 @@ Keputusan: `PGSQL_ATTR_DISABLE_PREPARES=true` untuk kedua koneksi; parameter tet
 Tanggal/status: 10 Oktober 2026, diterapkan M02.
 Keputusan: staging/production wajib `sslmode=verify-full` + `sslrootcert`; `/health/ready` (503 misconfigured) dan `rt05:db-smoke` gagal tertutup bila tidak. Parameter URL Neon mengalahkan env, sehingga kebijakan diperiksa pada konfigurasi akhir (`TlsPolicy`). PHP Windows tidak mendukung `sslrootcert=system`; dev Windows memakai salinan CA bundle pada path tanpa spasi.
 Bukti: CA asli tersambung; CA palsu ditolak "certificate verify failed"; tanpa TLS ditolak Neon.
+
+### ADR17 — Nama tabel domain mengikuti ERD v1.1 tim
+
+Tanggal/status: 10 Oktober 2026, diterapkan M06–M12.
+Trigger: ERD v1.1 (31 tabel, Drive "ERD RT 05 TAKEDA (CAPSTONE PROJECT)") ditemukan; DATABASE.md mewajibkan rekonsiliasi.
+Keputusan: tabel domain memakai nama ERD v1.1 (akun, rumah, keluarga, warga, penghunian, pengaduan, aspirasi, tagihan_iuran, pembayaran_iuran, alokasi_pembayaran, transaksi_kas, notifikasi, dst). Penyesuaian rekayasa: rupiah bigint (bukan decimal), status tagihan eksplisit, pembalikan pembayaran (bukan edit), sequence nomor bukti, token terenkripsi + digest, akun.jenis utama/tambahan, permohonan_akun menyimpan nama/alamat diajukan. Tabel operasi (audit_logs, outbox_events, idempotency_requests, system_settings, failed_jobs) tetap nama Inggris; audit_logs ≙ audit_log ERD. Konten publik (profil_rt, pengurus_rt, fasilitas, artikel, album_galeri, foto_galeri) menyusul M13. Path API mengikuti docs/API.md (Inggris), field JSON mengikuti kolom (Indonesia).
+
+### ADR18 — Deploy VPS di belakang proxy Coolify existing
+
+Tanggal/status: 10 Oktober 2026.
+Keputusan: stack RT05 (gateway Caddy, api/worker/scheduler/migrate FrankenPHP, web FrankenPHP, Redis) dijalankan sebagai project Compose sendiri yang menempel ke Traefik Coolify lewat label (jaringan `coolify`), bukan proxy kedua di 80/443. Dipicu panel Coolify :8000 tidak terjangkau dan akses shell agent ditolak; deploy dijalankan pemilik dengan `infra/scripts/deploy-vps.sh`. Credential tidak pernah diketik agent ke form web.
+Media upload memakai volume `api-storage` (backup offsite masih M16).
+
+### ADR19 — Hemat disk PC pengembang
+
+Tanggal/status: 10 Oktober 2026, instruksi pemilik.
+Keputusan: tidak memasang WSL2/Docker di PC; tes Postgres/Redis/Docker di GitHub Actions. Flutter SDK ramping (Android saja, 1,4 GB) di C:\Users\USER\dev\flutter; APK dibangun di CI (artifact) lalu dipasang ke emulator dengan adb.
 
 ### ADR16 — Tabel users ditunda ke M06
 
