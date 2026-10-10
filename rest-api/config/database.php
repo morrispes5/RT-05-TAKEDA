@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Str;
+use Pdo\Pgsql;
 
 /*
 | RT05 TAKEDA hanya memakai PostgreSQL (Neon pada dev/staging/production, Postgres lokal pada
@@ -35,7 +36,7 @@ $pgsql = fn (?string $url, string $appName) => [
         // Pooler Neon (PgBouncer mode transaksi) menolak DEALLOCATE SQL yang dikirim pdo_pgsql untuk
         // named prepared statement, sehingga transaksi gugur (25P02). Nonaktifkan named prepares;
         // parameter tetap dikirim terpisah lewat PQexecParams, bukan emulasi string.
-        (defined('Pdo\Pgsql::ATTR_DISABLE_PREPARES') ? Pdo\Pgsql::ATTR_DISABLE_PREPARES : PDO::PGSQL_ATTR_DISABLE_PREPARES) => true,
+        (defined('Pdo\Pgsql::ATTR_DISABLE_PREPARES') ? Pgsql::ATTR_DISABLE_PREPARES : PDO::PGSQL_ATTR_DISABLE_PREPARES) => true,
     ],
 ];
 
