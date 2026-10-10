@@ -22,6 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignRequestId::class);
         $middleware->alias(['akun' => EnsureAkun::class]);
+        // Hanya gateway di jaringan privat Docker yang dipercaya untuk X-Forwarded-* (SECURITY.md).
+        $proxies = array_filter(explode(',', (string) env('TRUSTED_PROXIES', '')));
+        if ($proxies !== []) {
+            $middleware->trustProxies(at: $proxies);
+        }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Aplikasi ini hanya API: setiap error menjadi JSON envelope, tanpa halaman HTML/stack trace.

@@ -1,0 +1,29 @@
+# Gateway satu origin (docs/ARCHITECTURE.md §3). TLS diakhiri proxy Coolify (Traefik) di depan.
+# /api/* dan /health/* → API; path lain → website. /api tidak pernah jatuh ke HTML website.
+{
+	admin off
+	auto_https off
+}
+
+:80 {
+	encode gzip
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	@api path /api /api/* /health/*
+	handle @api {
+		reverse_proxy api:80
+	}
+
+	handle /unduh/* {
+		root * /srv
+		file_server
+	}
+
+	handle {
+		reverse_proxy web:80
+	}
+}
