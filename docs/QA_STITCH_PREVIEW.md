@@ -35,4 +35,8 @@ Pratinjau bukan layanan autentikasi atau publikasi online. Browser menyimpan dra
 
 ## Rilis
 
+- PR: [#5 — Pertajam desain Takeda dan editor artikel/dokumentasi](https://github.com/morrispes5/RT-05-TAKEDA/pull/5).
+- Pemeriksaan CI: [Frontend verification](https://github.com/morrispes5/RT-05-TAKEDA/actions/workflows/frontend.yml).
+- Alias hasil integrasi Git Vercel: [rt05takeda.vercel.app](https://rt05takeda.vercel.app).
+
 PR dan status deploy dicatat setelah pemeriksaan CI. `scripts/check-live.mjs` membandingkan seluruh HTML dan aset pada alias Vercel dengan ekspor lokal, kemudian melakukan smoke browser HP. Hasil live disimpan di `artifacts/live-report.json`; build lokal saja tidak membuktikan alias sudah diperbarui.
