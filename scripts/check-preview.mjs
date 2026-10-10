@@ -4,6 +4,7 @@ import { mkdir, readdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import { previewServer } from './serve-preview.mjs';
 import { checkContentPreview } from './check-content-preview.mjs';
+import { checkHeroSlideshow } from './check-hero-slideshow.mjs';
 
 const server = previewServer();
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -102,7 +103,8 @@ try {
     assert.deepEqual(errors, [], 'browser errors');
     for (const route of ['/admin', '/pengurus/tidak-ada', '/artikel/tidak-ada']) assert.equal((await fetch(base + route)).status, 404);
     const contentPreview = await checkContentPreview(browser, base);
-    const report = { routes: routes.length, responsiveCases: results.length, a11yCases: routes.length * 2 + contentPreview.a11yCases, internalLinks: links.size, browserErrors: errors, interactions: 'PASS', contentPreview, results };
+    const heroSlideshow = await checkHeroSlideshow(browser, base);
+    const report = { routes: routes.length, responsiveCases: results.length, a11yCases: routes.length * 2 + contentPreview.a11yCases, internalLinks: links.size, browserErrors: errors, interactions: 'PASS', contentPreview, heroSlideshow, results };
     await writeFile('artifacts/qa-report.json', JSON.stringify(report, null, 2));
     console.log(JSON.stringify({ ...report, results: undefined }, null, 2));
 } finally {

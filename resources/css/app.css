@@ -77,8 +77,7 @@ svg { width:22px; height:22px; flex-shrink:0; display:inline-block; vertical-ali
 .hero-copy > p { margin:26px 0 32px; font-size:17px; line-height:1.8; color:var(--muted); max-width:430px; }
 .hero-cta { display:flex; align-items:center; gap:34px; flex-wrap:wrap; }
 .hero-visual { position:relative; animation:gate-rise 1s .28s var(--ease) both; }
-.hero-arch { position:relative; border-radius:999px 999px 20px 20px; overflow:hidden; box-shadow:var(--shadow-lg),0 0 0 1px rgba(18,62,101,.08); outline:10px solid #fff; outline-offset:-10px; cursor:grab; touch-action:pan-y; }
-.hero-arch.is-dragging { cursor:grabbing; }
+.hero-arch { position:relative; border-radius:999px 999px 20px 20px; overflow:hidden; box-shadow:var(--shadow-lg),0 0 0 1px rgba(18,62,101,.08); outline:10px solid #fff; outline-offset:-10px; }
 .hero-arch img { width:100%; height:560px; object-position:50% 40%; scale:1.12; user-select:none; -webkit-user-drag:none; }
 .hero-arch figcaption { display:flex; gap:20px; align-items:center; justify-content:space-between; position:absolute; bottom:26px; left:26px; right:26px; padding:12px 18px; background:var(--yellow); color:#183b50; border-radius:10px; font-size:12px; font-weight:600; box-shadow:0 8px 20px rgba(18,62,101,.28); }
 .hero-badge { position:absolute; top:-46px; right:-14px; width:132px; height:132px; display:grid; place-items:center; background:#fff; border-radius:50%; box-shadow:var(--shadow-lg); animation:badge-pop .7s .9s var(--ease) both; }
@@ -514,3 +513,4 @@ dialog :focus-visible { outline-color:var(--yellow); }
 }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { animation:none!important; transition:none!important; } }
 @import './content-preview.css';
+@import './hero-slideshow.css';

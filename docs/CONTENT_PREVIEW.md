@@ -33,4 +33,8 @@ Urutan beranda: hero → akses cepat → lingkungan → fasilitas → album → 
 
 Penyesuaian Beranda, 10 Oktober 2026: foto kecil taman bermain yang menumpuk di depan foto gapura beserta caption-nya dihapus sesuai screenshot arahan pemilik. Gaya posisi dan ukuran overlay yang sudah tidak dipakai juga dibersihkan.
 
+Foto utama pada bingkai lengkung menjadi slideshow: gapura → taman bermain → sekretariat → lapangan → kembali ke gapura. Perpindahan otomatis setiap **3 detik** memakai fade 550 ms; caption kuning mengikuti foto. Empat indikator menyediakan pilihan langsung dan tombol Jeda/Putar mengendalikan autoplay, semuanya mempunyai area tekan minimal 48 px. Memilih foto atau memakai keyboard menjeda autoplay sampai Putar ditekan. Hover menjeda sementara; foto juga berhenti berganti saat hero di luar layar atau tab browser tidak terlihat.
+
+Reduced motion memulai slideshow dalam keadaan jeda dan mematikan fade; pengunjung tetap bisa memilih foto atau menekan Putar. Tanpa JavaScript, foto gapura dan caption pertama tetap tampil, sementara kontrol disembunyikan. Foto berikutnya dimuat lebih awal dan didekode sebelum tampil; kegagalan decode mempertahankan foto saat ini serta menjeda autoplay. Sumber foto tetap katalog lingkungan yang telah diverifikasi, tanpa penambahan foto atau unggahan baru.
+
 Navy `#123e65`, kuning `#f2cd5a`, sky `#eef5fa`, Bricolage Grotesque, Public Sans, serta logo gapura menjadi fondasi seluruh halaman. Artikel mempunyai pencarian judul, filter kategori, dan isi baca 18 px. Dokumentasi memakai tab Kegiatan/Lingkungan, album editorial, caption, dan dialog perbesar dengan pengembalian fokus.
