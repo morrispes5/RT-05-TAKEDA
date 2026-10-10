@@ -1,5 +1,7 @@
 # Fine-tuning desain oleh Kimi Code (9 Oktober 2026)
 
+Penyempurnaan 10 Oktober mempertahankan fondasi ini. Hero lengkung dan garis kuning tetap digunakan, headline HP dibuat solid, marquee disingkirkan dari tampilan, dan badge berhenti berputar. Alur artikel/album serta referensi Google Stitch dicatat dalam [CONTENT_PREVIEW.md](CONTENT_PREVIEW.md) dan [STITCH_SCREENS.md](STITCH_SCREENS.md). Catatan shell pengurus di bawah merupakan kondisi historis sebelum editor konten.
+
 Dokumen ini mencatat semua perubahan yang dilakukan sesi **Kimi Code** di atas hasil kerja sesi Codex,
 agar sesi Codex berikutnya langsung memahami apa yang berubah dan mengapa.
 

@@ -5,7 +5,7 @@
         <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="main-navigation">Menu <x-ikon nama="menu" /></button>
         <nav id="main-navigation" class="main-nav" aria-label="Navigasi utama" data-menu>
             @foreach($menu as $path => $label)
-                <a href="{{ $path }}" @if(request()->getPathInfo() === $path || ($path === '/artikel' && request()->is('artikel/*'))) aria-current="page" @endif>{{ $label }}</a>
+                <a href="{{ $path }}" @if(request()->getPathInfo() === $path || ($path === '/artikel' && request()->is('artikel/*')) || ($path === '/dokumentasi' && request()->is('dokumentasi/*'))) aria-current="page" @endif>{{ $label }}</a>
             @endforeach
             <a href="/kontak" class="nav-contact" @if(request()->is('kontak')) aria-current="page" @endif>Kontak <x-ikon nama="panah" /></a>
         </nav>

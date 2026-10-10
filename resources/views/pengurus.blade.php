@@ -1,23 +1,30 @@
 @extends('layouts.app')
-@section('title', ($module ? $modules[$module]['title'] : 'Ringkasan').' — Area Pengurus RT 05')
-@section('body_class', 'management-body')
+@section('title', 'Area Pengurus — RT 05 Takeda')
+@section('body_class', 'cms-body')
 @section('management', 'true')
 @section('content')
-@php($current = $module ? $modules[$module] : null)
-<div class="management-layout">
-<aside class="management-sidebar"><a class="brand" href="/pengurus"><img src="/images/logo/rt05-mark.svg" width="44" height="44" alt=""><span>RT 05 Takeda<small>Area Pengurus</small></span></a><button type="button" class="menu-toggle" data-menu-toggle aria-controls="management-nav" aria-expanded="false">Modul pengurus <x-ikon nama="menu" /></button><nav id="management-nav" class="management-nav" data-menu aria-label="Modul pengurus"><p>Ruang kerja</p><a href="/pengurus" @if(!$module) aria-current="page" @endif><x-ikon nama="rumah" /> Ringkasan</a>@foreach($modules as $key => $item)<a href="/pengurus/{{ $key }}" @if($module === $key) aria-current="page" @endif><x-ikon :nama="$item['icon']" />{{ $item['title'] }}</a>@endforeach<a class="mobile-site-link" href="/"><x-ikon nama="panah" />Kembali ke website</a></nav><div class="sidebar-foot"><x-ikon nama="kunci" /><p>Pratinjau publik<br><small>Tanpa data pribadi warga</small></p><a href="/">Kembali ke website <x-ikon nama="panah" /></a></div></aside>
-<div class="management-main"><header class="management-topbar"><span>RT 05 / RW 07 <span class="topbar-divider">/</span> {{ $current['title'] ?? 'Ringkasan' }}</span><span class="demo-chip">Contoh tampilan</span></header>
-<main id="konten" tabindex="-1" class="management-content">
-<div class="preview-notice"><x-ikon nama="kunci" /><div><strong>Pratinjau antarmuka — fitur belum aktif</strong><p>Ini adalah rancangan area pengurus. Tidak ada data warga, transaksi, atau perubahan yang disimpan.</p></div></div>
-<div class="management-heading"><div><p class="section-label">Area Pengurus / {{ $current['title'] ?? 'Ringkasan' }}</p><h1>{{ $current['title'] ?? 'Ruang kerja pengurus.' }}</h1><p>{{ $current['description'] ?? 'Gambaran layanan lingkungan, tersusun dalam satu ruang kerja.' }}</p></div>@if($current)<button class="button primary" disabled>{{ $current['action'] }}</button>@endif</div>
-@if(!$module)
-<div class="overview-panels">@foreach([['warga', 'Pendataan lingkungan', 'Rumah, keluarga, dan penghuni'], ['pengaduan', 'Layanan warga', 'Pengaduan dan aspirasi'], ['keuangan', 'Administrasi kas', 'Iuran offline dan pelaporan']] as [$key, $title, $desc])<a href="/pengurus/{{ $key }}" class="overview-panel"><x-ikon :nama="$modules[$key]['icon']" /><h2>{{ $title }}</h2><p>{{ $desc }}</p><span>Belum tersedia <x-ikon nama="panah" /></span></a>@endforeach</div>
-<div class="dashboard-columns"><section class="management-panel"><div class="panel-heading"><h2>Modul layanan</h2><span>Rancangan fitur</span></div><div class="module-directory">@foreach($modules as $key => $item)<a href="/pengurus/{{ $key }}"><x-ikon :nama="$item['icon']" /><div><h3>{{ $item['title'] }}</h3><p>{{ $item['description'] }}</p></div><x-ikon nama="panah" /></a>@endforeach</div></section><aside class="management-panel readiness"><x-ikon nama="rumah" /><h2>Sebelum digunakan<br>secara operasional.</h2><p>Antarmuka ini memperlihatkan susunan fitur yang direncanakan.</p><ol><li>Autentikasi akun dan hak akses pengurus.</li><li>Verifikasi data serta aturan pelayanan RT.</li><li>Pengujian pencatatan dan jejak audit.</li></ol><div class="quiet-note"><strong>Pembayaran tetap offline</strong><p>Pengurus nantinya mencatat penerimaan langsung. Tidak ada checkout atau pembayaran online.</p></div></aside></div>
-@else
-<section class="workflow management-panel"><h2>{{ in_array($module, ['pengaduan', 'aspirasi']) ? 'Alur status yang direncanakan' : 'Alur kerja yang direncanakan' }}</h2><ol>@foreach($current['flow'] as $step)<li><span>{{ $loop->iteration }}</span>{{ $step }}</li>@endforeach</ol></section>
-<section class="management-panel module-table"><div class="panel-heading"><h2>{{ $current['title'] }}</h2><span>Contoh struktur · Belum tersedia</span></div><div class="table-scroll" tabindex="0" role="region" aria-label="Struktur tabel {{ $current['title'] }}"><table><caption class="sr-only">Rancangan tabel, tanpa catatan operasional</caption><thead><tr>@foreach($current['columns'] as $column)<th scope="col">{{ $column }}</th>@endforeach</tr></thead><tbody><tr><td colspan="{{ count($current['columns']) }}"><div class="empty-state"><div class="empty-diagram" aria-hidden="true"><x-ikon :nama="$current['icon']" /><span></span><span></span></div><h3>Ruang untuk {{ mb_strtolower($current['title']) }} sudah disiapkan.</h3><p>Fitur masih dalam pengembangan. Data akan tersedia setelah sistem operasional terhubung dan hak akses diterapkan.</p><span class="demo-chip">Contoh tampilan, bukan data aktual</span></div></td></tr></tbody></table></div></section>
-<div class="module-guidance"><section class="management-panel"><x-ikon nama="kunci" /><h2>Akses & kesiapan</h2><p>{{ $current['note'] }}</p></section><section class="management-panel"><x-ikon nama="buku" /><h2>Yang akan dicatat</h2><ul>@foreach($current['columns'] as $column)<li>{{ $column }}</li>@endforeach</ul><p class="small-note">Struktur rancangan; belum ada catatan tersimpan.</p></section></div>
-@endif
-<p class="management-footnote">RT 05 Takeda · Pratinjau antarmuka pengurus · Tidak menyediakan layanan operasional</p>
-</main></div></div>
+@php($titles = ['ringkasan' => 'Cerita Takeda, dalam satu tempat.', 'masuk' => 'Ruang untuk pengurus.', 'artikel' => 'Bacaan untuk warga.', 'artikel/editor' => 'Tulis sebuah bacaan.', 'dokumentasi' => 'Momen yang kita simpan.', 'dokumentasi/editor' => 'Susun cerita dalam foto.', 'pratinjau' => 'Pratinjau konten.'])
+<div class="cms-layout">
+<aside class="cms-sidebar">
+<div class="cms-brand-row"><a class="brand" href="/pengurus"><img src="/images/logo/rt05-mark.svg" width="44" height="44" alt=""><span>RT 05 Takeda<small>Area Pengurus</small></span></a><button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="pengurus-navigation">Menu <x-ikon nama="menu" /></button></div>
+<nav id="pengurus-navigation" class="cms-nav" aria-label="Navigasi Pengurus" data-menu>
+@foreach(['ringkasan' => ['Ringkasan', 'rumah', '/pengurus'], 'artikel' => ['Artikel', 'buku', '/pengurus/artikel'], 'dokumentasi' => ['Dokumentasi', 'foto', '/pengurus/dokumentasi']] as $key => [$label, $icon, $href])
+<a href="{{ $href }}" @if($screen === $key || str_starts_with($screen, $key.'/')) aria-current="page" @endif><x-ikon :nama="$icon" />{{ $label }}</a>
+@endforeach
+<a class="cms-return" href="/"><x-ikon nama="panah" />Lihat website</a>
+</nav>
+<div class="cms-sidebar-note"><span class="preview-label">Pratinjau</span><p>Coba menulis dan menyusun album. Draf hanya disimpan di browser ini.</p><a href="/pengurus/masuk">Tentang akses pengurus</a></div>
+</aside>
+<div class="cms-workspace">
+<header class="cms-topbar"><span>Artikel & dokumentasi</span><a href="/">Kembali ke website <x-ikon nama="panah" /></a></header>
+<main id="konten" tabindex="-1" class="cms-main" data-cms="{{ $screen }}">
+<div class="cms-notice"><span class="preview-label">Pratinjau</span><p>Perubahanmu tersimpan di perangkat ini dan tidak mengubah website publik.</p></div>
+<header class="cms-heading"><div><h1 data-cms-heading>{{ $titles[$screen] }}</h1><p data-cms-subtitle>Kelola bacaan dan foto kegiatan dengan langkah yang sederhana.</p></div><div data-cms-actions></div></header>
+<div data-cms-content><p role="status">Menyiapkan ruang konten…</p></div>
+<noscript><div class="cms-panel"><p>Aktifkan JavaScript untuk mencoba editor. Halaman publik tetap bisa dibaca tanpa editor.</p><a href="/">Kembali ke website</a></div></noscript>
+<p class="cms-footnote">RT 05 RW 07 Taman Kedaung. Pratinjau ini tidak menyediakan login atau publikasi online.</p>
+</main>
+</div>
+</div>
+<script type="application/json" id="cms-seeds">{!! json_encode(['articles' => array_map(fn ($a) => array_merge($a, ['id' => 'article-'.$a['slug'], 'status' => 'example']), $articles), 'albums' => array_map(fn ($a) => array_merge($a, ['status' => 'example']), $albums)], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!}</script>
 @endsection

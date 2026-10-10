@@ -9,6 +9,7 @@ export function previewServer() {
     return http.createServer(async (req, res) => {
         try {
             const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+            if (pathname === '/pengurus/konten') { res.writeHead(307, { Location: '/pengurus' }); res.end(); return; }
             const relative = pathname === '/' ? 'index.html' : pathname.replace(/^\//, '');
             let file = path.resolve(root, relative);
             if (!file.startsWith(path.resolve(root) + path.sep)) throw new Error('Invalid path');

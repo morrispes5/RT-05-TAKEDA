@@ -35,7 +35,7 @@ if (scene && !reduceMotion && matchMedia('(pointer: fine)').matches) {
 
 // Drag-to-pan foto gapura di dalam arch.
 const dragPan = document.querySelector('[data-drag-pan]');
-if (dragPan) {
+if (dragPan && !reduceMotion && matchMedia('(pointer: fine)').matches) {
     const img = dragPan.querySelector('img');
     let baseX = 0, baseY = 0, startX = 0, startY = 0, dragging = false;
     dragPan.addEventListener('pointerdown', e => {
@@ -98,13 +98,24 @@ if (toggle && menu) {
 document.querySelectorAll('[data-filters]').forEach(bar => {
     const group = bar.dataset.filters;
     const items = [...document.querySelectorAll('[data-filter-item="' + group + '"]')];
+    const search = group === 'articles' ? document.querySelector('[data-article-search]') : null;
+    let category = 'all';
+    const update = () => {
+        const term = (search?.value || '').toLocaleLowerCase('id').trim();
+        items.forEach(item => {
+            const matches = !term || item.querySelector('h3')?.textContent.toLocaleLowerCase('id').includes(term);
+            item.hidden = (category !== 'all' && item.dataset.category !== category) || !matches;
+        });
+        const count = items.filter(item => !item.hidden).length;
+        document.querySelector('[data-filter-status="' + group + '"]').textContent = count + (group === 'photos' ? ' foto ditampilkan' : ' artikel ditampilkan');
+        if (search) document.querySelector('[data-search-empty]').hidden = count > 0;
+    };
+    search?.addEventListener('input', update);
     bar.addEventListener('click', e => {
         const button = e.target.closest('[data-filter]');
         if (!button) return;
         bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
-        items.forEach(item => item.hidden = button.dataset.filter !== 'all' && item.dataset.category !== button.dataset.filter);
-        const count = items.filter(item => !item.hidden).length;
-        document.querySelector('[data-filter-status="' + group + '"]').textContent = count + (group === 'photos' ? ' foto ditampilkan' : ' artikel ditampilkan');
+        category = button.dataset.filter; update();
     });
 });
 const dialog = document.getElementById('lightbox');
@@ -118,10 +129,13 @@ if (dialog) {
         img.src = item.src;
         img.alt = item.alt;
         caption.textContent = item.caption;
+        dialog.querySelector('[data-lightbox-count]').textContent = (index + 1) + ' / ' + group.length;
+        dialog.querySelector('[data-lightbox-prev]').disabled = group.length < 2;
+        dialog.querySelector('[data-lightbox-next]').disabled = group.length < 2;
     };
     document.querySelectorAll('[data-lightbox]').forEach(trigger => trigger.addEventListener('click', () => {
         opener = trigger;
-        group = [...document.querySelectorAll('[data-lightbox]')].filter(button => !button.closest('figure').hidden);
+        group = [...document.querySelectorAll('[data-lightbox]')].filter(button => button.dataset.lightbox === trigger.dataset.lightbox && button.getClientRects().length);
         show(group.indexOf(trigger));
         dialog.showModal();
         document.body.classList.add('dialog-open');
@@ -139,3 +153,32 @@ if (dialog) {
         opener?.focus();
     });
 }
+const tabs = [...document.querySelectorAll('[data-document-tab]')];
+if (tabs.length) {
+    const select = (tab, focus = false) => {
+        tabs.forEach(button => {
+            const active = button === tab;
+            button.setAttribute('aria-selected', String(active)); button.tabIndex = active ? 0 : -1;
+            document.getElementById(button.dataset.documentTab).hidden = !active;
+        });
+        if (focus) tab.focus();
+    };
+    const applyHash = () => {
+        const target = location.hash ? document.getElementById(location.hash.slice(1)) : null;
+        select(tabs.find(tab => tab.dataset.documentTab === (target?.closest('#lingkungan') ? 'lingkungan' : 'kegiatan')));
+        if (target) target.scrollIntoView({ behavior: 'instant' });
+    };
+    tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => select(tab));
+        tab.addEventListener('keydown', event => {
+            if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+                event.preventDefault();
+                select(tabs[event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length], true);
+            }
+        });
+    });
+    applyHash(); window.addEventListener('hashchange', applyHash);
+}
+if (document.querySelector('[data-cms]')) import('./cms-preview.js').catch(() => {
+    document.querySelector('[data-cms-content]').textContent = 'Editor belum dapat dimuat. Muat ulang halaman untuk mencoba lagi.';
+});

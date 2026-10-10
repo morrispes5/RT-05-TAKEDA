@@ -4,6 +4,7 @@
   "buildCommand": "echo skip",
   "outputDirectory": "preview",
   "cleanUrls": true,
+  "redirects": [{ "source": "/pengurus/konten", "destination": "/pengurus", "permanent": false }],
   "headers": [
     { "source": "/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] }
   ]

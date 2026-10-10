@@ -1,0 +1,22 @@
+[
+  {
+    "id": "album-perayaan-17-agustus",
+    "slug": "perayaan-17-agustus",
+    "title": "Perayaan 17 Agustus",
+    "description": "Momen kebersamaan warga di panggung Takeda, dalam suasana merah putih.",
+    "date": null,
+    "coverId": "panggung-takeda",
+    "photos": [
+      {
+        "id": "panggung-takeda",
+        "src": "/images/kegiatan/perayaan-17-agustus-1280.webp",
+        "srcset": "/images/kegiatan/perayaan-17-agustus-480.webp 480w, /images/kegiatan/perayaan-17-agustus-960.webp 960w, /images/kegiatan/perayaan-17-agustus-1280.webp 1280w",
+        "width": 1280,
+        "height": 720,
+        "alt": "Warga berfoto bersama di panggung Takeda dengan hiasan dan bendera merah putih.",
+        "caption": "Kebersamaan warga di panggung perayaan kemerdekaan."
+      }
+    ],
+    "source": {"label": "Dokumentasi warga", "driveFileId": "17le7M4kbhPQOZqReW_ay9LnewF-dsiRl"}
+  }
+]
