@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Operations\OutboxDispatcher;
 use App\Jobs\ProcessComplaintPhoto;
 use App\Models\FotoPengaduan;
 use App\Models\KategoriPengaduan;
@@ -249,6 +250,24 @@ class M08ComplaintMediaTest extends TestCase
 
         $this->as($a)->getJson('/api/v1/complaints?milik_saya=1')->assertJsonCount(0, 'data');
         $this->as($a)->patchJson("/api/v1/complaints/$id", ['versi' => 2, 'judul' => 'x'])->assertNotFound();
+    }
+
+    public function test_late_outbox_delivery_names_each_transition_not_the_current_status(): void
+    {
+        $a = $this->warga('94');
+        $admin = $this->pengurus();
+        $id = $this->complaint($a, false)->json('data.id');
+        $this->as($admin);
+        $this->postJson("/api/v1/admin/complaints/$id/status", ['status' => 'diproses', 'expected_version' => 1])->assertOk();
+        $this->postJson("/api/v1/admin/complaints/$id/status", ['status' => 'selesai', 'expected_version' => 2])->assertOk();
+        $this->postJson("/api/v1/admin/complaints/$id/status", ['status' => 'diproses', 'expected_version' => 3, 'catatan' => 'Buka ulang'])->assertOk();
+
+        OutboxDispatcher::dispatch();
+
+        // Satu transaksi tes → now() sama; urutan tidak dibandingkan, hanya isi tiap langkah.
+        $labels = DB::table('notifikasi')->where('penerima_id', $a->id)->where('pengaduan_id', $id)->pluck('isi')
+            ->map(fn ($t) => preg_match('/berstatus (\w+)\./', $t, $m) ? $m[1] : null)->sort()->values()->all();
+        $this->assertSame(['Diproses', 'Diproses', 'Selesai'], $labels);
     }
 
     public function test_owner_edit_stale_version_conflicts_then_succeeds_with_fresh_version(): void
