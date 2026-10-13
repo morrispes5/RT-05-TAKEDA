@@ -10,12 +10,17 @@ handoff terminal langsung (bukan dispatch Orca; capability M07 lama dicabut).
 Branch `codex/m08-complaints-media` dari `80d8180`. Lingkup hanya M08; M09
 tidak dibuka otomatis.
 
-Checkpoint source: inventaris gap dan implementasi di
-[evidence/m08/REPORT.md](evidence/m08/REPORT.md). Lokal: backend **229/229,
-2229 assertion**; Flutter **157**; analyzer/format/pint/redocly/check-repo
-lulus. Belum ada bukti CI, staging, atau Android untuk M08; status tetap
-in_progress. Langkah berikut: push, CI, deploy staging SHA yang sama, uji API
-live sintetis, demonstrasi Android (kamera izin/tolak), Drive.
+Checkpoint 13 Oktober (UTC): source `6b6987c` (PR #23). Lokal backend
+**230/230, 2233 assertion**, Flutter **157**; seluruh CI SUCCESS pada
+`d790ec2` dan `6b6987c`. Staging di-deploy additive (migrasi foto M08), API
+live **42/42, 130 assertion**, drill worker-media berhenti/jalan, Android
+(izin kamera tolak/izin, galeri, foto diproses→siap, 409 draf tetap, anonim,
+pengurus, arsip, inbox). Penerimaan menemukan bug label notifikasi status
+yang terlambat; diperbaiki dan dibuktikan ulang. **Drive native BLOCKED**:
+connector Google Docs tidak tersedia; draf di evidence/m08/DRIVE_DRAFT.md,
+Doc existing tidak diubah. Status tetap in_progress sampai coordinator/
+pemilik menerima dan bagian Drive selesai. Rincian
+[evidence/m08/REPORT.md](evidence/m08/REPORT.md). M09 tidak dibuka.
 
 ## Penutupan M07 — 13 Oktober 2026
 
@@ -254,7 +259,7 @@ ditentukan hanya oleh tersedianya kode.
 | M05 | passed | PR17, source13de24e: 77 tes/analyzer/dua APK CI SUCCESS, checksum cocok; emulator health HTTPS, offline/retry proses sama, ikon dan skala teks1,3/2,0; review final Kimi PASS. docs/evidence/m05/LIVE_RESULTS.md |
 | M06 | passed | Staging26a0b7e; API52alur/17mekanika reset; Android akun/sesi; SMTP nyata, INBOX A/browser dan B/Android, verifier4/4 masing-masing. Penutupan13Oktober; INBOX_ACCEPTANCE |
 | M07 | passed | Source979634f; 220tes/2125assertion, Flutter152, 9CI SUCCESS, deploy additive/backfill, API live77/327, Android nyata dan native Drive; evidence/m07/REPORT.md |
-| M08 | in_progress | Dibuka14Okt (pemilik). Foto via worker-media, edit/409 mobile, izin kamera; lokal229/2229 + Flutter157. CI/staging/Android belum; evidence/m08/REPORT.md |
+| M08 | in_progress | Source6b6987c: lokal230/2233, Flutter157, CI SUCCESS, staging live42/130, Android nyata. Drive native BLOCKED (connector Docs); menunggu penerimaan. evidence/m08/REPORT.md |
 | M09 | in_progress | Aspirasi terpisah; tes CI lulus |
 | M10 | in_progress | Agenda/ICS/Google Calendar, pengumuman, inbox; push FCM blocked (tanpa project Firebase) |
 | M11 | in_progress | Tarif/tagihan idempotent/catch-up/transparansi; tes CI lulus |

@@ -9,6 +9,11 @@ dispatch Orca) dan mengakhiri giliran untuk menghemat limit. Claude memegang
 staging sintetis, Android dan Drive M08. Tanpa fleet paralel; Grok hanya bila
 ada gap mobile konkret. Status checkpoint: [evidence/m08/REPORT.md](evidence/m08/REPORT.md).
 
+Checkpoint: gate teknis M08 terpenuhi pada `6b6987c` (lokal, CI, live, Android).
+Tidak ada Grok/worker lain yang dipakai. Blocker: connector Google Docs untuk
+menyisipkan bagian M08 ke panduan/laporan native existing; draf siap di
+evidence/m08/DRIVE_DRAFT.md. Emulator dihentikan setelah tampilan dipulihkan.
+
 ## Penutupan M06–M07 — 13 Oktober 2026
 
 M06 dan M07 **passed**; source M07 `979634f` diterima di staging sintetis.
