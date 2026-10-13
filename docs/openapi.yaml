@@ -433,6 +433,13 @@ paths:
       summary: Arsip pengaduan dengan alasan
       x-status: implemented
       x-milestone: M08
+      description: Hanya menyembunyikan dari warga; laporan, foto, dan riwayat tetap. Sudah diarsipkan 409 ALREADY_ARCHIVED.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReasonInput"
       responses:
         "204":
           description: Berhasil tanpa body.
@@ -448,9 +455,20 @@ paths:
       summary: Ubah status dengan catatan dan expected_version
       x-status: implemented
       x-milestone: M08
+      description: 'diajukan → diproses → selesai; selesai → diproses (buka ulang) wajib catatan 422 REOPEN_REASON_REQUIRED. Transisi lain 422 INVALID_STATUS_TRANSITION, versi basi 409 VERSION_CONFLICT, laporan arsip 409 ALREADY_ARCHIVED. Riwayat, audit, dan outbox (inbox pelapor) ditulis dalam transaksi yang sama.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintStatusInput"
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintEnvelope"
         default:
           $ref: "#/components/responses/Error"
   /api/v1/admin/dashboard:
@@ -1495,6 +1513,7 @@ paths:
       summary: Feed pengaduan tersanitasi
       x-status: implemented
       x-milestone: M08
+      description: Query opsional status, kategori_id, milik_saya=1; pengurus arsip=1. Laporan anonim tidak memuat pelapor bagi warga lain. Akun menunggu/nonaktif 403.
       responses:
         "200":
           $ref: "#/components/responses/Data"
@@ -1507,9 +1526,20 @@ paths:
       summary: Buat pengaduan
       x-status: implemented
       x-milestone: M08
+      description: 'Foto opsional maks. 5, JPG/PNG/WebP berdasarkan magic bytes yang cocok dengan header gambar; >12 MB ditolak (validasi 422 atau 413 PAYLOAD_TOO_LARGE), >50 MP 413, format lain/spoof 415 UNSUPPORTED_MEDIA_TYPE. Foto disimpan privat berstatus diproses lalu ditranskode worker-media (metadata EXIF/GPS dibuang) menjadi siap atau gagal; laporan tetap tersimpan walau antrean gagal (rt05:media-recover mengirim ulang).'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ComplaintCreateInput"
       responses:
         "201":
-          $ref: "#/components/responses/Data"
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintEnvelope"
         default:
           $ref: "#/components/responses/Error"
   /api/v1/complaints/{id}:
@@ -1522,9 +1552,14 @@ paths:
       summary: Detail pengaduan role-aware
       x-status: implemented
       x-milestone: M08
+      description: Warga tidak melihat laporan arsip (404). Warga lain hanya menerima foto siap.
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintEnvelope"
         default:
           $ref: "#/components/responses/Error"
     patch:
@@ -1534,9 +1569,20 @@ paths:
       summary: Pemilik mengubah saat submitted
       x-status: implemented
       x-milestone: M08
+      description: Bukan pemilik atau status bukan diajukan 403 COMPLAINT_LOCKED; versi basi 409 VERSION_CONFLICT (client mempertahankan isian lalu memuat versi terbaru).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintUpdateInput"
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintEnvelope"
         default:
           $ref: "#/components/responses/Error"
   /api/v1/complaints/{id}/history:
@@ -1549,6 +1595,7 @@ paths:
       summary: Histori status aman
       x-status: implemented
       x-milestone: M08
+      description: Bagi warga lain, entri pelapor anonim bernama "Warga" (juga bila pelapor pengurus) dan tindakan pengurus "Pengurus RT".
       responses:
         "200":
           $ref: "#/components/responses/Data"
@@ -1567,12 +1614,18 @@ paths:
       operationId: getComplaintPhotoComplaintsId
       tags:
         - Complaints
-      summary: complaintPhoto /complaints/{id}/photos/{photoId}
+      summary: Unduh foto pengaduan privat (JPEG hasil transkode)
       x-status: implemented
       x-milestone: M08
+      description: Foto harus milik laporan pada path dan berstatus siap; selain itu 404. Tanpa URL publik.
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: JPEG tanpa metadata.
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
         default:
           $ref: "#/components/responses/Error"
   /api/v1/devices/{device_identifier}:
@@ -2593,3 +2646,74 @@ components:
                 penghunian: {type: array, items: {$ref: '#/components/schemas/Occupancy'}}
                 riwayat_keanggotaan: {type: array, items: {$ref: '#/components/schemas/Membership'}}
                 akun: {type: array, items: {$ref: '#/components/schemas/AccountLink'}}
+    ComplaintCreateInput:
+      type: object
+      required: [kategori_id, judul, deskripsi]
+      properties:
+        kategori_id: {type: string, format: uuid}
+        judul: {type: string, maxLength: 150}
+        deskripsi: {type: string, maxLength: 5000}
+        sembunyikan_identitas: {type: boolean}
+        'foto[]':
+          type: array
+          maxItems: 5
+          items: {type: string, format: binary}
+    ComplaintUpdateInput:
+      type: object
+      required: [versi]
+      properties:
+        versi: {type: integer, minimum: 1}
+        judul: {type: string, maxLength: 150}
+        deskripsi: {type: string, maxLength: 5000}
+        sembunyikan_identitas: {type: boolean}
+    ComplaintStatusInput:
+      type: object
+      required: [status, expected_version]
+      properties:
+        status: {type: string, enum: [diajukan, diproses, selesai]}
+        catatan: {type: [string, 'null'], maxLength: 2000}
+        expected_version: {type: integer}
+    ComplaintPhoto:
+      type: object
+      additionalProperties: false
+      required: [id, status, lebar, tinggi, url]
+      properties:
+        id: {type: string, format: uuid}
+        status: {type: string, enum: [diproses, siap, gagal]}
+        lebar: {type: integer}
+        tinggi: {type: integer}
+        url: {type: [string, 'null'], description: Hanya untuk foto siap; path API ber-policy.}
+    Complaint:
+      type: object
+      additionalProperties: false
+      required: [id, kategori, judul, deskripsi, status, versi, sembunyikan_identitas, milik_saya, pelapor, foto, created_at, updated_at, archived_at]
+      properties:
+        id: {type: string, format: uuid}
+        kategori:
+          type: [object, 'null']
+          properties:
+            id: {type: string, format: uuid}
+            nama: {type: string}
+        judul: {type: string}
+        deskripsi: {type: string}
+        status: {type: string, enum: [diajukan, diproses, selesai]}
+        versi: {type: integer}
+        sembunyikan_identitas: {type: boolean}
+        milik_saya: {type: boolean}
+        pelapor:
+          type: [object, 'null']
+          description: null bagi warga lain bila sembunyikan_identitas; pengurus dan pemilik selalu menerima.
+          properties:
+            id: {type: string, format: uuid}
+            nama: {type: [string, 'null']}
+        foto: {type: array, items: {$ref: '#/components/schemas/ComplaintPhoto'}}
+        created_at: {type: [string, 'null'], format: date-time}
+        updated_at: {type: [string, 'null'], format: date-time}
+        archived_at: {type: [string, 'null'], format: date-time, description: Hanya untuk pengurus.}
+    ComplaintEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data: {$ref: '#/components/schemas/Complaint'}
+        meta: {$ref: '#/components/schemas/Meta'}

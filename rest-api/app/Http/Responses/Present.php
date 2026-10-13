@@ -249,10 +249,14 @@ final class Present
             'sembunyikan_identitas' => $p->sembunyikan_identitas,
             'milik_saya' => $isOwner,
             'pelapor' => $showIdentity ? ['id' => $p->pelapor_id, 'nama' => $p->pelapor?->nama] : null,
-            'foto' => $p->foto->map(fn ($f) => [
-                'id' => $f->id, 'lebar' => $f->lebar, 'tinggi' => $f->tinggi,
-                'url' => '/api/v1/complaints/'.$p->id.'/photos/'.$f->id,
-            ])->all(),
+            // Warga lain hanya melihat foto siap; pelapor/pengurus juga melihat diproses/gagal.
+            // URL hanya untuk foto siap dan tetap lewat endpoint ber-policy (tanpa nama berkas asli).
+            'foto' => $p->foto
+                ->filter(fn ($f) => $f->status === 'siap' || $isOwner || $viewer->isPengurus())
+                ->map(fn ($f) => [
+                    'id' => $f->id, 'status' => $f->status, 'lebar' => $f->lebar, 'tinggi' => $f->tinggi,
+                    'url' => $f->status === 'siap' ? '/api/v1/complaints/'.$p->id.'/photos/'.$f->id : null,
+                ])->values()->all(),
             'created_at' => self::ts($p->created_at),
             'updated_at' => self::ts($p->updated_at),
             'archived_at' => $viewer->isPengurus() ? self::ts($p->archived_at) : null,
@@ -278,10 +282,15 @@ final class Present
         ];
     }
 
-    /** Riwayat status: aktor hanya disebut sebagai peran untuk warga, nama untuk pengurus. */
-    public static function riwayat($r, Akun $viewer, bool $anonymousOwnerHidden): array
+    /**
+     * Riwayat status: aktor hanya disebut sebagai peran untuk warga, nama untuk pengurus.
+     * Entri oleh pelapor anonim selalu "Warga" — termasuk bila pelapornya pengurus, agar peran
+     * tidak menjadi petunjuk identitas tidak langsung.
+     */
+    public static function riwayat($r, Akun $viewer, bool $anonymousOwnerHidden, ?string $ownerId = null): array
     {
-        $actorIsPengurus = $r->aktor?->isPengurus();
+        $byHiddenOwner = $anonymousOwnerHidden && $ownerId !== null && $r->aktor_id === $ownerId;
+        $actorIsPengurus = ! $byHiddenOwner && $r->aktor?->isPengurus();
 
         return [
             'status_dari' => $r->status_dari,

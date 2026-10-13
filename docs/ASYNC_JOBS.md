@@ -93,7 +93,8 @@ di [PROGRESS.md](PROGRESS.md) dan [evidence/m03](evidence/m03/).
 | DeliverNotification | event+recipient unique inbox |
 | SendDuesReminder | house+period+reminder_slot+recipient |
 | SendAgendaReminder | agenda_id+starts_at_revision+recipient |
-| ProcessMedia | media ID; ready skip; retry safe |
+| ProcessMedia | media ID; ready skip; retry safe. M08: `ProcessComplaintPhoto` (antrean media, tries 5, timeout 120, memory 640M hanya worker); hasil `pengaduan/<id>.jpg` deterministik, status diubah di bawah row lock |
+| rt05:media-recover (M08) | Tiap 10 menit: foto `diproses` >10 menit dikirim ulang sampai 5 percobaan lalu `gagal`; berkas mentah yatim >24 jam dihapus |
 | BuildCsvExport | export ID; chunks; atomic final file |
 | InvalidatePublicContentCache | entity+published_version; TTL fallback |
 | CleanupTemporaryMedia | Only unreferenced, expired, private staging assets |

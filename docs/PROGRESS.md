@@ -1,6 +1,21 @@
 # Progress — RT05 TAKEDA
 
-Updated: 13 Oktober 2026.
+Updated: 14 Oktober 2026.
+
+## Pembukaan M08 — 14 Oktober 2026 (instruksi pemilik)
+
+Instruksi pemilik terbaru ("biarkan Claude cooking") menggantikan catatan
+sebelumnya untuk berhenti sesudah M07. Codex menyerahkan M08 ke Claude lewat
+handoff terminal langsung (bukan dispatch Orca; capability M07 lama dicabut).
+Branch `codex/m08-complaints-media` dari `80d8180`. Lingkup hanya M08; M09
+tidak dibuka otomatis.
+
+Checkpoint source: inventaris gap dan implementasi di
+[evidence/m08/REPORT.md](evidence/m08/REPORT.md). Lokal: backend **229/229,
+2229 assertion**; Flutter **157**; analyzer/format/pint/redocly/check-repo
+lulus. Belum ada bukti CI, staging, atau Android untuk M08; status tetap
+in_progress. Langkah berikut: push, CI, deploy staging SHA yang sama, uji API
+live sintetis, demonstrasi Android (kamera izin/tolak), Drive.
 
 ## Penutupan M07 — 13 Oktober 2026
 
@@ -239,7 +254,7 @@ ditentukan hanya oleh tersedianya kode.
 | M05 | passed | PR17, source13de24e: 77 tes/analyzer/dua APK CI SUCCESS, checksum cocok; emulator health HTTPS, offline/retry proses sama, ikon dan skala teks1,3/2,0; review final Kimi PASS. docs/evidence/m05/LIVE_RESULTS.md |
 | M06 | passed | Staging26a0b7e; API52alur/17mekanika reset; Android akun/sesi; SMTP nyata, INBOX A/browser dan B/Android, verifier4/4 masing-masing. Penutupan13Oktober; INBOX_ACCEPTANCE |
 | M07 | passed | Source979634f; 220tes/2125assertion, Flutter152, 9CI SUCCESS, deploy additive/backfill, API live77/327, Android nyata dan native Drive; evidence/m07/REPORT.md |
-| M08 | in_progress | Pengaduan + foto privat + anonim + status; tes CI lulus |
+| M08 | in_progress | Dibuka14Okt (pemilik). Foto via worker-media, edit/409 mobile, izin kamera; lokal229/2229 + Flutter157. CI/staging/Android belum; evidence/m08/REPORT.md |
 | M09 | in_progress | Aspirasi terpisah; tes CI lulus |
 | M10 | in_progress | Agenda/ICS/Google Calendar, pengumuman, inbox; push FCM blocked (tanpa project Firebase) |
 | M11 | in_progress | Tarif/tagihan idempotent/catch-up/transparansi; tes CI lulus |
