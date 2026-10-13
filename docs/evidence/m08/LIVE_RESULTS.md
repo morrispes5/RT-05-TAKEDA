@@ -57,3 +57,16 @@ antrean selama worker mati; tidak perlu `rt05:media-recover`.
 
 Data yang ditinggalkan di staging (sintetis): 2 laporan per run live + 1 laporan Android, beberapa
 diarsipkan; akun `a3` aktif kembali. Tidak ada cleanup/hapus.
+
+## Run ulang 13 Oktober 2026 (penerimaan akhir)
+
+Staging tetap `6b6987c` (tanpa deploy baru; SSH baca-saja: semua image `rt05-*:6b6987c`, container
+sehat, `/health/ready` ready). Script sama (`infra/scripts/m08-stage-acceptance.mjs`, head PR `a3d80e5`).
+
+| Run | SHA | Hasil | Ringkasan publik |
+| --- | --- | --- | --- |
+| `Sintetis M08 615CCB` (selesai 13:27:06 UTC) | `6b6987c` | **42/42 kasus, 130 assertion PASS**; foto siap 4 dtk; inbox 42 dtk | [m08-live-summary-rerun-615CCB.json](m08-live-summary-rerun-615CCB.json) |
+
+Drill worker-media diulang bersama Android putaran 2: container `rt05-staging-worker-media-1`
+dihentikan 13:42:21 UTC dan dijalankan lagi 13:43:23 UTC (healthy dalam 20 dtk); foto `diproses`
+lalu `siap` tanpa `rt05:media-recover`. Hanya container itu yang disentuh.

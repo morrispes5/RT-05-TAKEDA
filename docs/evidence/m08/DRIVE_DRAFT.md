@@ -1,17 +1,23 @@
-# M08 — draf bagian Google Doc (belum dipublikasikan)
+# M08 — bagian Google Doc (dipublikasikan 13 Oktober 2026)
 
-**Status: BLOCKED untuk publikasi native.** Sesi Claude ini hanya memiliki connector Google Drive
-(cari, baca teks, buat file baru, ganti nama). Connector **Google Docs** (baca struktur dan edit di
-tempat) tidak tersedia, dan sisip gambar ke Doc memerlukan editor tersebut. Mengunggah ulang atau
-membuat Doc baru akan menghasilkan duplikat, yang dilarang handoff. Panduan
-`18yoO1-BY7-ylFyujpkDrpp_NkPQOwq-9-mTRPK_-KlM` dan laporan
-`1Dxax50Kckfuc2cCO4_PlanRIlNNQVLpsIN0S42s5VMU` **tidak diubah**; sharing dan folder
-`1_WweESw5u0iHaDlw6LUfFAuUgOzAstpj` tidak disentuh.
+**Status: DIPUBLIKASIKAN ke Doc existing.** Blocker sebelumnya (connector Google Docs tidak
+tersedia; connector Drive tidak dapat menyunting isi Doc) diselesaikan lewat editor Google Docs di
+Chrome pemilik yang sudah login. Tidak ada Doc baru, sharing dan folder
+`1_WweESw5u0iHaDlw6LUfFAuUgOzAstpj` tidak diubah.
 
-Tindakan yang diperlukan: aktifkan connector Google Docs pada sesi berikutnya (atau coordinator
-yang memilikinya) lalu sisipkan bagian di bawah ke akhir panduan, satu subbagian per halaman
-seperti M07, kemudian baca kembali dan render PDF. Semua isi di bawah hanya perilaku yang sudah
-diuji (lokal, CI, staging live, Android); lihat [REPORT.md](REPORT.md).
+| Doc | Yang ditambahkan | Readback |
+| --- | --- | --- |
+| Panduan `18yoO1-BY7-ylFyujpkDrpp_NkPQOwq-9-mTRPK_-KlM` | Heading "M08: pengaduan warga dan foto", M8.1–M8.5, 8 screenshot Android dengan caption (Gambar 1–8) | `read_file_content`: semua heading dan caption berurutan, tanpa teks nyasar; panduan menjadi 46 halaman menurut editor |
+| Laporan `1Dxax50Kckfuc2cCO4_PlanRIlNNQVLpsIN0S42s5VMU` | Bagian "Penerimaan M08 — Pengaduan dan media — 13 Oktober 2026" (hasil, Android, keterbatasan, tautan PR #23) | `read_file_content`: heading, empat paragraf, dan tautan PR #23 terbaca di akhir Doc |
+
+Perbedaan dari draf di bawah: diagram Mermaid dan tabel tidak dipakai (editor tidak merender
+Mermaid, dan tabel diketik sebagai paragraf); alur dan sequence ditulis sebagai prosa. Screenshot
+yang disisipkan berasal dari putaran 2 (`m08r2-*`), diperkecil ke lebar 280 px dan diunggah sebagai
+`M08-A1…A8-*.png` ke folder bukti existing (hanya file baru; tidak ada yang dihapus). Judul Doc
+tetap "M06–M07". Ekspor PDF tidak dirender ulang pada sesi ini.
+
+Draf asli di bawah dipertahankan sebagai sumber. Semua isinya hanya perilaku yang sudah diuji
+(lokal, CI, staging live, Android); lihat [REPORT.md](REPORT.md).
 
 ## M08: Pengaduan warga dan foto
 
