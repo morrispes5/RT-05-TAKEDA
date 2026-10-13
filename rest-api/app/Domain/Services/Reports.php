@@ -3,6 +3,7 @@
 namespace App\Domain\Services;
 
 use App\Exceptions\DomainConflict;
+use App\Jobs\ProcessComplaintPhoto;
 use App\Models\Akun;
 use App\Models\Aspirasi;
 use App\Models\FotoPengaduan;
@@ -14,7 +15,9 @@ use App\Support\Audit;
 use App\Support\Outbox;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 /**
  * Pengaduan dan aspirasi (FR07–FR09, BR08/BR09) — dua domain terpisah, pola yang sama.
@@ -38,11 +41,14 @@ final class Reports
             throw new DomainConflict('CATEGORY_INACTIVE', 'Kategori tidak tersedia.', 422);
         }
 
-        // Foto diproses sebelum transaksi; bila transaksi gagal, berkas yatim dihapus.
-        $stored = array_map(fn (UploadedFile $f) => Photo::store($f, 'pengaduan'), $photos);
-
+        // Foto divalidasi lalu disalin mentah ke folder privat sebelum transaksi; transkode dan
+        // penghapusan metadata dilakukan worker-media. Bila transaksi gagal, berkas yatim dihapus.
+        $stored = [];
         try {
-            return DB::transaction(function () use ($akun, $data, $stored, $kategori) {
+            foreach ($photos as $file) {
+                $stored[] = Photo::stage($file);
+            }
+            $pengaduan = DB::transaction(function () use ($akun, $data, $stored, $kategori) {
                 $pengaduan = Pengaduan::create([
                     'pelapor_id' => $akun->id,
                     'kategori_id' => $kategori->id,
@@ -61,11 +67,28 @@ final class Reports
 
                 return $pengaduan;
             });
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             foreach ($stored as $meta) {
                 Storage::disk(Photo::DISK)->delete($meta['storage_key']);
             }
             throw $e;
+        }
+
+        // Setelah commit. Antrean gagal tidak membatalkan laporan; rt05:media-recover mengirim ulang.
+        foreach ($pengaduan->foto()->pluck('id') as $fotoId) {
+            self::enqueuePhoto($fotoId);
+        }
+
+        // Muat ulang default kolom (versi, created_at) agar respons create sama dengan detail.
+        return $pengaduan->refresh();
+    }
+
+    public static function enqueuePhoto(string $fotoId): void
+    {
+        try {
+            ProcessComplaintPhoto::dispatch($fotoId);
+        } catch (Throwable $e) {
+            Log::warning('media.enqueue_failed', ['foto_id' => $fotoId, 'exception' => $e::class]);
         }
     }
 
@@ -90,6 +113,7 @@ final class Reports
     {
         return DB::transaction(function () use ($pengurus, $pengaduan, $to, $note, $expectedVersion) {
             $locked = Pengaduan::whereKey($pengaduan->id)->lockForUpdate()->firstOrFail();
+            self::assertNotArchived($locked);
             self::assertVersion($locked->versi, $expectedVersion);
             self::assertTransition(self::COMPLAINT_FLOW, $locked->status, $to, $note);
             $from = $locked->status;
@@ -116,7 +140,7 @@ final class Reports
             Audit::record($akun, 'aspirasi.dibuat', 'aspirasi', $aspirasi->id);
             Outbox::record('aspirasi.dibuat', 'aspirasi', $aspirasi->id);
 
-            return $aspirasi;
+            return $aspirasi->refresh();
         });
     }
 
@@ -141,6 +165,7 @@ final class Reports
     {
         return DB::transaction(function () use ($pengurus, $aspirasi, $to, $note, $expectedVersion) {
             $locked = Aspirasi::whereKey($aspirasi->id)->lockForUpdate()->firstOrFail();
+            self::assertNotArchived($locked);
             self::assertVersion($locked->versi, $expectedVersion);
             self::assertTransition(self::ASPIRATION_FLOW, $locked->status, $to, $note);
             $from = $locked->status;
@@ -156,9 +181,19 @@ final class Reports
     public static function archive(Akun $pengurus, Pengaduan|Aspirasi $report, string $reason): void
     {
         DB::transaction(function () use ($pengurus, $report, $reason) {
-            $report->forceFill(['archived_at' => now()])->save();
-            Audit::record($pengurus, $report->getTable().'.diarsipkan', $report->getTable(), $report->id, ['alasan' => $reason]);
+            $locked = $report::whereKey($report->id)->lockForUpdate()->firstOrFail();
+            self::assertNotArchived($locked);
+            // Arsip hanya menyembunyikan dari warga; laporan, foto, dan riwayat tetap utuh.
+            $locked->forceFill(['archived_at' => now()])->save();
+            Audit::record($pengurus, $locked->getTable().'.diarsipkan', $locked->getTable(), $locked->id, ['alasan' => $reason]);
         });
+    }
+
+    private static function assertNotArchived(Pengaduan|Aspirasi $report): void
+    {
+        if ($report->archived_at) {
+            throw new DomainConflict('ALREADY_ARCHIVED', 'Laporan sudah diarsipkan.');
+        }
     }
 
     private static function assertVersion(int $current, mixed $expected): void

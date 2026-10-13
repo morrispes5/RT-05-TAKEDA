@@ -152,6 +152,23 @@ Keputusan: tidak memasang WSL2/Docker di PC; tes Postgres/Redis/Docker di GitHub
 Tanggal/status: 10 Oktober 2026, diterapkan M02.
 Keputusan: migration default Laravel (users/sessions/cache/jobs bigint) dihapus. users UUID dengan role/status dibuat M06; `audit_logs.actor_id` dan `idempotency_requests.actor_id` mendapat FK pada migration M06. Sesi/cache/queue memakai Redis (M03), bukan tabel database.
 
+### ADR21 — Foto pengaduan M08: unggah bersama laporan, proses di worker-media
+
+Tanggal/status: 14 Oktober 2026, diterapkan pada branch M08.
+Trigger: gate M08 (worker mencapai ready, retry aman, spoof/oversized/foreign-parent ditolak).
+Keputusan sebelumnya: API.md merancang `POST /media` lalu `media_ids` pada create; source awal
+mentranskode sinkron di request tanpa status.
+Keputusan baru: foto tetap multipart pada `POST /complaints` (kontrak dan APK existing), tetapi
+request hanya memvalidasi dan menyimpan berkas mentah privat; `ProcessComplaintPhoto` di antrean
+`media` mentranskode menjadi `siap`/`gagal`. Tabel `foto_pengaduan` diperluas additive (status,
+percobaan, kode_gagal, updated_at); baris lama default `siap`. `/media` dan `media_assets` tetap
+planned untuk konten M13.
+Alasan/tradeoff: tidak ada referensi media dari client, sehingga owner/purpose/parent ditetapkan
+server saat create dan referensi asing tidak mungkin; satu request untuk warga. Biaya: foto tidak
+dapat ditambah setelah laporan dibuat (v1 tidak memintanya).
+Kompatibilitas: image M07 tetap dapat membaca/menulis (default `siap`). Tes `M08ComplaintMediaTest`.
+Sumber instruksi pemilik: handoff M08 13 Oktober 2026.
+
 ## Input operasional yang belum tersedia
 
 ### ADR20 — SMTP Resend untuk staging M06

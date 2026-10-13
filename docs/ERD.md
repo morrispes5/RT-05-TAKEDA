@@ -60,6 +60,7 @@ dipertahankan untuk image M06 dan diperbarui dalam transaksi yang sama dengan hi
 | --- | --- |
 | complaints | id, author_user_id, house_id snapshot, category, title, body, anonymous_to_residents, status, version, archived_at |
 | complaint_status_events | id, complaint_id, from_status, to_status, note, actor_id, created_at |
+| foto_pengaduan (M08) | id, pengaduan_id, storage_key acak privat, mime, bytes, lebar, tinggi, urutan, status diproses/siap/gagal, percobaan, kode_gagal, created_at, updated_at |
 | aspirations | id, author_user_id, house_id snapshot, title, body, anonymous_to_residents, status, version, archived_at |
 | aspiration_status_events | id, aspiration_id, from_status, to_status, note, actor_id, created_at |
 | agendas | id, title, description, starts_at, ends_at, location, status, created_by, archived_at |

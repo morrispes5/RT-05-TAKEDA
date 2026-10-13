@@ -1,5 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Kamera lampiran pengaduan (M08). Dideklarasikan agar izin runtime diminta image_picker
+         dan penolakan dapat ditangani; galeri memakai photo picker Android tanpa izin penyimpanan. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <application
         android:allowBackup="false"
         android:label="RT05 TAKEDA"

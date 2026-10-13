@@ -1,5 +1,14 @@
 # Koordinasi RT05 TAKEDA
 
+## Tahap aktif M08 — 14 Oktober 2026
+
+Pemilik mengotorisasi M08; catatan "tidak membuka M08" di penutupan M07
+digantikan. Codex menyerahkan eksekusi M08 ke Claude (handoff terminal, bukan
+dispatch Orca) dan mengakhiri giliran untuk menghemat limit. Claude memegang
+`rest-api/`, `mobile/`, infra/kontrak/bukti M08, commit/push/PR, CI, rollout
+staging sintetis, Android dan Drive M08. Tanpa fleet paralel; Grok hanya bila
+ada gap mobile konkret. Status checkpoint: [evidence/m08/REPORT.md](evidence/m08/REPORT.md).
+
 ## Penutupan M06–M07 — 13 Oktober 2026
 
 M06 dan M07 **passed**; source M07 `979634f` diterima di staging sintetis.

@@ -173,6 +173,12 @@ yang tidak diketahui sebagai NULL. Job migrator tetap sementara dan terisolasi.
 Jangan menjalankan factory/seed/reset terhadap Neon. Bukti penerimaan M07 memakai
 fixture sintetis melalui API staging, kemudian ditampilkan di aplikasi Android.
 
+Untuk M08, branch `codex/m08-complaints-media` ditambahkan persis ke allowlist. Migration
+`2026_10_14_000100_m08_foto_pengaduan_status` additive (kolom default/nullable). Worker-media
+memakai volume `api-storage` yang sama dengan API; berkas mentah berada di
+`storage/app/private/pengaduan/masuk`, hasil di `storage/app/private/pengaduan`, tidak di
+document root. Bukti penerimaan memakai foto sintetis buatan generator, bukan foto warga.
+
 Setelah rollout, catat SHA image, readiness, heartbeat worker/scheduler, smoke
 DML dengan DDL ditolak, serta volume dan container unrelated tetap tersedia.
 Browser pada origin staging memanggil `GET /sanctum/csrf-cookie`, lalu
