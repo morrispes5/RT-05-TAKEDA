@@ -3,8 +3,16 @@
 Branch `codex/m08-complaints-media` dari `origin/main` `80d8180` (M07 merged). Pemilik
 mengotorisasi M08 lewat handoff 13 Oktober 2026; Claude memegang eksekusi M08 saja.
 
-**Status: in_progress.** Bagian di bawah dipisah per jenis bukti: source/lokal, CI, staging live,
-Android. Checkbox lulus hanya diisi bila bukti jenis itu benar-benar ada.
+**Status: gate teknis terpenuhi (lokal, CI, staging live, Android); publikasi Drive BLOCKED.**
+Penerimaan akhir M08 menunggu coordinator/pemilik dan bagian Drive. Bukti dipisah per jenis.
+
+| Jenis bukti | Hasil | Rujukan |
+| --- | --- | --- |
+| Source/lokal | Backend **230/230, 2233 assertion**; Flutter **157**; pint/analyze/format/redocly/check-repo lulus | bagian di bawah |
+| CI | `d790ec2` dan `6b6987c`: API, Infra, Mobile (verify + APK dev/staging), Repo SUCCESS | [LIVE_RESULTS.md](LIVE_RESULTS.md) |
+| Staging live | Deploy additive `d790ec2` lalu `6b6987c`; API live **42/42, 130 assertion** (run kedua); drill worker-media | [LIVE_RESULTS.md](LIVE_RESULTS.md) |
+| Android | APK CI checksum cocok; izin kamera ditolak/diizinkan, galeri, foto diproses→siap, 409 draf tetap, anonim, pengurus, arsip, inbox | [ANDROID_RESULTS.md](ANDROID_RESULTS.md) |
+| Drive native | **BLOCKED**: connector Google Docs tidak tersedia di sesi ini; draf siap sisip, Doc existing tidak diubah | [DRIVE_DRAFT.md](DRIVE_DRAFT.md) |
 
 ## Inventaris gap (sebelum implementasi)
 
@@ -31,8 +39,8 @@ salinan cluster tes M07; bukan Neon), Flutter SDK lokal.
 
 | Perintah | Hasil |
 | --- | --- |
-| `php artisan test` (rest-api) | **229/229, 2229 assertion** |
-| `php artisan test --filter=M08ComplaintMediaTest` | 9/9 — status diproses→siap, EXIF/GPS sintetis hilang, replay tidak mengubah, spoof/SVG/HTML/GIF 415, >50 MP 413, >12 MB 422, tanpa berkas tersisa; gagal permanen/habis; enqueue gagal → laporan tetap + recover; foreign parent 404; pelapor pengurus anonim; pending/nonaktif 403; arsip; 409 edit |
+| `php artisan test` (rest-api) | **230/230, 2233 assertion** (setelah fix notifikasi `6b6987c`; sebelumnya 229/2229 di `d790ec2`) |
+| `php artisan test --filter=M08ComplaintMediaTest` | 10/10 — notifikasi terlambat menyebut tiap transisi; status diproses→siap, EXIF/GPS sintetis hilang, replay tidak mengubah, spoof/SVG/HTML/GIF 415, >50 MP 413, >12 MB 422, tanpa berkas tersisa; gagal permanen/habis; enqueue gagal → laporan tetap + recover; foreign parent 404; pelapor pengurus anonim; pending/nonaktif 403; arsip; 409 edit |
 | `vendor/bin/pint --test` | passed |
 | `npx @redocly/cli@2 lint docs/openapi.yaml` | valid |
 | `flutter analyze` / `dart format --set-exit-if-changed` | No issues / 0 changed |
@@ -41,12 +49,23 @@ salinan cluster tes M07; bukan Neon), Flutter SDK lokal.
 
 Test M07 rollback disesuaikan agar me-rollback M07 beserta migration sesudahnya (`--step` dihitung).
 
-## CI, staging, Android
+## Temuan selama penerimaan
 
-Belum. Diisi setelah push, deploy staging SHA yang sama, dan demonstrasi perangkat.
+- Notifikasi status yang diproses terlambat menyebut status terkini, bukan status transisi
+  (terlihat di inbox Android). Diperbaiki `6b6987c`, tes regresi, dibuktikan ulang di live.
+- Android dapat menutup aplikasi debug saat kamera terbuka pada perangkat RAM kecil; draf hilang
+  (keterbatasan, bukan kebocoran data).
+
+## Commit
+
+- `d790ec2` feat(m08): worker-media, gap mobile, kontrak/dokumen.
+- `6b6987c` fix(m08): status per transisi pada notifikasi; script live M08.
+- Commit bukti ini: hanya `docs/` (tanpa perubahan source runtime).
 
 ## Keterbatasan diketahui
 
 - Foto tidak dapat ditambah/diganti setelah laporan dibuat (v1 tidak meminta; ADR21).
 - Push FCM tetap blocked (M10); M08 memakai inbox.
-- Production, UAT mitra, dan insiden credential historis (M16) di luar M08.
+- Pemulihan draf/foto setelah Android menutup aplikasi saat kamera terbuka belum dibuat (M15).
+- Publikasi Google Doc native M08 tertunda connector Google Docs.
+- Production, UAT mitra, dan insiden credential historis (M16) di luar M08. Bukan production ready.
