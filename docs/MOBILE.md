@@ -63,6 +63,7 @@ Navigasi admin: Ringkasan, Warga, Layanan, Keuangan, Lainnya. Form finance menam
 - Privasi identitas tersanitasi server; UI tidak menerima author data lalu sekadar menyembunyikannya.
 - UTC di DTO, Asia/Jakarta untuk kalender dan periode.
 - Kamera/galeri meminta izin saat aksi pengguna; penolakan menyediakan alternatif atau pesan.
+- M08: manifest mendeklarasikan `CAMERA` (feature tidak wajib) sehingga image_picker meminta izin runtime saat tombol Kamera; `camera_access_denied` menampilkan panduan Pengaturan dan galeri tetap tersedia. Galeri memakai photo picker Android tanpa izin penyimpanan. Edit laporan sendiri hanya saat Diajukan; 409 mempertahankan isian lalu memuat versi terbaru; 403 terkunci menonaktifkan Simpan tanpa menghapus teks.
 - Kehilangan koneksi menampilkan data terakhir yang aman/indikator stale; tidak mengantre mutation offline v1.
 - Data keluarga/sensitif tidak disimpan plaintext offline. Token di OS secure storage; logout menghapus cache pribadi dan device binding.
 

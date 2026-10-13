@@ -28,12 +28,12 @@ final categoriesProvider = FutureProvider.autoDispose<List<Json>>(
   (ref) async => (await ref.read(apiProvider).get('/complaint-categories') as List).cast<Map>().map(Json.from).toList(),
 );
 
-/// Feed laporan: (aspirasi?, hanyaMilikSaya?, status?).
-final reportsProvider = FutureProvider.autoDispose.family<List<Laporan>, (bool, bool, String?)>((ref, args) async {
-  final (aspirasi, mine, status) = args;
+/// Feed laporan: (aspirasi?, hanyaMilikSaya?, status?, termasukArsip? — hanya dipakai pengurus).
+final reportsProvider = FutureProvider.autoDispose.family<List<Laporan>, (bool, bool, String?, bool)>((ref, args) async {
+  final (aspirasi, mine, status, arsip) = args;
   final res = await ref
       .read(apiProvider)
-      .page(aspirasi ? '/aspirations' : '/complaints', query: {if (mine) 'milik_saya': 1, 'status': ?status, 'per_page': 50});
+      .page(aspirasi ? '/aspirations' : '/complaints', query: {if (mine) 'milik_saya': 1, 'status': ?status, if (arsip) 'arsip': 1, 'per_page': 50});
   return (res['data'] as List).cast<Map>().map((m) => Laporan(Json.from(m), aspirasi: aspirasi)).toList();
 });
 

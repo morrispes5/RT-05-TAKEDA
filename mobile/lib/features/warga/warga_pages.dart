@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart' show FormData, MultipartFile;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -11,8 +12,10 @@ import '../../core/models.dart';
 import '../../core/session.dart';
 import '../../core/widgets.dart';
 import '../auth/account_access.dart';
+import '../household/family_actions.dart' show conflictKeptMessage, staleConflict;
 import '../household/family_page.dart';
 import 'providers.dart';
+import 'report_actions.dart';
 
 // ─────────────────────────────────────────── Beranda warga
 class WargaHomePage extends ConsumerWidget {
@@ -252,10 +255,11 @@ class ReportList extends ConsumerStatefulWidget {
 
 class _ReportListState extends ConsumerState<ReportList> {
   String? _status;
+  bool _arsip = false;
 
   @override
   Widget build(BuildContext context) {
-    final key = (widget.aspirasi, widget.mine, _status);
+    final key = (widget.aspirasi, widget.mine, _status, widget.admin && _arsip);
     final reports = ref.watch(reportsProvider(key));
     final flow = widget.aspirasi ? ['diajukan', 'ditinjau', 'selesai'] : ['diajukan', 'diproses', 'selesai'];
     return Scaffold(
@@ -279,9 +283,11 @@ class _ReportListState extends ConsumerState<ReportList> {
           children: [
             Wrap(
               spacing: 8,
+              runSpacing: 4,
               children: [
                 ChoiceChip(label: const Text('Semua'), selected: _status == null, onSelected: (_) => setState(() => _status = null)),
                 for (final s in flow) ChoiceChip(label: Text(statusLabel(s)), selected: _status == s, onSelected: (_) => setState(() => _status = s)),
+                if (widget.admin) FilterChip(label: const Text('Termasuk arsip'), selected: _arsip, onSelected: (v) => setState(() => _arsip = v)),
               ],
             ),
             const SizedBox(height: 12),
@@ -305,7 +311,12 @@ class _ReportListState extends ConsumerState<ReportList> {
                                 subtitle: Padding(
                                   padding: const EdgeInsets.only(top: 6),
                                   child: Text(
-                                    [if (r.kategori != null) r.kategori!, r.namaPelapor ?? 'Identitas disembunyikan', tanggal(r.dibuat)].join(' • '),
+                                    [
+                                      if (r.diarsipkan != null) 'Diarsipkan',
+                                      if (r.kategori != null) r.kategori!,
+                                      r.namaPelapor ?? 'Identitas disembunyikan',
+                                      tanggal(r.dibuat),
+                                    ].join(' • '),
                                     style: const TextStyle(color: Brand.muted),
                                   ),
                                 ),
@@ -332,37 +343,68 @@ class _ReportListState extends ConsumerState<ReportList> {
   }
 }
 
+/// Buat laporan baru, atau perbaiki laporan milik sendiri ([existing]) selama masih diajukan.
+/// Kegagalan apa pun tidak menutup formulir: teks yang diketik tetap ada.
 class ReportFormPage extends ConsumerStatefulWidget {
-  const ReportFormPage({super.key, required this.aspirasi});
+  const ReportFormPage({super.key, required this.aspirasi, this.existing, this.picker});
   final bool aspirasi;
+  final Laporan? existing;
+
+  /// Diganti pada tes; default ImagePicker plugin (kamera/galeri Android).
+  final ImagePicker? picker;
   @override
   ConsumerState<ReportFormPage> createState() => _ReportFormPageState();
 }
 
 class _ReportFormPageState extends ConsumerState<ReportFormPage> {
-  final _judul = TextEditingController();
-  final _isi = TextEditingController();
+  late final _judul = TextEditingController(text: widget.existing?.judul);
+  late final _isi = TextEditingController(text: widget.existing?.isi);
   String? _kategori;
-  bool _anon = false;
+  late bool _anon = widget.existing?.anonim ?? false;
+  late int? _versi = widget.existing?.versi;
   final List<XFile> _photos = [];
+  String? _formError;
+  bool _locked = false;
+
+  bool get _editing => widget.existing != null;
+
+  @override
+  void dispose() {
+    _judul.dispose();
+    _isi.dispose();
+    super.dispose();
+  }
 
   Future<void> _pick(ImageSource source) async {
     try {
-      final file = await ImagePicker().pickImage(source: source, maxWidth: 2400, imageQuality: 90);
-      if (file != null) setState(() => _photos.add(file));
-    } catch (_) {
-      if (mounted) showMessage(context, 'Izin kamera/galeri ditolak. Anda tetap dapat mengirim tanpa foto.', error: true);
+      final file = await (widget.picker ?? ImagePicker()).pickImage(source: source, maxWidth: 2400, imageQuality: 90);
+      if (file != null && mounted) setState(() => _photos.add(file));
+    } on PlatformException catch (e) {
+      if (mounted) {
+        showMessage(
+          context,
+          photoPickMessage(e.code, camera: source == ImageSource.camera) ?? 'Foto tidak dapat diambil. Anda tetap dapat mengirim tanpa foto.',
+          error: true,
+        );
+      }
     }
   }
 
   Future<void> _submit() async {
-    if (_judul.text.trim().isEmpty || _isi.text.trim().isEmpty || (!widget.aspirasi && _kategori == null)) {
-      showMessage(context, 'Lengkapi judul, isi, dan kategori.', error: true);
+    if (_judul.text.trim().isEmpty || _isi.text.trim().isEmpty || (!_editing && !widget.aspirasi && _kategori == null)) {
+      setState(() => _formError = widget.aspirasi || _editing ? 'Lengkapi judul dan isi.' : 'Lengkapi judul, isi, dan kategori.');
       return;
     }
+    setState(() => _formError = null);
     final api = ref.read(apiProvider);
     try {
-      if (widget.aspirasi) {
+      if (_editing) {
+        final base = widget.aspirasi ? '/aspirations' : '/complaints';
+        await api.patch(
+          '$base/${widget.existing!.id}',
+          data: reportUpdateBody(aspirasi: widget.aspirasi, judul: _judul.text, isi: _isi.text, anonim: _anon, versi: _versi!),
+        );
+      } else if (widget.aspirasi) {
         await api.post('/aspirations', data: {'judul': _judul.text.trim(), 'isi': _isi.text.trim(), 'sembunyikan_identitas': _anon});
       } else {
         final form = FormData()
@@ -378,22 +420,61 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
         await api.post('/complaints', data: form);
       }
       if (!mounted) return;
-      showMessage(context, widget.aspirasi ? 'Aspirasi terkirim.' : 'Pengaduan terkirim. Pantau statusnya di menu Layanan.');
-      Navigator.pop(context);
+      showMessage(
+        context,
+        _editing
+            ? 'Perubahan tersimpan.'
+            : widget.aspirasi
+            ? 'Aspirasi terkirim.'
+            : 'Pengaduan terkirim. Foto diproses server; pantau statusnya di menu Layanan.',
+      );
+      Navigator.pop(context, true);
     } on ApiException catch (e) {
-      if (mounted) showMessage(context, e.display, error: true);
+      if (!mounted) return;
+      if (_editing && staleConflict(e)) {
+        setState(() => _formError = conflictKeptMessage(e.message));
+        await _reloadVersi();
+        return;
+      }
+      if (_editing && reportLocked(e.code)) {
+        setState(() {
+          _locked = true;
+          _formError = '${e.message} $reportLockedTail';
+        });
+        return;
+      }
+      setState(() => _formError = e.display);
+    }
+  }
+
+  /// Versi terbaru dari server; teks di formulir tidak ditimpa.
+  Future<void> _reloadVersi() async {
+    try {
+      final data = await ref.read(apiProvider).get('${widget.aspirasi ? '/aspirations' : '/complaints'}/${widget.existing!.id}');
+      final latest = Laporan(Json.from(data as Map), aspirasi: widget.aspirasi);
+      if (!mounted) return;
+      setState(() {
+        _versi = latest.versi;
+        if (latest.status != 'diajukan') {
+          _locked = true;
+          _formError = 'Laporan sudah ${statusLabel(latest.status).toLowerCase()} oleh pengurus sehingga tidak dapat diubah lagi. $reportLockedTail';
+        }
+      });
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _formError = '${_formError ?? ''} ${e.display}'.trim());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final cats = ref.watch(categoriesProvider);
+    final title = _editing ? 'Perbaiki laporan' : (widget.aspirasi ? 'Kirim aspirasi' : 'Buat pengaduan');
     return Scaffold(
-      appBar: AppBar(title: Text(widget.aspirasi ? 'Kirim aspirasi' : 'Buat pengaduan')),
+      appBar: AppBar(title: Text(title)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (!widget.aspirasi)
+          if (!widget.aspirasi && !_editing)
             AsyncView(
               value: cats,
               onRetry: () => ref.invalidate(categoriesProvider),
@@ -402,6 +483,14 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
                 decoration: const InputDecoration(labelText: 'Kategori'),
                 items: [for (final c in list) DropdownMenuItem(value: '${c['id']}', child: Text('${c['nama']}'))],
                 onChanged: (v) => setState(() => _kategori = v),
+              ),
+            ),
+          if (_editing)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: Text(
+                'Judul, isi, dan pilihan identitas dapat diperbaiki selama laporan masih Diajukan. Kategori dan foto tetap.',
+                style: TextStyle(color: Brand.muted),
               ),
             ),
           const SizedBox(height: 14),
@@ -424,9 +513,9 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
             title: const Text('Sembunyikan identitas dari warga lain'),
             subtitle: const Text('Pengurus RT tetap dapat melihat pelapor untuk tindak lanjut. Foto/isi tetap dapat mengungkap lokasi.'),
           ),
-          if (!widget.aspirasi) ...[
+          if (!widget.aspirasi && !_editing) ...[
             const SizedBox(height: 8),
-            Text('Foto (maks. 5)', style: Theme.of(context).textTheme.titleMedium),
+            Text('Foto (opsional, maks. 5)', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -441,10 +530,11 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
               ],
             ),
             const SizedBox(height: 6),
-            const Text('Foto diproses ulang di server; metadata lokasi (GPS) dihapus.', style: TextStyle(color: Brand.muted, fontSize: 13)),
+            const Text('JPG/PNG/WebP. Foto diproses ulang di server; metadata lokasi (GPS) dihapus.', style: TextStyle(color: Brand.muted, fontSize: 13)),
           ],
+          if (_formError != null) ...[const SizedBox(height: 12), Text(_formError!, style: const TextStyle(color: Brand.danger, height: 1.35))],
           const SizedBox(height: 24),
-          BusyButton(label: 'Kirim', icon: Icons.send, onPressed: _submit),
+          BusyButton(label: _editing ? 'Simpan perubahan' : 'Kirim', icon: _editing ? Icons.save_outlined : Icons.send, onPressed: _locked ? null : _submit),
         ],
       ),
     );
@@ -468,120 +558,196 @@ class ReportDetailPage extends ConsumerWidget {
         onRetry: () => ref.invalidate(reportDetailProvider((aspirasi, id))),
         builder: (d) {
           final (r, history) = d;
-          final next = aspirasi
+          final archived = r.diarsipkan != null;
+          final next = archived
+              ? null
+              : aspirasi
               ? {'diajukan': 'ditinjau', 'ditinjau': 'selesai', 'selesai': 'ditinjau'}[r.status]
               : {'diajukan': 'diproses', 'diproses': 'selesai', 'selesai': 'diproses'}[r.status];
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              SectionCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(child: Text(r.judul, style: Theme.of(context).textTheme.titleLarge)),
-                        StatusChip(r.status),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      [if (r.kategori != null) r.kategori!, r.namaPelapor ?? 'Identitas disembunyikan', tanggal(r.dibuat, jam: true)].join(' • '),
-                      style: const TextStyle(color: Brand.muted),
-                    ),
-                    if (r.anonim && (r.milikSaya || admin))
-                      const Padding(
-                        padding: EdgeInsets.only(top: 6),
-                        child: Text('Identitas disembunyikan dari warga lain.', style: TextStyle(color: Brand.warning, fontSize: 13)),
+          return RefreshIndicator(
+            onRefresh: () async => ref.invalidate(reportDetailProvider((aspirasi, id))),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (archived)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Text('Laporan diarsipkan: tidak tampil untuk warga. Riwayat tetap tersimpan.', style: TextStyle(color: Brand.warning)),
+                  ),
+                SectionCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: Text(r.judul, style: Theme.of(context).textTheme.titleLarge)),
+                          StatusChip(r.status),
+                        ],
                       ),
-                    const Divider(height: 24),
-                    Text(r.isi, style: const TextStyle(height: 1.5)),
-                    if (r.foto.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        height: 140,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            for (final f in r.foto)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.network(
-                                    api.absolute('${f['url']}'),
-                                    headers: api.authHeaders,
-                                    height: 140,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => const SizedBox(width: 140, child: Icon(Icons.broken_image_outlined)),
+                      const SizedBox(height: 8),
+                      Text(
+                        [if (r.kategori != null) r.kategori!, r.namaPelapor ?? 'Identitas disembunyikan', tanggal(r.dibuat, jam: true)].join(' • '),
+                        style: const TextStyle(color: Brand.muted),
+                      ),
+                      if (r.anonim && (r.milikSaya || admin))
+                        const Padding(
+                          padding: EdgeInsets.only(top: 6),
+                          child: Text('Identitas disembunyikan dari warga lain.', style: TextStyle(color: Brand.warning, fontSize: 13)),
+                        ),
+                      const Divider(height: 24),
+                      Text(r.isi, style: const TextStyle(height: 1.5)),
+                      if (r.foto.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 140,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              for (final f in r.foto)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: f['status'] == 'siap' && f['url'] != null
+                                        ? Image.network(
+                                            api.absolute('${f['url']}'),
+                                            headers: api.authHeaders,
+                                            height: 140,
+                                            fit: BoxFit.cover,
+                                            semanticLabel: 'Foto laporan',
+                                            errorBuilder: (_, _, _) => const SizedBox(width: 140, child: Icon(Icons.broken_image_outlined)),
+                                          )
+                                        : _PhotoPlaceholder(status: '${f['status']}'),
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+                        if (r.foto.any((f) => f['status'] == 'diproses'))
+                          const Padding(
+                            padding: EdgeInsets.only(top: 6),
+                            child: Text('Foto sedang diproses server. Tarik ke bawah untuk memuat ulang.', style: TextStyle(color: Brand.muted, fontSize: 13)),
+                          ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SectionCard(
-                title: 'Riwayat status',
-                child: Column(
-                  children: [
-                    for (final h in history)
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.history, color: Brand.navy),
-                        title: Text(statusLabel('${h['status_ke']}'), style: const TextStyle(fontWeight: FontWeight.w700)),
-                        subtitle: Text(
-                          [
-                            '${(h['aktor'] as Map)['nama']}',
-                            tanggal(parseTime(h['created_at']), jam: true),
-                            if (h['catatan'] != null) '"${h['catatan']}"',
-                          ].join(' • '),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (admin && next != null) ...[
                 const SizedBox(height: 16),
-                BusyButton(
-                  label: r.status == 'selesai' ? 'Buka ulang (${statusLabel(next)})' : 'Ubah ke ${statusLabel(next)}',
-                  icon: Icons.sync_alt,
-                  onPressed: () async {
-                    final note = await askText(
-                      context,
-                      title: 'Catatan tindak lanjut',
-                      label: r.status == 'selesai' ? 'Alasan buka ulang (wajib)' : 'Catatan (opsional)',
-                    );
-                    if (r.status == 'selesai' && note == null) return;
-                    try {
-                      await api.post(
-                        '/admin/${aspirasi ? 'aspirations' : 'complaints'}/$id/status',
-                        data: {'status': next, 'catatan': note, 'expected_version': r.versi},
+                SectionCard(
+                  title: 'Riwayat status',
+                  child: Column(
+                    children: [
+                      for (final h in history)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.history, color: Brand.navy),
+                          title: Text(statusLabel('${h['status_ke']}'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                          subtitle: Text(
+                            [
+                              '${(h['aktor'] as Map)['nama']}',
+                              tanggal(parseTime(h['created_at']), jam: true),
+                              if (h['catatan'] != null) '"${h['catatan']}"',
+                            ].join(' • '),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (admin && next != null) ...[
+                  const SizedBox(height: 16),
+                  BusyButton(
+                    label: r.status == 'selesai' ? 'Buka ulang (${statusLabel(next)})' : 'Ubah ke ${statusLabel(next)}',
+                    icon: Icons.sync_alt,
+                    onPressed: () async {
+                      final note = await askText(
+                        context,
+                        title: 'Catatan tindak lanjut',
+                        label: r.status == 'selesai' ? 'Alasan buka ulang (wajib)' : 'Catatan (opsional)',
                       );
-                      ref.invalidate(reportDetailProvider((aspirasi, id)));
-                      if (context.mounted) showMessage(context, 'Status diperbarui; pelapor menerima notifikasi.');
-                    } on ApiException catch (e) {
-                      if (e.isConflict) ref.invalidate(reportDetailProvider((aspirasi, id)));
-                      if (context.mounted) showMessage(context, e.display, error: true);
-                    }
-                  },
-                ),
+                      if (r.status == 'selesai' && note == null) return;
+                      try {
+                        await api.post(
+                          '/admin/${aspirasi ? 'aspirations' : 'complaints'}/$id/status',
+                          data: {'status': next, 'catatan': note, 'expected_version': r.versi},
+                        );
+                        ref.invalidate(reportDetailProvider((aspirasi, id)));
+                        if (context.mounted) showMessage(context, 'Status diperbarui; pelapor menerima notifikasi.');
+                      } on ApiException catch (e) {
+                        if (e.isConflict) ref.invalidate(reportDetailProvider((aspirasi, id)));
+                        if (context.mounted) showMessage(context, e.display, error: true);
+                      }
+                    },
+                  ),
+                ],
+                if (admin && !archived) ...[
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.archive_outlined),
+                    label: const Text('Arsipkan laporan'),
+                    style: OutlinedButton.styleFrom(foregroundColor: Brand.danger, minimumSize: const Size.fromHeight(48)),
+                    onPressed: () async {
+                      final reason = await askText(context, title: 'Arsipkan laporan', label: 'Alasan arsip (wajib)', hint: 'Mis. duplikat laporan lain');
+                      if (reason == null) return;
+                      try {
+                        await api.post('/admin/${aspirasi ? 'aspirations' : 'complaints'}/$id/archive', data: {'alasan': reason});
+                        ref.invalidate(reportDetailProvider((aspirasi, id)));
+                        if (context.mounted) showMessage(context, 'Laporan diarsipkan. Riwayat tetap tersimpan.');
+                      } on ApiException catch (e) {
+                        ref.invalidate(reportDetailProvider((aspirasi, id)));
+                        if (context.mounted) showMessage(context, e.display, error: true);
+                      }
+                    },
+                  ),
+                ],
+                if (!admin && r.milikSaya && r.status == 'diajukan') ...[
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Perbaiki laporan'),
+                    style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                    onPressed: () async {
+                      final saved = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ReportFormPage(aspirasi: aspirasi, existing: r),
+                        ),
+                      );
+                      if (saved == true) ref.invalidate(reportDetailProvider((aspirasi, id)));
+                    },
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text('Laporan masih dapat diperbaiki selama berstatus Diajukan.', style: TextStyle(color: Brand.muted)),
+                  ),
+                ],
               ],
-              if (!admin && r.milikSaya && r.status == 'diajukan')
-                const Padding(
-                  padding: EdgeInsets.only(top: 12),
-                  child: Text('Laporan masih dapat diperbaiki selama berstatus Diajukan.', style: TextStyle(color: Brand.muted)),
-                ),
-            ],
+            ),
           );
         },
       ),
     );
   }
+}
+
+class _PhotoPlaceholder extends StatelessWidget {
+  const _PhotoPlaceholder({required this.status});
+  final String status;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 140,
+    height: 140,
+    color: Brand.sky,
+    padding: const EdgeInsets.all(8),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(status == 'gagal' ? Icons.error_outline : Icons.hourglass_top, color: status == 'gagal' ? Brand.danger : Brand.navy),
+        const SizedBox(height: 6),
+        Text(photoStatusLabel(status), textAlign: TextAlign.center, style: const TextStyle(fontSize: 13)),
+      ],
+    ),
+  );
 }
 
 // ─────────────────────────────────────────── Agenda & pengumuman

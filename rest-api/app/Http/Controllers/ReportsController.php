@@ -87,14 +87,17 @@ class ReportsController extends Controller
         $viewer = $request->user();
         $hideOwner = $p->sembunyikan_identitas && ! $viewer->isPengurus() && $p->pelapor_id !== $viewer->id;
 
-        return Api::data($p->riwayat->map(fn ($r) => Present::riwayat($r, $viewer, $hideOwner))->values());
+        return Api::data($p->riwayat->map(fn ($r) => Present::riwayat($r, $viewer, $hideOwner, $p->pelapor_id))->values());
     }
 
-    /** Foto privat: hanya akun aktif yang boleh melihat laporan; tidak ada URL publik. */
+    /**
+     * Foto privat: hanya akun aktif yang boleh melihat laporan; tidak ada URL publik. Foto harus
+     * milik laporan pada path (ID foto laporan lain → 404) dan sudah siap diproses worker.
+     */
     public function complaintPhoto(Request $request, string $id, string $photoId): StreamedResponse
     {
         $p = $this->visibleComplaint($request, $id);
-        $foto = FotoPengaduan::where('pengaduan_id', $p->id)->findOrFail($photoId);
+        $foto = FotoPengaduan::where('pengaduan_id', $p->id)->where('status', 'siap')->findOrFail($photoId);
 
         return Storage::disk(Photo::DISK)->response($foto->storage_key, 'foto-'.$foto->urutan.'.jpg', [
             'Content-Type' => $foto->mime,
@@ -178,7 +181,7 @@ class ReportsController extends Controller
         $viewer = $request->user();
         $hideOwner = $a->sembunyikan_identitas && ! $viewer->isPengurus() && $a->pengirim_id !== $viewer->id;
 
-        return Api::data($a->riwayat->map(fn ($r) => Present::riwayat($r, $viewer, $hideOwner))->values());
+        return Api::data($a->riwayat->map(fn ($r) => Present::riwayat($r, $viewer, $hideOwner, $a->pengirim_id))->values());
     }
 
     public function changeAspirationStatus(Request $request, string $id): JsonResponse

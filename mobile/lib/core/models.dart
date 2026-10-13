@@ -49,4 +49,7 @@ class Laporan {
   String? get kategori => (raw['kategori'] as Json?)?['nama'] as String?;
   List<Json> get foto => ((raw['foto'] as List?) ?? []).cast<Json>();
   DateTime? get dibuat => parseTime(raw['created_at']);
+
+  /// Hanya dikirim untuk pengurus; warga tidak menerima laporan arsip.
+  DateTime? get diarsipkan => parseTime(raw['archived_at']);
 }

@@ -4,7 +4,11 @@ use App\Domain\Community\Notifications;
 use App\Domain\Finance\Dues;
 use App\Domain\Identity\RegistrationToken;
 use App\Domain\Operations\OutboxDispatcher;
+use App\Domain\Services\Photo;
+use App\Domain\Services\Reports;
+use App\Jobs\ProcessComplaintPhoto;
 use App\Models\Agenda;
+use App\Models\FotoPengaduan;
 use App\Models\TagihanIuran;
 use App\Support\Heartbeat;
 use App\Support\Outbox;
@@ -12,6 +16,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Storage;
 
 /*
 | Command operasional RT05 TAKEDA dan jadwal Asia/Jakarta (docs/ASYNC_JOBS.md).
@@ -75,10 +80,42 @@ Artisan::command('rt05:token-rotate {--if-due : Rotasi hanya bila tidak ada toke
     $this->info('Token registrasi dirotasi.');
 })->purpose('Rotasi token registrasi RT (nilai token tidak pernah dicetak)');
 
+Artisan::command('rt05:media-recover {--stale-minutes=10}', function () {
+    // Foto yang tertahan "diproses" (job hilang dari Redis/enqueue gagal): kirim ulang sampai
+    // 5 percobaan, lalu tandai gagal. Retry aman karena job melewati foto yang sudah selesai.
+    $requeued = $failed = 0;
+    FotoPengaduan::where('status', 'diproses')
+        ->whereRaw('coalesce(updated_at, created_at) < ?', [now()->subMinutes((int) $this->option('stale-minutes'))])
+        ->each(function (FotoPengaduan $f) use (&$requeued, &$failed) {
+            if ($f->percobaan >= 5) {
+                ProcessComplaintPhoto::markFailed($f->id, 'PROCESSING_STALLED');
+                $failed++;
+
+                return;
+            }
+            FotoPengaduan::whereKey($f->id)->update(['updated_at' => now()]);
+            Reports::enqueuePhoto($f->id);
+            $requeued++;
+        });
+
+    // Berkas mentah >24 jam yang tidak dirujuk foto "diproses" (transaksi gagal/crash).
+    $live = FotoPengaduan::where('status', 'diproses')->pluck('storage_key')->flip();
+    $orphans = 0;
+    $disk = Storage::disk(Photo::DISK);
+    foreach ($disk->files(Photo::STAGING) as $key) {
+        if (! isset($live[$key]) && $disk->lastModified($key) < now()->subDay()->getTimestamp()) {
+            $disk->delete($key);
+            $orphans++;
+        }
+    }
+    $this->info("Foto dikirim ulang: $requeued, ditandai gagal: $failed, berkas yatim dihapus: $orphans");
+})->purpose('Pulihkan antrean foto pengaduan yang tertahan dan hapus berkas mentah yatim');
+
 // Heartbeat scheduler M03: dibaca rt05:heartbeat-check, tidak lewat endpoint publik.
 Schedule::call(fn () => Heartbeat::beat('scheduler'))->everyMinute()->name('rt05:heartbeat-scheduler');
 Schedule::command('rt05:outbox-dispatch')->everyMinute()->withoutOverlapping()->onOneServer();
 Schedule::command('rt05:tagihan-generate')->dailyAt('00:10')->timezone('Asia/Jakarta')->withoutOverlapping()->onOneServer();
+Schedule::command('rt05:media-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer();
 Schedule::command('rt05:pengingat-agenda')->hourly()->withoutOverlapping()->onOneServer();
 Schedule::command('rt05:pengingat-iuran')->monthlyOn(5, '08:00')->timezone('Asia/Jakarta')->onOneServer();
 Schedule::command('rt05:pengingat-iuran')->monthlyOn(20, '08:00')->timezone('Asia/Jakarta')->onOneServer();

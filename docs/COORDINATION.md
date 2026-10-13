@@ -1,5 +1,27 @@
 # Koordinasi RT05 TAKEDA
 
+## Tahap M08 (ditutup 13 Oktober 2026) — dibuka 14 Oktober 2026 menurut catatan
+
+Pemilik mengotorisasi M08; catatan "tidak membuka M08" di penutupan M07
+digantikan. Codex menyerahkan eksekusi M08 ke Claude (handoff terminal, bukan
+dispatch Orca) dan mengakhiri giliran untuk menghemat limit. Claude memegang
+`rest-api/`, `mobile/`, infra/kontrak/bukti M08, commit/push/PR, CI, rollout
+staging sintetis, Android dan Drive M08. Tanpa fleet paralel; Grok hanya bila
+ada gap mobile konkret. Status checkpoint: [evidence/m08/REPORT.md](evidence/m08/REPORT.md).
+
+Checkpoint: gate teknis M08 terpenuhi pada `6b6987c` (lokal, CI, live, Android).
+Tidak ada Grok/worker lain yang dipakai.
+
+Penutupan 13 Oktober 2026: pemilik meminta verifikasi ulang, uji emulator,
+penyelesaian bagian Drive, lalu commit dan merge PR #23 sesuai PRD. **M08
+passed** untuk staging sintetis (lihat PROGRESS.md dan evidence/m08/REPORT.md).
+Blocker Drive diselesaikan lewat editor Google Docs di Chrome pemilik yang sudah
+login (connector Drive hanya dapat membaca, membuat file baru, dan mengganti
+judul/parent; tidak dapat menyunting isi Doc). Delapan PNG screenshot kecil
+diunggah ke folder bukti existing; tidak ada Doc baru, sharing tidak diubah.
+Keputusan pemilik: pemulihan draf kamera ditunda ke M15. Emulator dihentikan,
+font/ukuran layar dipulihkan. M09 tidak dibuka.
+
 ## Penutupan M06–M07 — 13 Oktober 2026
 
 M06 dan M07 **passed**; source M07 `979634f` diterima di staging sintetis.

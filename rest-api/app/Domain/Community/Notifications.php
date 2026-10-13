@@ -29,10 +29,10 @@ final class Notifications
         match ($event->type) {
             'pengaduan.dibuat' => self::toPengurus($event, 'pengaduan', ['pengaduan_id' => $id], 'Pengaduan baru', 'Ada pengaduan baru yang perlu ditindaklanjuti.'),
             'pengaduan.status_berubah' => ($p = Pengaduan::find($id)) && self::send($event, [$p->pelapor_id], 'pengaduan', ['pengaduan_id' => $id],
-                'Status pengaduan diperbarui', 'Pengaduan "'.Str::limit($p->judul, 60).'" kini berstatus '.self::label($p->status).'.'),
+                'Status pengaduan diperbarui', 'Pengaduan "'.Str::limit($p->judul, 60).'" kini berstatus '.self::label(self::eventStatus($event, $p->status)).'.'),
             'aspirasi.dibuat' => self::toPengurus($event, 'aspirasi', ['aspirasi_id' => $id], 'Aspirasi baru', 'Ada aspirasi baru dari warga.'),
             'aspirasi.status_berubah' => ($a = Aspirasi::find($id)) && self::send($event, [$a->pengirim_id], 'aspirasi', ['aspirasi_id' => $id],
-                'Status aspirasi diperbarui', 'Aspirasi "'.Str::limit($a->judul, 60).'" kini berstatus '.self::label($a->status).'.'),
+                'Status aspirasi diperbarui', 'Aspirasi "'.Str::limit($a->judul, 60).'" kini berstatus '.self::label(self::eventStatus($event, $a->status)).'.'),
             'pengumuman.terbit' => ($p = Pengumuman::find($id)) && self::send($event, self::activeResidents(), 'pengumuman', ['pengumuman_id' => $id],
                 Str::limit($p->judul, 150), Str::limit(strip_tags($p->isi), 180)),
             'agenda.dibuat', 'agenda.pengingat' => self::agenda($event),
@@ -48,6 +48,15 @@ final class Notifications
             'akun.registrasi_utama', 'iuran.tagihan_dibuat', 'iuran.pembayaran_dibalik' => null,
             default => throw new UnknownOutboxEvent($event->type),
         };
+    }
+
+    /**
+     * Status saat transisi terjadi (payload event), bukan status terkini: event yang diproses
+     * terlambat setelah beberapa transisi tetap memberi tahu langkah masing-masing.
+     */
+    private static function eventStatus(OutboxEvent $event, string $current): string
+    {
+        return (string) ($event->safe_payload['status'] ?? $current);
     }
 
     private static function agenda(OutboxEvent $event): bool
