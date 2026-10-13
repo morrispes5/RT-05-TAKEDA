@@ -3,16 +3,30 @@
 Branch `codex/m08-complaints-media` dari `origin/main` `80d8180` (M07 merged). Pemilik
 mengotorisasi M08 lewat handoff 13 Oktober 2026; Claude memegang eksekusi M08 saja.
 
-**Status: gate teknis terpenuhi (lokal, CI, staging live, Android); publikasi Drive BLOCKED.**
-Penerimaan akhir M08 menunggu coordinator/pemilik dan bagian Drive. Bukti dipisah per jenis.
+**Status: passed (13 Oktober 2026) untuk staging sintetis.** Gate teknis terpenuhi (lokal, CI,
+staging live, Android) dan diverifikasi ulang pada hari penutupan; bagian Drive native selesai.
+Pemilik menerima M08 lewat instruksi langsung (verifikasi ulang, uji emulator, merge PR #23).
+Bukti dipisah per jenis. Bukan production, perangkat fisik, atau UAT mitra.
 
 | Jenis bukti | Hasil | Rujukan |
 | --- | --- | --- |
-| Source/lokal | Backend **230/230, 2233 assertion**; Flutter **157**; pint/analyze/format/redocly/check-repo lulus | bagian di bawah |
-| CI | `d790ec2` dan `6b6987c`: API, Infra, Mobile (verify + APK dev/staging), Repo SUCCESS | [LIVE_RESULTS.md](LIVE_RESULTS.md) |
-| Staging live | Deploy additive `d790ec2` lalu `6b6987c`; API live **42/42, 130 assertion** (run kedua); drill worker-media | [LIVE_RESULTS.md](LIVE_RESULTS.md) |
-| Android | APK CI checksum cocok; izin kamera ditolak/diizinkan, galeri, foto diproses→siap, 409 draf tetap, anonim, pengurus, arsip, inbox | [ANDROID_RESULTS.md](ANDROID_RESULTS.md) |
-| Drive native | **BLOCKED**: connector Google Docs tidak tersedia di sesi ini; draf siap sisip, Doc existing tidak diubah | [DRIVE_DRAFT.md](DRIVE_DRAFT.md) |
+| Source/lokal | Backend **230/230, 2233 assertion**; Flutter **157**; pint/analyze/format/redocly/check-repo lulus (dijalankan ulang 13 Oktober) | bagian di bawah |
+| CI | `d790ec2`, `6b6987c`, dan head PR `a3d80e5`: API, Infra, Mobile (verify + APK dev/staging), Repo SUCCESS | [LIVE_RESULTS.md](LIVE_RESULTS.md) |
+| Staging live | Deploy additive `d790ec2` lalu `6b6987c`; API live **42/42, 130 assertion** pada dua run lama dan satu run ulang (`615CCB`); drill worker-media dua kali | [LIVE_RESULTS.md](LIVE_RESULTS.md) |
+| Android | APK CI checksum cocok; dua putaran: izin kamera ditolak/diizinkan, galeri, foto diproses→siap, 409 draf tetap, anonim, pengurus, arsip, inbox, skala teks 2,0 | [ANDROID_RESULTS.md](ANDROID_RESULTS.md) |
+| Drive native | Bagian M08 disisipkan ke panduan dan laporan existing lewat editor Google Docs, dibaca ulang lewat connector Drive | [DRIVE_DRAFT.md](DRIVE_DRAFT.md) |
+
+## Kecocokan dengan PRD dan aturan bisnis
+
+| Sumber | Syarat | Bukti |
+| --- | --- | --- |
+| PRD FR07 | Pengaduan menerima kategori, judul, deskripsi, foto, pilihan identitas privat | Live C05 (kategori, anonim, dua foto, status foto `diproses`); Android form (kategori, judul, isi, anonim, 2 foto) |
+| PRD FR08 | Status diajukan → diproses → selesai berhistori dan bernotifikasi | Live C22–C30 (transisi, 409 basi, buka ulang beralasan, riwayat, inbox); Android riwayat status dan inbox menyebut tiap transisi |
+| PRD FR21 | Kamera/galeri, batas file, penghapusan metadata, media privat di server | Live C06/C08 (foto siap, EXIF/GPS hilang, unduhan `private`), C10–C14 (spoof/SVG/GIF 415, >50 MP 413, 13 MB 422), C15 (tanpa laporan parsial); Android izin kamera ditolak/diizinkan, galeri |
+| BR08 | Pengaduan terpisah dari aspirasi; dapat dibaca warga terdaftar | Endpoint dan tabel terpisah; akun menunggu/nonaktif 403/401 (C02/C03, C38–C41) |
+| Anonimitas | `anonymous_to_residents` tanpa identitas ke warga lain pada detail, feed, notifikasi, media; pemilik melihat laporannya; pengurus melihat pelapor | Live C05, C07, C09, C21, C29–C31; Android feed/detail warga lain, riwayat "Warga", pengurus melihat pelapor |
+| BR18 | Arsip, bukan hapus | Live C32–C37; Android arsip dengan alasan, pemilik 404, pengurus tetap melihat |
+| Kontrak | Kegagalan email/push tidak menghapus transaksi | Enqueue gagal → laporan tetap + `rt05:media-recover` (tes M08ComplaintMediaTest) |
 
 ## Inventaris gap (sebelum implementasi)
 
@@ -55,6 +69,24 @@ Test M07 rollback disesuaikan agar me-rollback M07 beserta migration sesudahnya 
   (terlihat di inbox Android). Diperbaiki `6b6987c`, tes regresi, dibuktikan ulang di live.
 - Android dapat menutup aplikasi debug saat kamera terbuka pada perangkat RAM kecil; draf hilang
   (keterbatasan, bukan kebocoran data).
+- Putaran 2 (13 Oktober, siang UTC): tidak ada bug baru. Inbox menyebut Diproses → Selesai → Diproses
+  dengan urutan benar (perbaikan `6b6987c` terbukti ulang di perangkat). Satu temuan UI kecil: judul
+  panjang terpecah di tengah kata pada skala 2,0 (teks tidak terpotong). Kamera tidak dimatikan
+  Android pada putaran ini.
+
+## Penerimaan ulang dan penutupan — 13 Oktober 2026
+
+Dijalankan atas instruksi pemilik; tanpa perubahan source runtime dan tanpa deploy baru.
+
+| Langkah | Hasil |
+| --- | --- |
+| Diff runtime `6b6987c`..`a3d80e5` | hanya `infra/scripts/m08-stage-acceptance.mjs` (tes inbox per transisi) |
+| Tes lokal | 230/2233, Pint, Redocly, Flutter 157/analyze/format, check-repo 776 berkas |
+| Staging (SSH baca-saja) | semua service `6b6987c`, sehat, `/health/ready` ready |
+| API live | `Sintetis M08 615CCB`: 42/42, 130 assertion ([ringkasan](m08-live-summary-rerun-615CCB.json)) |
+| Android | [ANDROID_RESULTS.md](ANDROID_RESULTS.md) putaran 2; screenshot `m08r2-*` |
+| Drive | panduan (`18yoO1-…KlM`, heading M08 + M8.1–M8.5 + 8 gambar dengan caption) dan laporan (`1Dxax50K…`, bagian "Penerimaan M08") |
+| Dokumentasi | PROGRESS, COORDINATION, REPORT, LIVE_RESULTS, ANDROID_RESULTS, DRIVE_DRAFT |
 
 ## Commit
 
@@ -67,5 +99,8 @@ Test M07 rollback disesuaikan agar me-rollback M07 beserta migration sesudahnya 
 - Foto tidak dapat ditambah/diganti setelah laporan dibuat (v1 tidak meminta; ADR21).
 - Push FCM tetap blocked (M10); M08 memakai inbox.
 - Pemulihan draf/foto setelah Android menutup aplikasi saat kamera terbuka belum dibuat (M15).
-- Publikasi Google Doc native M08 tertunda connector Google Docs.
+- Judul panjang pada skala teks 2,0 terpecah di tengah kata karena lebarnya dibagi dengan chip status;
+  teks tidak terpotong (putaran 2). Perbaikan layout tidak termasuk gate M08.
+- Penerimaan putaran 2 memakai emulator headless 2 GiB; pada PC RAM kecil kamera tidak dimatikan
+  Android, tetapi risiko pada ponsel RAM kecil tetap dicatat untuk M15.
 - Production, UAT mitra, dan insiden credential historis (M16) di luar M08. Bukan production ready.

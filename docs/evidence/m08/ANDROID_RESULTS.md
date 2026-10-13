@@ -47,3 +47,41 @@ Akun menunggu (`a2`) dan nonaktif dibuktikan di API live (C02/C03, C38–C41); t
 
 Font 1,0, ukuran/density tetap; aplikasi RT05 masuk sebagai `a1`. Worker-media berjalan dan healthy.
 Emulator dihentikan setelah bukti selesai (lihat [REPORT.md](REPORT.md)).
+
+---
+
+# Putaran 2 — 13 Oktober 2026 (verifikasi ulang atas instruksi pemilik)
+
+Sekitar 20.40–20.51 WIB (13.40–13.51 UTC). Pelaksana: Claude. Staging sintetis; tanpa production.
+
+| Item | Nilai |
+| --- | --- |
+| Source API | `6b6987cd4c4d367e67742dc5f96d3a7bcf366c7b` (semua service staging; head PR `a3d80e5` hanya mengubah script uji) |
+| APK | CI run `38398695961`, `rt05-takeda-staging-debug.apk`, SHA-256 `f78f314032000571080cde7084acaf17989fb936d4b52f93ee8bf1f621b85967` = file `.sha256` artefak |
+| Perangkat | `emulator-5554` Pixel 8a (AVD milik pengembang, konfigurasi AVD tidak diubah), headless `-memory 2048 -cores 4 -gpu host`, 960x2133 density 480, font 1,0 lalu 2,0 pada langkah terakhir |
+| Pemasangan | `INSTALL_FAILED_UPDATE_INCOMPATIBLE` (tanda tangan debug CI berbeda); hanya paket `tech.morriz.takeda` dicopot lalu APK baru dipasang; tanpa wipe; aplikasi lain tidak disentuh |
+| Alasan headless | RAM bebas PC hanya sekitar 1,8 GB dari 15,8 GB; jendela emulator membuat PC lag. Aplikasi dikendalikan lewat ADB dan screenshot |
+| Aktor | `a1` pelapor, `a3` warga lain, admin uji M06 (fixture privat di luar Git); laporan "Uji emulator M08 putaran dua" |
+
+| Waktu WIB | Aksi | Hasil |
+| --- | --- | --- |
+| 20.40 | `a1` → Buat pengaduan; kategori Kebersihan, judul, isi, anonim aktif; `Kamera` (izin dicabut dulu) | Dialog izin kamera tampil. [Prompt](screenshots/m08r2-android-camera-permission-prompt.png) |
+| 20.40 | `Don't allow` | Snackbar panduan; isian tetap; Galeri tetap dapat dipakai. [Ditolak](screenshots/m08r2-android-camera-denied-guidance.png) |
+| 20.40–20.41 | `Kamera` → `While using the app` → shutter → Done | Foto 1 dari kamera virtual terlampir, isian utuh, **proses tidak dimatikan Android**. [Terlampir](screenshots/m08r2-android-camera-allowed-photo-attached.png) |
+| 20.41 | `Galeri` → photo picker Android (tanpa izin penyimpanan) | Foto 2 terlampir. [Picker](screenshots/m08r2-android-gallery-photo-picker.png) |
+| 20.42 (13.42:21 UTC) | SSH: hanya `rt05-staging-worker-media-1` dihentikan; `Kirim` | Pengaduan terkirim, muncul di Pengaduan saya status Diajukan. [Terkirim](screenshots/m08r2-android-submitted.png) |
+| 20.43 | Detail | Dua foto **Sedang diproses**; "Identitas disembunyikan dari warga lain". [Diproses](screenshots/m08r2-android-detail-photos-processing.png) |
+| 20.43 (13.43:23 UTC) | SSH: worker-media dijalankan lagi (healthy); tarik muat ulang | Dua foto siap. [Siap](screenshots/m08r2-android-detail-photos-ready.png) |
+| 20.44 | Perbaiki laporan, tambah teks; versi dinaikkan dari "perangkat lain" lewat API (1→2); `Simpan perubahan` | 409 di form, teks tetap. [409](screenshots/m08r2-android-edit-409-draft-kept.png) |
+| 20.44 | `Simpan perubahan` lagi | Kembali ke detail; API versi 3 (satu tulis). [Tersimpan](screenshots/m08r2-android-edit-resubmitted.png) |
+| 20.45 | Keluar; login `a3` → Layanan | Feed dan detail: "Identitas disembunyikan", riwayat "Warga", foto terlihat, tanpa tombol perbaiki. [Feed](screenshots/m08r2-android-other-resident-feed.png), [Detail](screenshots/m08r2-android-other-resident-detail-anonymous.png) |
+| 20.46 | Login admin → Layanan → detail | Nama pelapor terlihat. [Admin](screenshots/m08r2-android-admin-detail-reporter-visible.png) |
+| 20.47–20.48 | `Ubah ke Diproses` + catatan; `Ubah ke Selesai` + catatan; buka ulang tanpa alasan; buka ulang dengan alasan | Status Diproses, Selesai, tetap Selesai (alasan wajib), Diproses; riwayat memuat catatan; snackbar "pelapor menerima notifikasi" (API versi 6). [Diproses](screenshots/m08r2-android-admin-status-processing.png), [Dibuka ulang](screenshots/m08r2-android-admin-reopened.png) |
+| 20.49 | Arsipkan laporan lama `CC3EAD` dengan alasan | Pemilik 404, admin 200 (API). [Arsip](screenshots/m08r2-android-admin-archived.png) |
+| 20.50 | Keluar admin; login `a1` → Notifikasi | Tiga notifikasi untuk laporan baru: Diproses, Selesai, Diproses, urutan benar. [Inbox](screenshots/m08r2-android-owner-inbox.png) |
+| 20.50 | Ketuk notifikasi | Detail laporan terbuka dengan riwayat. [Detail](screenshots/m08r2-android-owner-notification-detail.png) |
+| 20.50–20.51 | Font 2,0 pada detail dan form Buat pengaduan | Teks tidak terpotong; judul panjang terpecah di tengah kata karena chip status. [Detail 2,0](screenshots/m08r2-android-detail-font2.png), [Form 2,0](screenshots/m08r2-android-create-font2.png) |
+
+Akhir sesi: font 1,0, ukuran dan density di-reset, emulator dihentikan, worker-media berjalan dan
+healthy, `/health/ready` ready. Laporan pengujian tertinggal sebagai data sintetis di staging (tanpa
+cleanup).

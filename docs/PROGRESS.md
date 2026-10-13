@@ -1,8 +1,46 @@
 # Progress — RT05 TAKEDA
 
-Updated: 14 Oktober 2026.
+Updated: 13 Oktober 2026 (malam WIB).
+
+## Penutupan M08 — 13 Oktober 2026
+
+M08 **passed** untuk staging sintetis atas instruksi pemilik (verifikasi ulang,
+uji emulator, bagian Drive, lalu commit dan merge PR #23). Source runtime
+`6b6987c`; head PR `a3d80e5` hanya mengubah script uji live. Bukti baru
+dikumpulkan pada hari yang sama; rincian di
+[evidence/m08/REPORT.md](evidence/m08/REPORT.md).
+
+| Perintah / pemeriksaan | Hasil |
+| --- | --- |
+| `php artisan test` (rest-api, Postgres 17.10 sementara di scratchpad, bukan Neon) | **230/230, 2233 assertion** |
+| `vendor/bin/pint --test`; `npx @redocly/cli@2 lint docs/openapi.yaml` | passed; valid |
+| `flutter analyze`; `dart format --set-exit-if-changed lib test`; `flutter test` | No issues; 0 changed; **157 lulus** |
+| `node infra/scripts/check-repo.mjs` | OK (776 berkas) |
+| `gh pr checks 23` pada head `a3d80e5` | seluruh CI SUCCESS (API, Infra, Mobile verify + APK dev/staging, Repo, Vercel) |
+| SSH baca-saja ke staging | semua image `rt05-*:6b6987c…`, container sehat, `/health/ready` ready |
+| `infra/scripts/m08-stage-acceptance.mjs --execute` (run `Sintetis M08 615CCB`) | **42/42 kasus, 130 assertion**; foto siap 4 dtk. [Ringkasan](evidence/m08/m08-live-summary-rerun-615CCB.json) |
+| Android emulator Pixel 8a, APK staging CI run `38398695961` | SHA-256 `f78f3140…5967` cocok `.sha256`; alur lengkap lulus ([ANDROID_RESULTS.md](evidence/m08/ANDROID_RESULTS.md) putaran 2) |
+| Drive native | Bagian M08 disisipkan ke panduan dan laporan existing, dibaca ulang; lihat [DRIVE_DRAFT.md](evidence/m08/DRIVE_DRAFT.md) |
+
+Kecocokan PRD (FR07, FR08, FR21, BR08) dan anonimitas: tabel di REPORT.md.
+Drill worker-media diulang (hanya container `rt05-staging-worker-media-1`
+dihentikan 13:42:21 UTC dan dijalankan lagi 13:43:23 UTC); foto `diproses`
+lalu `siap`. Emulator dijalankan headless dengan RAM 2 GiB dan GPU host
+karena RAM bebas PC hanya sekitar 1,8 GB; kamera tidak dimatikan Android
+pada putaran ini.
+
+Keterbatasan yang tetap: foto tidak dapat ditambah setelah laporan dibuat
+(ADR21); pemulihan draf bila Android menutup aplikasi saat kamera terbuka
+ditunda ke M15 (keputusan pemilik); judul panjang pada skala teks 2,0 terpecah
+di tengah kata (teks tidak terpotong); push FCM menunggu M10; bukan production
+atau UAT mitra; insiden credential historis tetap terbuka untuk M16. Data uji
+sintetis tertinggal di staging (laporan putaran ini, beberapa diarsipkan).
+Staging tidak di-deploy ulang. M09 tidak dibuka.
 
 ## Pembukaan M08 — 14 Oktober 2026 (instruksi pemilik)
+
+*Catatan: status di bagian ini adalah checkpoint; hasil akhirnya ada pada
+Penutupan M08 di atas.*
 
 Instruksi pemilik terbaru ("biarkan Claude cooking") menggantikan catatan
 sebelumnya untuk berhenti sesudah M07. Codex menyerahkan M08 ke Claude lewat
@@ -259,7 +297,7 @@ ditentukan hanya oleh tersedianya kode.
 | M05 | passed | PR17, source13de24e: 77 tes/analyzer/dua APK CI SUCCESS, checksum cocok; emulator health HTTPS, offline/retry proses sama, ikon dan skala teks1,3/2,0; review final Kimi PASS. docs/evidence/m05/LIVE_RESULTS.md |
 | M06 | passed | Staging26a0b7e; API52alur/17mekanika reset; Android akun/sesi; SMTP nyata, INBOX A/browser dan B/Android, verifier4/4 masing-masing. Penutupan13Oktober; INBOX_ACCEPTANCE |
 | M07 | passed | Source979634f; 220tes/2125assertion, Flutter152, 9CI SUCCESS, deploy additive/backfill, API live77/327, Android nyata dan native Drive; evidence/m07/REPORT.md |
-| M08 | in_progress | Source6b6987c: lokal230/2233, Flutter157, CI SUCCESS, staging live42/130, Android nyata. Drive native BLOCKED (connector Docs); menunggu penerimaan. evidence/m08/REPORT.md |
+| M08 | passed | Source6b6987c (head PR a3d80e5): lokal230/2233, Flutter157, seluruh CI SUCCESS, staging live42/130 (rerun 13 Oktober), Android emulator nyata (putaran 2), bagian Drive native disisipkan dan dibaca ulang. Penerimaan staging sintetis; bukan production/UAT. evidence/m08/REPORT.md |
 | M09 | in_progress | Aspirasi terpisah; tes CI lulus |
 | M10 | in_progress | Agenda/ICS/Google Calendar, pengumuman, inbox; push FCM blocked (tanpa project Firebase) |
 | M11 | in_progress | Tarif/tagihan idempotent/catch-up/transparansi; tes CI lulus |
@@ -270,6 +308,11 @@ ditentukan hanya oleh tersedianya kode.
 | M16 | planned | Production baru belum dirilis |
 
 M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. M01–M16 menggunakan planned/in_progress/passed/blocked.
+
+Catatan M09–M12: kode awal dari jalur layanan-inti sudah berada di `main`, dan
+status `in_progress` di atas adalah catatan lama dari jalur itu. Belum ada
+gate penerimaan (live, Android, dokumentasi) yang dijalankan untuk keempatnya;
+M09 belum dibuka.
 
 ## Riwayat pembukaan M06 (checkpoint 12 Oktober)
 
