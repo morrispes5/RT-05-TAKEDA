@@ -323,7 +323,12 @@ async function main() {
     }
     const inboxMs = Date.now() - t0;
     record('C30-owner-inbox', { method: 'GET', route: '/notifications', status: 200, body: { data: inbox, meta: { request_id: 'x' } } }, 200, {
-      checks: [['3 notifikasi status (tanpa duplikat)', b => b.data.length === 3], ['jenis pengaduan', b => b.data.every(n => n.jenis === 'pengaduan')], ['tanpa identitas', b => !leaks(JSON.stringify(b.data), ids.a)]],
+      checks: [
+        ['3 notifikasi status (tanpa duplikat)', b => b.data.length === 3],
+        ['jenis pengaduan', b => b.data.every(n => n.jenis === 'pengaduan')],
+        ['tiap transisi disebut (Diproses, Selesai, Diproses)', b => b.data.map(n => /berstatus (\w+)\./.exec(n.isi)?.[1]).sort().join() === 'Diproses,Diproses,Selesai'],
+        ['tanpa identitas', b => !leaks(JSON.stringify(b.data), ids.a)],
+      ],
     });
     const otherInbox = await http('GET', '/notifications', as('b', { query: { per_page: 100 } }));
     record('C31-no-inbox-for-others', otherInbox, 200, { checks: [['warga lain tidak menerima status laporan A', b => !b.data.some(n => n.referensi?.id === ids.complaint)]] });
