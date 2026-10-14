@@ -46,6 +46,7 @@ Catatan dari AGENTS repo frontend sebelum M01, dengan path yang diperbarui:
 6. Perbarui docs/PROGRESS.md dengan file, perintah, hasil, bukti, dan blocker. Tidak ada checkbox selesai hanya karena kode telah dibuat.
 7. Perbarui kontrak API/OpenAPI dan ERD bila implementasi berubah.
 8. Berikan ringkasan akhir: hasil, validasi, keterbatasan, dan milestone berikutnya.
+9. Commit dan PR memakai identitas pemilik repo (`morrispes5 <morrispes5@gmail.com>`). Jangan menambahkan trailer `Co-Authored-By`, `Claude-Session`, atau footer "Generated with ..." pada pesan commit maupun deskripsi PR.
 
 ## Batas keselamatan perubahan
 
