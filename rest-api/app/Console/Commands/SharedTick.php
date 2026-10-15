@@ -7,24 +7,22 @@ use App\Support\Heartbeat;
 use App\Support\SharedHosting;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Queue;
 use Throwable;
 
-/** One CLI cron per minute, same persistent storage and Unix user as PHP web. */
+/** Cron jaring 10–15 menit. Boleh tiap menit: tick idle tidak membuka database. */
 class SharedTick extends Command
 {
     protected $signature = 'rt05:shared-tick';
 
-    protected $description = 'Jalankan scheduler dan worker shared hosting secara terbatas';
+    protected $description = 'Jalankan scheduler dan pemulihan shared hosting secara terbatas';
 
     public function handle(): int
     {
         if (! SharedHosting::enabled() || config('queue.default') !== 'database'
             || (config('rt05.outbox.queue_connection') ?? config('queue.default')) !== 'database'
             || config('rt05.heartbeat.store') !== 'file'
-            || config('cache.default') !== 'file' || config('session.driver') !== 'file'
-            || ! function_exists('pcntl_alarm')) {
-            $this->error('Memerlukan profil shared, queue database, cache/session file, dan pcntl CLI.');
+            || config('cache.default') !== 'file' || config('session.driver') !== 'file') {
+            $this->error('Memerlukan profil shared, queue database, serta cache/session/heartbeat file.');
 
             return self::INVALID;
         }
@@ -45,7 +43,7 @@ class SharedTick extends Command
                 return self::FAILURE;
             }
             $cache = Cache::store('file');
-            $sweep = time() - (int) $cache->get('rt05:shared:last-sweep', 0) >= 1800;
+            $sweep = time() - (int) $cache->get('rt05:shared:last-sweep', 0) >= SharedHosting::SWEEP_SECONDS;
             if (! $sweep && ! SharedHosting::awake()) {
                 Heartbeat::beat('shared-tick');
 
@@ -61,31 +59,12 @@ class SharedTick extends Command
 
                 return self::FAILURE;
             }
-            // max-time is checked between jobs; a running job can add up to its timeout.
-            $exit = $this->call('queue:work', [
-                'connection' => 'database',
-                '--queue' => 'default,notifications,media,exports',
-                '--stop-when-empty' => true,
-                '--max-time' => 40,
-                '--max-jobs' => 25,
-                '--tries' => 5,
-                '--timeout' => 60,
-                '--sleep' => 1,
-            ]);
-            if ($exit !== 0) {
+            $exit = $this->call('queue:work', SharedHosting::workerArguments(40));
+            if ($exit !== 0 || SharedHosting::backlog() || $result['claimed'] === 25) {
                 SharedHosting::wake();
-
-                return self::FAILURE;
-            }
-            // Include delayed/reserved jobs so retries get another short tick, not a 30m wait.
-            foreach (['default', 'notifications', 'media', 'exports'] as $queue) {
-                if (Queue::connection('database')->size($queue) > 0) {
-                    SharedHosting::wake();
-                    break;
+                if ($exit !== 0) {
+                    return self::FAILURE;
                 }
-            }
-            if ($result['claimed'] === 25) {
-                SharedHosting::wake();
             }
             if ($sweep) {
                 $cache->put('rt05:shared:last-sweep', time(), 86400);

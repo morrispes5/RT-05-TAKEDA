@@ -6,6 +6,8 @@ Status tambahan M03/M04: **in_progress**, live **blocked**. Branch `codex/m03-sh
 
 Lingkup: ADR23, penyesuaian roadmap/PRD/runbook, queue PostgreSQL additive, tick cron yang hemat DB, konfigurasi media profil shared, dan tes regresi terfokus. Default VPS tetap. Bukti pemeriksaan dan blocker dicatat di [SHARED_HOSTING.md](SHARED_HOSTING.md). Belum menjalankan deploy/DDL pada Neon, mengubah DNS, membeli hosting, mengirim email, atau memasukkan data warga nyata.
 
+Penyesuaian susulan (konteks diskusi hosting 14–15 Oktober): jalur utama profil shared adalah kerja setelah response, cron 15 menit hanya jaring, foto ditranskode di proses yang sama, dan kuota harian 5 pengaduan / 25 foto diberlakukan. Neon Free yang dicek ulang adalah 1 GB/project (bukan 0,5 GB). R2 tetap opsional karena aktivasi meminta metode pembayaran. Paket Resend HTTP belum dipasang. Hosting tetap belum dibeli dan belum diuji. `php artisan test` lokal **242/242, 2272 assertion**; `pint --test` lulus. Bukan bukti live.
+
 
 Updated: 13 Oktober 2026 (malam WIB).
 

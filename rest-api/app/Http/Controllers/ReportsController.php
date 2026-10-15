@@ -10,6 +10,7 @@ use App\Models\Aspirasi;
 use App\Models\FotoPengaduan;
 use App\Models\KategoriPengaduan;
 use App\Models\Pengaduan;
+use App\Support\SharedHosting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -47,7 +48,7 @@ class ReportsController extends Controller
             'deskripsi' => ['required', 'string', 'max:5000'],
             'sembunyikan_identitas' => ['boolean'],
             'foto' => ['array', 'max:5'],
-            'foto.*' => ['file', 'max:12288'],
+            'foto.*' => ['file', 'max:'.(SharedHosting::enabled() ? 4096 : 12288)],
         ]);
         $p = Reports::createComplaint($request->user(), $data, $request->file('foto', []));
 

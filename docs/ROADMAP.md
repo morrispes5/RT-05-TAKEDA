@@ -9,12 +9,12 @@ Nomor M00–M16 dan kelulusan VPS tetap. Tambahan M03/M04 `in_progress`: profil 
 | M00 | Desain tetap |
 | M01 | Konteks, ADR23, contoh config dan runbook |
 | M02 | Neon TLS verify-full, pooled runtime DML/direct migration terpisah |
-| M03 | Queue database, cron terbatas, file lock/cache, retry/recovery; AOF hanya VPS |
-| M04 | PoC staging shared: PHP, outbound, private storage, routing, cron satu menit |
+| M03 | Queue database, kerja setelah response, cron jaring 15 menit, file lock/cache; AOF hanya VPS |
+| M04 | PoC staging shared: PHP, outbound, private storage, routing, cron ≤15 menit, response selesai duluan |
 | M05 | Base URL per flavor; HTTPS perangkat |
 | M06 | Reset Resend, token/sesi/CSRF, rate limit file diuji ulang |
 | M07 | Regresi izin/transaksi; aturan pendataan tetap |
-| M08 | Batas foto lebih ringan di server, transcode privat, retry, kuota/alert disk gate sebelum live |
+| M08 | Batas foto lebih ringan, transkode setelah response, kuota harian, retry; alert disk sebelum live |
 | M09 | Aspirasi tetap; regresi inbox melalui queue baru; PR24 independen |
 | M10 | FCM nyata, fanout terbatas, reminder catch-up/dedup; inbox ≤60 detik diuji |
 | M11 | Generator idempotent dan catch-up; snapshot tarif tetap |
