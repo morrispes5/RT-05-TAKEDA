@@ -1,5 +1,30 @@
 # Roadmap eksekusi — M00 sampai M16
 
+## Penyesuaian target deployment — 15 Oktober 2026
+
+Nomor M00–M16 dan kelulusan VPS tetap. Tambahan M03/M04 `in_progress`: profil shared hosting; live `blocked`. Selesaikan gate kompatibilitas berikut sebelum integrasi M10, bukan mengulang fitur dari M01. Rincian implementasi dan acceptance: [SHARED_HOSTING.md](SHARED_HOSTING.md).
+
+| Milestone | Penyesuaian profil shared |
+| --- | --- |
+| M00 | Desain tetap |
+| M01 | Konteks, ADR23, contoh config dan runbook |
+| M02 | Neon TLS verify-full, pooled runtime DML/direct migration terpisah |
+| M03 | Queue database, cron terbatas, file lock/cache, retry/recovery; AOF hanya VPS |
+| M04 | PoC staging shared: PHP, outbound, private storage, routing, cron satu menit |
+| M05 | Base URL per flavor; HTTPS perangkat |
+| M06 | Reset Resend, token/sesi/CSRF, rate limit file diuji ulang |
+| M07 | Regresi izin/transaksi; aturan pendataan tetap |
+| M08 | Batas foto lebih ringan di server, transcode privat, retry, kuota/alert disk gate sebelum live |
+| M09 | Aspirasi tetap; regresi inbox melalui queue baru; PR24 independen |
+| M10 | FCM nyata, fanout terbatas, reminder catch-up/dedup; inbox ≤60 detik diuji |
+| M11 | Generator idempotent dan catch-up; snapshot tarif tetap |
+| M12 | Keuangan atomik; ekspor kecil boleh stream, ekspor besar tetap job privat FR19 |
+| M13 | Media privat/published terpisah; cache invalidation |
+| M14 | Dua aplikasi pada satu origin, reset routes, cookie/CSRF, public fallback |
+| M15 | UAT dan beban pada shared; cold start/Neon CU-hours, Android nyata |
+| M16 | Domain RT, rotasi credential, offsite backup/restore, rollback dan handover |
+
+
 M00 adalah frontend yang sudah diterima. Ada 16 milestone lanjutan menuju rilis penuh. Milestone adalah unit hasil yang dapat diperiksa, bukan perkiraan durasi atau batas jumlah developer.
 
 Setiap milestone: baca sumber →implementasi →tes →bukti →PROGRESS. Jangan menjalankan seluruh roadmap dalam satu prompt. Pekerjaan independent dapat paralel setelah dependency/kontrak tersedia.

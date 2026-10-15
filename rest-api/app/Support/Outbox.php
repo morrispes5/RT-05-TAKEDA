@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\OutboxEvent;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Transactional outbox: event ditulis dalam transaksi domain; dispatcher (rt05:outbox-dispatch)
@@ -12,11 +13,17 @@ final class Outbox
 {
     public static function record(string $type, string $aggregateType, ?string $aggregateId, array $payload = []): OutboxEvent
     {
-        return OutboxEvent::create([
+        $event = OutboxEvent::create([
             'type' => $type,
             'aggregate_type' => $aggregateType,
             'aggregate_id' => $aggregateId,
             'safe_payload' => $payload,
         ]);
+
+        if (SharedHosting::enabled()) {
+            DB::afterCommit(fn () => SharedHosting::wake());
+        }
+
+        return $event;
     }
 }

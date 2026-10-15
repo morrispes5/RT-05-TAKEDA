@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Support\Heartbeat;
+use App\Support\SharedHosting;
+use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Queue\Events\Looping;
@@ -28,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
         // reset dengan token yang masih berlaku. Token reset 64 hex, jadi batas ini untuk biaya bcrypt.
         RateLimiter::for('reset-password', fn (Request $r) => Limit::perMinutes(15, 10)->by($r->ip().'|'.$email($r)));
         RateLimiter::for('laporan', fn (Request $r) => Limit::perHour(20)->by((string) $r->user()?->id));
+
+        Event::listen(function (JobQueued $event): void {
+            if ($event->connectionName === 'database') {
+                SharedHosting::wake();
+            }
+        });
 
         // Heartbeat worker tiap putaran loop queue:work (dibatasi write_interval). Listener tidak
         // mengembalikan nilai: return false pada event Looping akan menghentikan worker.

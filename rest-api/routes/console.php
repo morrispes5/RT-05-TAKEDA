@@ -111,13 +111,22 @@ Artisan::command('rt05:media-recover {--stale-minutes=10}', function () {
     $this->info("Foto dikirim ulang: $requeued, ditandai gagal: $failed, berkas yatim dihapus: $orphans");
 })->purpose('Pulihkan antrean foto pengaduan yang tertahan dan hapus berkas mentah yatim');
 
-// Heartbeat scheduler M03: dibaca rt05:heartbeat-check, tidak lewat endpoint publik.
-Schedule::call(fn () => Heartbeat::beat('scheduler'))->everyMinute()->name('rt05:heartbeat-scheduler');
-Schedule::command('rt05:outbox-dispatch')->everyMinute()->withoutOverlapping()->onOneServer();
-Schedule::command('rt05:tagihan-generate')->dailyAt('00:10')->timezone('Asia/Jakarta')->withoutOverlapping()->onOneServer();
-Schedule::command('rt05:media-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer();
-Schedule::command('rt05:pengingat-agenda')->hourly()->withoutOverlapping()->onOneServer();
-Schedule::command('rt05:pengingat-iuran')->monthlyOn(5, '08:00')->timezone('Asia/Jakarta')->onOneServer();
-Schedule::command('rt05:pengingat-iuran')->monthlyOn(20, '08:00')->timezone('Asia/Jakarta')->onOneServer();
-// Rotasi mingguan tahan scheduler terlewat: dicek tiap jam, rotasi saat token berumur 7 hari.
-Schedule::command('rt05:token-rotate --if-due')->hourlyAt(5)->withoutOverlapping()->onOneServer();
+if (\App\Support\SharedHosting::enabled()) {
+    // Invoked by shared-tick only. No per-minute DB work; outbox/media handled by tick.
+    Schedule::command('rt05:tagihan-generate')->dailyAt('00:00')->timezone('Asia/Jakarta')->withoutOverlapping();
+    Schedule::command('rt05:pengingat-agenda')->hourly()->withoutOverlapping();
+    Schedule::command('rt05:token-rotate --if-due')->hourly()->withoutOverlapping();
+    Schedule::command('rt05:pengingat-iuran')->monthlyOn(5, '08:00')->timezone('Asia/Jakarta')->withoutOverlapping();
+    Schedule::command('rt05:pengingat-iuran')->monthlyOn(20, '08:00')->timezone('Asia/Jakarta')->withoutOverlapping();
+} else {
+    // Heartbeat scheduler M03: dibaca rt05:heartbeat-check, tidak lewat endpoint publik.
+    Schedule::call(fn () => Heartbeat::beat('scheduler'))->everyMinute()->name('rt05:heartbeat-scheduler');
+    Schedule::command('rt05:outbox-dispatch')->everyMinute()->withoutOverlapping()->onOneServer();
+    Schedule::command('rt05:tagihan-generate')->dailyAt('00:10')->timezone('Asia/Jakarta')->withoutOverlapping()->onOneServer();
+    Schedule::command('rt05:media-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer();
+    Schedule::command('rt05:pengingat-agenda')->hourly()->withoutOverlapping()->onOneServer();
+    Schedule::command('rt05:pengingat-iuran')->monthlyOn(5, '08:00')->timezone('Asia/Jakarta')->onOneServer();
+    Schedule::command('rt05:pengingat-iuran')->monthlyOn(20, '08:00')->timezone('Asia/Jakarta')->onOneServer();
+    // Rotasi mingguan tahan scheduler terlewat: dicek tiap jam, rotasi saat token berumur 7 hari.
+    Schedule::command('rt05:token-rotate --if-due')->hourlyAt(5)->withoutOverlapping()->onOneServer();
+}

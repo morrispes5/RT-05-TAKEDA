@@ -6,6 +6,9 @@
 
 return [
 
+    // Opt-in; VPS existing tidak berubah.
+    'deployment_profile' => env('RT05_DEPLOYMENT_PROFILE', 'vps'),
+
     'outbox' => [
         // null = QUEUE_CONNECTION. Event dikirim sebagai ID saja ke antrean notifications.
         'queue_connection' => env('RT05_OUTBOX_QUEUE_CONNECTION'),
@@ -32,7 +35,9 @@ return [
         'max_age_seconds' => (int) env('RT05_HEARTBEAT_MAX_AGE', 300),
         // Penulisan dari loop worker dibatasi agar tidak menulis Redis setiap iterasi.
         'write_interval_seconds' => (int) env('RT05_HEARTBEAT_WRITE_INTERVAL', 30),
-        'components' => ['worker-default', 'worker-media', 'worker-exports', 'scheduler'],
+        'components' => env('RT05_DEPLOYMENT_PROFILE', 'vps') === 'shared'
+            ? ['shared-tick']
+            : ['worker-default', 'worker-media', 'worker-exports', 'scheduler'],
     ],
 
 ];

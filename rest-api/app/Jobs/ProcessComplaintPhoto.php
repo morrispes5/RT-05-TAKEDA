@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Domain\Services\Photo;
 use App\Models\FotoPengaduan;
+use App\Support\SharedHosting;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,9 @@ class ProcessComplaintPhoto implements ShouldQueue
     public function __construct(public string $fotoId)
     {
         $this->onQueue('media');
+        if (SharedHosting::enabled()) {
+            $this->timeout = 40;
+        }
     }
 
     /** @return list<int> */
@@ -43,7 +47,9 @@ class ProcessComplaintPhoto implements ShouldQueue
             return;
         }
         // Decode ≤50 MP di GD membutuhkan lebih dari batas default request; hanya proses worker.
-        ini_set('memory_limit', '640M');
+        if (! SharedHosting::enabled()) {
+            ini_set('memory_limit', '640M');
+        }
         FotoPengaduan::whereKey($foto->id)->update(['percobaan' => DB::raw('percobaan + 1'), 'updated_at' => now()]);
 
         $source = $foto->storage_key;

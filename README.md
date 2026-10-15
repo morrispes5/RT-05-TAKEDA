@@ -1,6 +1,8 @@
 # RT05 TAKEDA — monorepo
 
-Sistem informasi dan layanan warga RT 05 RW 07 Taman Kedaung, Ciputat. Pemilik: Morriz. Domain: morriz.tech.
+Penyesuaian deployment hemat: [rencana dan runbook](docs/SHARED_HOSTING.md). Anggaran hosting+domain tahun pertama maksimal Rp500.000; promo boleh, layanan pendukung memakai paket gratis dalam kuota. Belum ada pembelian atau migrasi live.
+
+Sistem informasi dan layanan warga RT 05 RW 07 Taman Kedaung, Ciputat. Pemilik: Morriz. Domain produksi: .com milik RT (nama belum ditetapkan).
 
 Website publik sudah diterima pada 10 Oktober 2026 (M00) dan live sebagai preview statis di https://rt05takeda.vercel.app. Sejak M01 repository ini menjadi monorepo: website, aplikasi mobile, REST API, dokumentasi, dan dukungan infrastruktur berada di satu Git history.
 
@@ -23,10 +25,10 @@ Website publik sudah diterima pada 10 Oktober 2026 (M00) dan live sebagai previe
 | REST API | Laravel 13, Eloquent, Sanctum; pemilik seluruh aturan bisnis |
 | Mobile | Flutter/Dart; satu aplikasi dengan tampilan warga dan pengurus |
 | Database | PostgreSQL melalui Neon; lingkungan terisolasi |
-| Redis | Instance antrean dan cache terpisah |
+| Redis | Profil VPS saja; profil shared memakai queue PostgreSQL dan file cache/session |
 | Asinkron | Worker Laravel, scheduler, transactional outbox |
-| Hosting | VPS Hostinger, Docker, reverse proxy HTTPS |
-| Domain | Production `takeda.morriz.tech`, staging `takeda-staging.morriz.tech`; `/api/v1` untuk API |
+| Hosting | Target shared hosting; VPS/Docker tetap baseline staging sampai migrasi lulus |
+| Domain | Produksi .com milik RT belum dipilih; host staging existing tetap; `/api/v1` untuk API |
 | Preview | Vercel tetap preview statis frontend selama pengembangan |
 | Distribusi mobile | APK Android bertanda tangan; bukan proses Flutter pada VPS |
 

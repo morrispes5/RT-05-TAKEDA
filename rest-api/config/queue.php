@@ -2,7 +2,7 @@
 
 /*
 | Antrean RT05 TAKEDA (docs/ASYNC_JOBS.md). Produksi/staging memakai Redis instance "queue"
-| (AOF, noeviction). Tes memakai sync/fake. Tidak ada tabel jobs: durability antar Postgres
+| (AOF, noeviction). Tes memakai sync/fake. Profil shared menambah tabel jobs; durability antar Postgres
 | dan Redis dijamin outbox_events, bukan antrean.
 |
 | retry_after (180 detik) harus lebih panjang dari timeout worker terlama (120 detik) agar job
@@ -15,6 +15,15 @@ return [
     'default' => env('QUEUE_CONNECTION', 'redis'),
 
     'connections' => [
+
+        'database' => [
+            'driver' => 'database',
+            'connection' => 'pgsql',
+            'table' => 'jobs',
+            'queue' => 'default',
+            'retry_after' => 180,
+            'after_commit' => true,
+        ],
 
         'sync' => [
             'driver' => 'sync',

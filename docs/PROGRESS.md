@@ -1,5 +1,12 @@
 # Progress — RT05 TAKEDA
 
+## Penyesuaian shared hosting — 15 Oktober 2026
+
+Status tambahan M03/M04: **in_progress**, live **blocked**. Branch `codex/m03-shared-hosting-profile` dari `840cf09`. M07/M08 tetap passed pada baseline VPS. Dokumen branch PR24 menyatakan M09 gate staging passed, tetapi PR masih terpisah; tidak mengubah penerimaan main atau merge PR tersebut.
+
+Lingkup: ADR23, penyesuaian roadmap/PRD/runbook, queue PostgreSQL additive, tick cron yang hemat DB, konfigurasi media profil shared, dan tes regresi terfokus. Default VPS tetap. Bukti pemeriksaan dan blocker dicatat di [SHARED_HOSTING.md](SHARED_HOSTING.md). Belum menjalankan deploy/DDL pada Neon, mengubah DNS, membeli hosting, mengirim email, atau memasukkan data warga nyata.
+
+
 Updated: 13 Oktober 2026 (malam WIB).
 
 ## Penutupan M08 — 13 Oktober 2026

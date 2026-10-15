@@ -1,5 +1,7 @@
 # Deployment dan operasi — Hostinger / morriz.tech
 
+Profil target hemat (15 Oktober 2026): lihat [SHARED_HOSTING.md](SHARED_HOSTING.md) dan ADR23. Profil VPS berikut tetap menjadi baseline staging/rollback; bukan instruksi membeli VPS atau memakai domain pribadi untuk produksi. Penerimaan shared hosting masih blocked sampai pengujian provider nyata.
+
 ## Target dan status
 
 Target aplikasi: https://takeda.morriz.tech; staging https://takeda-staging.morriz.tech.

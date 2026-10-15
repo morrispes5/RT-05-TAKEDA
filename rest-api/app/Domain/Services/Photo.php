@@ -3,6 +3,7 @@
 namespace App\Domain\Services;
 
 use App\Exceptions\DomainConflict;
+use App\Support\SharedHosting;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -33,8 +34,9 @@ final class Photo
     /** @return array{storage_key:string,mime:string,bytes:int,lebar:int,tinggi:int,status:string} */
     public static function stage(UploadedFile $file, string $folder = self::STAGING): array
     {
-        if (! $file->isValid() || $file->getSize() > self::MAX_BYTES) {
-            throw new DomainConflict('PAYLOAD_TOO_LARGE', 'Foto maksimal 12 MB.', 413);
+        $maxBytes = SharedHosting::enabled() ? 4 * 1024 * 1024 : self::MAX_BYTES;
+        if (! $file->isValid() || $file->getSize() > $maxBytes) {
+            throw new DomainConflict('PAYLOAD_TOO_LARGE', 'Foto maksimal '.($maxBytes / 1024 / 1024).' MB.', 413);
         }
         $path = $file->getRealPath();
         $type = self::sniff($path);
@@ -42,7 +44,7 @@ final class Photo
         if (! $type || ! $info || $info[2] !== self::TYPES[$type] || $info[0] < 1 || $info[1] < 1) {
             throw new DomainConflict('UNSUPPORTED_MEDIA_TYPE', 'Format foto harus JPG, PNG, atau WebP.', 415);
         }
-        if ($info[0] * $info[1] > self::MAX_PIXELS) {
+        if ($info[0] * $info[1] > (SharedHosting::enabled() ? 6_000_000 : self::MAX_PIXELS)) {
             throw new DomainConflict('PAYLOAD_TOO_LARGE', 'Resolusi foto terlalu besar.', 413);
         }
 
@@ -69,7 +71,7 @@ final class Photo
         $path = $disk->path($sourceKey);
         $type = self::sniff($path);
         $info = $type ? @getimagesize($path) : false;
-        if (! $type || ! $info || $info[2] !== self::TYPES[$type] || $info[0] * $info[1] > self::MAX_PIXELS) {
+        if (! $type || ! $info || $info[2] !== self::TYPES[$type] || $info[0] * $info[1] > (SharedHosting::enabled() ? 6_000_000 : self::MAX_PIXELS)) {
             return null;
         }
 

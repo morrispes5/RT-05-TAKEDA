@@ -1,5 +1,7 @@
 # Redis, worker, outbox, dan scheduler
 
+Profil target hemat (15 Oktober 2026): lihat [SHARED_HOSTING.md](SHARED_HOSTING.md) dan ADR23. Profil VPS berikut tetap menjadi baseline staging/rollback; bukan instruksi membeli VPS atau memakai domain pribadi untuk produksi. Penerimaan shared hosting masih blocked sampai pengujian provider nyata.
+
 ## Prinsip
 
 Keuangan dicatat sinkron di Postgres. Pekerjaan lambat/side effect dijalankan worker. Delivery queue setidaknya sekali: job dapat diterima lebih dari satu kali. Idempotency DB membuat hasil bisnis tidak ganda; jangan menjanjikan exactly-once network delivery.

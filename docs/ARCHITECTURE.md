@@ -1,5 +1,7 @@
 # Arsitektur — monorepo RT05 TAKEDA
 
+Profil target hemat (15 Oktober 2026): lihat [SHARED_HOSTING.md](SHARED_HOSTING.md) dan ADR23. Profil VPS berikut tetap menjadi baseline staging/rollback; bukan instruksi membeli VPS atau memakai domain pribadi untuk produksi. Penerimaan shared hosting masih blocked sampai pengujian provider nyata.
+
 ## 1. Keputusan utama
 
 Modular monolith Laravel untuk bisnis, website Laravel terpisah untuk rendering Blade, dan satu Flutter application. Semua modul berada dalam satu repo; dapat dibangun/deploy terpisah. Tidak membutuhkan npm workspace global untuk memaksa PHP/Dart menjadi satu runtime.

@@ -6,7 +6,7 @@ Versi 1.0 • 10 Oktober 2026 • Baseline eksekusi.
 
 RT05 TAKEDA adalah sistem informasi dan layanan warga RT 05 Taman Kedaung, Ciputat. Website memperkenalkan lingkungan dan konten publik. Aplikasi mobile menjadi sarana warga dan pengurus untuk pendataan, layanan, komunikasi, iuran, serta kas. REST API menyediakan satu sumber data dan aturan bisnis.
 
-Frontend website sudah diterima dan tersedia di repository morrispes5/RT-05-TAKEDA serta preview rt05takeda.vercel.app. Tahap lanjutan mempertahankan desain itu, membangun backend dan mobile, lalu mengoperasikan server pada VPS Hostinger. Domain milik pengguna: morriz.tech; host aplikasi yang dirancang: takeda.morriz.tech.
+Frontend website sudah diterima dan tersedia di repository morrispes5/RT-05-TAKEDA serta preview rt05takeda.vercel.app. Tahap lanjutan mempertahankan desain itu, membangun backend dan mobile, lalu mengoperasikan aplikasi pada shared hosting yang lolos uji kompatibilitas (ADR23). VPS Hostinger tetap baseline staging sementara. Produksi menggunakan .com milik RT yang belum dipilih; domain pribadi tidak dipakai untuk produksi RT.
 
 ## 2. Masalah
 
@@ -138,8 +138,8 @@ Arsip bukan janji menyimpan data pribadi selamanya. Retensi/privacy request dike
 
 ## 12. Pengiriman
 
-Ikuti M00–M16 pada ROADMAP.md. Rilis staging awal di M04 supaya integrasi diuji di Hostinger sejak fondasi; production penuh di M16 setelah gate keamanan, keuangan, notifikasi, dan restore lulus.
+Ikuti M00–M16 pada ROADMAP.md. Staging VPS M04 tetap bukti historis; profil shared hosting harus diuji sebagai tambahan M03/M04 sebelum M10 bergantung padanya; production penuh di M16 setelah gate keamanan, keuangan, notifikasi, dan restore lulus.
 
 ## 13. Input operasional yang diperlukan nanti
 
-Credential Neon scoped dev/staging/prod, akses VPS yang diotorisasi, kontrol DNS morriz.tech, SMTP, akun/project FCM, lokasi backup di luar VPS, data RT tervalidasi, dan signing key Android. Agent menyiapkan adapter/config lokal dahulu; tidak mengarang input ini.
+Credential Neon scoped dev/staging/prod, akses hosting yang diotorisasi, kontrol DNS domain RT, Resend SMTP/HTTP yang diuji, akun/project FCM, lokasi backup di luar hosting, data RT tervalidasi, dan signing key Android. Agent menyiapkan adapter/config lokal dahulu; tidak mengarang input ini.

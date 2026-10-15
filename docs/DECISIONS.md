@@ -221,3 +221,17 @@ Rencana kompatibilitas dan pengujian:
 Sumber instruksi pemilik:
 
 Catat sumber apa adanya; keputusan agent tidak dilabeli sebagai persetujuan RT yang belum diberikan.
+
+
+### ADR23 — Profil shared hosting untuk anggaran tahun pertama
+
+Tanggal: 15 Oktober 2026. Status: keputusan desain diterapkan pada branch; penerimaan live blocked.
+Sumber: pemilik meminta perencanaan dan eksekusi penyesuaian milestone, tetap Laravel/PostgreSQL, memperbolehkan promo tahun pertama. Tidak mengubah BR, desain M00, atau kelulusan historis.
+
+Target biaya hosting+domain ≤Rp500.000 untuk tahun pertama; kandidat Biznet Personal Large Rp399.000 (belum total checkout). Tidak membeli sebelum PHP/CLI/cron/pdo_pgsql/TLS/outbound/resource/routing lolos. Renewal dicatat saat serah terima, bukan diasumsikan sama dengan promo. Domain produksi .com RT belum dipilih.
+
+Profil `vps` tetap default. Profil `shared` memakai queue PostgreSQL additive, file cache/session, cron CLI satu menit dengan penanda aktivitas lokal dan recovery 30 menit. Worker terbatas, bukan daemon atau layanan baru berbayar. Penanda bukan sumber kebenaran; jobs/outbox/media tetap persisten. Idle tick tidak query DB; tugas kalender dikelompokkan. Jika cron provider minimal 15 menit, profil ini tidak memenuhi target inbox ≤60 detik/reset cepat: jangan aktifkan diam-diam.
+
+Produksi Neon dipisah project dari dev/staging; belum provision. Media tetap disk lokal privat. Resend staging SMTP yang sudah lulus dipertahankan; HTTP memerlukan dependency dan bukti tersendiri, tidak cukup mengganti MAIL_MAILER. FCM tetap gate M10. Tidak menghapus kebutuhan backup offsite/restore atau menganggap semua layanan gratis tanpa batas.
+
+Lihat SHARED_HOSTING.md untuk acceptance, dampak M00–M16, rollback, dan blocker. Menyesuaikan ADR13/16/18 untuk profil shared saja. M09 PR24 tetap independen; tidak merge/rebase/ubah branch rekan.
