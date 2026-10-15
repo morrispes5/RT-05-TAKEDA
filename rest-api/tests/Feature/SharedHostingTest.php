@@ -91,6 +91,35 @@ class SharedHostingTest extends TestCase
         $this->assertSame(0, Queue::connection('database')->size('notifications'));
     }
 
+    public function test_committed_outbox_is_drained_after_the_response(): void
+    {
+        $event = DB::transaction(fn () => Outbox::record('rt05.smoke', 'smoke', null, ['penerima' => []]));
+        $this->events[] = $event->id;
+        $this->assertNull($event->fresh()->completed_at);
+        $this->assertSame(0, DB::table('jobs')->count());
+
+        $this->app->terminate();
+
+        $this->assertNotNull($event->fresh()->completed_at);
+        $this->assertFalse(SharedHosting::backlog());
+    }
+
+    public function test_safety_sweep_recovers_outbox_without_wake_hint(): void
+    {
+        $this->travelTo(now()->setTime(12, 7, 0));
+        Cache::store('file')->put('rt05:shared:last-sweep', time() - SharedHosting::SWEEP_SECONDS - 1, 3600);
+        Cache::store('file')->forget('rt05:shared:awake');
+        $event = DB::transaction(fn () => Outbox::record('rt05.smoke', 'smoke', null, ['penerima' => []]));
+        $this->events[] = $event->id;
+        Cache::store('file')->forget('rt05:shared:awake');
+        $this->assertFalse(SharedHosting::awake());
+
+        $this->artisan('rt05:shared-tick')->assertExitCode(0);
+
+        $this->assertNotNull($event->fresh()->completed_at);
+        $this->travelBack();
+    }
+
     public function test_idle_tick_does_not_query_database(): void
     {
         $this->travelTo(now()->setTime(12, 7, 0));

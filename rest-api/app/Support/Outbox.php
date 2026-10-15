@@ -21,7 +21,10 @@ final class Outbox
         ]);
 
         if (SharedHosting::enabled()) {
-            DB::afterCommit(fn () => SharedHosting::wake());
+            DB::afterCommit(function () {
+                SharedHosting::wake();
+                SharedHosting::drainAfterResponse();
+            });
         }
 
         return $event;

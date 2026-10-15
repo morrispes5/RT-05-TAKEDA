@@ -1,0 +1,12 @@
+# Contoh routing satu origin untuk shared hosting. BELUM diuji di Biznet.
+# Document root = folder public website. Jangan menaruh repo, .env, atau vendor di public_html.
+#
+# Salin rest-api/public/index.php menjadi index-api.php di document root yang sama,
+# lalu ubah path bootstrap agar menunjuk aplikasi API di luar document root.
+# APP_KEY website dan API harus berbeda. CLI API memakai APP_KEY yang sama dengan web API.
+#
+# RewriteEngine On
+# RewriteRule ^(api|sanctum|health|reset-password)(/.*)?$ index-api.php [L,QSA]
+#
+# Path lain tetap ditangani index.php website.
+# Sertakan GET dan POST /reset-password, /api/v1, /sanctum/csrf-cookie, dan /health.

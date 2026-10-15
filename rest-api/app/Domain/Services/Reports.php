@@ -13,6 +13,7 @@ use App\Models\RiwayatAspirasi;
 use App\Models\RiwayatPengaduan;
 use App\Support\Audit;
 use App\Support\Outbox;
+use App\Support\SharedHosting;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -30,6 +31,11 @@ final class Reports
 
     public const ASPIRATION_FLOW = ['diajukan' => ['ditinjau'], 'ditinjau' => ['selesai'], 'selesai' => ['ditinjau']];
 
+    /** Profil shared: cegah unggahan beruntun yang mengisi disk hosting. */
+    public const SHARED_DAILY_REPORTS = 5;
+
+    public const SHARED_DAILY_PHOTOS = 25;
+
     /** @param list<UploadedFile> $photos */
     public static function createComplaint(Akun $akun, array $data, array $photos): Pengaduan
     {
@@ -40,15 +46,21 @@ final class Reports
         if (! $kategori) {
             throw new DomainConflict('CATEGORY_INACTIVE', 'Kategori tidak tersedia.', 422);
         }
+        self::assertSharedDailyQuota($akun, count($photos));
 
         // Foto divalidasi lalu disalin mentah ke folder privat sebelum transaksi; transkode dan
-        // penghapusan metadata dilakukan worker-media. Bila transaksi gagal, berkas yatim dihapus.
+        // penghapusan metadata dilakukan setelah response (shared) atau worker-media (VPS).
+        // Bila transaksi gagal, berkas yatim dihapus.
         $stored = [];
         try {
             foreach ($photos as $file) {
                 $stored[] = Photo::stage($file);
             }
             $pengaduan = DB::transaction(function () use ($akun, $data, $stored, $kategori) {
+                if (SharedHosting::enabled()) {
+                    Akun::whereKey($akun->id)->lockForUpdate()->first();
+                    self::assertSharedDailyQuota($akun, count($stored));
+                }
                 $pengaduan = Pengaduan::create([
                     'pelapor_id' => $akun->id,
                     'kategori_id' => $kategori->id,
@@ -86,9 +98,37 @@ final class Reports
     public static function enqueuePhoto(string $fotoId): void
     {
         try {
+            if (SharedHosting::enabled()) {
+                // Respons create tetap status diproses. Transkode jalan di proses yang sama
+                // setelah response terkirim. Bila proses mati, rt05:media-recover mengirim ulang.
+                SharedHosting::afterResponse(function () use ($fotoId) {
+                    (new ProcessComplaintPhoto($fotoId))->handle();
+                });
+
+                return;
+            }
             ProcessComplaintPhoto::dispatch($fotoId);
         } catch (Throwable $e) {
             Log::warning('media.enqueue_failed', ['foto_id' => $fotoId, 'exception' => $e::class]);
+        }
+    }
+
+    /** Batas harian profil shared. Tidak mengubah profil VPS. */
+    public static function assertSharedDailyQuota(Akun $akun, int $newPhotos): void
+    {
+        if (! SharedHosting::enabled()) {
+            return;
+        }
+        $start = now('Asia/Jakarta')->startOfDay()->utc();
+        $reports = Pengaduan::where('pelapor_id', $akun->id)->where('created_at', '>=', $start)->count();
+        if ($reports >= self::SHARED_DAILY_REPORTS) {
+            throw new DomainConflict('DAILY_QUOTA', 'Maksimal 5 pengaduan per hari.', 429);
+        }
+        $photos = FotoPengaduan::whereHas('pengaduan', fn ($q) => $q->where('pelapor_id', $akun->id))
+            ->where('created_at', '>=', $start)
+            ->count();
+        if ($photos + $newPhotos > self::SHARED_DAILY_PHOTOS) {
+            throw new DomainConflict('DAILY_QUOTA', 'Maksimal 25 foto per hari.', 429);
         }
     }
 

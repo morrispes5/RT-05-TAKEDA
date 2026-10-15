@@ -136,9 +136,12 @@ Create memakai category allowlist, title ≤150, body ≤5000, anonymous_to_resi
 `sembunyikan_identitas`, dan `foto[]` maks. 5; tidak ada `media_ids` dari client sehingga referensi
 media milik akun/parent lain tidak dapat dikirim. Server memeriksa ukuran (VPS >12 MB 422/413; shared >4 MiB 413),
 magic bytes JPG/PNG/WebP yang harus sama dengan tipe header gambar (spoof/SVG/HTML/GIF 415) dan
-VPS ≤50 MP / shared ≤6 MP (413), lalu menyimpan berkas mentah privat bernama acak dan baris foto berstatus `diproses`.
-Setelah commit, job `ProcessComplaintPhoto` di antrean `media` mentranskode ke JPEG ≤1600 px
-tanpa EXIF/GPS: `siap` atau `gagal` (`UNREADABLE`, `PROCESSING_FAILED`, `PROCESSING_STALLED`).
+VPS ≤50 MP / shared ≤6 MP (413). Profil shared juga menolak 429 `DAILY_QUOTA` bila akun sudah
+membuat 5 pengaduan atau unggahan itu melewati 25 foto pada hari yang sama (WIB). Berkas mentah
+privat bernama acak disimpan dengan status `diproses`. Setelah commit, `ProcessComplaintPhoto`
+mentranskode ke JPEG ≤1600 px tanpa EXIF/GPS: pada VPS lewat antrean `media`, pada profil shared
+di proses yang sama setelah response terkirim. Hasil `siap` atau `gagal`
+(`UNREADABLE`, `PROCESSING_FAILED`, `PROCESSING_STALLED`).
 Antrean gagal tidak membatalkan laporan; `rt05:media-recover` mengirim ulang. Respons `foto[]`
 memuat `status` dan `url` hanya bila `siap`; warga lain hanya menerima foto siap. Unduhan
 `/complaints/{id}/photos/{photoId}` menuntut foto milik laporan pada path dan status siap.
