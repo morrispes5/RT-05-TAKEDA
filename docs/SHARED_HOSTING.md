@@ -25,7 +25,7 @@ Cron tiap menit menjalankan `php artisan rt05:shared-tick` dengan PHP CLI yang s
 
 Target normal inbox/email mulai diproses ≤60 detik tetap target, bukan bukti; antrean, cron jitter, provider, dan job media dapat menambah waktu. Provider hanya mendukung cron 15 menit → **gagal kompatibilitas profil ini**, bukan menurunkan target diam-diam. Gangguan proses bisa menunda recovery sampai sweep berikutnya; failed job harus terlihat dan ditangani operator.
 
-Foto shared dibatasi server ke 4 MiB dan 6 juta piksel, output ≤1600 px; batas VPS tetap. Ini batas operasional yang wajib diuji dengan APK existing (resize 2400 bisa menghasilkan foto >6 MP pada gambar persegi). Update kompresi mobile/web sebelum aktivasi bila diperlukan. Foto lama yang sedang diproses harus diselesaikan sebelum mengaktifkan batas baru. Metadata tetap dibuang server; jangan menganggap kompresi client cukup.
+Foto shared dibatasi server ke 4 MiB dan 6 juta piksel, output ≤1600 px; batas VPS tetap. Picker Flutter kini membatasi kedua sisi ke 1600 px, kualitas 80; server tetap memvalidasi byte/piksel karena hasil kompresi tidak menjamin ukuran byte. Uji APK baru pada kamera/galeri nyata; kompresi web mengikuti M13/M14. Foto lama yang sedang diproses harus diselesaikan sebelum mengaktifkan batas baru. Metadata tetap dibuang server; jangan menganggap kompresi client cukup.
 
 ## Preflight wajib sebelum pembelian/aktivasi
 

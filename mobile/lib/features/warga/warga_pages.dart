@@ -377,7 +377,7 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
 
   Future<void> _pick(ImageSource source) async {
     try {
-      final file = await (widget.picker ?? ImagePicker()).pickImage(source: source, maxWidth: 2400, imageQuality: 90);
+      final file = await (widget.picker ?? ImagePicker()).pickImage(source: source, maxWidth: 1600, maxHeight: 1600, imageQuality: 80);
       if (file != null && mounted) setState(() => _photos.add(file));
     } on PlatformException catch (e) {
       if (mounted) {

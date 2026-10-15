@@ -4,9 +4,9 @@ namespace App\Providers;
 
 use App\Support\Heartbeat;
 use App\Support\SharedHosting;
-use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;

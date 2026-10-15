@@ -65,7 +65,7 @@ jobs:
       - run: composer validate --no-check-publish
       - run: composer install --no-interaction --prefer-dist
       - run: cp .env.example .env && php artisan key:generate
-      - run: php vendor/bin/pint --test
+      - run: php vendor/bin/pint --test -v
       - name: Tes (migration via pgsql_migrations, tes via role runtime)
         run: php artisan test
       - name: Drill worker Redis nyata (kill, AOF, queue-loss, heartbeat)

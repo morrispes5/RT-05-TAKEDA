@@ -1526,7 +1526,7 @@ paths:
       summary: Buat pengaduan
       x-status: implemented
       x-milestone: M08
-      description: 'Foto opsional maks. 5, JPG/PNG/WebP berdasarkan magic bytes yang cocok dengan header gambar; >12 MB ditolak (validasi 422 atau 413 PAYLOAD_TOO_LARGE), >50 MP 413, format lain/spoof 415 UNSUPPORTED_MEDIA_TYPE. Foto disimpan privat berstatus diproses lalu ditranskode worker-media (metadata EXIF/GPS dibuang) menjadi siap atau gagal; laporan tetap tersimpan walau antrean gagal (rt05:media-recover mengirim ulang).'
+      description: 'Foto opsional maks. 5, JPG/PNG/WebP berdasarkan magic bytes yang cocok dengan header gambar; profil VPS >12 MB ditolak (validasi 422 atau 413 PAYLOAD_TOO_LARGE), >50 MP 413; profil shared >4 MiB atau >6 MP ditolak 413, format lain/spoof 415 UNSUPPORTED_MEDIA_TYPE. Foto disimpan privat berstatus diproses lalu ditranskode worker-media (metadata EXIF/GPS dibuang) menjadi siap atau gagal; laporan tetap tersimpan walau antrean gagal (rt05:media-recover mengirim ulang).'
       requestBody:
         required: true
         content:

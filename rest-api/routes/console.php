@@ -12,6 +12,7 @@ use App\Models\FotoPengaduan;
 use App\Models\TagihanIuran;
 use App\Support\Heartbeat;
 use App\Support\Outbox;
+use App\Support\SharedHosting;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -111,7 +112,7 @@ Artisan::command('rt05:media-recover {--stale-minutes=10}', function () {
     $this->info("Foto dikirim ulang: $requeued, ditandai gagal: $failed, berkas yatim dihapus: $orphans");
 })->purpose('Pulihkan antrean foto pengaduan yang tertahan dan hapus berkas mentah yatim');
 
-if (\App\Support\SharedHosting::enabled()) {
+if (SharedHosting::enabled()) {
     // Invoked by shared-tick only. No per-minute DB work; outbox/media handled by tick.
     Schedule::command('rt05:tagihan-generate')->dailyAt('00:00')->timezone('Asia/Jakarta')->withoutOverlapping();
     Schedule::command('rt05:pengingat-agenda')->hourly()->withoutOverlapping();
