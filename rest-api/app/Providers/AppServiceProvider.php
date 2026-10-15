@@ -6,6 +6,7 @@ use App\Support\Heartbeat;
 use App\Support\SharedHosting;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Event;
@@ -31,9 +32,22 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('reset-password', fn (Request $r) => Limit::perMinutes(15, 10)->by($r->ip().'|'.$email($r)));
         RateLimiter::for('laporan', fn (Request $r) => Limit::perHour(20)->by((string) $r->user()?->id));
 
+        if (SharedHosting::enabled() && (config('mail.mailers.smtp.timeout') === null || config('mail.mailers.smtp.timeout') === '')) {
+            config(['mail.mailers.smtp.timeout' => SharedHosting::COOPERATIVE_DEADLINE_SECONDS]);
+        }
+
+        // Job database (termasuk email reset, yang tidak lewat outbox) ikut jalur setelah
+        // response. Pendaftaran drain satu kali per proses; reservasi antrean menolak job ganda.
         Event::listen(function (JobQueued $event): void {
             if ($event->connectionName === 'database') {
                 SharedHosting::wake();
+                SharedHosting::drainAfterResponse();
+            }
+        });
+
+        Event::listen(function (JobProcessing $event): void {
+            if ($event->connectionName === 'database') {
+                SharedHosting::armOperationDeadlines();
             }
         });
 

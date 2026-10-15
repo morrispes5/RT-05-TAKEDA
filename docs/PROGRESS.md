@@ -4,6 +4,16 @@
 
 Status tambahan M03/M04: **in_progress**, live **blocked**. Branch `codex/m03-shared-hosting-profile` dari `840cf09`. M07/M08 tetap passed pada baseline VPS. Dokumen branch PR24 menyatakan M09 gate staging passed, tetapi PR masih terpisah; tidak mengubah penerimaan main atau merge PR tersebut.
 
+Koreksi antrean dan email reset (branch `cursor/shared-job-mail-90bf`, masih profil shared): job database termasuk email reset didaftarkan ke pengurasan setelah response, jadi tidak menunggu cron 15 menit. Heartbeat `shared-tick` tetap ditulis hanya setelah tick selesai; umur sehat bila env kosong adalah 900+300 detik. Tanpa `pcntl`, `--timeout` dipasang 0 dan `--max-time` tetap antar-job; yang dipasang adalah batas SMTP/soket/`statement_timeout`/CPU 20 detik, bukan penghentian paksa. Tes `SharedRuntimeTest` memakai `Kernel::handle` lalu `terminate` tanpa `rt05:shared-tick` dan tanpa sleep.
+
+| Perintah | Hasil |
+| --- | --- |
+| `php vendor/bin/pint --dirty` (rest-api) | lulus |
+| `php artisan test` (Postgres lokal `rt05_test` 127.0.0.1:5432, bukan Neon) | **245/245, 2311 assertion** |
+| `node infra/scripts/check-repo.mjs` | OK (804 berkas) |
+
+Bukan bukti hosting, inbox SMTP, atau Neon produksi.
+
 Lingkup: ADR23, penyesuaian roadmap/PRD/runbook, queue PostgreSQL additive, tick cron yang hemat DB, konfigurasi media profil shared, dan tes regresi terfokus. Default VPS tetap. Bukti pemeriksaan dan blocker dicatat di [SHARED_HOSTING.md](SHARED_HOSTING.md). Belum menjalankan deploy/DDL pada Neon, mengubah DNS, membeli hosting, mengirim email, atau memasukkan data warga nyata.
 
 Penyesuaian susulan (konteks diskusi hosting 14–15 Oktober): jalur utama profil shared adalah kerja setelah response, cron 15 menit hanya jaring, foto ditranskode di proses yang sama, dan kuota harian 5 pengaduan / 25 foto diberlakukan. Neon Free yang dicek ulang adalah 1 GB/project (bukan 0,5 GB). R2 tetap opsional karena aktivasi meminta metode pembayaran. Paket Resend HTTP belum dipasang. Hosting tetap belum dibeli dan belum diuji. `php artisan test` lokal **242/242, 2272 assertion**; `pint --test` lulus. Bukan bukti live.

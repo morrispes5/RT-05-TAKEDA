@@ -45,6 +45,7 @@ class SharedTick extends Command
             $cache = Cache::store('file');
             $sweep = time() - (int) $cache->get('rt05:shared:last-sweep', 0) >= SharedHosting::SWEEP_SECONDS;
             if (! $sweep && ! SharedHosting::awake()) {
+                // Idle juga baru menulis setelah schedule:run kembali.
                 Heartbeat::beat('shared-tick');
 
                 return self::SUCCESS;
@@ -69,6 +70,8 @@ class SharedTick extends Command
             if ($sweep) {
                 $cache->put('rt05:shared:last-sweep', time(), 86400);
             }
+            // Beat hanya setelah tick selesai. Tick yang macet tidak memperbarui
+            // penanda, sehingga umur heartbeat melewati interval cron + toleransi.
             Heartbeat::beat('shared-tick');
 
             return self::SUCCESS;

@@ -21,6 +21,24 @@ final class Heartbeat
         return config('rt05.heartbeat.components');
     }
 
+    /**
+     * VPS: worker menulis tiap ≤30 detik, jadi 5 menit sudah berarti proses berhenti.
+     * Shared: beat hanya setelah tick selesai. Umur sehat = interval cron 15 menit
+     * plus 5 menit keterlambatan. Lebih dari itu, cron tidak jalan atau tick macet.
+     */
+    public static function maxAge(): int
+    {
+        $configured = config('rt05.heartbeat.max_age_seconds');
+        if (is_numeric($configured) && (int) $configured > 0) {
+            return (int) $configured;
+        }
+        if (SharedHosting::enabled()) {
+            return SharedHosting::SWEEP_SECONDS + SharedHosting::HEARTBEAT_LATE_GRACE_SECONDS;
+        }
+
+        return 300;
+    }
+
     /** Komponen worker dari daftar antrean --queue (mis. "notifications,default"). */
     public static function workerComponent(?string $queues): string
     {

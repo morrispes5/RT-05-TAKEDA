@@ -32,7 +32,10 @@ return [
     'heartbeat' => [
         // Store cache untuk heartbeat; redis → instance queue (noeviction), selain itu store default.
         'store' => env('RT05_HEARTBEAT_STORE', env('CACHE_STORE', 'file') === 'redis' ? 'coordination' : null),
-        'max_age_seconds' => (int) env('RT05_HEARTBEAT_MAX_AGE', 300),
+        // null = rumus Heartbeat::maxAge(). Jangan mengunci shared ke 300 detik: cron-nya 15 menit.
+        'max_age_seconds' => ($heartbeatMaxAge = env('RT05_HEARTBEAT_MAX_AGE')) !== null && $heartbeatMaxAge !== ''
+            ? (int) $heartbeatMaxAge
+            : null,
         // Penulisan dari loop worker dibatasi agar tidak menulis Redis setiap iterasi.
         'write_interval_seconds' => (int) env('RT05_HEARTBEAT_WRITE_INTERVAL', 30),
         'components' => env('RT05_DEPLOYMENT_PROFILE', 'vps') === 'shared'

@@ -42,6 +42,8 @@ class ProcessComplaintPhoto implements ShouldQueue
 
     public function handle(): void
     {
+        // Jalur inline setelah response tidak melewati queue:work, jadi alarm worker tidak terpasang.
+        SharedHosting::armOperationDeadlines();
         $foto = FotoPengaduan::find($this->fotoId);
         if (! $foto || $foto->status !== 'diproses') {
             return;
