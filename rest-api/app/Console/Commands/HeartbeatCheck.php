@@ -15,7 +15,7 @@ class HeartbeatCheck extends Command
 {
     protected $signature = 'rt05:heartbeat-check
         {--component=* : worker-default|worker-media|worker-exports|scheduler (boleh berulang)}
-        {--max-age= : Batas umur detik (default rt05.heartbeat.max_age_seconds)}';
+        {--max-age= : Batas umur detik (default Heartbeat::maxAge)}';
 
     protected $description = 'Periksa heartbeat internal worker/scheduler';
 
@@ -29,7 +29,7 @@ class HeartbeatCheck extends Command
             return self::INVALID;
         }
 
-        $maxAge = $this->option('max-age') ?? config('rt05.heartbeat.max_age_seconds', 300);
+        $maxAge = $this->option('max-age') ?? Heartbeat::maxAge();
         if (! is_numeric($maxAge) || (int) $maxAge < 1) {
             $this->error('--max-age harus bilangan bulat positif.');
 

@@ -1,6 +1,6 @@
 # Redis, worker, outbox, dan scheduler
 
-Profil target hemat (15 Oktober 2026): lihat [SHARED_HOSTING.md](SHARED_HOSTING.md) dan ADR23. Profil VPS berikut tetap menjadi baseline staging/rollback; bukan instruksi membeli VPS atau memakai domain pribadi untuk produksi. Penerimaan shared hosting masih blocked sampai pengujian provider nyata.
+Profil target hemat (15 Oktober 2026): lihat [SHARED_HOSTING.md](SHARED_HOSTING.md) dan ADR23. Pada profil shared, email reset dan job database lain mulai dikerjakan setelah response, bukan oleh cron 15 menit. Batas waktu per job hanya menghentikan proses bila `pcntl` ada. Profil VPS berikut tetap menjadi baseline staging/rollback; bukan instruksi membeli VPS atau memakai domain pribadi untuk produksi. Penerimaan shared hosting masih blocked sampai pengujian provider nyata.
 
 ## Prinsip
 

@@ -25,8 +25,9 @@ class ProcessOutboxEvent implements ShouldQueue
 
     public int $tries = 5;
 
-    // Timeout menghentikan proses worker; transaksi Postgres batal dan job dicoba ulang setelah
-    // retry_after (180 detik) sampai $tries habis.
+    // Bila pcntl ada, worker memasang SIGALRM sebesar nilai ini dan menghentikan proses.
+    // Tanpa pcntl alarm itu tidak terpasang. Profil shared memakai batas SMTP/SQL/soket
+    // (SharedHosting::armOperationDeadlines); itu bukan penghentian paksa.
     public int $timeout = 60;
 
     public function __construct(public string $eventId) {}
