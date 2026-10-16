@@ -279,6 +279,7 @@ final class Present
             'pengirim' => $showIdentity ? ['id' => $a->pengirim_id, 'nama' => $a->pengirim?->nama] : null,
             'created_at' => self::ts($a->created_at),
             'updated_at' => self::ts($a->updated_at),
+            'archived_at' => $viewer->isPengurus() ? self::ts($a->archived_at) : null,
         ];
     }
 

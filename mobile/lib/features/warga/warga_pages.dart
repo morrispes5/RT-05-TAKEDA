@@ -457,7 +457,8 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
         _versi = latest.versi;
         if (latest.status != 'diajukan') {
           _locked = true;
-          _formError = 'Laporan sudah ${statusLabel(latest.status).toLowerCase()} oleh pengurus sehingga tidak dapat diubah lagi. $reportLockedTail';
+          _formError =
+              '${widget.aspirasi ? 'Aspirasi' : 'Laporan'} sudah ${statusLabel(latest.status).toLowerCase()} oleh pengurus sehingga tidak dapat diubah lagi. $reportLockedTail';
         }
       });
     } on ApiException catch (e) {
@@ -468,7 +469,7 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
   @override
   Widget build(BuildContext context) {
     final cats = ref.watch(categoriesProvider);
-    final title = _editing ? 'Perbaiki laporan' : (widget.aspirasi ? 'Kirim aspirasi' : 'Buat pengaduan');
+    final title = _editing ? (widget.aspirasi ? 'Perbaiki aspirasi' : 'Perbaiki laporan') : (widget.aspirasi ? 'Kirim aspirasi' : 'Buat pengaduan');
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: ListView(
@@ -486,11 +487,13 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
               ),
             ),
           if (_editing)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 8),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                'Judul, isi, dan pilihan identitas dapat diperbaiki selama laporan masih Diajukan. Kategori dan foto tetap.',
-                style: TextStyle(color: Brand.muted),
+                widget.aspirasi
+                    ? 'Judul, isi, dan pilihan identitas dapat diperbaiki selama aspirasi masih Diajukan.'
+                    : 'Judul, isi, dan pilihan identitas dapat diperbaiki selama laporan masih Diajukan. Kategori dan foto tetap.',
+                style: const TextStyle(color: Brand.muted),
               ),
             ),
           const SizedBox(height: 14),
@@ -511,7 +514,11 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
             value: _anon,
             onChanged: (v) => setState(() => _anon = v),
             title: const Text('Sembunyikan identitas dari warga lain'),
-            subtitle: const Text('Pengurus RT tetap dapat melihat pelapor untuk tindak lanjut. Foto/isi tetap dapat mengungkap lokasi.'),
+            subtitle: Text(
+              widget.aspirasi
+                  ? 'Pengurus RT tetap dapat melihat pengirim untuk tindak lanjut. Isi aspirasi tetap dapat mengungkap identitas.'
+                  : 'Pengurus RT tetap dapat melihat pelapor untuk tindak lanjut. Foto/isi tetap dapat mengungkap lokasi.',
+            ),
           ),
           if (!widget.aspirasi && !_editing) ...[
             const SizedBox(height: 8),
@@ -559,6 +566,7 @@ class ReportDetailPage extends ConsumerWidget {
         builder: (d) {
           final (r, history) = d;
           final archived = r.diarsipkan != null;
+          final noun = aspirasi ? 'aspirasi' : 'laporan';
           final next = archived
               ? null
               : aspirasi
@@ -570,20 +578,34 @@ class ReportDetailPage extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 if (archived)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
-                    child: Text('Laporan diarsipkan: tidak tampil untuk warga. Riwayat tetap tersimpan.', style: TextStyle(color: Brand.warning)),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      '${aspirasi ? 'Aspirasi' : 'Laporan'} diarsipkan: tidak tampil untuk warga. Riwayat tetap tersimpan.',
+                      style: const TextStyle(color: Brand.warning),
+                    ),
                   ),
                 SectionCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(child: Text(r.judul, style: Theme.of(context).textTheme.titleLarge)),
-                          StatusChip(r.status),
-                        ],
-                      ),
+                      // Pada teks besar, chip di samping judul menyempitkannya sampai kata terpecah; pindahkan ke bawah.
+                      if (MediaQuery.textScalerOf(context).scale(16) / 16 > 1.3)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(r.judul, style: Theme.of(context).textTheme.titleLarge),
+                            const SizedBox(height: 8),
+                            StatusChip(r.status),
+                          ],
+                        )
+                      else
+                        Row(
+                          children: [
+                            Expanded(child: Text(r.judul, style: Theme.of(context).textTheme.titleLarge)),
+                            StatusChip(r.status),
+                          ],
+                        ),
                       const SizedBox(height: 8),
                       Text(
                         [if (r.kategori != null) r.kategori!, r.namaPelapor ?? 'Identitas disembunyikan', tanggal(r.dibuat, jam: true)].join(' • '),
@@ -671,7 +693,7 @@ class ReportDetailPage extends ConsumerWidget {
                           data: {'status': next, 'catatan': note, 'expected_version': r.versi},
                         );
                         ref.invalidate(reportDetailProvider((aspirasi, id)));
-                        if (context.mounted) showMessage(context, 'Status diperbarui; pelapor menerima notifikasi.');
+                        if (context.mounted) showMessage(context, 'Status diperbarui; ${aspirasi ? 'pengirim' : 'pelapor'} menerima notifikasi.');
                       } on ApiException catch (e) {
                         if (e.isConflict) ref.invalidate(reportDetailProvider((aspirasi, id)));
                         if (context.mounted) showMessage(context, e.display, error: true);
@@ -683,15 +705,15 @@ class ReportDetailPage extends ConsumerWidget {
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.archive_outlined),
-                    label: const Text('Arsipkan laporan'),
+                    label: Text('Arsipkan $noun'),
                     style: OutlinedButton.styleFrom(foregroundColor: Brand.danger, minimumSize: const Size.fromHeight(48)),
                     onPressed: () async {
-                      final reason = await askText(context, title: 'Arsipkan laporan', label: 'Alasan arsip (wajib)', hint: 'Mis. duplikat laporan lain');
+                      final reason = await askText(context, title: 'Arsipkan $noun', label: 'Alasan arsip (wajib)', hint: 'Mis. duplikat $noun lain');
                       if (reason == null) return;
                       try {
                         await api.post('/admin/${aspirasi ? 'aspirations' : 'complaints'}/$id/archive', data: {'alasan': reason});
                         ref.invalidate(reportDetailProvider((aspirasi, id)));
-                        if (context.mounted) showMessage(context, 'Laporan diarsipkan. Riwayat tetap tersimpan.');
+                        if (context.mounted) showMessage(context, '${aspirasi ? 'Aspirasi' : 'Laporan'} diarsipkan. Riwayat tetap tersimpan.');
                       } on ApiException catch (e) {
                         ref.invalidate(reportDetailProvider((aspirasi, id)));
                         if (context.mounted) showMessage(context, e.display, error: true);
@@ -703,7 +725,7 @@ class ReportDetailPage extends ConsumerWidget {
                   const SizedBox(height: 16),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.edit_outlined),
-                    label: const Text('Perbaiki laporan'),
+                    label: Text('Perbaiki $noun'),
                     style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
                     onPressed: () async {
                       final saved = await Navigator.push<bool>(
@@ -715,9 +737,12 @@ class ReportDetailPage extends ConsumerWidget {
                       if (saved == true) ref.invalidate(reportDetailProvider((aspirasi, id)));
                     },
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8),
-                    child: Text('Laporan masih dapat diperbaiki selama berstatus Diajukan.', style: TextStyle(color: Brand.muted)),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      '${aspirasi ? 'Aspirasi' : 'Laporan'} masih dapat diperbaiki selama berstatus Diajukan.',
+                      style: const TextStyle(color: Brand.muted),
+                    ),
                   ),
                 ],
               ],

@@ -181,6 +181,10 @@ memakai volume `api-storage` yang sama dengan API; berkas mentah berada di
 `storage/app/private/pengaduan/masuk`, hasil di `storage/app/private/pengaduan`, tidak di
 document root. Bukti penerimaan memakai foto sintetis buatan generator, bukan foto warga.
 
+Untuk M09, branch `codex/m09-aspirations` ditambahkan persis ke allowlist. Tidak ada migration
+baru (tabel `aspirasi` dan `riwayat_aspirasi` sudah ada sejak migration domain awal); perubahan hanya
+kode API dan APK. Bukti penerimaan memakai akun sintetis melalui API staging, kemudian emulator.
+
 Setelah rollout, catat SHA image, readiness, heartbeat worker/scheduler, smoke
 DML dengan DDL ditolak, serta volume dan container unrelated tetap tersedia.
 Browser pada origin staging memanggil `GET /sanctum/csrf-cookie`, lalu

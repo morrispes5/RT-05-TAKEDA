@@ -171,6 +171,25 @@ Sumber instruksi pemilik: handoff M08 13 Oktober 2026.
 
 ## Input operasional yang belum tersedia
 
+### ADR22 — Aspirasi M09: domain terpisah, anonimitas sama dengan pengaduan, tiga status
+
+Tanggal/status: 13 Oktober 2026, diterapkan pada branch M09.
+Trigger: gate M09 dan permintaan pemilik agar M09 tetap selaras dengan capstone.
+Keputusan sebelumnya: BUSINESS_RULES BR08 (pengaduan dan aspirasi terpisah) dan status aspirasi
+`submitted → reviewed → completed`; ERD Tugas 03 menggambarkan tabel `aspirasi` tanpa kolom
+`sembunyikan_identitas` dan tanpa `versi`, sedangkan draf kelompok lama menyebut empat status.
+Keputusan baru: tabel `aspirasi` dan `riwayat_aspirasi` tetap terpisah dari pengaduan. Kolom
+`sembunyikan_identitas` dan `versi` dipertahankan (BR09 mewajibkan uji anonimitas untuk laporan
+dan aspirasi; `versi` untuk 409). Status tetap tiga (`diajukan`, `ditinjau`, `selesai`) sesuai BUSINESS_RULES;
+empat status pada draf lama adalah dokumen historis. Tanpa kategori dan foto, sesuai ERD capstone.
+Alasan/tradeoff: satu aturan anonimitas dan satu mekanisme versi untuk kedua modul mencegah
+perilaku berbeda; selisih terhadap ERD akademik dilaporkan di CAPSTONE_ALIGNMENT, bukan disembunyikan.
+Dokumen/endpoint/migration/mobile/web terdampak: API.md, openapi.yaml (skema Aspiration*), ERD.md,
+MOBILE.md; tanpa migration baru; `archived_at` ditambahkan pada respons aspirasi.
+Rencana kompatibilitas dan pengujian: kontrak lama kompatibel (bidang baru, filter status tidak valid
+kini 422); `M09AspirationTest` dan `m09_aspirations_test.dart`.
+Sumber instruksi pemilik: "lanjutkan ke milestone 9 ... sesuaikan lagi dengan capstone project".
+
 ### ADR20 — SMTP Resend untuk staging M06
 
 13 Oktober2026. Pemilik melanjutkan pekerjaan sesudah login Resend. Domain
