@@ -151,6 +151,21 @@ Kode domain: pemilik edit `versi` basi 409 `VERSION_CONFLICT`, bukan pemilik/buk
 alasan 422 `REOPEN_REASON_REQUIRED`, laporan arsip 409 `ALREADY_ARCHIVED` (status maupun arsip
 ulang). Riwayat bagi warga lain menulis pelapor anonim sebagai "Warga", termasuk pelapor pengurus.
 
+**Implementasi M09 (ADR22).** Aspirasi (kritik, saran, usulan) adalah domain terpisah: tabel `aspirasi` dan
+`riwayat_aspirasi`, status `diajukan → ditinjau → selesai` (buka ulang `selesai → ditinjau` wajib
+catatan). `POST /aspirations` menerima JSON `judul` (≤150), `isi` (≤5000), `sembunyikan_identitas`; tidak ada
+kategori dan tidak ada foto. Aspirasi, riwayat awal, audit, dan outbox ditulis dalam satu transaksi, sehingga
+201 hanya sesudah commit dan notifikasi pengurus tidak pernah mendahului data. Feed
+`GET /aspirations` menerima `status` (`diajukan|ditinjau|selesai`; nilai lain 422), `milik_saya=1`, `page`,
+`per_page` (1–100, bawaan 20) dan, hanya untuk pengurus, `arsip=1`; urutan terbaru dahulu. Warga lain
+menerima `pengirim: null` untuk aspirasi anonim pada detail, feed, riwayat, dan notifikasi; riwayat
+menulis pengirim anonim sebagai "Warga" bahkan bila pengirimnya pengurus. Respons selalu memuat
+`archived_at` (terisi hanya untuk pengurus). Kode domain: pemilik edit `versi` basi 409 `VERSION_CONFLICT`,
+bukan pemilik/bukan diajukan 403 `ASPIRATION_LOCKED`; admin transisi invalid 422
+`INVALID_STATUS_TRANSITION`, buka ulang tanpa alasan 422 `REOPEN_REASON_REQUIRED`, arsip 409
+`ALREADY_ARCHIVED`. Filter `status` pada `GET /complaints` kini juga ditolak 422 bila bukan
+`diajukan|diproses|selesai`.
+
 ## Agenda, pengumuman, notifikasi
 
 GET /agendas, /agendas/{id}, /agendas/{id}/calendar (link/ICS); GET /announcements dan detail; GET /notifications; PATCH /notifications/{id}/read; POST /notifications/read-all; PUT/DELETE /devices/{device_identifier}; PATCH /notification-preferences.

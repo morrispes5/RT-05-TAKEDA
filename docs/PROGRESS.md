@@ -18,8 +18,40 @@ Lingkup: ADR23, penyesuaian roadmap/PRD/runbook, queue PostgreSQL additive, tick
 
 Penyesuaian susulan (konteks diskusi hosting 14–15 Oktober): jalur utama profil shared adalah kerja setelah response, cron 15 menit hanya jaring, foto ditranskode di proses yang sama, dan kuota harian 5 pengaduan / 25 foto diberlakukan. Neon Free yang dicek ulang adalah 1 GB/project (bukan 0,5 GB). R2 tetap opsional karena aktivasi meminta metode pembayaran. Paket Resend HTTP belum dipasang. Hosting tetap belum dibeli dan belum diuji. `php artisan test` lokal **242/242, 2272 assertion**; `pint --test` lulus. Bukan bukti live.
 
+Updated: 13 Oktober 2026 (malam WIB, M09).
 
-Updated: 13 Oktober 2026 (malam WIB).
+## Penutupan M09 — 13 Oktober 2026
+
+M09 (aspirasi) **passed** untuk staging sintetis (gate teknis) atas instruksi pemilik untuk lanjut ke M09
+dan menyelaraskannya dengan PRD, dokumen `.md`, dan capstone. PR #24, source `617e179`. Rincian di
+[evidence/m09/REPORT.md](evidence/m09/REPORT.md).
+
+| Perintah / pemeriksaan | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17.10 sementara, bukan Neon) | **245/245, 2414 assertion** (15 tes M09 baru) |
+| `vendor/bin/pint --test`; `npx @redocly/cli@2 lint docs/openapi.yaml` | passed; valid |
+| `flutter analyze`; `dart format --set-exit-if-changed lib test`; `flutter test` | No issues; 0 changed; **164 lulus** (7 tes M09 baru) |
+| `node infra/scripts/check-repo.mjs` | OK (800 berkas) |
+| CI head `617e179` | seluruh check SUCCESS; APK dev gagal sekali (`sdkmanager` runner), lulus pada rerun job yang sama |
+| Rollout staging `617e179` (SSH, hanya project `rt05-staging`) | `Selesai`, 0 GAGAL, "Nothing to migrate", 9 container sehat, ready |
+| `infra/scripts/m09-stage-acceptance.mjs --execute` (`Sintetis M09 F21B1E`) | **48 kasus, 138 assertion**; [ringkasan](evidence/m09/m09-live-summary-617e179.json) |
+| Android emulator Pixel 8a, APK CI `38415151167` | SHA-256 `56a45751…0305` cocok; [ANDROID_RESULTS.md](evidence/m09/ANDROID_RESULTS.md) |
+
+Rebase 16 Oktober 2026: riwayat Git ditulis ulang pada 15 Oktober (identitas commit), sehingga SHA
+`617e179`/`ccebb9b` di atas kini bernama `148b2d6`/`719c70a` dengan isi yang sama. PR #24 di-rebase ke `main`
+baru (profil shared hosting PR #25/#28). Hasil lokal setelah rebase: backend **260/260, 2492 assertion**
+(245 main + 15 M09), Flutter **164**, Pint/analyzer/format/Redocly/check-repo lulus.
+
+Cacat yang ditemukan lalu ditutup: respons aspirasi tanpa `archived_at` (pengurus tidak melihat banner arsip),
+filter `status` tidak valid diterima, OpenAPI aspirasi generik, teks layar bernada pengaduan, judul terpecah
+pada skala teks 2,0 (temuan M08). Selisih capstone (anonimitas aspirasi, tiga status, kolom `versi`) dicatat di
+CAPSTONE_ALIGNMENT.md dan ADR22. Konfirmasi hanya sesudah commit dibuktikan juga di Android saat offline
+(tanpa konfirmasi palsu, isian tetap, tanpa duplikat).
+
+Keterbatasan: Google Doc native M09 belum dikerjakan (menunggu konfirmasi pemilik; bukan gate ROADMAP);
+preferensi notifikasi per jenis dan push FCM menunggu M10; pemulihan draf kamera/proses ke M15; bukan
+production, perangkat fisik, atau UAT mitra; insiden credential historis tetap terbuka untuk M16.
+M10 tidak dibuka.
 
 ## Penutupan M08 — 13 Oktober 2026
 
@@ -317,7 +349,7 @@ ditentukan hanya oleh tersedianya kode.
 | M06 | passed | Staging26a0b7e; API52alur/17mekanika reset; Android akun/sesi; SMTP nyata, INBOX A/browser dan B/Android, verifier4/4 masing-masing. Penutupan13Oktober; INBOX_ACCEPTANCE |
 | M07 | passed | Source979634f; 220tes/2125assertion, Flutter152, 9CI SUCCESS, deploy additive/backfill, API live77/327, Android nyata dan native Drive; evidence/m07/REPORT.md |
 | M08 | passed | Source6b6987c (head PR a3d80e5): lokal230/2233, Flutter157, seluruh CI SUCCESS, staging live42/130 (rerun 13 Oktober), Android emulator nyata (putaran 2), bagian Drive native disisipkan dan dibaca ulang. Penerimaan staging sintetis; bukan production/UAT. evidence/m08/REPORT.md |
-| M09 | in_progress | Aspirasi terpisah; tes CI lulus |
+| M09 | passed | Source617e179 (PR #24): lokal245/2414, Flutter164, seluruh CI SUCCESS, staging live48/138, Android emulator nyata; Drive native belum. Penerimaan staging sintetis; bukan production/UAT. evidence/m09/REPORT.md |
 | M10 | in_progress | Agenda/ICS/Google Calendar, pengumuman, inbox; push FCM blocked (tanpa project Firebase) |
 | M11 | in_progress | Tarif/tagihan idempotent/catch-up/transparansi; tes CI lulus |
 | M12 | in_progress | Pembayaran offline/idempotency/pembalikan/koreksi/kas/CSV; tes CI lulus |
@@ -328,10 +360,10 @@ ditentukan hanya oleh tersedianya kode.
 
 M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. M01–M16 menggunakan planned/in_progress/passed/blocked.
 
-Catatan M09–M12: kode awal dari jalur layanan-inti sudah berada di `main`, dan
+Catatan M10–M12: kode awal dari jalur layanan-inti sudah berada di `main`, dan
 status `in_progress` di atas adalah catatan lama dari jalur itu. Belum ada
-gate penerimaan (live, Android, dokumentasi) yang dijalankan untuk keempatnya;
-M09 belum dibuka.
+gate penerimaan (live, Android, dokumentasi) yang dijalankan untuk ketiganya;
+M10 belum dibuka.
 
 ## Riwayat pembukaan M06 (checkpoint 12 Oktober)
 

@@ -342,9 +342,16 @@ paths:
       operationId: adminAspirationsArchive
       tags:
         - Aspirations
-      summary: Arsip aspirasi
+      summary: Arsip aspirasi dengan alasan
       x-status: implemented
       x-milestone: M09
+      description: Hanya menyembunyikan dari warga; aspirasi dan riwayat tetap. Alasan wajib (422). Sudah diarsipkan 409 ALREADY_ARCHIVED.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReasonInput"
       responses:
         "204":
           description: Berhasil tanpa body.
@@ -357,12 +364,23 @@ paths:
       operationId: adminAspirationsStatus
       tags:
         - Aspirations
-      summary: Ubah status aspirasi
+      summary: Ubah status dengan catatan dan expected_version
       x-status: implemented
       x-milestone: M09
+      description: 'diajukan → ditinjau → selesai; selesai → ditinjau (buka ulang) wajib catatan 422 REOPEN_REASON_REQUIRED. Transisi lain 422 INVALID_STATUS_TRANSITION, versi basi 409 VERSION_CONFLICT, aspirasi arsip 409 ALREADY_ARCHIVED. Riwayat, audit, dan outbox (inbox pengirim) ditulis dalam transaksi yang sama. Hanya pengurus; selain itu 403.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AspirationStatusInput"
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AspirationEnvelope"
         default:
           $ref: "#/components/responses/Error"
   /api/v1/admin/audit-logs:
@@ -1182,12 +1200,23 @@ paths:
       operationId: aspirationsIndex
       tags:
         - Aspirations
-      summary: Feed aspirasi
+      summary: Feed aspirasi tersanitasi
       x-status: implemented
       x-milestone: M09
+      description: Query opsional status (diajukan, ditinjau, selesai; nilai lain 422), milik_saya=1, page, per_page (1–100, bawaan 20); pengurus arsip=1. Terbaru dahulu. Aspirasi anonim tidak memuat pengirim bagi warga lain. Akun menunggu/nonaktif 403.
+      parameters:
+        - {name: status, in: query, required: false, schema: {type: string, enum: [diajukan, ditinjau, selesai]}}
+        - {name: milik_saya, in: query, required: false, schema: {type: boolean}}
+        - {name: arsip, in: query, required: false, schema: {type: boolean}, description: Hanya pengurus.}
+        - {name: page, in: query, required: false, schema: {type: integer, minimum: 1}}
+        - {name: per_page, in: query, required: false, schema: {type: integer, minimum: 1, maximum: 100}}
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AspirationListEnvelope"
         default:
           $ref: "#/components/responses/Error"
     post:
@@ -1197,9 +1226,20 @@ paths:
       summary: Kirim aspirasi
       x-status: implemented
       x-milestone: M09
+      description: Aspirasi (kritik, saran, usulan) terpisah dari pengaduan; tanpa kategori dan tanpa foto. Aspirasi, riwayat awal, audit, dan outbox (notifikasi pengurus) ditulis dalam satu transaksi; 201 hanya setelah commit. Judul maks. 150, isi maks. 5000. Dibatasi throttle laporan.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AspirationCreateInput"
       responses:
         "201":
-          $ref: "#/components/responses/Data"
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AspirationEnvelope"
         default:
           $ref: "#/components/responses/Error"
   /api/v1/aspirations/{id}:
@@ -1209,24 +1249,40 @@ paths:
       operationId: aspirationsShow
       tags:
         - Aspirations
-      summary: Detail aspirasi
+      summary: Detail aspirasi role-aware
       x-status: implemented
       x-milestone: M09
+      description: Warga tidak melihat aspirasi arsip (404).
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AspirationEnvelope"
         default:
           $ref: "#/components/responses/Error"
     patch:
       operationId: aspirationsUpdate
       tags:
         - Aspirations
-      summary: Pemilik mengubah saat submitted
+      summary: Pemilik mengubah saat diajukan
       x-status: implemented
       x-milestone: M09
+      description: Bukan pemilik atau status bukan diajukan 403 ASPIRATION_LOCKED; versi basi 409 VERSION_CONFLICT (client mempertahankan isian lalu memuat versi terbaru).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AspirationUpdateInput"
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AspirationEnvelope"
         default:
           $ref: "#/components/responses/Error"
   /api/v1/aspirations/{id}/history:
@@ -1236,12 +1292,17 @@ paths:
       operationId: aspirationsHistory
       tags:
         - Aspirations
-      summary: Histori aspirasi
+      summary: Histori status aman
       x-status: implemented
       x-milestone: M09
+      description: Bagi warga lain, entri pengirim anonim bernama "Warga" (juga bila pengirim pengurus) dan tindakan pengurus "Pengurus RT".
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportHistoryEnvelope"
         default:
           $ref: "#/components/responses/Error"
   /api/v1/auth/additional-account-status:
@@ -1513,7 +1574,7 @@ paths:
       summary: Feed pengaduan tersanitasi
       x-status: implemented
       x-milestone: M08
-      description: Query opsional status, kategori_id, milik_saya=1; pengurus arsip=1. Laporan anonim tidak memuat pelapor bagi warga lain. Akun menunggu/nonaktif 403.
+      description: Query opsional status (diajukan, diproses, selesai; nilai lain 422), kategori_id, milik_saya=1; pengurus arsip=1. Laporan anonim tidak memuat pelapor bagi warga lain. Akun menunggu/nonaktif 403.
       responses:
         "200":
           $ref: "#/components/responses/Data"
@@ -2716,4 +2777,95 @@ components:
       required: [data, meta]
       properties:
         data: {$ref: '#/components/schemas/Complaint'}
+        meta: {$ref: '#/components/schemas/Meta'}
+    AspirationCreateInput:
+      type: object
+      additionalProperties: false
+      required: [judul, isi]
+      properties:
+        judul: {type: string, maxLength: 150}
+        isi: {type: string, maxLength: 5000}
+        sembunyikan_identitas: {type: boolean}
+    AspirationUpdateInput:
+      type: object
+      required: [versi]
+      properties:
+        versi: {type: integer, minimum: 1}
+        judul: {type: string, maxLength: 150}
+        isi: {type: string, maxLength: 5000}
+        sembunyikan_identitas: {type: boolean}
+    AspirationStatusInput:
+      type: object
+      required: [status, expected_version]
+      properties:
+        status: {type: string, enum: [diajukan, ditinjau, selesai]}
+        catatan: {type: [string, 'null'], maxLength: 2000}
+        expected_version: {type: integer}
+    Aspiration:
+      type: object
+      additionalProperties: false
+      required: [id, judul, isi, status, versi, sembunyikan_identitas, milik_saya, pengirim, created_at, updated_at, archived_at]
+      properties:
+        id: {type: string, format: uuid}
+        judul: {type: string}
+        isi: {type: string}
+        status: {type: string, enum: [diajukan, ditinjau, selesai]}
+        versi: {type: integer}
+        sembunyikan_identitas: {type: boolean}
+        milik_saya: {type: boolean}
+        pengirim:
+          type: [object, 'null']
+          description: null bagi warga lain bila sembunyikan_identitas; pengurus dan pemilik selalu menerima.
+          properties:
+            id: {type: string, format: uuid}
+            nama: {type: [string, 'null']}
+        created_at: {type: [string, 'null'], format: date-time}
+        updated_at: {type: [string, 'null'], format: date-time}
+        archived_at: {type: [string, 'null'], format: date-time, description: Hanya untuk pengurus; selalu null bagi warga.}
+    AspirationEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data: {$ref: '#/components/schemas/Aspiration'}
+        meta: {$ref: '#/components/schemas/Meta'}
+    AspirationListEnvelope:
+      type: object
+      required: [data, meta, links]
+      properties:
+        data: {type: array, items: {$ref: '#/components/schemas/Aspiration'}}
+        meta:
+          type: object
+          required: [page, per_page, total, last_page]
+          properties:
+            request_id: {type: string}
+            page: {type: integer}
+            per_page: {type: integer}
+            total: {type: integer}
+            last_page: {type: integer}
+        links:
+          type: object
+          properties:
+            next: {type: [string, 'null']}
+            prev: {type: [string, 'null']}
+    ReportHistoryEntry:
+      type: object
+      additionalProperties: false
+      required: [status_dari, status_ke, catatan, aktor, created_at]
+      properties:
+        status_dari: {type: [string, 'null']}
+        status_ke: {type: string}
+        catatan: {type: [string, 'null']}
+        aktor:
+          type: object
+          required: [nama, peran]
+          properties:
+            nama: {type: [string, 'null']}
+            peran: {type: [string, 'null']}
+        created_at: {type: [string, 'null'], format: date-time}
+    ReportHistoryEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data: {type: array, items: {$ref: '#/components/schemas/ReportHistoryEntry'}}
         meta: {$ref: '#/components/schemas/Meta'}
