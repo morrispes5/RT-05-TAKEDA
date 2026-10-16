@@ -29,6 +29,7 @@ class ReportsController extends Controller
 
     public function complaints(Request $request): JsonResponse
     {
+        $request->validate(['status' => ['sometimes', 'nullable', 'in:diajukan,diproses,selesai']]);
         $viewer = $request->user();
         $q = Pengaduan::with(['kategori', 'pelapor', 'foto'])
             ->when(! ($viewer->isPengurus() && $request->boolean('arsip')), fn ($q) => $q->whereNull('archived_at'))
@@ -129,6 +130,7 @@ class ReportsController extends Controller
 
     public function aspirations(Request $request): JsonResponse
     {
+        $request->validate(['status' => ['sometimes', 'nullable', 'in:diajukan,ditinjau,selesai']]);
         $viewer = $request->user();
         $q = Aspirasi::with('pengirim')
             ->when(! ($viewer->isPengurus() && $request->boolean('arsip')), fn ($q) => $q->whereNull('archived_at'))

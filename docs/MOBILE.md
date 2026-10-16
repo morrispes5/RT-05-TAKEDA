@@ -64,6 +64,7 @@ Navigasi admin: Ringkasan, Warga, Layanan, Keuangan, Lainnya. Form finance menam
 - UTC di DTO, Asia/Jakarta untuk kalender dan periode.
 - Kamera/galeri meminta izin saat aksi pengguna; penolakan menyediakan alternatif atau pesan.
 - M08: manifest mendeklarasikan `CAMERA` (feature tidak wajib) sehingga image_picker meminta izin runtime saat tombol Kamera; `camera_access_denied` menampilkan panduan Pengaturan dan galeri tetap tersedia. Galeri memakai photo picker Android tanpa izin penyimpanan. Edit laporan sendiri hanya saat Diajukan; 409 mempertahankan isian lalu memuat versi terbaru; 403 terkunci menonaktifkan Simpan tanpa menghapus teks.
+- M09: aspirasi memakai layar Layanan yang sama dengan pengaduan tetapi domain terpisah (`/aspirations`): form hanya judul, isi, dan sembunyikan identitas (tanpa kategori dan foto); konfirmasi "Aspirasi terkirim." hanya muncul setelah server membalas sukses, dan kegagalan mempertahankan isian. Pemilik dapat memperbaiki selama Diajukan (409 mempertahankan teks lalu memuat versi terbaru; 403 `ASPIRATION_LOCKED` menonaktifkan Simpan). Pengurus: Diajukan → Ditinjau → Selesai, buka ulang beralasan, arsip beralasan, filter "Termasuk arsip" dengan banner arsip dari `archived_at`. Teks layar menyebut "aspirasi"/"pengirim", bukan "laporan"/"pelapor".
 - Kehilangan koneksi menampilkan data terakhir yang aman/indikator stale; tidak mengantre mutation offline v1.
 - Data keluarga/sensitif tidak disimpan plaintext offline. Token di OS secure storage; logout menghapus cache pribadi dan device binding.
 

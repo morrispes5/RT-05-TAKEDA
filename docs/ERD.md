@@ -62,6 +62,8 @@ dipertahankan untuk image M06 dan diperbarui dalam transaksi yang sama dengan hi
 | complaint_status_events | id, complaint_id, from_status, to_status, note, actor_id, created_at |
 | foto_pengaduan (M08) | id, pengaduan_id, storage_key acak privat, mime, bytes, lebar, tinggi, urutan, status diproses/siap/gagal, percobaan, kode_gagal, created_at, updated_at |
 | aspirations | id, author_user_id, house_id snapshot, title, body, anonymous_to_residents, status, version, archived_at |
+| aspirasi (M09, nama aktual) | id, pengirim_id → akun, judul, isi, sembunyikan_identitas, status diajukan/ditinjau/selesai (CHECK), versi, created_at, updated_at, archived_at; tanpa kategori dan tanpa foto |
+| riwayat_aspirasi (M09, nama aktual) | id, aspirasi_id, aktor_id, status_dari, status_ke, catatan, created_at; indeks (aspirasi_id, created_at) |
 | aspiration_status_events | id, aspiration_id, from_status, to_status, note, actor_id, created_at |
 | agendas | id, title, description, starts_at, ends_at, location, status, created_by, archived_at |
 | announcements | id, title, body, status, published_at, created_by, version, archived_at |
