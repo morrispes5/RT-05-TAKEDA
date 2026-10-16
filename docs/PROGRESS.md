@@ -1,6 +1,6 @@
 # Progress — RT05 TAKEDA
 
-## Usulan kegiatan warga — 16 Oktober 2026 (PR #27)
+## Usulan kegiatan warga — 16 Oktober 2026 (PR #27, merged dan staging)
 
 Instruksi pemilik 16 Oktober: warga mengajukan kegiatan (contoh "Badminton bersama di lapangan RT 05") lewat form
 dengan dokumen pendukung; pengurus menyetujui; **persetujuan langsung menjadi agenda resmi dan semua warga aktif
@@ -20,8 +20,11 @@ berjenis, `showApiError`, `confirm`, `showResultDialog`); dropdown jenis meluber
 | `flutter analyze`; `dart format --set-exit-if-changed lib test`; `flutter test` | No issues; 0 changed; **176 lulus** (termasuk 8 tes alur usulan/alert dan 4 tes aturan form) |
 | `node infra/scripts/check-repo.mjs` | OK (842 berkas) |
 
-Belum: staging (migration baru belum dijalankan di Neon staging), uji Android nyata, dan merge. PR #24 (M09)
-sudah merged (`54a6500`); PR #27 di-rebase di atasnya.
+PR #24 (M09) merged `54a6500`; **PR #27 merged `ed6fc53`** (16 Oktober). Staging di-deploy `ed6fc53` (migration
+additive `jobs` dan tabel usulan DONE, 0 GAGAL, 9 container sehat). Uji API live sintetis
+`infra/scripts/usulan-stage-acceptance.mjs`: **24 kasus, 50 assertion PASS**, notifikasi 42 dtk
+([LIVE_RESULTS.md](evidence/usulan/LIVE_RESULTS.md)). Belum: uji Android nyata (ditunda atas permintaan pemilik
+agar hemat RAM) dan push FCM (M10). Nama git global pemilik diperbaiki menjadi `morrispes5`.
 
 ## Penyesuaian shared hosting — 15 Oktober 2026
 
