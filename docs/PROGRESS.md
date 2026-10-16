@@ -13,15 +13,15 @@ dihapus); tolak persetujuan untuk tanggal lewat; lampiran TXT; tautan unduh bert
 jadwal bentrok untuk pengurus; notifikasi perbaikan ke pengurus; standar alert seluruh aplikasi (`showMessage`
 berjenis, `showApiError`, `confirm`, `showResultDialog`); dropdown jenis meluber 23 px di 360 dp diperbaiki.
 
-| Perintah (branch `cursor/usulan-kegiatan-90bf`, di-rebase ke main `f0a2466`) | Hasil |
+| Perintah (branch `cursor/usulan-kegiatan-90bf`, di-rebase ke main `54a6500` yang sudah memuat M09) | Hasil |
 | --- | --- |
-| `php artisan test` (Postgres 17.10 sementara, bukan Neon) | **253/253** (245 main + 8 `ActivityProposalTest`) |
+| `php artisan test` (Postgres 17.10 sementara, bukan Neon) | **268/268, 2636 assertion** (260 main + 8 `ActivityProposalTest`) |
 | `vendor/bin/pint --test`; `npx @redocly/cli@2 lint docs/openapi.yaml` | passed; valid |
-| `flutter analyze`; `dart format --set-exit-if-changed lib test`; `flutter test` | No issues; 0 changed; **169 lulus** (termasuk 8 tes alur usulan/alert dan 4 tes aturan form) |
-| `node infra/scripts/check-repo.mjs` | OK (818 berkas) |
+| `flutter analyze`; `dart format --set-exit-if-changed lib test`; `flutter test` | No issues; 0 changed; **176 lulus** (termasuk 8 tes alur usulan/alert dan 4 tes aturan form) |
+| `node infra/scripts/check-repo.mjs` | OK (842 berkas) |
 
-Belum: staging (migration baru belum dijalankan di Neon staging), uji Android nyata, dan merge. PR #24 (M09) dan
-PR #27 sama-sama mengubah `Present.php`/`warga_pages.dart`; yang di-merge kedua perlu rebase.
+Belum: staging (migration baru belum dijalankan di Neon staging), uji Android nyata, dan merge. PR #24 (M09)
+sudah merged (`54a6500`); PR #27 di-rebase di atasnya.
 
 ## Penyesuaian shared hosting — 15 Oktober 2026
 
