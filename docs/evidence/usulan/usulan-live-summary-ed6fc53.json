@@ -1,0 +1,434 @@
+{
+  "schema": "rt05-usulan-live-summary/v1",
+  "scope": "synthetic staging only",
+  "origin": "https://takeda-staging.morriz.tech",
+  "sourceSha": "ed6fc537a2a0daeccb0f14d0062f5904fece2b29",
+  "run": "Sintetis USULAN 3E1FC3",
+  "finishedAt": "2026-10-16T03:34:09.029Z",
+  "status": "passed",
+  "cases": 24,
+  "assertions": 50,
+  "details": [
+    {
+      "case": "U00-actors",
+      "routeTemplate": "POST /auth/mobile-login",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "admin pengurus, a/b aktif, p menunggu",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U01-pending-denied",
+      "routeTemplate": "POST /activity-proposals",
+      "httpStatus": 403,
+      "code": "FORBIDDEN",
+      "assertions": [
+        {
+          "name": "status 403",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U02-statement-required",
+      "routeTemplate": "POST /activity-proposals",
+      "httpStatus": 422,
+      "code": "VALIDATION_FAILED",
+      "assertions": [
+        {
+          "name": "status 422",
+          "result": "passed"
+        },
+        {
+          "name": "pesan pada field pernyataan",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U03-too-soon",
+      "routeTemplate": "POST /activity-proposals",
+      "httpStatus": 422,
+      "code": "VALIDATION_FAILED",
+      "assertions": [
+        {
+          "name": "status 422",
+          "result": "passed"
+        },
+        {
+          "name": "pesan 24 jam",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U04-html-as-pdf-415",
+      "routeTemplate": "POST /activity-proposals",
+      "httpStatus": 415,
+      "code": "UNSUPPORTED_MEDIA_TYPE",
+      "assertions": [
+        {
+          "name": "status 415",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U05-docx-415",
+      "routeTemplate": "POST /activity-proposals",
+      "httpStatus": 415,
+      "code": "UNSUPPORTED_MEDIA_TYPE",
+      "assertions": [
+        {
+          "name": "status 415",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U06-create-with-txt-and-pdf",
+      "routeTemplate": "POST /activity-proposals",
+      "httpStatus": 201,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 201",
+          "result": "passed"
+        },
+        {
+          "name": "diajukan v1 tanpa agenda",
+          "result": "passed"
+        },
+        {
+          "name": "field form tersimpan",
+          "result": "passed"
+        },
+        {
+          "name": "mime txt dan pdf",
+          "result": "passed"
+        },
+        {
+          "name": "URL dokumen tanpa nama berkas asli",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U07-other-resident-404",
+      "routeTemplate": "GET /activity-proposals/{id}",
+      "httpStatus": 404,
+      "code": "NOT_FOUND",
+      "assertions": [
+        {
+          "name": "status 404",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U08-other-resident-doc-link-404",
+      "routeTemplate": "POST /activity-proposals/{id}/documents/{doc}/link",
+      "httpStatus": 404,
+      "code": "NOT_FOUND",
+      "assertions": [
+        {
+          "name": "status 404",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U09-not-an-agenda-yet",
+      "routeTemplate": "GET /agendas",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "usulan tidak tampil sebagai agenda",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U10-admin-sees-proposer-and-clash-list",
+      "routeTemplate": "GET /activity-proposals/{id}",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "pengusul = a1",
+          "result": "passed"
+        },
+        {
+          "name": "agenda_bentrok berupa daftar",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U11-revision-needs-note",
+      "routeTemplate": "POST /admin/activity-proposals/{id}/status",
+      "httpStatus": 422,
+      "code": "DECISION_NOTE_REQUIRED",
+      "assertions": [
+        {
+          "name": "status 422",
+          "result": "passed"
+        },
+        {
+          "name": "code DECISION_NOTE_REQUIRED",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U12-revision",
+      "routeTemplate": "POST /admin/activity-proposals/{id}/status",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "perlu_revisi v2",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U13-owner-edit-stale-409",
+      "routeTemplate": "PATCH /activity-proposals/{id}",
+      "httpStatus": 409,
+      "code": "VERSION_CONFLICT",
+      "assertions": [
+        {
+          "name": "status 409",
+          "result": "passed"
+        },
+        {
+          "name": "code VERSION_CONFLICT",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U14-owner-resubmits",
+      "routeTemplate": "PATCH /activity-proposals/{id}",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "kembali diajukan v3",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U15-admin-signed-link",
+      "routeTemplate": "POST /activity-proposals/{id}/documents/{doc}/link",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "URL relatif bertanda tangan",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U16-signed-download-no-token",
+      "routeTemplate": "GET /api/v1/activity-proposals/documents/{doc}/download?expires=…&signature=…",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "attachment txt, nosniff, no-store",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U17-tampered-signature-403",
+      "routeTemplate": "GET /api/v1/activity-proposals/documents/{doc}/download?expires=…&signature=…",
+      "httpStatus": 403,
+      "code": "INVALID_SIGNATURE",
+      "assertions": [
+        {
+          "name": "status 403",
+          "result": "passed"
+        },
+        {
+          "name": "code INVALID_SIGNATURE",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U18-approve-creates-agenda",
+      "routeTemplate": "POST /admin/activity-proposals/{id}/status",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "disetujui dengan agenda_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U19-second-decision-409",
+      "routeTemplate": "POST /admin/activity-proposals/{id}/status",
+      "httpStatus": 409,
+      "code": "PROPOSAL_SCHEDULED",
+      "assertions": [
+        {
+          "name": "status 409",
+          "result": "passed"
+        },
+        {
+          "name": "code PROPOSAL_SCHEDULED",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U20-agenda-visible-to-residents",
+      "routeTemplate": "GET /agendas",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "tepat satu agenda dengan nama usulan",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U21-notifications",
+      "routeTemplate": "GET /notifications",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "warga lain menerima tepat 1 notifikasi agenda",
+          "result": "passed"
+        },
+        {
+          "name": "pengusul juga menerima agenda",
+          "result": "passed"
+        },
+        {
+          "name": "pengusul: disetujui 1 dan perlu revisi 1",
+          "result": "passed"
+        },
+        {
+          "name": "pengurus: usulan baru 1 dan diperbaiki 1",
+          "result": "passed"
+        },
+        {
+          "name": "warga lain tidak menerima notifikasi usulan/identitas",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U22-archive-test-agenda",
+      "routeTemplate": "POST /admin/agendas/{id}/archive",
+      "httpStatus": 204,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 204",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "U23-history-kept",
+      "routeTemplate": "GET /activity-proposals/{id}/history",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "diajukan, perlu_revisi, diajukan, disetujui",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "timing",
+      "inboxSeconds": 42,
+      "totalSeconds": 52
+    }
+  ]
+}
