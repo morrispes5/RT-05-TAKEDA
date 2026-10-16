@@ -1305,6 +1305,203 @@ paths:
                 $ref: "#/components/schemas/ReportHistoryEnvelope"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/activity-proposals:
+    get:
+      operationId: activityProposalsIndex
+      tags:
+        - Community
+      summary: Usulan kegiatan milik sendiri, atau seluruh usulan bagi pengurus
+      x-status: implemented
+      x-milestone: M10
+      description: Query opsional status (diajukan, ditinjau, perlu_revisi, disetujui, ditolak; nilai lain 422), page, per_page. Warga hanya melihat miliknya. Akun menunggu/nonaktif 403.
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: activityProposalsStore
+      tags:
+        - Community
+      summary: Warga mengajukan kegiatan (docs/USULAN_KEGIATAN.md)
+      x-status: implemented
+      x-milestone: M10
+      description: 'Multipart. Mulai paling cepat 24 jam dan paling lambat satu tahun; selesai wajib, setelah mulai, maksimal 12 jam; pernyataan penanggung jawab wajib (422 per field). Dokumen maks. 3 × 8 MB menurut isi berkas: PDF, TXT UTF-8 (maks. 1 MB), atau JPG/PNG/WebP (ditranskode JPEG tanpa EXIF); lainnya 415, terlalu besar 413. Usulan, riwayat, audit, dan outbox (notifikasi pengurus) satu transaksi.'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ActivityProposalInput"
+      responses:
+        "201":
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityProposalEnvelope"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/activity-proposals/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: activityProposalsShow
+      tags:
+        - Community
+      summary: Detail usulan bagi pengusul atau pengurus
+      x-status: implemented
+      x-milestone: M10
+      description: Warga lain 404. Pengurus juga menerima agenda_bentrok (agenda aktif yang waktunya beririsan; peringatan, bukan pemblokir).
+      responses:
+        "200":
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityProposalEnvelope"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: activityProposalsUpdate
+      tags:
+        - Community
+      summary: Pengusul memperbaiki usulan yang diajukan atau perlu revisi
+      x-status: implemented
+      x-milestone: M10
+      description: Aturan sama dengan create ditambah versi. Bukan pengusul atau status lain 403 PROPOSAL_LOCKED; versi basi 409 VERSION_CONFLICT. Dari perlu_revisi kembali ke diajukan dan pengurus diberi tahu. Unggah dokumen tambahan memakai POST multipart dengan _method=PATCH.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/ActivityProposalInput"
+                - type: object
+                  required: [versi]
+                  properties:
+                    versi: {type: integer}
+      responses:
+        "200":
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityProposalEnvelope"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/activity-proposals/{id}/documents/{documentId}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - name: documentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: activityProposalsDocument
+      tags:
+        - Community
+      summary: Unduh dokumen pendukung privat
+      x-status: implemented
+      x-milestone: M10
+      description: Hanya pengusul dan pengurus; lainnya 404. Attachment, nosniff, no-store; nama berkas dokumen-N.pdf|txt|jpg.
+      responses:
+        "200":
+          description: Berkas dilampirkan, bukan ditampilkan inline.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/activity-proposals/{id}/documents/{documentId}/link:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - name: documentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: activityProposalsDocumentLink
+      tags:
+        - Community
+      summary: Tautan unduh dokumen bertanda tangan (5 menit)
+      x-status: implemented
+      x-milestone: M10
+      description: Hanya pengusul dan pengurus (lainnya 404). Mengembalikan URL relatif bertanda tangan untuk dibuka di browser tanpa token; kedaluwarsa 5 menit.
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/activity-proposals/documents/{documentId}/download:
+    parameters:
+      - name: documentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: activityProposalsDocumentSigned
+      tags:
+        - Community
+      summary: Unduh dokumen lewat tautan bertanda tangan
+      x-status: implemented
+      x-milestone: M10
+      security: []
+      description: Query expires dan signature dari endpoint link. Tanda tangan salah atau kedaluwarsa 403 INVALID_SIGNATURE. Attachment, nosniff, no-store.
+      responses:
+        "200":
+          description: Berkas dilampirkan.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/activity-proposals/{id}/history:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: activityProposalsHistory
+      tags:
+        - Community
+      summary: Riwayat keputusan usulan
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/activity-proposals/{id}/status:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: activityProposalsStatus
+      tags:
+        - Community
+      summary: Pengurus meninjau, meminta revisi, menyetujui, atau menolak
+      x-status: implemented
+      x-milestone: M10
+      description: 'diajukan → ditinjau|perlu_revisi|disetujui|ditolak; ditinjau → perlu_revisi|disetujui|ditolak. Catatan wajib untuk perlu_revisi dan ditolak (422 DECISION_NOTE_REQUIRED). disetujui dalam transaksi yang sama membuat tepat satu agenda resmi (agenda_id) dan outbox agenda.dibuat ke semua warga aktif; waktu mulai sudah lewat 422 PROPOSAL_DATE_PASSED. Sesudah menjadi agenda 409 PROPOSAL_SCHEDULED. Versi basi 409 VERSION_CONFLICT.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, expected_version]
+              properties:
+                status: {type: string, enum: [ditinjau, perlu_revisi, disetujui, ditolak]}
+                catatan: {type: [string, 'null'], maxLength: 2000}
+                expected_version: {type: integer}
+      responses:
+        "200":
+          description: Respons berhasil.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityProposalEnvelope"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/auth/additional-account-status:
     get:
       operationId: authAdditionalAccountStatus
@@ -2777,6 +2974,77 @@ components:
       required: [data, meta]
       properties:
         data: {$ref: '#/components/schemas/Complaint'}
+        meta: {$ref: '#/components/schemas/Meta'}
+    ActivityProposalInput:
+      type: object
+      required: [jenis, nama, deskripsi, lokasi, mulai_at, selesai_at, pernyataan]
+      properties:
+        jenis: {type: string, enum: [olahraga, kerja_bakti, keagamaan, sosial, rapat, lainnya]}
+        nama: {type: string, minLength: 5, maxLength: 160}
+        deskripsi: {type: string, minLength: 20, maxLength: 5000}
+        lokasi: {type: string, minLength: 3, maxLength: 200}
+        mulai_at: {type: string, format: date-time, description: Paling cepat 24 jam dari sekarang.}
+        selesai_at: {type: string, format: date-time, description: 'Setelah mulai, maksimal 12 jam.'}
+        perkiraan_peserta: {type: [integer, 'null'], minimum: 1, maximum: 1000}
+        kebutuhan: {type: [string, 'null'], maxLength: 1000}
+        pernyataan: {type: boolean, description: Wajib true (pernyataan penanggung jawab).}
+        'dokumen[]':
+          type: array
+          maxItems: 3
+          items: {type: string, format: binary}
+    ActivityProposal:
+      type: object
+      additionalProperties: false
+      required: [id, jenis, nama, deskripsi, lokasi, mulai_at, selesai_at, perkiraan_peserta, kebutuhan, status, versi, agenda_id, milik_saya, pengusul, dokumen, created_at]
+      properties:
+        id: {type: string, format: uuid}
+        jenis: {type: string, enum: [olahraga, kerja_bakti, keagamaan, sosial, rapat, lainnya]}
+        nama: {type: string}
+        deskripsi: {type: string}
+        lokasi: {type: string}
+        mulai_at: {type: [string, 'null'], format: date-time}
+        selesai_at: {type: [string, 'null'], format: date-time}
+        perkiraan_peserta: {type: [integer, 'null']}
+        kebutuhan: {type: [string, 'null']}
+        status: {type: string, enum: [diajukan, ditinjau, perlu_revisi, disetujui, ditolak]}
+        versi: {type: integer}
+        agenda_id: {type: [string, 'null'], format: uuid, description: Terisi sejak disetujui.}
+        milik_saya: {type: boolean}
+        pengusul:
+          type: [object, 'null']
+          properties:
+            id: {type: string, format: uuid}
+            nama: {type: [string, 'null']}
+            rumah: {type: [string, 'null'], description: Kode rumah snapshot pengajuan.}
+        dokumen:
+          type: array
+          items:
+            type: object
+            required: [id, mime, bytes, urutan, url]
+            properties:
+              id: {type: string, format: uuid}
+              mime: {type: string, enum: [application/pdf, text/plain, image/jpeg]}
+              bytes: {type: integer}
+              urutan: {type: integer}
+              url: {type: string}
+        agenda_bentrok:
+          type: array
+          description: Hanya untuk pengurus pada detail.
+          items:
+            type: object
+            properties:
+              id: {type: string, format: uuid}
+              nama: {type: string}
+              lokasi: {type: string}
+              mulai_at: {type: [string, 'null'], format: date-time}
+              selesai_at: {type: [string, 'null'], format: date-time}
+        created_at: {type: [string, 'null'], format: date-time}
+    ActivityProposalEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data: {$ref: '#/components/schemas/ActivityProposal'}
         meta: {$ref: '#/components/schemas/Meta'}
     AspirationCreateInput:
       type: object

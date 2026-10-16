@@ -61,7 +61,7 @@ Mobile tidak memakai cookie browser/CSRF flow. CMS tidak menyimpan bearer token 
 | Residents | Rumah, keluarga, anggota, occupancy, link akun |
 | Complaints | Pengaduan, status, foto, privacy serialization |
 | Aspirations | Aspirasi dan histori |
-| Community | Agenda, pengumuman, notifikasi |
+| Community | Agenda (jadwal resmi), usulan kegiatan (pengajuan dan keputusan), pengumuman, notifikasi |
 | Content | Artikel, album, fasilitas, draft/publish |
 | Finance | Tarif, tagihan, pembayaran, kas, reversal |
 | Operations | Audit, outbox, exports, health |
@@ -81,6 +81,8 @@ Public content cache dipurge setelah publish/arsip; TTL pendek menjadi pemulihan
 V1: volume Docker untuk media pada VPS, melalui Laravel filesystem adapter, dengan backup terenkripsi di luar VPS. Tidak membutuhkan MinIO/S3 untuk mulai.
 
 Public media hanya hasil publikasi; private media pengaduan/aspirasi/ekspor dilayani API setelah policy. Media diunggah ke staging private, diproses worker, baru menjadi ready. File binary tidak disimpan dalam kolom Postgres.
+
+Dokumen usulan kegiatan juga privat, tetapi ditranskode di request yang sama (bukan antrean): pengajuan tidak tersimpan bila berkas gagal diperiksa. PDF dicek penanda berkasnya; gambar menjadi JPEG tanpa EXIF. Kunci acak di disk `local`. Agenda tidak menyimpan salinan dokumen itu.
 
 Storage key acak; tidak menggunakan nama/email/alamat pelapor. Metadata EXIF/GPS dibuang saat transcoding. Kebijakan volume, permission, retention, dan restore ada di DEPLOYMENT.md.
 

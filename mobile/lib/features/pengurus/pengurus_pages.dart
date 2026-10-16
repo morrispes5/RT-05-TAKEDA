@@ -13,6 +13,7 @@ import '../household/admin_census.dart';
 import '../household/admin_links.dart';
 import '../household/census_providers.dart';
 import '../household/paged_list.dart';
+import '../warga/activity_proposals.dart';
 import '../warga/providers.dart';
 import '../warga/warga_pages.dart';
 
@@ -104,6 +105,16 @@ class AdminHomePage extends ConsumerWidget {
                 icon: Icons.point_of_sale,
                 onPressed: () async {
                   await Navigator.push(context, MaterialPageRoute(builder: (_) => const RecordPaymentPage()));
+                  ref.invalidate(dashboardProvider);
+                },
+              ),
+              const SizedBox(height: 10),
+              BusyButton(
+                label: 'Tinjau usulan kegiatan',
+                icon: Icons.event_note_outlined,
+                outlined: true,
+                onPressed: () async {
+                  await Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivityProposalListPage(admin: true)));
                   ref.invalidate(dashboardProvider);
                 },
               ),
@@ -903,9 +914,16 @@ class MoreAdminPage extends ConsumerWidget {
           children: [
             ListTile(
               contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.fact_check_outlined, color: Brand.navy),
+              title: const Text('Usulan kegiatan'),
+              subtitle: const Text('Tinjau usulan warga. Hanya yang disetujui masuk agenda resmi.'),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivityProposalListPage(admin: true))),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.event_note_outlined, color: Brand.navy),
               title: const Text('Buat agenda'),
-              subtitle: const Text('Warga menerima notifikasi dan pengingat H-1'),
+              subtitle: const Text('Jadwal resmi langsung dari pengurus. Warga menerima notifikasi dan pengingat H-1'),
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AgendaFormPage())),
             ),
             ListTile(
