@@ -24,3 +24,7 @@ key.properties
 !/infra/docker/postgres/init/*.sql
 *.sql.gz
 *.dump
+
+# Kredensial Firebase/FCM (M10) tidak pernah di Git.
+*service-account*.json
+firebase-adminsdk*.json

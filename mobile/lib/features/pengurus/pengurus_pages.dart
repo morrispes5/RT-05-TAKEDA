@@ -13,6 +13,7 @@ import '../household/admin_census.dart';
 import '../household/admin_links.dart';
 import '../household/census_providers.dart';
 import '../household/paged_list.dart';
+import '../warga/activity_proposal_actions.dart' show jakartaWallToUtc;
 import '../warga/activity_proposals.dart';
 import '../warga/providers.dart';
 import '../warga/warga_pages.dart';
@@ -922,15 +923,9 @@ class MoreAdminPage extends ConsumerWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.event_note_outlined, color: Brand.navy),
-              title: const Text('Buat agenda'),
-              subtitle: const Text('Jadwal resmi langsung dari pengurus. Warga menerima notifikasi dan pengingat H-1'),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AgendaFormPage())),
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.campaign_outlined, color: Brand.navy),
-              title: const Text('Terbitkan pengumuman'),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnouncementFormPage())),
+              title: const Text('Agenda & pengumuman'),
+              subtitle: const Text('Buat, ubah, atau arsipkan. Warga menerima notifikasi dan pengingat H-1'),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityAdminPage())),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
@@ -945,127 +940,378 @@ class MoreAdminPage extends ConsumerWidget {
   );
 }
 
+/// Kelola agenda & pengumuman (M10): daftar aktif, buat, ubah, arsipkan. Arsip menghilangkan dari
+/// warga tetapi riwayat dan notifikasi lama tetap; tautan notifikasi ke item terarsip aman (404).
+class CommunityAdminPage extends ConsumerWidget {
+  const CommunityAdminPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final agendas = ref.watch(agendasProvider);
+    final news = ref.watch(announcementsProvider);
+    Future<void> archive(String path, String what, String name, void Function() refresh) async {
+      final ok = await confirm(
+        context,
+        title: 'Arsipkan $what?',
+        message: '"$name" tidak lagi tampil untuk warga. Riwayat dan notifikasi lama tetap tersimpan.',
+        yes: 'Arsipkan',
+        danger: true,
+        icon: Icons.archive_outlined,
+      );
+      if (!ok) return;
+      try {
+        await ref.read(apiProvider).post(path);
+        refresh();
+        if (context.mounted) showMessage(context, '${what[0].toUpperCase()}${what.substring(1)} diarsipkan.');
+      } on ApiException catch (e) {
+        if (context.mounted) showApiError(context, e);
+      }
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Agenda & pengumuman')),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(agendasProvider);
+          ref.invalidate(announcementsProvider);
+        },
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            BusyButton(
+              label: 'Buat agenda',
+              icon: Icons.event_note_outlined,
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AgendaFormPage())),
+            ),
+            const SizedBox(height: 8),
+            BusyButton(
+              label: 'Terbitkan pengumuman',
+              icon: Icons.campaign_outlined,
+              outlined: true,
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnnouncementFormPage())),
+            ),
+            const SizedBox(height: 20),
+            Text('Agenda mendatang', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            AsyncView(
+              value: agendas,
+              onRetry: () => ref.invalidate(agendasProvider),
+              builder: (list) => list.isEmpty
+                  ? const EmptyState(icon: Icons.event_busy_outlined, title: 'Belum ada agenda mendatang')
+                  : Column(
+                      children: [
+                        for (final a in list)
+                          Card(
+                            child: ListTile(
+                              key: ValueKey('admin-agenda-${a['id']}'),
+                              title: Text('${a['nama']}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                              subtitle: Text('${tanggal(parseTime(a['mulai_at']), jam: true, hari: true)} WIB\n${a['lokasi']}'),
+                              isThreeLine: true,
+                              trailing: PopupMenuButton<String>(
+                                tooltip: 'Aksi agenda',
+                                onSelected: (v) => v == 'ubah'
+                                    ? Navigator.push(context, MaterialPageRoute(builder: (_) => AgendaFormPage(initial: a)))
+                                    : archive('/admin/agendas/${a['id']}/archive', 'agenda', '${a['nama']}', () => ref.invalidate(agendasProvider)),
+                                itemBuilder: (_) => const [
+                                  PopupMenuItem(value: 'ubah', child: Text('Ubah')),
+                                  PopupMenuItem(value: 'arsip', child: Text('Arsipkan')),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+            ),
+            const SizedBox(height: 20),
+            Text('Pengumuman', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            AsyncView(
+              value: news,
+              onRetry: () => ref.invalidate(announcementsProvider),
+              builder: (list) => list.isEmpty
+                  ? const EmptyState(icon: Icons.campaign_outlined, title: 'Belum ada pengumuman')
+                  : Column(
+                      children: [
+                        for (final n in list)
+                          Card(
+                            child: ListTile(
+                              key: ValueKey('admin-pengumuman-${n['id']}'),
+                              title: Text('${n['judul']}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                              subtitle: Text(tanggal(parseTime(n['published_at']), jam: true)),
+                              trailing: PopupMenuButton<String>(
+                                tooltip: 'Aksi pengumuman',
+                                onSelected: (v) => v == 'ubah'
+                                    ? Navigator.push(context, MaterialPageRoute(builder: (_) => AnnouncementFormPage(initial: n)))
+                                    : archive(
+                                        '/admin/announcements/${n['id']}/archive',
+                                        'pengumuman',
+                                        '${n['judul']}',
+                                        () => ref.invalidate(announcementsProvider),
+                                      ),
+                                itemBuilder: (_) => const [
+                                  PopupMenuItem(value: 'ubah', child: Text('Ubah')),
+                                  PopupMenuItem(value: 'arsip', child: Text('Arsipkan')),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Validasi lokal agenda (server tetap memvalidasi). [nowJakarta] = jam dinding WIB saat ini.
+Map<String, String> validateAgenda({
+  required String nama,
+  required String lokasi,
+  required String deskripsi,
+  required DateTime mulai,
+  DateTime? selesai,
+  required DateTime nowJakarta,
+  bool requireFuture = true,
+}) => {
+  if (nama.trim().length < 3) 'nama': 'Nama kegiatan minimal 3 karakter.',
+  if (lokasi.trim().length < 3) 'lokasi': 'Lokasi minimal 3 karakter.',
+  if (deskripsi.trim().isEmpty) 'deskripsi': 'Deskripsi wajib diisi.',
+  if (requireFuture && !mulai.isAfter(nowJakarta)) 'mulai_at': 'Waktu mulai harus setelah saat ini.',
+  if (selesai != null && !selesai.isAfter(mulai)) 'selesai_at': 'Waktu selesai harus setelah waktu mulai.',
+};
+
 class AgendaFormPage extends ConsumerStatefulWidget {
-  const AgendaFormPage({super.key});
+  const AgendaFormPage({super.key, this.initial, this.now});
+  final Json? initial;
+
+  /// Jam dinding WIB saat ini; dapat diinjeksi untuk tes.
+  final DateTime Function()? now;
+
   @override
   ConsumerState<AgendaFormPage> createState() => _AgendaFormPageState();
 }
 
 class _AgendaFormPageState extends ConsumerState<AgendaFormPage> {
-  final _nama = TextEditingController();
-  final _lokasi = TextEditingController();
-  final _desk = TextEditingController();
-  DateTime _start = toJakarta(DateTime.now().toUtc()).add(const Duration(days: 1));
+  late final _nama = TextEditingController(text: '${widget.initial?['nama'] ?? ''}');
+  late final _lokasi = TextEditingController(text: '${widget.initial?['lokasi'] ?? ''}');
+  late final _desk = TextEditingController(text: '${widget.initial?['deskripsi'] ?? ''}');
+  late DateTime _start;
+  DateTime? _end;
+  Map<String, String> _errors = {};
+
+  DateTime _nowJakarta() => widget.now?.call() ?? toJakarta(DateTime.now().toUtc());
+  bool get _editing => widget.initial != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final s = parseTime(widget.initial?['mulai_at']);
+    final e = parseTime(widget.initial?['selesai_at']);
+    final now = _nowJakarta();
+    _start = s == null ? DateTime(now.year, now.month, now.day + 1, 8) : toJakarta(s);
+    _end = e == null ? null : toJakarta(e);
+  }
+
+  String _fmt(DateTime t) => '${t.day}/${t.month}/${t.year} ${t.hour.toString().padLeft(2, '0')}.${t.minute.toString().padLeft(2, '0')} WIB';
+
+  Future<DateTime?> _pick(DateTime initial) async {
+    final now = _nowJakarta();
+    final d = await showDatePicker(
+      context: context,
+      initialDate: initial.isBefore(now) ? now : initial,
+      firstDate: DateTime(now.year, now.month, now.day),
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (d == null || !mounted) return null;
+    final t = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(initial));
+    return DateTime(d.year, d.month, d.day, t?.hour ?? initial.hour, t?.minute ?? initial.minute);
+  }
+
+  Future<void> _submit() async {
+    final moved = !_editing || toJakarta(parseTime(widget.initial!['mulai_at'])!) != _start;
+    final errors = validateAgenda(
+      nama: _nama.text,
+      lokasi: _lokasi.text,
+      deskripsi: _desk.text,
+      mulai: _start,
+      selesai: _end,
+      nowJakarta: _nowJakarta(),
+      requireFuture: moved,
+    );
+    setState(() => _errors = errors);
+    if (errors.isNotEmpty) {
+      showMessage(context, 'Periksa isian yang ditandai.', kind: AlertKind.warning, title: 'Belum lengkap');
+      return;
+    }
+    final ok = await confirm(
+      context,
+      title: _editing ? 'Simpan perubahan agenda?' : 'Terbitkan agenda?',
+      message: _editing
+          ? '${_nama.text.trim()} — ${_fmt(_start)}. Bila waktu atau lokasi berubah, semua warga diberi tahu.'
+          : '${_nama.text.trim()} — ${_fmt(_start)} di ${_lokasi.text.trim()}. Semua warga aktif menerima notifikasi dan pengingat H-1.',
+      yes: _editing ? 'Simpan' : 'Terbitkan',
+      icon: Icons.event_available,
+    );
+    if (!ok || !mounted) return;
+    // Input dipahami sebagai jam dinding WIB, dikirim UTC dengan zona eksplisit (Z).
+    final body = {
+      'nama': _nama.text.trim(),
+      'lokasi': _lokasi.text.trim(),
+      'deskripsi': _desk.text.trim(),
+      'mulai_at': jakartaWallToUtc(_start).toIso8601String(),
+      'selesai_at': _end == null ? null : jakartaWallToUtc(_end!).toIso8601String(),
+    };
+    try {
+      final api = ref.read(apiProvider);
+      _editing ? await api.put('/admin/agendas/${widget.initial!['id']}', data: body) : await api.post('/admin/agendas', data: body);
+      ref.invalidate(agendasProvider);
+      if (!mounted) return;
+      await showResultDialog(
+        context,
+        title: _editing ? 'Agenda diperbarui' : 'Agenda diterbitkan',
+        message: _editing ? 'Perubahan tersimpan.' : 'Warga menerima notifikasi sekarang dan pengingat sehari sebelum kegiatan.',
+      );
+      if (mounted) Navigator.pop(context, true);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _errors = {for (final f in e.fields.entries) f.key: f.value.first});
+      showApiError(context, e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Agenda baru')),
+    appBar: AppBar(title: Text(_editing ? 'Ubah agenda' : 'Agenda baru')),
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
         TextField(
+          key: const ValueKey('agenda-nama'),
           controller: _nama,
-          decoration: const InputDecoration(labelText: 'Nama kegiatan'),
+          maxLength: 160,
+          decoration: InputDecoration(labelText: 'Nama kegiatan', errorText: _errors['nama']),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 8),
         TextField(
+          key: const ValueKey('agenda-lokasi'),
           controller: _lokasi,
-          decoration: const InputDecoration(labelText: 'Lokasi'),
+          maxLength: 200,
+          decoration: InputDecoration(labelText: 'Lokasi', errorText: _errors['lokasi']),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 8),
         ListTile(
+          key: const ValueKey('agenda-mulai'),
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.schedule),
-          title: Text(
-            'Mulai: ${_start.day}/${_start.month}/${_start.year} ${_start.hour.toString().padLeft(2, '0')}.${_start.minute.toString().padLeft(2, '0')} WIB',
-          ),
+          title: Text('Mulai: ${_fmt(_start)}'),
+          subtitle: _errors['mulai_at'] == null ? null : Text(_errors['mulai_at']!, style: const TextStyle(color: Brand.danger)),
           onTap: () async {
-            final d = await showDatePicker(
-              context: context,
-              initialDate: _start,
-              firstDate: DateTime.now(),
-              lastDate: DateTime.now().add(const Duration(days: 365)),
-            );
-            if (d == null || !context.mounted) return;
-            final t = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(_start));
-            setState(() => _start = DateTime(d.year, d.month, d.day, t?.hour ?? 8, t?.minute ?? 0));
+            final t = await _pick(_start);
+            if (t != null) setState(() => _start = t);
           },
         ),
+        ListTile(
+          key: const ValueKey('agenda-selesai'),
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.timer_off_outlined),
+          title: Text(_end == null ? 'Selesai: tidak ditentukan (opsional)' : 'Selesai: ${_fmt(_end!)}'),
+          subtitle: _errors['selesai_at'] == null ? null : Text(_errors['selesai_at']!, style: const TextStyle(color: Brand.danger)),
+          trailing: _end == null
+              ? null
+              : IconButton(tooltip: 'Hapus waktu selesai', icon: const Icon(Icons.clear), onPressed: () => setState(() => _end = null)),
+          onTap: () async {
+            final t = await _pick(_end ?? _start.add(const Duration(hours: 2)));
+            if (t != null) setState(() => _end = t);
+          },
+        ),
+        const SizedBox(height: 8),
         TextField(
+          key: const ValueKey('agenda-deskripsi'),
           controller: _desk,
           maxLines: 4,
-          decoration: const InputDecoration(labelText: 'Deskripsi'),
+          maxLength: 5000,
+          decoration: InputDecoration(labelText: 'Deskripsi', alignLabelWithHint: true, errorText: _errors['deskripsi']),
         ),
-        const SizedBox(height: 20),
-        BusyButton(
-          label: 'Terbitkan agenda',
-          onPressed: () async {
-            // Input dipahami sebagai Asia/Jakarta (UTC+7), dikirim sebagai UTC.
-            final utc = DateTime.utc(_start.year, _start.month, _start.day, _start.hour, _start.minute).subtract(const Duration(hours: 7));
-            try {
-              await ref
-                  .read(apiProvider)
-                  .post(
-                    '/admin/agendas',
-                    data: {'nama': _nama.text.trim(), 'lokasi': _lokasi.text.trim(), 'deskripsi': _desk.text.trim(), 'mulai_at': utc.toIso8601String()},
-                  );
-              ref.invalidate(agendasProvider);
-              if (context.mounted) {
-                showMessage(context, 'Agenda diterbitkan; warga diberi tahu.');
-                Navigator.pop(context);
-              }
-            } on ApiException catch (e) {
-              if (context.mounted) showMessage(context, e.display, error: true);
-            }
-          },
-        ),
+        const SizedBox(height: 12),
+        BusyButton(label: _editing ? 'Simpan perubahan' : 'Terbitkan agenda', icon: Icons.send_outlined, onPressed: _submit),
       ],
     ),
   );
 }
 
 class AnnouncementFormPage extends ConsumerStatefulWidget {
-  const AnnouncementFormPage({super.key});
+  const AnnouncementFormPage({super.key, this.initial});
+  final Json? initial;
   @override
   ConsumerState<AnnouncementFormPage> createState() => _AnnouncementFormPageState();
 }
 
 class _AnnouncementFormPageState extends ConsumerState<AnnouncementFormPage> {
-  final _judul = TextEditingController();
-  final _isi = TextEditingController();
+  late final _judul = TextEditingController(text: '${widget.initial?['judul'] ?? ''}');
+  late final _isi = TextEditingController(text: '${widget.initial?['isi'] ?? ''}');
+  Map<String, String> _errors = {};
+  bool get _editing => widget.initial != null;
+
+  Future<void> _submit() async {
+    final errors = {if (_judul.text.trim().isEmpty) 'judul': 'Judul wajib diisi.', if (_isi.text.trim().isEmpty) 'isi': 'Isi pengumuman wajib diisi.'};
+    setState(() => _errors = errors);
+    if (errors.isNotEmpty) {
+      showMessage(context, 'Periksa isian yang ditandai.', kind: AlertKind.warning, title: 'Belum lengkap');
+      return;
+    }
+    final ok = await confirm(
+      context,
+      title: _editing ? 'Simpan perubahan pengumuman?' : 'Terbitkan pengumuman?',
+      message: _editing
+          ? 'Perubahan langsung tampil untuk warga. Notifikasi tidak dikirim ulang.'
+          : '"${_judul.text.trim()}" tampil untuk warga dan dikirim sebagai notifikasi ke semua warga aktif.',
+      yes: _editing ? 'Simpan' : 'Terbitkan',
+      icon: Icons.campaign_outlined,
+    );
+    if (!ok || !mounted) return;
+    final body = {'judul': _judul.text.trim(), 'isi': _isi.text.trim()};
+    try {
+      final api = ref.read(apiProvider);
+      _editing ? await api.put('/admin/announcements/${widget.initial!['id']}', data: body) : await api.post('/admin/announcements', data: body);
+      ref.invalidate(announcementsProvider);
+      if (!mounted) return;
+      await showResultDialog(
+        context,
+        title: _editing ? 'Pengumuman diperbarui' : 'Pengumuman diterbitkan',
+        message: _editing ? 'Perubahan tersimpan.' : 'Warga menerima notifikasi sekarang.',
+      );
+      if (mounted) Navigator.pop(context, true);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _errors = {for (final f in e.fields.entries) f.key: f.value.first});
+      showApiError(context, e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Pengumuman baru')),
+    appBar: AppBar(title: Text(_editing ? 'Ubah pengumuman' : 'Pengumuman baru')),
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
         TextField(
+          key: const ValueKey('pengumuman-judul'),
           controller: _judul,
-          decoration: const InputDecoration(labelText: 'Judul'),
+          maxLength: 160,
+          decoration: InputDecoration(labelText: 'Judul', errorText: _errors['judul']),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 8),
         TextField(
+          key: const ValueKey('pengumuman-isi'),
           controller: _isi,
           maxLines: 8,
-          decoration: const InputDecoration(labelText: 'Isi pengumuman', alignLabelWithHint: true),
+          maxLength: 10000,
+          decoration: InputDecoration(labelText: 'Isi pengumuman', alignLabelWithHint: true, errorText: _errors['isi']),
         ),
-        const SizedBox(height: 20),
-        BusyButton(
-          label: 'Terbitkan',
-          onPressed: () async {
-            try {
-              await ref.read(apiProvider).post('/admin/announcements', data: {'judul': _judul.text.trim(), 'isi': _isi.text.trim()});
-              ref.invalidate(announcementsProvider);
-              if (context.mounted) {
-                showMessage(context, 'Pengumuman diterbitkan.');
-                Navigator.pop(context);
-              }
-            } on ApiException catch (e) {
-              if (context.mounted) showMessage(context, e.display, error: true);
-            }
-          },
-        ),
+        const SizedBox(height: 12),
+        BusyButton(label: _editing ? 'Simpan perubahan' : 'Terbitkan', icon: Icons.send_outlined, onPressed: _submit),
       ],
     ),
   );

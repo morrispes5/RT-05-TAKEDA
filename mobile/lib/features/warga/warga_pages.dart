@@ -15,6 +15,7 @@ import '../auth/account_access.dart';
 import '../household/family_actions.dart' show conflictKeptMessage, staleConflict;
 import '../household/family_page.dart';
 import 'activity_proposals.dart';
+import 'notification_center.dart';
 import 'providers.dart';
 import 'report_actions.dart';
 
@@ -1216,9 +1217,20 @@ class NotificationsPage extends ConsumerWidget {
             tooltip: 'Tandai semua dibaca',
             icon: const Icon(Icons.done_all),
             onPressed: () async {
-              await ref.read(apiProvider).post('/notifications/read-all');
-              ref.invalidate(notificationsProvider);
+              try {
+                final r = await ref.read(apiProvider).post('/notifications/read-all');
+                ref.invalidate(notificationsProvider);
+                final n = (r is Map ? r['ditandai'] : null) ?? 0;
+                if (context.mounted) showMessage(context, n == 0 ? 'Semua notifikasi sudah dibaca.' : '$n notifikasi ditandai dibaca.');
+              } on ApiException catch (e) {
+                if (context.mounted) showApiError(context, e);
+              }
             },
+          ),
+          IconButton(
+            tooltip: 'Pengaturan notifikasi',
+            icon: const Icon(Icons.tune),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationSettingsPage())),
           ),
         ],
       ),
@@ -1259,28 +1271,17 @@ class NotificationsPage extends ConsumerWidget {
                       isThreeLine: true,
                       onTap: () async {
                         if (n['dibaca_at'] == null) {
-                          await ref.read(apiProvider).patch('/notifications/${n['id']}/read');
+                          try {
+                            await ref.read(apiProvider).patch('/notifications/${n['id']}/read');
+                          } on ApiException {
+                            // Status baca gagal tersimpan tidak menghalangi membuka detail.
+                          }
                           ref.invalidate(notificationsProvider);
                         }
-                        final refType = (n['referensi'] as Map?)?['tipe'];
-                        final refId = (n['referensi'] as Map?)?['id'];
-                        if (!context.mounted || refId == null) return;
-                        // Detail dimuat ulang dari API (policy server), bukan dari payload notifikasi.
-                        if (refType == 'pengaduan' || refType == 'aspirasi') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ReportDetailPage(aspirasi: refType == 'aspirasi', id: '$refId', admin: ref.read(sessionProvider).pengurus),
-                            ),
-                          );
-                        } else if (refType == 'usulan_kegiatan' || n['jenis'] == 'usulan') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ActivityProposalDetailPage(id: '$refId', admin: ref.read(sessionProvider).pengurus),
-                            ),
-                          );
-                        }
+                        if (!context.mounted) return;
+                        // Detail dimuat ulang dari API (policy server), bukan dari isi notifikasi.
+                        final r = n['referensi'] as Map?;
+                        openReference(context, type: r?['tipe'] as String?, id: r?['id'] as String?, admin: ref.read(sessionProvider).pengurus);
                       },
                     ),
                   ),
@@ -1342,6 +1343,17 @@ class AccountPage extends ConsumerWidget {
           const SizedBox(height: 16),
           const FamilyPanel(),
         ],
+        const SizedBox(height: 16),
+        SectionCard(
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.notifications_outlined, color: Brand.navy),
+            title: const Text('Pengaturan notifikasi'),
+            subtitle: const Text('Izin push di HP ini dan jenis yang dikirim'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationSettingsPage())),
+          ),
+        ),
         const SizedBox(height: 16),
         const _AccountSecurity(),
         const SizedBox(height: 16),
