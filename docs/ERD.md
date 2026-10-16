@@ -66,7 +66,7 @@ dipertahankan untuk image M06 dan diperbarui dalam transaksi yang sama dengan hi
 | riwayat_aspirasi (M09, nama aktual) | id, aspirasi_id, aktor_id, status_dari, status_ke, catatan, created_at; indeks (aspirasi_id, created_at) |
 | aspiration_status_events | id, aspiration_id, from_status, to_status, note, actor_id, created_at |
 | agendas | id, title, description, starts_at, ends_at, location, status, created_by, archived_at |
-| usulan_kegiatan | pengajuan warga; agenda_id unik nullable hanya setelah disetujui dan dijadwalkan. Bukan jadwal kedua |
+| usulan_kegiatan | pengajuan warga; agenda_id unik nullable, terisi saat disetujui. Bukan jadwal kedua |
 | riwayat_usulan_kegiatan | status_dari/status_ke, catatan keputusan, aktor |
 | dokumen_usulan | storage_key acak unik, mime, bytes, urutan; tanpa nama berkas asli |
 | announcements | id, title, body, status, published_at, created_by, version, archived_at |
@@ -88,12 +88,12 @@ JSON article payload berstruktur title/category/summary/intro/sections/source/co
 
 | Tabel | Kolom dan constraint |
 | --- | --- |
-| usulan_kegiatan | pengusul_id, rumah_id nullable, agenda_id nullable unik, nama, deskripsi, lokasi, mulai_at, selesai_at nullable, status, versi; selesai ≥ mulai; status diajukan/ditinjau/perlu_revisi/disetujui/ditolak |
+| usulan_kegiatan | pengusul_id, rumah_id nullable (snapshot), agenda_id nullable unik, jenis (CHECK olahraga/kerja_bakti/keagamaan/sosial/rapat/lainnya), nama, deskripsi, lokasi, mulai_at, selesai_at, perkiraan_peserta nullable (1–1000), kebutuhan nullable, pernyataan_at, status, versi; selesai ≥ mulai; status diajukan/ditinjau/perlu_revisi/disetujui/ditolak |
 | riwayat_usulan_kegiatan | usulan_kegiatan_id, aktor_id, status_dari nullable, status_ke, catatan nullable |
-| dokumen_usulan | usulan_kegiatan_id, storage_key unik, mime, bytes, urutan; unik per usulan dan urutan |
+| dokumen_usulan | usulan_kegiatan_id, storage_key unik, mime (application/pdf, text/plain, image/jpeg), bytes, urutan; unik per usulan dan urutan |
 | notifikasi | + usulan_kegiatan_id nullable; jenis bertambah `usulan`; tepat satu konteks, termasuk usulan |
 
-`agenda_id` diisi hanya oleh aksi jadwalkan. Tidak ada tabel agenda kedua.
+`agenda_id` diisi dalam transaksi persetujuan. Tidak ada tabel agenda kedua.
 
 ## Keuangan
 

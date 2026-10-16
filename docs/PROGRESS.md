@@ -1,17 +1,27 @@
 # Progress — RT05 TAKEDA
 
-## Usulan kegiatan warga — 15 Oktober 2026
+## Usulan kegiatan warga — 16 Oktober 2026 (PR #27)
 
-Instruksi pemilik: warga yang sudah login dapat mengusulkan kegiatan, pengurus meninjau/meminta revisi/menyetujui/menolak, dan hanya usulan disetujui yang masuk agenda resmi. Satu sumber jadwal tetap tabel `agenda` (ADR24, BR23). Bukan penutupan M10; FCM tetap belum ada.
+Instruksi pemilik 16 Oktober: warga mengajukan kegiatan (contoh "Badminton bersama di lapangan RT 05") lewat form
+dengan dokumen pendukung; pengurus menyetujui; **persetujuan langsung menjadi agenda resmi dan semua warga aktif
+menerima notifikasi**; setiap tombol aksi wajib punya alert sukses/gagal yang jelas. Requirement:
+[USULAN_KEGIATAN.md](USULAN_KEGIATAN.md) (BR23, ADR24 direvisi). Bukan penutupan M10; FCM tetap belum ada.
 
-| Perintah | Hasil |
+Perubahan dari draf Cursor 15 Oktober: form bertambah jenis, perkiraan peserta, kebutuhan dari RT, dan pernyataan
+penanggung jawab; batas waktu (≥24 jam, ≤12 jam durasi); persetujuan langsung membuat agenda (endpoint `schedule`
+dihapus); tolak persetujuan untuk tanggal lewat; lampiran TXT; tautan unduh bertanda tangan 5 menit; peringatan
+jadwal bentrok untuk pengurus; notifikasi perbaikan ke pengurus; standar alert seluruh aplikasi (`showMessage`
+berjenis, `showApiError`, `confirm`, `showResultDialog`); dropdown jenis meluber 23 px di 360 dp diperbaiki.
+
+| Perintah (branch `cursor/usulan-kegiatan-90bf`, di-rebase ke main `f0a2466`) | Hasil |
 | --- | --- |
-| `php vendor/bin/pint --dirty` (rest-api) | passed |
-| `php artisan test` pada Postgres lokal `rt05_test` port 5432 (bukan Neon) | **233/233, 2300 assertion** |
-| `node infra/scripts/check-repo.mjs` | OK (805 berkas) |
-| Flutter analyze/test | tidak dijalankan: SDK Flutter tidak tersedia di mesin ini |
+| `php artisan test` (Postgres 17.10 sementara, bukan Neon) | **253/253** (245 main + 8 `ActivityProposalTest`) |
+| `vendor/bin/pint --test`; `npx @redocly/cli@2 lint docs/openapi.yaml` | passed; valid |
+| `flutter analyze`; `dart format --set-exit-if-changed lib test`; `flutter test` | No issues; 0 changed; **169 lulus** (termasuk 8 tes alur usulan/alert dan 4 tes aturan form) |
+| `node infra/scripts/check-repo.mjs` | OK (818 berkas) |
 
-Berkas: migrasi `2026_10_15_000200_create_usulan_kegiatan_tables`, layanan `ActivityProposals`, `ActivityProposalTest`, rute dan OpenAPI `activity-proposals`, notifikasi jenis `usulan`, layar mobile daftar/form/detail untuk warga dan pengurus. Migrasi diuji lewat suite (schema `rt05_test` sudah memuat tabel baru). Tidak ada deploy, perubahan DNS, atau data warga asli.
+Belum: staging (migration baru belum dijalankan di Neon staging), uji Android nyata, dan merge. PR #24 (M09) dan
+PR #27 sama-sama mengubah `Present.php`/`warga_pages.dart`; yang di-merge kedua perlu rebase.
 
 ## Penyesuaian shared hosting — 15 Oktober 2026
 

@@ -171,10 +171,13 @@ Sumber instruksi pemilik: handoff M08 13 Oktober 2026.
 
 ### ADR24 — Usulan kegiatan bukan agenda kedua
 
-Tanggal/status: 15 Oktober 2026, instruksi pemilik.
-Keputusan: tabel `usulan_kegiatan` menyimpan pengajuan warga dan keputusan pengurus. Tabel `agenda` tetap satu-satunya jadwal resmi. Pengurus menyalin usulan berstatus `disetujui` sekali ke `agenda` (`agenda_id` unik). Suntingan agenda setelah itu tidak menulis ulang usulan. Dokumen pendukung privat di disk `local`, kunci acak, tanpa nama berkas asli. PDF dicek magic bytes; gambar menjadi JPEG di request yang sama supaya pengajuan gagal bila berkas tidak sah. Notifikasi memakai outbox yang sudah ada: `usulan.diajukan` ke pengurus, `usulan.status_berubah` dan `usulan.dijadwalkan` ke pengusul, plus `agenda.dibuat` ke warga aktif saat dijadwalkan.
-Status: `diajukan`, `ditinjau`, `perlu_revisi`, `disetujui`, `ditolak`. Catatan wajib untuk `perlu_revisi` dan `ditolak`. Riwayat dan versi optimistik disimpan. Warga hanya melihat usulan sendiri; warga lain mendapat 404, termasuk unduhan. Akun menunggu tidak boleh mengajukan. Bukan feed publik dan bukan halaman website.
-Aplikasi mobile mengunggah gambar lewat pemilih yang sudah ada. API tetap menerima PDF.
+Tanggal/status: 15 Oktober 2026, instruksi pemilik; direvisi 16 Oktober 2026 atas instruksi pemilik (requirement [USULAN_KEGIATAN.md](USULAN_KEGIATAN.md)).
+Keputusan: tabel `usulan_kegiatan` menyimpan pengajuan warga dan keputusan pengurus. Tabel `agenda` tetap satu-satunya jadwal resmi. **Persetujuan langsung menyalin usulan sekali ke `agenda`** (`agenda_id` unik) dalam transaksi yang sama dan memberi tahu semua warga aktif lewat `agenda.dibuat`; tidak ada langkah "masukkan ke agenda" terpisah (endpoint `schedule` dari draf 15 Oktober dihapus sebelum rilis). Suntingan agenda setelah itu tidak menulis ulang usulan.
+Form: jenis, nama, waktu mulai/selesai (paling cepat 24 jam, maksimal 12 jam), lokasi, deskripsi, perkiraan peserta, kebutuhan dari RT, dan pernyataan penanggung jawab (`pernyataan_at`). Batas 24 jam dan 12 jam adalah default yang dapat diubah pemilik.
+Dokumen: privat di disk `local`, kunci acak, tanpa nama berkas asli. PDF dicek magic bytes; TXT hanya `.txt` UTF-8 tanpa kontrol/markup; gambar menjadi JPEG di request yang sama. DOCX tidak diterima (diminta ekspor PDF). Aplikasi membuka dokumen lewat tautan relatif bertanda tangan 5 menit agar tidak perlu plugin penampil; tautan dibuat hanya untuk pengusul/pengurus.
+Status: `diajukan`, `ditinjau`, `perlu_revisi`, `disetujui`, `ditolak`. Catatan wajib untuk `perlu_revisi` dan `ditolak`; persetujuan untuk waktu yang sudah lewat ditolak. Riwayat dan versi optimistik disimpan. Warga hanya melihat usulan sendiri; warga lain mendapat 404, termasuk unduhan. Akun menunggu tidak boleh mengajukan. Pengurus melihat peringatan jadwal bentrok (bukan pemblokir). Bukan feed publik dan bukan halaman website.
+Notifikasi: `usulan.diajukan`/`usulan.diperbaiki` ke pengurus, `usulan.status_berubah` ke pengusul, `agenda.dibuat` ke semua warga aktif.
+Setiap tombol aksi memakai standar alert yang sama (konfirmasi, spinner, alert sukses/gagal/konflik, dialog hasil) — §7 requirement.
 
 ## Input operasional yang belum tersedia
 

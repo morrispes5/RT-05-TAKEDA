@@ -35,10 +35,8 @@ final class Notifications
             'aspirasi.status_berubah' => ($a = Aspirasi::find($id)) && self::send($event, [$a->pengirim_id], 'aspirasi', ['aspirasi_id' => $id],
                 'Status aspirasi diperbarui', 'Aspirasi "'.Str::limit($a->judul, 60).'" kini berstatus '.self::label(self::eventStatus($event, $a->status)).'.'),
             'usulan.diajukan' => self::toPengurus($event, 'usulan', ['usulan_kegiatan_id' => $id], 'Usulan kegiatan baru', 'Ada usulan kegiatan warga yang menunggu tinjauan.'),
-            'usulan.status_berubah' => ($u = UsulanKegiatan::find($id)) && self::send($event, [$u->pengusul_id], 'usulan', ['usulan_kegiatan_id' => $id],
-                'Status usulan kegiatan diperbarui', 'Usulan "'.Str::limit($u->nama, 60).'" kini berstatus '.self::label(self::eventStatus($event, $u->status)).'.'),
-            'usulan.dijadwalkan' => ($u = UsulanKegiatan::find($id)) && self::send($event, [$u->pengusul_id], 'usulan', ['usulan_kegiatan_id' => $id],
-                'Usulan masuk agenda', 'Usulan "'.Str::limit($u->nama, 60).'" telah dimasukkan ke agenda resmi RT.'),
+            'usulan.diperbaiki' => self::toPengurus($event, 'usulan', ['usulan_kegiatan_id' => $id], 'Usulan kegiatan diperbaiki', 'Pengusul memperbaiki usulan kegiatan. Tinjau ulang.'),
+            'usulan.status_berubah' => self::proposalStatus($event),
             'pengumuman.terbit' => ($p = Pengumuman::find($id)) && self::send($event, self::activeResidents(), 'pengumuman', ['pengumuman_id' => $id],
                 Str::limit($p->judul, 150), Str::limit(strip_tags($p->isi), 180)),
             'agenda.dibuat', 'agenda.pengingat' => self::agenda($event),
@@ -63,6 +61,22 @@ final class Notifications
     private static function eventStatus(OutboxEvent $event, string $current): string
     {
         return (string) ($event->safe_payload['status'] ?? $current);
+    }
+
+    /** Pengusul diberi tahu tiap keputusan; persetujuan menyebut bahwa usulan sudah menjadi agenda. */
+    private static function proposalStatus(OutboxEvent $event): bool
+    {
+        $u = UsulanKegiatan::find($event->aggregate_id);
+        if (! $u) {
+            return false;
+        }
+        $status = self::eventStatus($event, $u->status);
+        $nama = Str::limit($u->nama, 60);
+        [$title, $body] = $status === 'disetujui'
+            ? ['Usulan kegiatan disetujui', 'Usulan "'.$nama.'" disetujui dan masuk agenda RT. Semua warga mendapat pemberitahuan.']
+            : ['Status usulan kegiatan diperbarui', 'Usulan "'.$nama.'" kini berstatus '.self::label($status).'. Buka detail untuk catatan pengurus.'];
+
+        return self::send($event, [$u->pengusul_id], 'usulan', ['usulan_kegiatan_id' => $u->id], $title, $body);
     }
 
     private static function agenda(OutboxEvent $event): bool

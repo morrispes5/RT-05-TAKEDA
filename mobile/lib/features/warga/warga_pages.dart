@@ -795,12 +795,21 @@ class AgendaPage extends ConsumerWidget {
           Text('Agenda RT', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
           const Text(
-            'Agenda ini jadwal resmi RT. Usulan warga masuk ke sini hanya setelah disetujui pengurus.',
+            'Agenda ini jadwal resmi RT. Ingin mengadakan kegiatan? Ajukan ke pengurus; bila disetujui, kegiatan masuk ke sini dan semua warga diberi tahu.',
             style: TextStyle(color: Brand.muted, height: 1.4),
           ),
           const SizedBox(height: 12),
           BusyButton(
-            label: 'Usulan kegiatan',
+            label: 'Ajukan kegiatan',
+            icon: Icons.add_circle_outline,
+            onPressed: () async {
+              final saved = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => const ActivityProposalFormPage()));
+              if (saved == true) ref.invalidate(activityProposalsProvider(null));
+            },
+          ),
+          const SizedBox(height: 8),
+          BusyButton(
+            label: 'Usulan kegiatan saya',
             icon: Icons.event_note_outlined,
             outlined: true,
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivityProposalListPage(admin: false))),

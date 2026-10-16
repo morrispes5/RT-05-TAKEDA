@@ -22,6 +22,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', ServiceInfoController::class)->name('api.v1.info');
 
+// Unduhan dokumen usulan lewat tautan bertanda tangan relatif (5 menit) yang dibuat untuk pengusul/pengurus;
+// dipakai aplikasi untuk membuka PDF/TXT di browser tanpa token. Tanda tangan salah/kedaluwarsa 403.
+Route::get('activity-proposals/documents/{documentId}/download', [ActivityProposalController::class, 'signedDocument'])
+    ->whereUuid('documentId')->middleware('throttle:60,1')->name('activity-proposals.document.signed');
+
 // Publik terbatas dengan rate limit.
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register'])->middleware('throttle:registrasi');
@@ -69,6 +74,7 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
     Route::patch('activity-proposals/{id}', [ActivityProposalController::class, 'update'])->whereUuid('id');
     Route::get('activity-proposals/{id}/history', [ActivityProposalController::class, 'history'])->whereUuid('id');
     Route::get('activity-proposals/{id}/documents/{documentId}', [ActivityProposalController::class, 'document'])->whereUuid(['id', 'documentId']);
+    Route::post('activity-proposals/{id}/documents/{documentId}/link', [ActivityProposalController::class, 'documentLink'])->whereUuid(['id', 'documentId']);
 
     Route::get('agendas', [CommunityController::class, 'agendas']);
     Route::get('agendas/{id}', [CommunityController::class, 'agenda'])->whereUuid('id');
@@ -130,7 +136,6 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::post('aspirations/{id}/archive', [ReportsController::class, 'archiveAspiration'])->whereUuid('id');
 
     Route::post('activity-proposals/{id}/status', [ActivityProposalController::class, 'changeStatus'])->whereUuid('id');
-    Route::post('activity-proposals/{id}/schedule', [ActivityProposalController::class, 'schedule'])->whereUuid('id');
 
     Route::post('agendas', [CommunityController::class, 'storeAgenda']);
     Route::put('agendas/{id}', [CommunityController::class, 'updateAgenda'])->whereUuid('id');

@@ -19,11 +19,16 @@ return new class extends Migration
             $table->foreignUuid('pengusul_id')->constrained('akun')->restrictOnDelete();
             $table->foreignUuid('rumah_id')->nullable()->constrained('rumah')->restrictOnDelete();
             $table->foreignUuid('agenda_id')->nullable()->unique()->constrained('agenda')->restrictOnDelete();
+            $table->string('jenis', 30);
             $table->string('nama', 160);
             $table->text('deskripsi');
             $table->string('lokasi', 200);
             $table->timestampTz('mulai_at');
             $table->timestampTz('selesai_at')->nullable();
+            $table->unsignedSmallInteger('perkiraan_peserta')->nullable();
+            $table->text('kebutuhan')->nullable();
+            // Waktu pengusul mencentang pernyataan penanggung jawab (docs/USULAN_KEGIATAN.md §3).
+            $table->timestampTz('pernyataan_at');
             $table->string('status', 20)->default('diajukan');
             $table->unsignedInteger('versi')->default(1);
             $table->timestampTz('created_at')->useCurrent();
@@ -34,6 +39,8 @@ return new class extends Migration
         });
         DB::statement("ALTER TABLE usulan_kegiatan ADD CONSTRAINT usulan_kegiatan_status_check CHECK (status IN ('diajukan', 'ditinjau', 'perlu_revisi', 'disetujui', 'ditolak'))");
         DB::statement('ALTER TABLE usulan_kegiatan ADD CONSTRAINT usulan_kegiatan_rentang_valid CHECK (selesai_at IS NULL OR selesai_at >= mulai_at)');
+        DB::statement("ALTER TABLE usulan_kegiatan ADD CONSTRAINT usulan_kegiatan_jenis_check CHECK (jenis IN ('olahraga', 'kerja_bakti', 'keagamaan', 'sosial', 'rapat', 'lainnya'))");
+        DB::statement('ALTER TABLE usulan_kegiatan ADD CONSTRAINT usulan_kegiatan_peserta_valid CHECK (perkiraan_peserta IS NULL OR perkiraan_peserta BETWEEN 1 AND 1000)');
 
         Schema::create('riwayat_usulan_kegiatan', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
