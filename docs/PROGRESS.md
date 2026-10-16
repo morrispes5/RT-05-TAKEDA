@@ -37,6 +37,11 @@ dan menyelaraskannya dengan PRD, dokumen `.md`, dan capstone. PR #24, source `61
 | `infra/scripts/m09-stage-acceptance.mjs --execute` (`Sintetis M09 F21B1E`) | **48 kasus, 138 assertion**; [ringkasan](evidence/m09/m09-live-summary-617e179.json) |
 | Android emulator Pixel 8a, APK CI `38415151167` | SHA-256 `56a45751…0305` cocok; [ANDROID_RESULTS.md](evidence/m09/ANDROID_RESULTS.md) |
 
+Rebase 16 Oktober 2026: riwayat Git ditulis ulang pada 15 Oktober (identitas commit), sehingga SHA
+`617e179`/`ccebb9b` di atas kini bernama `148b2d6`/`719c70a` dengan isi yang sama. PR #24 di-rebase ke `main`
+baru (profil shared hosting PR #25/#28). Hasil lokal setelah rebase: backend **260/260, 2492 assertion**
+(245 main + 15 M09), Flutter **164**, Pint/analyzer/format/Redocly/check-repo lulus.
+
 Cacat yang ditemukan lalu ditutup: respons aspirasi tanpa `archived_at` (pengurus tidak melihat banner arsip),
 filter `status` tidak valid diterima, OpenAPI aspirasi generik, teks layar bernada pengaduan, judul terpecah
 pada skala teks 2,0 (temuan M08). Selisih capstone (anonimitas aspirasi, tiga status, kolom `versi`) dicatat di
