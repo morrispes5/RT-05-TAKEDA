@@ -1,5 +1,28 @@
 # Progress — RT05 TAKEDA
 
+## Usulan kegiatan warga — 16 Oktober 2026 (PR #27)
+
+Instruksi pemilik 16 Oktober: warga mengajukan kegiatan (contoh "Badminton bersama di lapangan RT 05") lewat form
+dengan dokumen pendukung; pengurus menyetujui; **persetujuan langsung menjadi agenda resmi dan semua warga aktif
+menerima notifikasi**; setiap tombol aksi wajib punya alert sukses/gagal yang jelas. Requirement:
+[USULAN_KEGIATAN.md](USULAN_KEGIATAN.md) (BR23, ADR24 direvisi). Bukan penutupan M10; FCM tetap belum ada.
+
+Perubahan dari draf Cursor 15 Oktober: form bertambah jenis, perkiraan peserta, kebutuhan dari RT, dan pernyataan
+penanggung jawab; batas waktu (≥24 jam, ≤12 jam durasi); persetujuan langsung membuat agenda (endpoint `schedule`
+dihapus); tolak persetujuan untuk tanggal lewat; lampiran TXT; tautan unduh bertanda tangan 5 menit; peringatan
+jadwal bentrok untuk pengurus; notifikasi perbaikan ke pengurus; standar alert seluruh aplikasi (`showMessage`
+berjenis, `showApiError`, `confirm`, `showResultDialog`); dropdown jenis meluber 23 px di 360 dp diperbaiki.
+
+| Perintah (branch `cursor/usulan-kegiatan-90bf`, di-rebase ke main `54a6500` yang sudah memuat M09) | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17.10 sementara, bukan Neon) | **268/268, 2636 assertion** (260 main + 8 `ActivityProposalTest`) |
+| `vendor/bin/pint --test`; `npx @redocly/cli@2 lint docs/openapi.yaml` | passed; valid |
+| `flutter analyze`; `dart format --set-exit-if-changed lib test`; `flutter test` | No issues; 0 changed; **176 lulus** (termasuk 8 tes alur usulan/alert dan 4 tes aturan form) |
+| `node infra/scripts/check-repo.mjs` | OK (842 berkas) |
+
+Belum: staging (migration baru belum dijalankan di Neon staging), uji Android nyata, dan merge. PR #24 (M09)
+sudah merged (`54a6500`); PR #27 di-rebase di atasnya.
+
 ## Penyesuaian shared hosting — 15 Oktober 2026
 
 Status tambahan M03/M04: **in_progress**, live **blocked**. Branch `codex/m03-shared-hosting-profile` dari `840cf09`. M07/M08 tetap passed pada baseline VPS. Dokumen branch PR24 menyatakan M09 gate staging passed, tetapi PR masih terpisah; tidak mengubah penerimaan main atau merge PR tersebut.

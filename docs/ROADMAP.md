@@ -236,6 +236,7 @@ Status awal seluruh M01–M16 planned. Akses server/credential dapat memblokir b
 - Notifications inbox/read/preferences/device tokens.
 - FCM Android adapter dan SMTP integration nyata pada staging.
 - Fanout chunk, reminder H-1, policy/update-app notification type.
+- Usulan kegiatan warga (BR23): pengajuan, keputusan pengurus, dan salinan sekali ke agenda. Bukan syarat penutupan M10; FCM tetap terpisah.
 
 **Output:** komunitas dan notifikasi berjalan tanpa menjadikan push sumber data final.
 

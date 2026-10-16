@@ -66,6 +66,9 @@ dipertahankan untuk image M06 dan diperbarui dalam transaksi yang sama dengan hi
 | riwayat_aspirasi (M09, nama aktual) | id, aspirasi_id, aktor_id, status_dari, status_ke, catatan, created_at; indeks (aspirasi_id, created_at) |
 | aspiration_status_events | id, aspiration_id, from_status, to_status, note, actor_id, created_at |
 | agendas | id, title, description, starts_at, ends_at, location, status, created_by, archived_at |
+| usulan_kegiatan | pengajuan warga; agenda_id unik nullable, terisi saat disetujui. Bukan jadwal kedua |
+| riwayat_usulan_kegiatan | status_dari/status_ke, catatan keputusan, aktor |
+| dokumen_usulan | storage_key acak unik, mime, bytes, urutan; tanpa nama berkas asli |
 | announcements | id, title, body, status, published_at, created_by, version, archived_at |
 | notifications | id, event_id, recipient_id, type, safe_payload json, read_at, created_at; unique event/recipient |
 | device_tokens | id, user_id, device_identifier, fcm_token encrypted, platform, active, last_seen_at |
@@ -78,6 +81,19 @@ dipertahankan untuk image M06 dan diperbarui dalam transaksi yang sama dengan hi
 Relasi media polymorphic diterapkan dengan allowlist morph map; tidak menerima nama kelas arbitrary dari client. Policy selalu memeriksa parent. Orphan/staging tidak public. Foto lampiran laporan menempel melalui media_assets; album_photos menyimpan urutan/metadata khusus album.
 
 JSON article payload berstruktur title/category/summary/intro/sections/source/cover. published_payload adalah snapshot terpisah: edit draft tidak mengubah public revision sebelum publish. Untuk album published revision, simpan published_payload json yang memuat metadata serta ID media ready; album_photos dapat menjadi draft ordering. Tambahkan kolom snapshot tersebut saat M13.
+
+### Implementasi usulan kegiatan (ADR24)
+
+`2026_10_15_000200_create_usulan_kegiatan_tables`:
+
+| Tabel | Kolom dan constraint |
+| --- | --- |
+| usulan_kegiatan | pengusul_id, rumah_id nullable (snapshot), agenda_id nullable unik, jenis (CHECK olahraga/kerja_bakti/keagamaan/sosial/rapat/lainnya), nama, deskripsi, lokasi, mulai_at, selesai_at, perkiraan_peserta nullable (1–1000), kebutuhan nullable, pernyataan_at, status, versi; selesai ≥ mulai; status diajukan/ditinjau/perlu_revisi/disetujui/ditolak |
+| riwayat_usulan_kegiatan | usulan_kegiatan_id, aktor_id, status_dari nullable, status_ke, catatan nullable |
+| dokumen_usulan | usulan_kegiatan_id, storage_key unik, mime (application/pdf, text/plain, image/jpeg), bytes, urutan; unik per usulan dan urutan |
+| notifikasi | + usulan_kegiatan_id nullable; jenis bertambah `usulan`; tepat satu konteks, termasuk usulan |
+
+`agenda_id` diisi dalam transaksi persetujuan. Tidak ada tabel agenda kedua.
 
 ## Keuangan
 

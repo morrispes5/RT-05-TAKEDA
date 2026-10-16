@@ -18,6 +18,7 @@ use App\Models\Rumah;
 use App\Models\TagihanIuran;
 use App\Models\TautanAkun;
 use App\Models\TransaksiKas;
+use App\Models\UsulanKegiatan;
 use App\Models\Warga;
 use DateTimeInterface;
 
@@ -304,6 +305,43 @@ final class Present
         ];
     }
 
+    public static function usulan(UsulanKegiatan $u, Akun $viewer): array
+    {
+        $own = $u->pengusul_id === $viewer->id;
+
+        return [
+            'id' => $u->id,
+            'jenis' => $u->jenis,
+            'nama' => $u->nama,
+            'deskripsi' => $u->deskripsi,
+            'lokasi' => $u->lokasi,
+            'mulai_at' => self::ts($u->mulai_at),
+            'selesai_at' => self::ts($u->selesai_at),
+            'perkiraan_peserta' => $u->perkiraan_peserta,
+            'kebutuhan' => $u->kebutuhan,
+            'status' => $u->status,
+            'versi' => $u->versi,
+            'agenda_id' => $u->agenda_id,
+            'milik_saya' => $own,
+            'pengusul' => $viewer->isPengurus() || $own
+                ? [
+                    'id' => $u->pengusul_id,
+                    'nama' => $u->relationLoaded('pengusul') ? $u->pengusul?->nama : null,
+                    // Kode rumah dari snapshot pengajuan; hanya pengurus dan pengusul sendiri.
+                    'rumah' => $u->rumah_id ? Rumah::whereKey($u->rumah_id)->value('kode_rumah') : null,
+                ]
+                : null,
+            'dokumen' => $u->relationLoaded('dokumen') ? $u->dokumen->map(fn ($d) => [
+                'id' => $d->id,
+                'mime' => $d->mime,
+                'bytes' => $d->bytes,
+                'urutan' => $d->urutan,
+                'url' => '/api/v1/activity-proposals/'.$u->id.'/documents/'.$d->id,
+            ])->values()->all() : [],
+            'created_at' => self::ts($u->created_at),
+        ];
+    }
+
     public static function agenda(Agenda $a): array
     {
         return [
@@ -332,7 +370,7 @@ final class Present
 
     public static function notifikasi(Notifikasi $n): array
     {
-        $ref = collect(['pengumuman_id', 'agenda_id', 'pengaduan_id', 'aspirasi_id', 'tagihan_id'])
+        $ref = collect(['pengumuman_id', 'agenda_id', 'pengaduan_id', 'aspirasi_id', 'tagihan_id', 'usulan_kegiatan_id'])
             ->first(fn ($k) => $n->{$k} !== null);
 
         return [

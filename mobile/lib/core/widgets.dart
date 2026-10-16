@@ -90,7 +90,7 @@ class StatusChip extends StatelessWidget {
     final (fg, bg, icon) = switch (status) {
       'lunas' || 'selesai' || 'aktif' || 'disetujui' || 'tercatat' => (Brand.success, Brand.successBg, Icons.check_circle_rounded),
       'belum_bayar' || 'ditolak' || 'dibatalkan' || 'nonaktif' => (Brand.danger, Brand.dangerBg, Icons.error_rounded),
-      'diproses' || 'ditinjau' || 'menunggu' => (Brand.warning, Brand.warningBg, Icons.timelapse_rounded),
+      'diproses' || 'ditinjau' || 'perlu_revisi' || 'menunggu' => (Brand.warning, Brand.warningBg, Icons.timelapse_rounded),
       _ => (Brand.navy, Brand.sky, Icons.radio_button_checked_rounded),
     };
     // Skala teks label dibatasi 1,5× (status tetap terbaca lewat warna + ikon + teks) dan teks
@@ -202,23 +202,126 @@ class GapuraMark extends StatelessWidget {
   Widget build(BuildContext context) => SvgPicture.asset(light ? assetLight : asset, width: size, height: size, semanticsLabel: 'Logo RT05 TAKEDA');
 }
 
-void showMessage(BuildContext context, String message, {bool error = false}) {
-  ScaffoldMessenger.of(context)
+/// Jenis umpan balik aksi (docs/USULAN_KEGIATAN.md §7). Warna selalu disertai ikon dan teks.
+enum AlertKind { success, error, warning, info }
+
+({Color fg, Color bg, IconData icon, String title}) _alertStyle(AlertKind kind) => switch (kind) {
+  AlertKind.success => (fg: Brand.success, bg: Brand.successBg, icon: Icons.check_circle_rounded, title: 'Berhasil'),
+  AlertKind.error => (fg: Brand.danger, bg: Brand.dangerBg, icon: Icons.error_rounded, title: 'Gagal'),
+  AlertKind.warning => (fg: Brand.warning, bg: Brand.warningBg, icon: Icons.warning_amber_rounded, title: 'Perhatian'),
+  AlertKind.info => (fg: Brand.navy, bg: Brand.sky, icon: Icons.info_rounded, title: 'Info'),
+};
+
+/// Alert standar setiap tombol aksi: melayang, ikon + judul + pesan, dapat ditutup, dibacakan pembaca layar.
+/// [error] dipertahankan untuk pemanggil lama; tanpa [kind] dianggap sukses.
+void showMessage(BuildContext context, String message, {bool error = false, AlertKind? kind, String? title}) {
+  final k = kind ?? (error ? AlertKind.error : AlertKind.success);
+  final style = _alertStyle(k);
+  final messenger = ScaffoldMessenger.of(context);
+  messenger
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message), backgroundColor: error ? Brand.danger : Brand.navyDeep));
+    ..showSnackBar(
+      SnackBar(
+        key: ValueKey('alert-${k.name}'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: style.bg,
+        elevation: 6,
+        duration: Duration(seconds: k == AlertKind.error ? 7 : 4),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: style.fg.withValues(alpha: 0.45)),
+        ),
+        content: Semantics(
+          liveRegion: true,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(style.icon, color: style.fg, size: 26),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title ?? style.title,
+                      style: TextStyle(color: style.fg, fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(message, style: const TextStyle(color: Brand.ink, height: 1.35)),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: 'Tutup',
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.close, color: Brand.muted),
+                onPressed: messenger.hideCurrentSnackBar,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
 }
 
-Future<bool> confirm(BuildContext context, {required String title, required String message, String yes = 'Ya, lanjutkan'}) async =>
+/// Alert untuk kegagalan API: konflik versi kuning (data dimuat ulang, isian tetap), lainnya merah.
+void showApiError(BuildContext context, ApiException e) => e.isConflict
+    ? showMessage(context, '${e.message} Data terbaru dimuat; isian Anda tidak hilang.', kind: AlertKind.warning, title: 'Data sudah berubah')
+    : showMessage(context, e.display, kind: AlertKind.error);
+
+/// Dialog hasil untuk aksi penting (mis. usulan terkirim/disetujui): ikon besar, judul, akibat, langkah berikutnya.
+Future<void> showResultDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  AlertKind kind = AlertKind.success,
+  String button = 'Mengerti',
+}) {
+  final style = _alertStyle(kind);
+  return showDialog<void>(
+    context: context,
+    builder: (c) => AlertDialog(
+      icon: CircleAvatar(
+        radius: 32,
+        backgroundColor: style.bg,
+        child: Icon(style.icon, color: style.fg, size: 40),
+      ),
+      title: Text(title, textAlign: TextAlign.center),
+      content: Text(message, textAlign: TextAlign.center, style: const TextStyle(height: 1.45)),
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.pop(c),
+          style: FilledButton.styleFrom(minimumSize: const Size(160, 48)),
+          child: Text(button),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Konfirmasi sebelum aksi yang tidak dapat dibatalkan atau berdampak ke banyak orang.
+/// [danger] memberi warna merah pada tombol aksi (tolak, arsip, hapus akses).
+Future<bool> confirm(
+  BuildContext context, {
+  required String title,
+  required String message,
+  String yes = 'Ya, lanjutkan',
+  bool danger = false,
+  IconData? icon,
+}) async =>
     await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
+        icon: icon == null ? null : Icon(icon, color: danger ? Brand.danger : Brand.navy, size: 36),
         title: Text(title),
-        content: Text(message),
+        content: Text(message, style: const TextStyle(height: 1.45)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Batal')),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+            style: FilledButton.styleFrom(minimumSize: const Size(0, 44), backgroundColor: danger ? Brand.danger : null),
             child: Text(yes),
           ),
         ],
