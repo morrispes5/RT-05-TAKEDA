@@ -169,6 +169,13 @@ dapat ditambah setelah laporan dibuat (v1 tidak memintanya).
 Kompatibilitas: image M07 tetap dapat membaca/menulis (default `siap`). Tes `M08ComplaintMediaTest`.
 Sumber instruksi pemilik: handoff M08 13 Oktober 2026.
 
+### ADR24 — Usulan kegiatan bukan agenda kedua
+
+Tanggal/status: 15 Oktober 2026, instruksi pemilik.
+Keputusan: tabel `usulan_kegiatan` menyimpan pengajuan warga dan keputusan pengurus. Tabel `agenda` tetap satu-satunya jadwal resmi. Pengurus menyalin usulan berstatus `disetujui` sekali ke `agenda` (`agenda_id` unik). Suntingan agenda setelah itu tidak menulis ulang usulan. Dokumen pendukung privat di disk `local`, kunci acak, tanpa nama berkas asli. PDF dicek magic bytes; gambar menjadi JPEG di request yang sama supaya pengajuan gagal bila berkas tidak sah. Notifikasi memakai outbox yang sudah ada: `usulan.diajukan` ke pengurus, `usulan.status_berubah` dan `usulan.dijadwalkan` ke pengusul, plus `agenda.dibuat` ke warga aktif saat dijadwalkan.
+Status: `diajukan`, `ditinjau`, `perlu_revisi`, `disetujui`, `ditolak`. Catatan wajib untuk `perlu_revisi` dan `ditolak`. Riwayat dan versi optimistik disimpan. Warga hanya melihat usulan sendiri; warga lain mendapat 404, termasuk unduhan. Akun menunggu tidak boleh mengajukan. Bukan feed publik dan bukan halaman website.
+Aplikasi mobile mengunggah gambar lewat pemilih yang sudah ada. API tetap menerima PDF.
+
 ## Input operasional yang belum tersedia
 
 ### ADR22 — Aspirasi M09: domain terpisah, anonimitas sama dengan pengaduan, tiga status

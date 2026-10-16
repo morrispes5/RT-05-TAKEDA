@@ -11,6 +11,7 @@ use App\Models\OutboxEvent;
 use App\Models\Pengaduan;
 use App\Models\Pengumuman;
 use App\Models\PermohonanAkun;
+use App\Models\UsulanKegiatan;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -33,6 +34,11 @@ final class Notifications
             'aspirasi.dibuat' => self::toPengurus($event, 'aspirasi', ['aspirasi_id' => $id], 'Aspirasi baru', 'Ada aspirasi baru dari warga.'),
             'aspirasi.status_berubah' => ($a = Aspirasi::find($id)) && self::send($event, [$a->pengirim_id], 'aspirasi', ['aspirasi_id' => $id],
                 'Status aspirasi diperbarui', 'Aspirasi "'.Str::limit($a->judul, 60).'" kini berstatus '.self::label(self::eventStatus($event, $a->status)).'.'),
+            'usulan.diajukan' => self::toPengurus($event, 'usulan', ['usulan_kegiatan_id' => $id], 'Usulan kegiatan baru', 'Ada usulan kegiatan warga yang menunggu tinjauan.'),
+            'usulan.status_berubah' => ($u = UsulanKegiatan::find($id)) && self::send($event, [$u->pengusul_id], 'usulan', ['usulan_kegiatan_id' => $id],
+                'Status usulan kegiatan diperbarui', 'Usulan "'.Str::limit($u->nama, 60).'" kini berstatus '.self::label(self::eventStatus($event, $u->status)).'.'),
+            'usulan.dijadwalkan' => ($u = UsulanKegiatan::find($id)) && self::send($event, [$u->pengusul_id], 'usulan', ['usulan_kegiatan_id' => $id],
+                'Usulan masuk agenda', 'Usulan "'.Str::limit($u->nama, 60).'" telah dimasukkan ke agenda resmi RT.'),
             'pengumuman.terbit' => ($p = Pengumuman::find($id)) && self::send($event, self::activeResidents(), 'pengumuman', ['pengumuman_id' => $id],
                 Str::limit($p->judul, 150), Str::limit(strip_tags($p->isi), 180)),
             'agenda.dibuat', 'agenda.pengingat' => self::agenda($event),
@@ -131,7 +137,10 @@ final class Notifications
 
     public static function label(string $status): string
     {
-        return ['diajukan' => 'Diajukan', 'diproses' => 'Diproses', 'ditinjau' => 'Ditinjau', 'selesai' => 'Selesai'][$status] ?? $status;
+        return [
+            'diajukan' => 'Diajukan', 'diproses' => 'Diproses', 'ditinjau' => 'Ditinjau', 'selesai' => 'Selesai',
+            'perlu_revisi' => 'Perlu revisi', 'disetujui' => 'Disetujui', 'ditolak' => 'Ditolak',
+        ][$status] ?? $status;
     }
 
     public static function pendingRequests(): int

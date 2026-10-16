@@ -1305,6 +1305,124 @@ paths:
                 $ref: "#/components/schemas/ReportHistoryEnvelope"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/activity-proposals:
+    get:
+      operationId: activityProposalsIndex
+      tags:
+        - Community
+      summary: Usulan kegiatan milik sendiri, atau seluruh usulan bagi pengurus
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: activityProposalsStore
+      tags:
+        - Community
+      summary: Warga mengajukan kegiatan. Dokumen PDF/JPG/PNG/WebP opsional, privat.
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "201":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/activity-proposals/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: activityProposalsShow
+      tags:
+        - Community
+      summary: Detail usulan bagi pengusul atau pengurus
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      operationId: activityProposalsUpdate
+      tags:
+        - Community
+      summary: Pengusul memperbaiki usulan yang diajukan atau perlu revisi
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/activity-proposals/{id}/documents/{documentId}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+      - name: documentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: activityProposalsDocument
+      tags:
+        - Community
+      summary: Unduh dokumen pendukung privat
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          description: Berkas dilampirkan, bukan ditampilkan inline.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/activity-proposals/{id}/history:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: activityProposalsHistory
+      tags:
+        - Community
+      summary: Riwayat keputusan usulan
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/activity-proposals/{id}/schedule:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: activityProposalsSchedule
+      tags:
+        - Community
+      summary: Masukkan usulan yang disetujui ke agenda resmi
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/activity-proposals/{id}/status:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: activityProposalsStatus
+      tags:
+        - Community
+      summary: Pengurus meninjau, meminta revisi, menyetujui, atau menolak
+      x-status: implemented
+      x-milestone: M10
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/auth/additional-account-status:
     get:
       operationId: authAdditionalAccountStatus
