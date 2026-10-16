@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\OperationsController;
 use App\Http\Controllers\Admin\ResidentsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\HouseholdController;
 use App\Http\Controllers\ReportsController;
@@ -41,6 +42,9 @@ Route::middleware(['auth:sanctum', 'akun:menunggu'])->group(function () {
     Route::get('auth/me', [AuthController::class, 'me']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/additional-account-status', [AuthController::class, 'additionalAccountStatus']);
+    // Push perangkat (M10): akun menunggu boleh mendaftar agar menerima kabar persetujuan.
+    Route::put('devices/{device_identifier}', [DeviceController::class, 'upsert'])->middleware('throttle:30,1');
+    Route::delete('devices/{device_identifier}', [DeviceController::class, 'destroy']);
 });
 
 // Warga aktif (termasuk pengurus).

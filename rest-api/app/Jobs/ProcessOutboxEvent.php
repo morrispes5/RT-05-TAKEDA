@@ -59,10 +59,10 @@ class ProcessOutboxEvent implements ShouldQueue
 
     private function consume(): void
     {
-        DB::transaction(function () {
+        $completed = DB::transaction(function () {
             $event = OutboxEvent::whereKey($this->eventId)->lockForUpdate()->first();
             if (! $event || $event->completed_at || $event->failed_at) {
-                return;
+                return false;
             }
 
             Notifications::handle($event);
@@ -72,7 +72,19 @@ class ProcessOutboxEvent implements ShouldQueue
                 'dispatch_lease_until' => null,
                 'last_error_code' => null,
             ]);
+
+            return true;
         });
+
+        // Push setelah inbox commit, sebagai job terpisah: kegagalan provider/enqueue tidak
+        // membatalkan event yang sudah selesai (M10).
+        try {
+            if ($completed && DB::table('notifikasi')->where('event_id', $this->eventId)->whereNull('push_status')->exists()) {
+                SendPush::queueFor($this->eventId);
+            }
+        } catch (Throwable $e) {
+            Log::warning('push.schedule_failed', ['event_id' => $this->eventId, 'exception' => class_basename($e)]);
+        }
     }
 
     /** Semua percobaan habis: parkir event (tidak di-replay otomatis); ulang manual rt05:outbox-retry. */
