@@ -1,0 +1,1001 @@
+{
+  "schema": "rt05-m09-live-summary/v1",
+  "scope": "synthetic staging only",
+  "origin": "https://takeda-staging.morriz.tech",
+  "sourceSha": "617e1790c9d415831b33d5c3caabd9683f4b0e31",
+  "run": "Sintetis M09 F21B1E",
+  "finishedAt": "2026-10-13T15:03:10.171Z",
+  "status": "passed",
+  "cases": 48,
+  "assertions": 138,
+  "details": [
+    {
+      "case": "A00-api-info",
+      "routeTemplate": "GET /api/v1",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "api_version v1",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A01-actors",
+      "routeTemplate": "POST /api/v1/auth/mobile-login",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "admin pengurus, a/b aktif, p menunggu",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A02-pending-feed-denied",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 403,
+      "code": "FORBIDDEN",
+      "assertions": [
+        {
+          "name": "status 403",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A03-pending-create-denied",
+      "routeTemplate": "POST /api/v1/aspirations",
+      "httpStatus": 403,
+      "code": "FORBIDDEN",
+      "assertions": [
+        {
+          "name": "status 403",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A04-invalid-422",
+      "routeTemplate": "POST /api/v1/aspirations",
+      "httpStatus": 422,
+      "code": "VALIDATION_FAILED",
+      "assertions": [
+        {
+          "name": "status 422",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A05-title-too-long-422",
+      "routeTemplate": "POST /api/v1/aspirations",
+      "httpStatus": 422,
+      "code": "VALIDATION_FAILED",
+      "assertions": [
+        {
+          "name": "status 422",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A06-no-partial-writes",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "jumlah aspirasi A tetap",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A07-create-anonymous",
+      "routeTemplate": "POST /api/v1/aspirations",
+      "httpStatus": 201,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 201",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "diajukan versi 1, milik saya, pengirim = A",
+          "result": "passed"
+        },
+        {
+          "name": "tanpa kategori/foto, archived_at null",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A08-count-increased-by-one",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "jumlah +1",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A09-other-resident-detail-anonymous",
+      "routeTemplate": "GET /api/v1/aspirations/{id}",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "pengirim null, bukan milik saya",
+          "result": "passed"
+        },
+        {
+          "name": "tanpa ID/email/nama pengirim",
+          "result": "passed"
+        },
+        {
+          "name": "archived_at null untuk warga",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A10-feed-anonymous",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "aspirasi ada tanpa pengirim",
+          "result": "passed"
+        },
+        {
+          "name": "tanpa ID/email/nama pengirim",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A11-other-cannot-edit",
+      "routeTemplate": "PATCH /api/v1/aspirations/{id}",
+      "httpStatus": 403,
+      "code": "ASPIRATION_LOCKED",
+      "assertions": [
+        {
+          "name": "status 403",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        },
+        {
+          "name": "code ASPIRATION_LOCKED",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A12-owner-edit",
+      "routeTemplate": "PATCH /api/v1/aspirations/{id}",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "versi 2",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A13-owner-edit-stale-409",
+      "routeTemplate": "PATCH /api/v1/aspirations/{id}",
+      "httpStatus": 409,
+      "code": "VERSION_CONFLICT",
+      "assertions": [
+        {
+          "name": "status 409",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        },
+        {
+          "name": "code VERSION_CONFLICT",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A14-admin-sees-sender",
+      "routeTemplate": "GET /api/v1/aspirations/{id}",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "pengirim = A",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A15-resident-cannot-change-status",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/status",
+      "httpStatus": 403,
+      "code": "FORBIDDEN",
+      "assertions": [
+        {
+          "name": "status 403",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A16-invalid-transition-422",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/status",
+      "httpStatus": 422,
+      "code": "INVALID_STATUS_TRANSITION",
+      "assertions": [
+        {
+          "name": "status 422",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        },
+        {
+          "name": "code INVALID_STATUS_TRANSITION",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A17-complaint-status-name-422",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/status",
+      "httpStatus": 422,
+      "code": "VALIDATION_FAILED",
+      "assertions": [
+        {
+          "name": "status 422",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A18-to-reviewed",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/status",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "ditinjau v3",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A19-status-stale-409",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/status",
+      "httpStatus": 409,
+      "code": "VERSION_CONFLICT",
+      "assertions": [
+        {
+          "name": "status 409",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        },
+        {
+          "name": "code VERSION_CONFLICT",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A20-owner-edit-locked",
+      "routeTemplate": "PATCH /api/v1/aspirations/{id}",
+      "httpStatus": 403,
+      "code": "ASPIRATION_LOCKED",
+      "assertions": [
+        {
+          "name": "status 403",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        },
+        {
+          "name": "code ASPIRATION_LOCKED",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A21-to-completed",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/status",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "selesai v4",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A22-reopen-needs-reason",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/status",
+      "httpStatus": 422,
+      "code": "REOPEN_REASON_REQUIRED",
+      "assertions": [
+        {
+          "name": "status 422",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        },
+        {
+          "name": "code REOPEN_REASON_REQUIRED",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A23-reopen-with-reason",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/status",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "ditinjau v5",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A24-history-safe-for-others",
+      "routeTemplate": "GET /api/v1/aspirations/{id}/history",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "4 entri berurutan",
+          "result": "passed"
+        },
+        {
+          "name": "pengirim \"Warga\", tindakan \"Pengurus RT\"",
+          "result": "passed"
+        },
+        {
+          "name": "catatan buka ulang ada",
+          "result": "passed"
+        },
+        {
+          "name": "tanpa identitas pengirim",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A25-owner-inbox",
+      "routeTemplate": "GET /api/v1/notifications",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "3 notifikasi status (tanpa duplikat)",
+          "result": "passed"
+        },
+        {
+          "name": "jenis aspirasi",
+          "result": "passed"
+        },
+        {
+          "name": "tiap transisi disebut (Ditinjau, Selesai, Ditinjau)",
+          "result": "passed"
+        },
+        {
+          "name": "tanpa identitas",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A26-no-inbox-for-others",
+      "routeTemplate": "GET /api/v1/notifications",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "warga lain tidak menerima notifikasi aspirasi A",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A27-admin-notified-once-without-identity",
+      "routeTemplate": "GET /api/v1/notifications",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "satu \"Aspirasi baru\" untuk aspirasi ini",
+          "result": "passed"
+        },
+        {
+          "name": "teks tanpa identitas pengirim",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A28-filter-status",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "hanya ditinjau dan memuat aspirasi ini",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A29-filter-invalid-422",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 422,
+      "code": "VALIDATION_FAILED",
+      "assertions": [
+        {
+          "name": "status 422",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A30-pagination-meta",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "per_page 1, 1 item, total konsisten",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A31-per-page-capped",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "per_page dibatasi 100",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A32-mine-filter",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "aspirasi A tidak termasuk milik B",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A33-not-a-complaint",
+      "routeTemplate": "GET /api/v1/complaints/{id}",
+      "httpStatus": 404,
+      "code": "NOT_FOUND",
+      "assertions": [
+        {
+          "name": "status 404",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A34-other-creates-own",
+      "routeTemplate": "POST /api/v1/aspirations",
+      "httpStatus": 201,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 201",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A35-non-anonymous-visible",
+      "routeTemplate": "GET /api/v1/aspirations/{id}",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "pengirim tampil = B",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A36-archive-needs-reason",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/archive",
+      "httpStatus": 422,
+      "code": "VALIDATION_FAILED",
+      "assertions": [
+        {
+          "name": "status 422",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A37-archive",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/archive",
+      "httpStatus": 204,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 204",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A38-archive-again-409",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/archive",
+      "httpStatus": 409,
+      "code": "ALREADY_ARCHIVED",
+      "assertions": [
+        {
+          "name": "status 409",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        },
+        {
+          "name": "code ALREADY_ARCHIVED",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A39-archived-status-409",
+      "routeTemplate": "POST /api/v1/admin/aspirations/{id}/status",
+      "httpStatus": 409,
+      "code": "ALREADY_ARCHIVED",
+      "assertions": [
+        {
+          "name": "status 409",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        },
+        {
+          "name": "code ALREADY_ARCHIVED",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A40-archived-hidden-from-owner",
+      "routeTemplate": "GET /api/v1/aspirations/{id}",
+      "httpStatus": 404,
+      "code": "NOT_FOUND",
+      "assertions": [
+        {
+          "name": "status 404",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A41-archived-history-kept",
+      "routeTemplate": "GET /api/v1/aspirations/{id}/history",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "riwayat diajukan tetap",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A42-admin-archive-filter",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "arsip tampil dengan archived_at untuk pengurus",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A43-archived-hidden-in-feed",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        },
+        {
+          "name": "aspirasi arsip tidak tampil bagi warga",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A44-deactivate-other",
+      "routeTemplate": "PATCH /api/v1/admin/accounts/{id}",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A45-inactive-token-denied",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 401,
+      "code": "UNAUTHENTICATED",
+      "assertions": [
+        {
+          "name": "status 401|403",
+          "result": "passed"
+        },
+        {
+          "name": "error.code + request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A46-reactivate-other",
+      "routeTemplate": "PATCH /api/v1/admin/accounts/{id}",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "A47-reactivated-reads",
+      "routeTemplate": "GET /api/v1/aspirations",
+      "httpStatus": 200,
+      "code": null,
+      "assertions": [
+        {
+          "name": "status 200",
+          "result": "passed"
+        },
+        {
+          "name": "data + meta.request_id",
+          "result": "passed"
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "timing",
+      "inboxSeconds": 63
+    }
+  ]
+}

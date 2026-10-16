@@ -1,5 +1,13 @@
 # Koordinasi RT05 TAKEDA
 
+## Tahap M09 (ditutup 13 Oktober 2026)
+
+Pemilik meminta lanjut ke M09 setelah M08 ditutup, selaras dengan PRD, semua dokumen `.md`, dan capstone.
+Claude mengerjakan `rest-api/`, `mobile/`, infra/kontrak/bukti M09, CI, rollout staging sintetis, dan Android
+tanpa fleet paralel. **M09 passed** untuk staging sintetis (PROGRESS.md, evidence/m09/REPORT.md). Google Doc
+native M09 belum dikerjakan dan menunggu konfirmasi pemilik. Emulator dijalankan headless 2 GiB karena RAM PC
+terbatas, lalu dihentikan; font/ukuran layar dipulihkan. M10 tidak dibuka.
+
 ## Tahap M08 (ditutup 13 Oktober 2026) — dibuka 14 Oktober 2026 menurut catatan
 
 Pemilik mengotorisasi M08; catatan "tidak membuka M08" di penutupan M07
