@@ -113,13 +113,33 @@ function validatePlan(flavor, apiBaseUrl) {
     return { ok: true, builds: [{ flavor: checked.flavor, apiBaseUrl: checked.apiBaseUrl }] };
 }
 
-function debugArgs(checked) {
+// Firebase M10: nilai klien Android (bukan secret server) dari GitHub repository variables.
+// Semua atau tidak sama sekali; format diperiksa agar nilai salah tempel tidak masuk APK.
+const FIREBASE = {
+    FIREBASE_API_KEY: /^AIza[0-9A-Za-z_-]{35}$/,
+    FIREBASE_APP_ID: /^1:[0-9]{6,15}:android:[0-9a-f]{8,40}$/,
+    FIREBASE_SENDER_ID: /^[0-9]{6,15}$/,
+    FIREBASE_PROJECT_ID: /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/,
+};
+
+function firebaseDefines(env) {
+    const values = Object.keys(FIREBASE).map((k) => [k, env[`RT05_${k}`] ?? '']);
+    const filled = values.filter(([, v]) => v !== '');
+    if (filled.length === 0) return { ok: true, defines: [] };
+    if (filled.length !== values.length) return { ok: false, error: 'firebase-incomplete' };
+    const bad = values.find(([k, v]) => !FIREBASE[k].test(v));
+    if (bad) return { ok: false, error: `firebase-invalid:${bad[0]}` };
+    return { ok: true, defines: values.map(([k, v]) => `--dart-define=${k}=${v}`) };
+}
+
+function debugArgs(checked, firebase = []) {
     return [
         'build',
         'apk',
         '--debug',
         `--dart-define=API_BASE_URL=${checked.apiBaseUrl}`,
         `--dart-define=FLAVOR=${checked.flavor}`,
+        ...firebase,
     ];
 }
 
@@ -235,6 +255,16 @@ function selfTest() {
     expect(failures, stagingArgs.includes('--debug') && !stagingArgs.includes('--release'), 'args-debug');
     expect(failures, stagingArgs.includes(`--dart-define=FLAVOR=staging`) && stagingArgs.includes(`--dart-define=API_BASE_URL=${DEFAULTS.staging}`), 'args-flavor');
     expect(failures, validateBuild('staging', 'http://takeda-staging.morriz.tech').ok === false, 'args-withheld');
+    const fb = {
+        RT05_FIREBASE_API_KEY: `AIza${'A'.repeat(35)}`,
+        RT05_FIREBASE_APP_ID: '1:123456789012:android:0123456789abcdef',
+        RT05_FIREBASE_SENDER_ID: '123456789012',
+        RT05_FIREBASE_PROJECT_ID: 'rt05-takeda-uji',
+    };
+    expect(failures, firebaseDefines({}).ok && firebaseDefines({}).defines.length === 0, 'firebase-none');
+    expect(failures, firebaseDefines(fb).defines?.length === 4 && debugArgs(validateBuild('staging', DEFAULTS.staging), firebaseDefines(fb).defines).includes('--dart-define=FIREBASE_PROJECT_ID=rt05-takeda-uji'), 'firebase-all');
+    expect(failures, firebaseDefines({ RT05_FIREBASE_API_KEY: fb.RT05_FIREBASE_API_KEY }).error === 'firebase-incomplete', 'firebase-partial');
+    expect(failures, firebaseDefines({ ...fb, RT05_FIREBASE_PROJECT_ID: 'Bad Project; rm' }).error === 'firebase-invalid:FIREBASE_PROJECT_ID', 'firebase-invalid');
 
     const output = path.join(tmpdir(), `rt05-mobile-plan-${process.pid}.txt`);
     try {
@@ -272,7 +302,13 @@ function buildDebug() {
         console.error(`konfigurasi build ditolak: ${result.error}`);
         process.exit(1);
     }
-    const args = debugArgs(result);
+    const firebase = firebaseDefines(process.env);
+    if (!firebase.ok) {
+        console.error(`konfigurasi Firebase ditolak: ${firebase.error}`);
+        process.exit(1);
+    }
+    if (firebase.defines.length === 0) console.log('Firebase tidak dikonfigurasi: APK berjalan tanpa push (inbox saja).');
+    const args = debugArgs(result, firebase.defines);
     if (args.includes('--release') || !args.includes(`--dart-define=FLAVOR=${result.flavor}`)) {
         console.error('argumen build tidak konsisten');
         process.exit(1);

@@ -94,6 +94,12 @@ jobs:
         env:
           RT05_FLAVOR: ${{ matrix.build.flavor }}
           RT05_API_BASE_URL: ${{ matrix.build.apiBaseUrl }}
+          # M10 push: nilai klien Firebase Android dari repository variables (bukan secret).
+          # Kosong → APK tanpa push, inbox tetap bekerja.
+          RT05_FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
+          RT05_FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
+          RT05_FIREBASE_SENDER_ID: ${{ vars.FIREBASE_SENDER_ID }}
+          RT05_FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
         run: node ../infra/scripts/check-mobile-build-config.mjs --build-debug
       - uses: actions/upload-artifact@v4
         with:
