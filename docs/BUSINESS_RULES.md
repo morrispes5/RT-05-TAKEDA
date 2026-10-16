@@ -28,7 +28,7 @@ Kode BR dipakai pada API, tes, issue, dan kriteria milestone. Bagian A mempertah
 | BR20 | Pengumuman dan notifikasi layanan tersedia di mobile |
 | BR21 | Notifikasi mencakup status laporan, agenda, iuran, pengumuman, kebijakan privasi, dan update aplikasi |
 | BR22 | Data warga/keuangan penting dapat diekspor sesuai hak akses |
-| BR23 | Usulan kegiatan warga terpisah dari aspirasi dan dari agenda. Hanya usulan yang disetujui pengurus yang disalin sekali ke agenda resmi. Agenda tetap satu-satunya jadwal |
+| BR23 | Usulan kegiatan warga terpisah dari aspirasi dan dari agenda. Usulan yang disetujui pengurus langsung disalin sekali menjadi agenda resmi dan semua warga aktif diberi tahu. Agenda tetap satu-satunya jadwal |
 
 ## B. Keputusan implementasi v1
 
@@ -99,10 +99,10 @@ Jika anonymous_to_residents=true, resource warga tidak memuat user_id, nama, kon
 - Slug unik; perubahan slug perlu redirect agar URL lama tetap berguna.
 - Media belum ready tidak boleh published. Konten published menunjuk revision immutable yang sudah tervalidasi.
 - Agenda menggunakan timezone Asia/Jakarta; UTC pada penyimpanan timestamp. Rentang waktu harus valid.
-- Usulan kegiatan (BR23) disimpan terpisah. Pengurus dapat meninjau, meminta revisi, menyetujui, atau menolak. Catatan keputusan wajib saat meminta revisi atau menolak, dan riwayatnya tetap ada. Hanya status disetujui yang boleh menjadi satu baris agenda. Perubahan agenda setelah itu tidak mengubah pengajuan. Warga lain tidak melihat usulan maupun dokumennya; pengurus melihat pengusul. Dokumen pendukung privat, tanpa nama berkas asli.
+- Usulan kegiatan (BR23) disimpan terpisah (requirement [USULAN_KEGIATAN.md](USULAN_KEGIATAN.md)). Pengurus dapat meninjau, meminta revisi, menyetujui, atau menolak. Catatan keputusan wajib saat meminta revisi atau menolak, dan riwayatnya tetap ada. Persetujuan langsung membuat tepat satu agenda; waktu yang sudah lewat tidak dapat disetujui. Perubahan agenda setelah itu tidak mengubah pengajuan. Warga lain tidak melihat usulan maupun dokumennya; pengurus melihat pengusul. Dokumen pendukung privat (PDF/TXT/gambar), tanpa nama berkas asli.
 - Add-to-calendar adalah aksi pengguna melalui intent/link/ICS; tidak memerlukan akses penuh kalender Google.
 - Inbox notifikasi disimpan di Postgres. Push hanya membawa ID/type dan teks aman, bukan data keluarga atau isi sensitif.
-- Pengingat iuran hanya ke akun utama rumah pada v1; agenda/pengumuman ke warga aktif; status laporan ke pembuatnya. Usulan baru diberitahukan ke pengurus; perubahan status dan penjadwalan diberitahukan ke pengusul.
+- Pengingat iuran hanya ke akun utama rumah pada v1; agenda/pengumuman ke warga aktif; status laporan ke pembuatnya. Usulan baru dan perbaikan diberitahukan ke pengurus; keputusan diberitahukan ke pengusul; persetujuan memberi tahu semua warga aktif lewat agenda baru.
 - Reminder agenda satu kali H-1; pengingat iuran tanggal 5 dan 20 untuk periode berjalan; masing-masing key deduplikasi berbeda.
 - Preferences dapat mematikan push nonkritis; inbox riwayat layanan tetap ada.
 
@@ -115,7 +115,7 @@ Jika anonymous_to_residents=true, resource warga tidak memuat user_id, nama, kon
 | Data keluarga | Tidak | Keluarga sendiri | Status permohonan saja | Kelola |
 | Pengaduan/aspirasi | Tidak | Baca tersanitasi; buat/milik sendiri | Tidak | Kelola |
 | Agenda/pengumuman | Tidak | Baca | Tidak | Kelola |
-| Usulan kegiatan | Tidak | Buat dan baca milik sendiri; dokumen hanya milik sendiri | Tidak | Tinjau, putuskan, salin yang disetujui ke agenda |
+| Usulan kegiatan | Tidak | Buat dan baca milik sendiri; dokumen hanya milik sendiri | Tidak | Tinjau dan putuskan; persetujuan otomatis menjadi agenda |
 | Transparansi iuran/kas | Tidak | Ringkasan dan status rumah | Tidak | Detail/kelola |
 | Token registrasi | Tidak | Tidak | Tidak | Lihat/rotasi |
 | Audit/ekspor administrasi | Tidak | Tidak | Tidak | Baca/ekspor |

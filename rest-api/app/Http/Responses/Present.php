@@ -311,16 +311,25 @@ final class Present
 
         return [
             'id' => $u->id,
+            'jenis' => $u->jenis,
             'nama' => $u->nama,
             'deskripsi' => $u->deskripsi,
             'lokasi' => $u->lokasi,
             'mulai_at' => self::ts($u->mulai_at),
             'selesai_at' => self::ts($u->selesai_at),
+            'perkiraan_peserta' => $u->perkiraan_peserta,
+            'kebutuhan' => $u->kebutuhan,
             'status' => $u->status,
             'versi' => $u->versi,
             'agenda_id' => $u->agenda_id,
+            'milik_saya' => $own,
             'pengusul' => $viewer->isPengurus() || $own
-                ? ['id' => $u->pengusul_id, 'nama' => $u->relationLoaded('pengusul') ? $u->pengusul?->nama : null]
+                ? [
+                    'id' => $u->pengusul_id,
+                    'nama' => $u->relationLoaded('pengusul') ? $u->pengusul?->nama : null,
+                    // Kode rumah dari snapshot pengajuan; hanya pengurus dan pengusul sendiri.
+                    'rumah' => $u->rumah_id ? Rumah::whereKey($u->rumah_id)->value('kode_rumah') : null,
+                ]
                 : null,
             'dokumen' => $u->relationLoaded('dokumen') ? $u->dokumen->map(fn ($d) => [
                 'id' => $d->id,
