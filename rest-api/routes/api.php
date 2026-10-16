@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityProposalController;
 use App\Http\Controllers\Admin\OperationsController;
 use App\Http\Controllers\Admin\ResidentsController;
 use App\Http\Controllers\AuthController;
@@ -62,6 +63,13 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
     Route::patch('aspirations/{id}', [ReportsController::class, 'updateAspiration'])->whereUuid('id');
     Route::get('aspirations/{id}/history', [ReportsController::class, 'aspirationHistory'])->whereUuid('id');
 
+    Route::get('activity-proposals', [ActivityProposalController::class, 'index']);
+    Route::post('activity-proposals', [ActivityProposalController::class, 'store'])->middleware('throttle:laporan');
+    Route::get('activity-proposals/{id}', [ActivityProposalController::class, 'show'])->whereUuid('id');
+    Route::patch('activity-proposals/{id}', [ActivityProposalController::class, 'update'])->whereUuid('id');
+    Route::get('activity-proposals/{id}/history', [ActivityProposalController::class, 'history'])->whereUuid('id');
+    Route::get('activity-proposals/{id}/documents/{documentId}', [ActivityProposalController::class, 'document'])->whereUuid(['id', 'documentId']);
+
     Route::get('agendas', [CommunityController::class, 'agendas']);
     Route::get('agendas/{id}', [CommunityController::class, 'agenda'])->whereUuid('id');
     Route::get('agendas/{id}/calendar', [CommunityController::class, 'agendaCalendar'])->whereUuid('id');
@@ -120,6 +128,9 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::post('complaints/{id}/archive', [ReportsController::class, 'archiveComplaint'])->whereUuid('id');
     Route::post('aspirations/{id}/status', [ReportsController::class, 'changeAspirationStatus'])->whereUuid('id');
     Route::post('aspirations/{id}/archive', [ReportsController::class, 'archiveAspiration'])->whereUuid('id');
+
+    Route::post('activity-proposals/{id}/status', [ActivityProposalController::class, 'changeStatus'])->whereUuid('id');
+    Route::post('activity-proposals/{id}/schedule', [ActivityProposalController::class, 'schedule'])->whereUuid('id');
 
     Route::post('agendas', [CommunityController::class, 'storeAgenda']);
     Route::put('agendas/{id}', [CommunityController::class, 'updateAgenda'])->whereUuid('id');

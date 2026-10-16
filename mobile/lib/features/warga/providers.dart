@@ -44,3 +44,15 @@ final reportDetailProvider = FutureProvider.autoDispose.family<(Laporan, List<Js
   final results = await Future.wait([api.get(base), api.get('$base/history')]);
   return (Laporan(Json.from(results[0] as Map), aspirasi: aspirasi), (results[1] as List).cast<Map>().map(Json.from).toList());
 });
+
+/// Daftar usulan: null = semua status yang boleh dilihat peran ini (milik sendiri, atau semua bagi pengurus).
+final activityProposalsProvider = FutureProvider.autoDispose.family<List<Json>, String?>((ref, status) async {
+  final res = await ref.read(apiProvider).page('/activity-proposals', query: {'status': ?status, 'per_page': 50});
+  return (res['data'] as List).cast<Map>().map(Json.from).toList();
+});
+
+final activityProposalDetailProvider = FutureProvider.autoDispose.family<(Json, List<Json>), String>((ref, id) async {
+  final api = ref.read(apiProvider);
+  final results = await Future.wait([api.get('/activity-proposals/$id'), api.get('/activity-proposals/$id/history')]);
+  return (Json.from(results[0] as Map), (results[1] as List).cast<Map>().map(Json.from).toList());
+});

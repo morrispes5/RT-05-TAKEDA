@@ -1,5 +1,18 @@
 # Progress — RT05 TAKEDA
 
+## Usulan kegiatan warga — 15 Oktober 2026
+
+Instruksi pemilik: warga yang sudah login dapat mengusulkan kegiatan, pengurus meninjau/meminta revisi/menyetujui/menolak, dan hanya usulan disetujui yang masuk agenda resmi. Satu sumber jadwal tetap tabel `agenda` (ADR24, BR23). Bukan penutupan M10; FCM tetap belum ada.
+
+| Perintah | Hasil |
+| --- | --- |
+| `php vendor/bin/pint --dirty` (rest-api) | passed |
+| `php artisan test` pada Postgres lokal `rt05_test` port 5432 (bukan Neon) | **233/233, 2300 assertion** |
+| `node infra/scripts/check-repo.mjs` | OK (805 berkas) |
+| Flutter analyze/test | tidak dijalankan: SDK Flutter tidak tersedia di mesin ini |
+
+Berkas: migrasi `2026_10_15_000200_create_usulan_kegiatan_tables`, layanan `ActivityProposals`, `ActivityProposalTest`, rute dan OpenAPI `activity-proposals`, notifikasi jenis `usulan`, layar mobile daftar/form/detail untuk warga dan pengurus. Migrasi diuji lewat suite (schema `rt05_test` sudah memuat tabel baru). Tidak ada deploy, perubahan DNS, atau data warga asli.
+
 ## Penyesuaian shared hosting — 15 Oktober 2026
 
 Status tambahan M03/M04: **in_progress**, live **blocked**. Branch `codex/m03-shared-hosting-profile` dari `840cf09`. M07/M08 tetap passed pada baseline VPS. Dokumen branch PR24 menyatakan M09 gate staging passed, tetapi PR masih terpisah; tidak mengubah penerimaan main atau merge PR tersebut.

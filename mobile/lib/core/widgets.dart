@@ -90,7 +90,7 @@ class StatusChip extends StatelessWidget {
     final (fg, bg, icon) = switch (status) {
       'lunas' || 'selesai' || 'aktif' || 'disetujui' || 'tercatat' => (Brand.success, Brand.successBg, Icons.check_circle_rounded),
       'belum_bayar' || 'ditolak' || 'dibatalkan' || 'nonaktif' => (Brand.danger, Brand.dangerBg, Icons.error_rounded),
-      'diproses' || 'ditinjau' || 'menunggu' => (Brand.warning, Brand.warningBg, Icons.timelapse_rounded),
+      'diproses' || 'ditinjau' || 'perlu_revisi' || 'menunggu' => (Brand.warning, Brand.warningBg, Icons.timelapse_rounded),
       _ => (Brand.navy, Brand.sky, Icons.radio_button_checked_rounded),
     };
     // Skala teks label dibatasi 1,5× (status tetap terbaca lewat warna + ikon + teks) dan teks

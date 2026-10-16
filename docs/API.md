@@ -166,6 +166,29 @@ bukan pemilik/bukan diajukan 403 `ASPIRATION_LOCKED`; admin transisi invalid 422
 `ALREADY_ARCHIVED`. Filter `status` pada `GET /complaints` kini juga ditolak 422 bila bukan
 `diajukan|diproses|selesai`.
 
+## Usulan kegiatan
+
+Warga aktif mengajukan kegiatan (bukan aspirasi dan bukan agenda). Pengurus meninjau. Hanya usulan `disetujui` yang dapat disalin **sekali** menjadi satu baris `agenda`. `GET /agendas` tetap satu-satunya jadwal resmi; usulan tidak ikut di daftar itu. Suntingan agenda setelah penjadwalan tidak menulis ulang usulan.
+
+| Endpoint | Perilaku |
+| --- | --- |
+| GET /activity-proposals | Warga: milik sendiri. Pengurus: semua. Filter `status` opsional |
+| POST /activity-proposals | Multipart `nama`, `deskripsi`, `lokasi`, `mulai_at`, `selesai_at` opsional, `dokumen[]` opsional |
+| GET /activity-proposals/{id} | Pengusul atau pengurus; warga lain 404 |
+| PATCH /activity-proposals/{id} | Pengusul, hanya `diajukan` atau `perlu_revisi`, wajib `versi`. Dari `perlu_revisi` kembali ke `diajukan` |
+| GET /activity-proposals/{id}/history | Riwayat keputusan |
+| GET /activity-proposals/{id}/documents/{documentId} | Unduhan privat `Content-Disposition: attachment`, `nosniff`, `no-store` |
+| POST /admin/activity-proposals/{id}/status | `ditinjau`, `perlu_revisi`, `disetujui`, `ditolak` plus `expected_version` |
+| POST /admin/activity-proposals/{id}/schedule | Hanya `disetujui` dan `agenda_id` masih kosong |
+
+Status: `diajukan` → `ditinjau` | `perlu_revisi` | `disetujui` | `ditolak`; dari `ditinjau` ke `perlu_revisi` | `disetujui` | `ditolak`. Catatan wajib untuk `perlu_revisi` dan `ditolak` (`DECISION_NOTE_REQUIRED` 422). Versi basi `VERSION_CONFLICT` 409. Usulan yang sudah punya agenda tidak dapat diubah statusnya (`PROPOSAL_SCHEDULED` 409). Jadwal kedua `ALREADY_SCHEDULED` 409. Bukan pengusul atau status terkunci `PROPOSAL_LOCKED` 403. Akun menunggu 403.
+
+Dokumen maksimal 3, masing-masing 8 MB: PDF, JPG, PNG, atau WebP menurut magic bytes (`UNSUPPORTED_MEDIA_TYPE` 415, `TOO_MANY_DOCUMENTS` 422, `PAYLOAD_TOO_LARGE` 413). PDF disimpan apa adanya setelah penanda `%PDF-`. Gambar diubah menjadi JPEG ≤1600 px di request yang sama (EXIF dibuang). Kunci penyimpanan `usulan/dokumen/{uuid}` pada disk privat; nama berkas asli dan identitas pengusul tidak masuk ke kunci atau URL. Dokumen tidak menempel pada agenda.
+
+Perbaikan yang menambah berkas memakai `POST` dengan `_method=PATCH` karena PHP tidak mengisi unggahan pada metode PATCH. Tanpa berkas baru, klien mengirim JSON PATCH.
+
+Notifikasi outbox: `usulan.diajukan` ke pengurus, `usulan.status_berubah` dan `usulan.dijadwalkan` ke pengusul. Penjadwalan juga mencatat `agenda.dibuat`, sehingga warga aktif menerima pemberitahuan agenda yang sudah ada. Inbox tetap disimpan bila push gagal.
+
 ## Agenda, pengumuman, notifikasi
 
 GET /agendas, /agendas/{id}, /agendas/{id}/calendar (link/ICS); GET /announcements dan detail; GET /notifications; PATCH /notifications/{id}/read; POST /notifications/read-all; PUT/DELETE /devices/{device_identifier}; PATCH /notification-preferences.

@@ -14,6 +14,7 @@ import '../../core/widgets.dart';
 import '../auth/account_access.dart';
 import '../household/family_actions.dart' show conflictKeptMessage, staleConflict;
 import '../household/family_page.dart';
+import 'activity_proposals.dart';
 import 'providers.dart';
 import 'report_actions.dart';
 
@@ -792,7 +793,19 @@ class AgendaPage extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Text('Agenda RT', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+          const Text(
+            'Agenda ini jadwal resmi RT. Usulan warga masuk ke sini hanya setelah disetujui pengurus.',
+            style: TextStyle(color: Brand.muted, height: 1.4),
+          ),
+          const SizedBox(height: 12),
+          BusyButton(
+            label: 'Usulan kegiatan',
+            icon: Icons.event_note_outlined,
+            outlined: true,
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivityProposalListPage(admin: false))),
+          ),
+          const SizedBox(height: 16),
           AsyncView(
             value: agendas,
             onRetry: () => ref.invalidate(agendasProvider),
@@ -1224,6 +1237,7 @@ class NotificationsPage extends ConsumerWidget {
                         const {
                               'pengaduan': Icons.report_outlined,
                               'aspirasi': Icons.lightbulb_outline,
+                              'usulan': Icons.event_note_outlined,
                               'agenda': Icons.event,
                               'pengumuman': Icons.campaign_outlined,
                               'iuran': Icons.payments_outlined,
@@ -1241,12 +1255,20 @@ class NotificationsPage extends ConsumerWidget {
                         }
                         final refType = (n['referensi'] as Map?)?['tipe'];
                         final refId = (n['referensi'] as Map?)?['id'];
-                        if (context.mounted && (refType == 'pengaduan' || refType == 'aspirasi') && refId != null) {
-                          // Detail dimuat ulang dari API (policy server), bukan dari payload notifikasi.
+                        if (!context.mounted || refId == null) return;
+                        // Detail dimuat ulang dari API (policy server), bukan dari payload notifikasi.
+                        if (refType == 'pengaduan' || refType == 'aspirasi') {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => ReportDetailPage(aspirasi: refType == 'aspirasi', id: '$refId', admin: ref.read(sessionProvider).pengurus),
+                            ),
+                          );
+                        } else if (refType == 'usulan_kegiatan' || n['jenis'] == 'usulan') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ActivityProposalDetailPage(id: '$refId', admin: ref.read(sessionProvider).pengurus),
                             ),
                           );
                         }
