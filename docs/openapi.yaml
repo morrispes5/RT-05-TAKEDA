@@ -203,11 +203,20 @@ paths:
       tags:
         - Community
       summary: Buat agenda
+      description: Waktu ISO 8601 dengan zona eksplisit; mulai harus di masa depan. Warga aktif diberi tahu (inbox + push).
       x-status: implemented
       x-milestone: M10
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AgendaInput'}
       responses:
         "201":
-          $ref: "#/components/responses/Data"
+          description: Agenda dibuat.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AgendaEnvelope'}
         default:
           $ref: "#/components/responses/Error"
   /api/v1/admin/agendas/{id}:
@@ -217,12 +226,23 @@ paths:
       operationId: putUpdateAgendaAdminAgendas
       tags:
         - Community
-      summary: updateAgenda /admin/agendas/{id}
+      summary: Ubah agenda
+      description: >-
+        Ganti penuh. Waktu baru wajib di masa depan; ubah deskripsi agenda lewat tetap boleh.
+        Perubahan waktu/lokasi memberi tahu warga dan menjadwalkan ulang pengingat H-1.
       x-status: implemented
       x-milestone: M10
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AgendaInput'}
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: Agenda diperbarui.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AgendaEnvelope'}
         default:
           $ref: "#/components/responses/Error"
   /api/v1/admin/agendas/{id}/archive:
@@ -1133,11 +1153,15 @@ paths:
       tags:
         - Community
       summary: Detail agenda
+      description: Agenda diarsipkan atau tidak ada → 404 (tautan notifikasi basi aman).
       x-status: implemented
       x-milestone: M10
       responses:
         "200":
-          $ref: "#/components/responses/Data"
+          description: Detail agenda.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AgendaEnvelope'}
         default:
           $ref: "#/components/responses/Error"
   /api/v1/agendas/{id}/calendar:
@@ -1899,9 +1923,23 @@ paths:
       tags:
         - Community
       summary: Daftarkan token push perangkat
-      x-status: planned
+      description: >-
+        Hanya sesi bearer aplikasi Android (cookie 403 MOBILE_SESSION_REQUIRED). Akun aktif atau
+        menunggu. Baris terikat token akses: logout/revoke menghapusnya. Token FCM tidak pernah
+        dikembalikan; satu token hanya milik satu akun.
+      x-status: implemented
       x-milestone: M10
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DeviceInput'}
       responses:
+        "200":
+          description: Perangkat terdaftar.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/DeviceEnvelope'}
         default:
           $ref: "#/components/responses/Error"
     delete:
@@ -1909,9 +1947,12 @@ paths:
       tags:
         - Community
       summary: Hapus token push perangkat
-      x-status: planned
+      description: Idempotent; perangkat akun lain tidak tersentuh.
+      x-status: implemented
       x-milestone: M10
       responses:
+        "204":
+          description: Berhasil tanpa body.
         default:
           $ref: "#/components/responses/Error"
   /api/v1/dues/my:
@@ -3116,6 +3157,57 @@ components:
           properties:
             next: {type: [string, 'null']}
             prev: {type: [string, 'null']}
+    AgendaInput:
+      type: object
+      required: [nama, deskripsi, lokasi, mulai_at]
+      properties:
+        nama: {type: string, minLength: 3, maxLength: 160}
+        deskripsi: {type: string, maxLength: 5000}
+        lokasi: {type: string, minLength: 3, maxLength: 200}
+        mulai_at: {type: string, format: date-time, description: 'Zona wajib, mis. 2026-10-23T09:00:00+07:00 atau Z.'}
+        selesai_at: {type: [string, 'null'], format: date-time, description: 'Setelah mulai_at.'}
+    Agenda:
+      type: object
+      additionalProperties: false
+      required: [id, nama, deskripsi, lokasi, mulai_at, selesai_at, google_calendar_url, ics_url, archived_at]
+      properties:
+        id: {type: string, format: uuid}
+        nama: {type: string}
+        deskripsi: {type: string}
+        lokasi: {type: string}
+        mulai_at: {type: string, format: date-time}
+        selesai_at: {type: [string, 'null'], format: date-time}
+        google_calendar_url: {type: string}
+        ics_url: {type: string}
+        archived_at: {type: [string, 'null'], format: date-time}
+    AgendaEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data: {$ref: '#/components/schemas/Agenda'}
+        meta: {$ref: '#/components/schemas/Meta'}
+    DeviceInput:
+      type: object
+      required: [fcm_token, platform]
+      properties:
+        fcm_token: {type: string, minLength: 20, maxLength: 4096}
+        platform: {type: string, enum: [android]}
+    Device:
+      type: object
+      additionalProperties: false
+      required: [device_identifier, platform, last_seen_at]
+      properties:
+        device_identifier: {type: string}
+        platform: {type: string, enum: [android]}
+        last_seen_at: {type: [string, 'null'], format: date-time}
+    DeviceEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data: {$ref: '#/components/schemas/Device'}
+        meta: {$ref: '#/components/schemas/Meta'}
     ReportHistoryEntry:
       type: object
       additionalProperties: false

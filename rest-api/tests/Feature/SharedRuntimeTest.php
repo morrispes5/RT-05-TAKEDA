@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Community\Push\PushGateway;
 use App\Support\Heartbeat;
 use App\Support\SharedHosting;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Tests\Support\CommittedData;
 use Tests\Support\Fixtures;
 use Tests\TestCase;
 use Throwable;
@@ -18,7 +21,7 @@ use Throwable;
  */
 class SharedRuntimeTest extends TestCase
 {
-    use Fixtures;
+    use CommittedData, Fixtures;
 
     private ?string $resetEmail = null;
 
@@ -164,6 +167,55 @@ class SharedRuntimeTest extends TestCase
             DB::statement('RESET statement_timeout');
             ini_set('default_socket_timeout', '60');
             set_time_limit(0);
+        }
+    }
+
+    /**
+     * M10 shared: pengumuman → inbox + push FCM selesai setelah response, tanpa cron dan tanpa
+     * worker permanen; target inbox ≤60 detik (SHARED_HOSTING.md).
+     */
+    public function test_announcement_inbox_and_push_finish_after_the_response_within_60_seconds(): void
+    {
+        $this->markCommittedData();
+        try {
+            $cnf = dirname(PHP_BINARY).'/extras/ssl/openssl.cnf';
+            $opts = ['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA] + (is_file($cnf) && ! getenv('OPENSSL_CONF') ? ['config' => $cnf] : []);
+            openssl_pkey_export(openssl_pkey_new($opts), $pem, null, $opts);
+            config(['rt05.push.fcm.credentials_base64' => base64_encode(json_encode([
+                'type' => 'service_account', 'project_id' => 'rt05-uji', 'client_email' => 'push@rt05-uji.iam.gserviceaccount.com', 'private_key' => $pem,
+            ]))]);
+            $this->app->forgetInstance(PushGateway::class);
+            Http::fake([
+                'oauth2.googleapis.com/*' => Http::response(['access_token' => 'akses-uji', 'expires_in' => 3600]),
+                'fcm.googleapis.com/*' => Http::response(['name' => 'projects/rt05-uji/messages/1']),
+            ]);
+
+            $warga = $this->warga('shared-m10-'.bin2hex(random_bytes(2)));
+            $this->withToken($warga->createToken('android')->plainTextToken)
+                ->putJson('/api/v1/devices/hp-shared-m10', ['fcm_token' => 'fcm-shared_'.str_repeat('Ab1', 12), 'platform' => 'android'])->assertOk();
+            $this->app['auth']->forgetGuards();
+            $admin = $this->pengurus('shared-m10-'.bin2hex(random_bytes(3)).'@contoh.test');
+
+            $kernel = $this->app->make(Kernel::class);
+            $request = Request::create('/api/v1/admin/announcements', 'POST', [], [], [], ['CONTENT_TYPE' => 'application/json'],
+                json_encode(['judul' => 'Kerja bakti Minggu', 'isi' => 'Kumpul pukul 07.00 di lapangan RT 05.']));
+            $request->headers->set('Accept', 'application/json');
+            $request->headers->set('Authorization', 'Bearer '.$admin->createToken('android')->plainTextToken);
+            $started = microtime(true);
+            $response = $kernel->handle($request);
+            $this->assertSame(201, $response->getStatusCode());
+            $inbox = fn () => DB::table('notifikasi')->where('penerima_id', $warga->id)->where('jenis', 'pengumuman')->first();
+            $this->assertNull($inbox(), 'inbox dibuat setelah response, bukan di dalam request');
+
+            $kernel->terminate($request, $response);
+
+            $this->assertLessThan(60, microtime(true) - $started);
+            $this->assertNotNull($inbox());
+            $this->assertSame('terkirim', $inbox()->push_status);
+            Http::assertSent(fn ($r) => str_contains($r->url(), 'fcm.googleapis.com/v1/projects/rt05-uji/messages:send'));
+            $this->assertFalse(SharedHosting::backlog());
+        } finally {
+            $this->purgeCommittedData();
         }
     }
 

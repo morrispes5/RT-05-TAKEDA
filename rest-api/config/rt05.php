@@ -21,6 +21,24 @@ return [
         'stale_seconds' => (int) env('RT05_OUTBOX_STALE_SECONDS', 900),
     ],
 
+    // M10 push Android. Tanpa kredensial → inbox saja (push_status dilewati). Kredensial service
+    // account FCM hanya dari env runtime: path berkas di luar web root atau JSON base64.
+    'push' => [
+        'driver' => env('RT05_PUSH_DRIVER', 'fcm'),
+        'fcm' => [
+            'project_id' => env('FCM_PROJECT_ID'),
+            'credentials_path' => env('FCM_CREDENTIALS_PATH'),
+            'credentials_base64' => env('FCM_CREDENTIALS_BASE64'),
+            'timeout' => (int) env('FCM_TIMEOUT', 10),
+            'concurrency' => (int) env('FCM_CONCURRENCY', 20),
+        ],
+        // Penerima per putaran job; shared hosting memakai batas waktu kooperatif yang sama.
+        'batch' => (int) env('RT05_PUSH_BATCH', 50),
+        'run_seconds' => (int) env('RT05_PUSH_RUN_SECONDS', 15),
+        // Notifikasi lebih tua dari ini (downtime panjang) tidak lagi di-push; inbox tetap.
+        'max_age_hours' => (int) env('RT05_PUSH_MAX_AGE_HOURS', 24),
+    ],
+
     // M06 identitas (docs/API.md §Autentikasi, SECURITY.md §Identitas).
     'auth' => [
         // Nama cookie CSRF API; berbeda dari XSRF-TOKEN milik website pada origin yang sama.

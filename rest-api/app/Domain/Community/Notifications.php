@@ -12,6 +12,7 @@ use App\Models\Pengaduan;
 use App\Models\Pengumuman;
 use App\Models\PermohonanAkun;
 use App\Models\UsulanKegiatan;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -20,7 +21,8 @@ use Illuminate\Support\Str;
  * Konsumen outbox → inbox notifikasi (FR20, BR21), dipanggil job ProcessOutboxEvent setelah
  * OutboxDispatcher mengirim ID event ke antrean. Idempotent: UNIQUE(event_id, penerima_id)
  * sehingga replay event tidak menggandakan notifikasi. Teks aman: tidak memuat identitas pelapor
- * anonim, data keluarga, atau nominal pribadi rumah lain. Push FCM menyusul (adapter M10).
+ * anonim, data keluarga, atau nominal pribadi rumah lain. Push FCM menyusul setelah commit lewat
+ * job SendPush (M10); kegagalan push tidak mengubah inbox maupun event.
  */
 final class Notifications
 {
@@ -39,10 +41,13 @@ final class Notifications
             'usulan.status_berubah' => self::proposalStatus($event),
             'pengumuman.terbit' => ($p = Pengumuman::find($id)) && self::send($event, self::activeResidents(), 'pengumuman', ['pengumuman_id' => $id],
                 Str::limit($p->judul, 150), Str::limit(strip_tags($p->isi), 180)),
-            'agenda.dibuat', 'agenda.pengingat' => self::agenda($event),
+            'agenda.dibuat', 'agenda.diubah', 'agenda.pengingat' => self::agenda($event),
             'akun.permohonan_tambahan' => self::toPengurus($event, 'sistem', [], 'Permohonan akun tambahan', 'Ada permohonan akun tambahan yang menunggu persetujuan.'),
             'akun.permohonan_disetujui' => self::send($event, [$id], 'sistem', [], 'Akun disetujui', 'Akun Anda telah disetujui pengurus. Selamat datang di RT05 TAKEDA.'),
             'iuran.pembayaran_dicatat' => self::paymentRecorded($event),
+            // Siaran operator (rt05:siaran-sistem): kebijakan layanan atau pembaruan aplikasi.
+            'sistem.siaran' => self::send($event, self::activeResidents(), 'sistem', [],
+                Str::limit((string) ($event->safe_payload['judul'] ?? 'Informasi RT05 TAKEDA'), 150), Str::limit((string) ($event->safe_payload['isi'] ?? ''), 500)),
             // Event sintetis: rt05:async-smoke (penerima akun sintetis, database *_test) atau
             // rt05:staging-smoke (penerima kosong → tanpa inbox).
             'rt05.smoke' => self::send($event, $event->safe_payload['penerima'] ?? [], 'sistem', [], 'Uji antrean', 'Notifikasi sintetis uji worker.'),
@@ -85,8 +90,21 @@ final class Notifications
         if (! $agenda || $agenda->archived_at) {
             return false;
         }
-        $when = $agenda->mulai_at->setTimezone('Asia/Jakarta')->translatedFormat('l, d F Y H:i');
-        $title = $event->type === 'agenda.pengingat' ? 'Pengingat agenda besok' : 'Agenda baru';
+        $title = $event->type === 'agenda.diubah' ? 'Jadwal agenda berubah' : 'Agenda baru';
+        // Basi: waktu agenda berubah lagi setelah event dicatat (event baru menyusul untuk waktu baru).
+        $planned = $event->safe_payload['mulai_at'] ?? null;
+        if ($planned && ! $agenda->mulai_at->equalTo(Carbon::parse($planned))) {
+            return false;
+        }
+        if ($event->type === 'agenda.pengingat') {
+            // Agenda sudah dimulai karena worker/cron sempat mati: pengingat tidak lagi berguna.
+            if ($agenda->mulai_at->lte(now())) {
+                return false;
+            }
+            $days = (int) now('Asia/Jakarta')->startOfDay()->diffInDays($agenda->mulai_at->copy()->setTimezone('Asia/Jakarta')->startOfDay());
+            $title = $days === 0 ? 'Pengingat agenda hari ini' : 'Pengingat agenda besok';
+        }
+        $when = $agenda->mulai_at->copy()->setTimezone('Asia/Jakarta')->translatedFormat('l, d F Y H:i');
 
         return self::send($event, self::activeResidents(), 'agenda', ['agenda_id' => $agenda->id], $title, Str::limit($agenda->nama, 80).' — '.$when.' WIB, '.Str::limit($agenda->lokasi, 60).'.');
     }
