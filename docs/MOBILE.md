@@ -86,6 +86,8 @@ Port eksplisit harus 1 sampai 65535; slash akhir origin dan port default dinorma
 
 Push membawa entity ID/type; navigation deep link memanggil API dan policy lagi. Notifikasi yang tidak lagi authorized tidak membuka data dari payload push.
 
+M10: Firebase diinisialisasi dari `--dart-define` `FIREBASE_API_KEY`, `FIREBASE_APP_ID`, `FIREBASE_SENDER_ID`, `FIREBASE_PROJECT_ID` (nilai klien Android, bukan secret; CI dari repository variables `FIREBASE_*`, semua atau tidak sama sekali). Tanpa nilai itu aplikasi berjalan tanpa push dan halaman Pengaturan notifikasi menjelaskan "Push belum tersedia". Setelah sesi aktif/menunggu tervalidasi, aplikasi meminta izin (Android 13+) sekali lalu `PUT /devices/{id}` dengan ID instalasi acak dari secure storage (bukan ANDROID_ID). Izin ditolak: layanan tetap, ada panduan membuka pengaturan HP, dan lencana inbox dimuat ulang saat aplikasi kembali aktif. Foreground: alert info dan inbox dimuat ulang. Ketukan dari latar belakang/tertutup: tandai dibaca, buka inbox, lalu detail dimuat dari API; jenis/ID di luar daftar diabaikan, 404/403 tampil "tidak lagi tersedia". Pengurus: Lainnya → Agenda & pengumuman (buat/ubah/arsipkan dengan konfirmasi, dialog hasil, error per field).
+
 ## Release
 
 APK release signed dari CI atau mesin developer. Signing keystore/password disimpan secret di luar repo, backup aman. Generate checksum, version code/name, minimum version, dan release notes. Distribusi awal melalui HTTPS download page pada VPS; install diuji HP nyata.

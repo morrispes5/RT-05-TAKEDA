@@ -70,8 +70,8 @@ dipertahankan untuk image M06 dan diperbarui dalam transaksi yang sama dengan hi
 | riwayat_usulan_kegiatan | status_dari/status_ke, catatan keputusan, aktor |
 | dokumen_usulan | storage_key acak unik, mime, bytes, urutan; tanpa nama berkas asli |
 | announcements | id, title, body, status, published_at, created_by, version, archived_at |
-| notifications | id, event_id, recipient_id, type, safe_payload json, read_at, created_at; unique event/recipient |
-| device_tokens | id, user_id, device_identifier, fcm_token encrypted, platform, active, last_seen_at |
+| notifications | id, event_id, recipient_id, type, safe_payload json, read_at, created_at; unique event/recipient. M10: `push_status` (terkirim/dilewati/gagal, null = menunggu) dan `push_at` |
+| perangkat_push (device_tokens) | id, akun_id, personal_access_token_id (FK cascade), device_identifier unik, token_hash unik, fcm_token encrypted, platform android, last_seen_at. Implementasi M10 |
 | articles | id, slug unique, draft_payload json, published_payload json, status, version, published_at, created_by, archived_at |
 | albums | id, slug unique, title, description, event_date nullable, cover_media_id, status, version, published_at |
 | album_photos | id, album_id, media_asset_id, sort_order, alt, caption; unique album/media dan ordering tervalidasi |

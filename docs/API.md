@@ -196,7 +196,15 @@ Notifikasi outbox: `usulan.diajukan` dan `usulan.diperbaiki` ke pengurus; `usula
 
 GET /agendas, /agendas/{id}, /agendas/{id}/calendar (link/ICS); GET /announcements dan detail; GET /notifications; PATCH /notifications/{id}/read; POST /notifications/read-all; PUT/DELETE /devices/{device_identifier}; PATCH /notification-preferences.
 
-Admin: GET/POST/PATCH /admin/agendas dan /admin/announcements; POST {id}/publish atau /archive. Agenda published saat starts_at valid; batas state di OpenAPI.
+Admin: POST /admin/agendas, PUT /admin/agendas/{id}, POST /admin/agendas/{id}/archive; sama untuk /admin/announcements.
+
+M10 (implementasi 17 Oktober 2026):
+
+- Waktu agenda wajib ISO 8601 dengan zona eksplisit (`Z` atau `+07:00`); tanpa zona 422. Mulai harus di masa depan saat dibuat atau saat waktunya dipindah; selesai harus setelah mulai. Disimpan UTC, respons selalu UTC `...Z`, aplikasi menampilkan WIB.
+- Agenda baru → `agenda.dibuat`; waktu/lokasi berubah → `agenda.diubah` ("Jadwal agenda berubah") dan pengingat H-1 dijadwalkan ulang; ubah deskripsi saja tanpa notifikasi. Agenda/pengumuman terarsip 404 (tautan notifikasi basi aman).
+- `PUT /devices/{device_identifier}` body `{fcm_token, platform: android}` → 200 `{device_identifier, platform, last_seen_at}`; token tidak pernah dikembalikan. Hanya sesi bearer aplikasi (`MOBILE_SESSION_REQUIRED` 403 untuk sesi cookie), akun aktif atau menunggu, 30/menit. Baris terikat token Sanctum: logout/revoke menghapusnya. Token sama di HP lain dipindah. `DELETE` idempotent 204.
+- Push FCM dikirim setelah inbox commit; data push hanya `notifikasi_id`, `jenis`, `ref_type`, `ref_id`. Preferensi mematikan push per jenis (pengumuman, agenda, pengaduan, aspirasi, iuran); inbox tetap. Status usulan dan sistem selalu di-push.
+- `rt05:siaran-sistem {kebijakan|pembaruan_aplikasi} --judul --isi` (operator) → notifikasi `sistem` ke akun aktif.
 
 ## Iuran dan kas
 
