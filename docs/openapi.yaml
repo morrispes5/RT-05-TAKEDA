@@ -422,6 +422,7 @@ paths:
       tags:
         - Finance
       summary: Daftar kas
+      description: Setiap baris memuat `dapat_dibalik` (kas manual non-iuran yang belum dibalik); `meta.saldo` dari ledger.
       x-status: implemented
       x-milestone: M12
       responses:
@@ -434,10 +435,28 @@ paths:
       tags:
         - Finance
       summary: Pemasukan lain/pengeluaran/saldo awal (bukan iuran)
+      description: >-
+        Bila hasilnya membuat saldo negatif, 422 NEGATIVE_BALANCE_CONFIRMATION_REQUIRED tanpa tulisan apa pun; kirim ulang
+        dengan `konfirmasi_saldo_negatif: true` (kunci yang sama boleh dipakai karena penolakan tidak menyimpan reservasi).
+        Respons yang tetap negatif memuat `meta.peringatan`. Saldo awal hanya sekali (409 OPENING_BALANCE_EXISTS).
       x-status: implemented
       x-milestone: M12
       parameters:
         - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [jenis, nominal, tanggal, kategori, keterangan]
+              properties:
+                jenis: {type: string, enum: [pemasukan, pengeluaran, saldo_awal]}
+                nominal: {type: integer, minimum: 1, maximum: 1000000000}
+                tanggal: {type: string, format: date, description: 'Paling lambat hari ini (WIB).'}
+                kategori: {type: string, maxLength: 60}
+                keterangan: {type: string, minLength: 5, maxLength: 500}
+                konfirmasi_saldo_negatif: {type: boolean}
       responses:
         "201":
           $ref: "#/components/responses/Data"

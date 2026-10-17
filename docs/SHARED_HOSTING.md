@@ -68,7 +68,7 @@ Foto shared dibatasi server ke 4 MiB dan 6 juta piksel, output ≤1600 px; batas
 | M06 | Resend inbox nyata, reset Android/browser, sesi lama dicabut, kode reuse ditolak, CSRF/rate limit |
 | M07–M09 | Pendataan/otorisasi, foto privat/spoof/EXIF/recovery, aspirasi/inbox |
 | Media | Batas byte/piksel, kuota harian, transkode setelah response, kamera/galeri, RAM; alert kapasitas |
-| M10–M14 | FCM nyata, reminder catch-up, finance critical tests, ekspor aman, same-origin CMS. M10 kode (17 Okt): push lewat HTTP saja tanpa paket/daemon; inbox+push selesai setelah response diuji (`SharedRuntimeTest`); jadwal catch-up via cache file. FCM nyata dan PoC host belum |
+| M10–M14 | FCM nyata, reminder catch-up, finance critical tests, ekspor aman, same-origin CMS. M10 kode (17 Okt): push lewat HTTP saja tanpa paket/daemon; inbox+push selesai setelah response diuji (`SharedRuntimeTest`); jadwal catch-up via cache file. FCM nyata dan PoC host belum. M12: rekonsiliasi harian per tanggal WIB; ekspor CSV kecil di-stream (ADR27) |
 | Operasi | Backup terenkripsi DB+media konsisten, restore RPO≤24h/RTO≤4h, rollback |
 | Production | Insiden R07 ditutup; credential dirotasi/revokasi; domain RT, APK signed, UAT, kontak support |
 
