@@ -159,6 +159,32 @@ class NotificationSettingsPage extends ConsumerWidget {
               data: (p) => _PushStatus(p),
             ),
           ),
+          // Uji HP M10: sebagian merek Android memblokir push setelah aplikasi digeser dari daftar terbaru.
+          if (permission.value == PushPermission.granted) ...[
+            const SizedBox(height: 16),
+            const SectionCard(
+              key: ValueKey('tips-baterai'),
+              child: ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                leading: Icon(Icons.battery_alert_outlined, color: Brand.navy),
+                title: Text('Agar notifikasi tidak terlewat'),
+                childrenPadding: EdgeInsets.only(bottom: 8),
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Beberapa HP menahan notifikasi setelah aplikasi ditutup dari daftar aplikasi terbaru. Bila notifikasi '
+                    'sering terlambat atau tidak muncul:\n'
+                    '1. Pengaturan HP → Aplikasi → RT05 TAKEDA → Baterai → pilih "Tidak dibatasi".\n'
+                    '2. Xiaomi/Redmi/POCO: aktifkan "Mulai otomatis".\n'
+                    '3. Oppo/Realme/Vivo: izinkan aktivitas latar belakang.\n'
+                    '4. Samsung: keluarkan RT05 TAKEDA dari "Aplikasi tidur".\n'
+                    'Pemberitahuan yang terlewat tetap tersimpan di kotak masuk.',
+                    style: TextStyle(height: 1.5),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           SectionCard(
             title: 'Jenis notifikasi push',

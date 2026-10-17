@@ -247,9 +247,9 @@ pengaman sebelumnya tetap dicatat dan tidak diakali.
 | VPS access/proxy/resources actual | M04 | Images/runbook bisa dibuat; deploy live perlu akses |
 | DNS morriz.tech dan otorisasi record | M04/M16 | Tidak menebak IP atau mengubah apex |
 | SMTP credentials | M06/M10 | Adapter local tersedia; reset real belum passed |
-| FCM project/service account | M10 | Kode push siap (ADR25); tanpa kredensial inbox saja. Pemilik membuat project Firebase Spark (gratis) dan app Android `tech.morriz.takeda` |
+| FCM project/service account | M10 | Tersedia 17 Oktober 2026: project `rt05-takeda` (Spark). Service account hanya di env privat server; production memakai service account sendiri saat M16 |
 | Offsite backup destination/key | M16 | Production recovery gate belum passed |
-| Android app ID/signing key | M05/M15 | Pin app ID tanpa konflik; release perlu key aman |
+| Android app ID/signing key | M05/M15 | Pin app ID tanpa konflik; release perlu key aman. Keputusan pemilik 17 Oktober 2026: distribusi warga **tanpa Play Store** dan tanpa peringatan Play Protect → kunci rilis tetap + verifikasi developer Android + pendaftaran aplikasi (identitas pemilik, M15) |
 | Kontak nyata/privacy retention mitra | M15 | Tidak memasukkan data nyata sebelum notice final |
 | ERD/prototype lama lengkap | M02 | Reconcile bila tersedia; tidak mengarang isi file |
 | Flutter SDK di PC pengembang | M05 | Tidak ditemukan pada inspeksi M01; Android SDK, AVD Pixel_7a/Pixel_8a, dan JBR Android Studio tersedia |

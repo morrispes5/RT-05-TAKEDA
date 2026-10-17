@@ -172,6 +172,7 @@ void main() {
     await _pump(tester, const NotificationSettingsPage(), (o) => jsonBody(200, {'data': _prefs}), push: FakePushClient(PushPermission.denied));
     await _settle(tester);
     expect(find.text('Diblokir'), findsOneWidget);
+    expect(find.byKey(const ValueKey('tips-baterai')), findsNothing, reason: 'panduan baterai hanya relevan bila izin aktif');
     expect(find.textContaining('Pengaturan HP'), findsOneWidget);
     expect(find.text('Izinkan notifikasi'), findsNothing);
   });
@@ -190,6 +191,10 @@ void main() {
     expect(adapter.requests.where((r) => r.method == 'PUT').length, 1);
     expect(find.text('Aktif'), findsOneWidget);
     expect(find.byKey(const ValueKey('alert-success')), findsOneWidget);
+    // Izin aktif: panduan baterai (terlipat) untuk HP yang memblokir push setelah aplikasi ditutup.
+    await tester.tap(find.text('Agar notifikasi tidak terlewat'));
+    await _settle(tester);
+    expect(find.textContaining('Tidak dibatasi'), findsOneWidget);
   });
 
   testWidgets('tautan notifikasi ke agenda terarsip menampilkan pesan aman, bukan data payload', (tester) async {
