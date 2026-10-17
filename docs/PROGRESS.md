@@ -1,5 +1,43 @@
 # Progress — RT05 TAKEDA
 
+## Revisi iuran/kas — 17 Oktober 2026 (branch `codex/m10-kas-pengurus`, ADR26)
+
+Instruksi pemilik saat uji HP M10: kas RT tidak boleh terlihat warga; tab Iuran warga menampilkan iuran sendiri lebih
+dulu; transparansi warga tetap ada (permintaan Ketua RT) tetapi tersembunyi secara bawaan dan dibuka atas pilihan.
+Server: `GET /cash/summary` → `GET /admin/cash/summary` (pengurus; warga 403, path lama 404). Mobile: tab Iuran warga
+tanpa sub-tab Kas, transparansi tidak diminta ke API sebelum warga menekan "Lihat transparansi iuran" dan
+mengonfirmasi; bisa disembunyikan lagi. Tes skala teks 2,0 menemukan **bug lama**: label status di riwayat tagihan dan
+transparansi meluber di layar 320–360 dp (ListTile) → diganti tata letak Wrap.
+
+| Perintah | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17.10 sementara) | **284/284, 2778 assertion** (+1 akses kas pengurus-only) |
+| `vendor/bin/pint`; `flutter analyze`; `dart format --set-exit-if-changed` | bersih |
+| `flutter test` | **192 lulus** (+4 `dues_privacy_test`: urutan, tanpa kas, transparansi tidak dimuat sebelum diminta, batal/sembunyikan, skala 2,0 di 360/320) |
+
+Uji HP M10 (staging `a86a497`, HP pemilik, akun warga sintetis): lihat penutupan M10 di bawah. Saat uji juga ditambahkan
+panduan "Agar notifikasi tidak terlewat" (baterai/mulai otomatis) di Pengaturan notifikasi.
+
+## Penutupan M10 — 17 Oktober 2026: **passed** (staging sintetis)
+
+Project Firebase `rt05-takeda` dibuat di akun pemilik (Spark, Analytics mati, 2-Step Verification diaktifkan pemilik).
+Nilai klien di GitHub repository variables, service account di env privat staging (base64, mode 600). PR #30, PR #31
+(compose meneruskan `FCM_CREDENTIALS_BASE64`; pola `.gitignore` kunci Firebase diperbaiki), deploy staging `a86a497`
+(0 GAGAL, `push_configured=true`). Uji di HP Android pemilik: [ANDROID_RESULTS.md](evidence/m10/ANDROID_RESULTS.md).
+
+| Gate ROADMAP M10 | Bukti |
+| --- | --- |
+| HP foreground/background/terminated | HP nyata: alert; notifikasi → ketuk → detail; ditutup ±40 dtk → ketuk → detail |
+| Permission denial | HP nyata: "Diblokir" + panduan, layanan dan inbox tetap |
+| Stale/unauthorized deep link aman | API 404 + widget "tidak lagi tersedia" + validasi data push |
+| Timezone | Tes lokal (zona wajib, UTC, ICS, Calendar, tanggal bayar WIB) |
+| Reminder dedup/changed/downtime | Tes lokal |
+| Provider gagal tidak menghapus event | Tes lokal (404/503/tanpa kredensial); staging: 11 akun tanpa HP "dilewati", event selesai |
+
+Keterbatasan: satu HP, bukan UAT/production; profil shared belum di host nyata (M03/M04 blocked); APK debug diblokir
+Play Protect → rilis warga tanpa Play Store mensyaratkan kunci rilis tetap dan verifikasi developer Android (M15/M16);
+sebagian merek Android menahan push setelah aplikasi digeser (panduan di aplikasi). Pengumuman uji diarsipkan.
+
 ## M10 — Agenda, pengumuman, inbox, push — 17 Oktober 2026 (branch `codex/m10-community-push`)
 
 Instruksi pemilik 17 Oktober: mulai M10 dan **jangan mengandalkan VPS**; target shared hosting, VPS opsi terakhir,
@@ -429,7 +467,7 @@ ditentukan hanya oleh tersedianya kode.
 | M07 | passed | Source979634f; 220tes/2125assertion, Flutter152, 9CI SUCCESS, deploy additive/backfill, API live77/327, Android nyata dan native Drive; evidence/m07/REPORT.md |
 | M08 | passed | Source6b6987c (head PR a3d80e5): lokal230/2233, Flutter157, seluruh CI SUCCESS, staging live42/130 (rerun 13 Oktober), Android emulator nyata (putaran 2), bagian Drive native disisipkan dan dibaca ulang. Penerimaan staging sintetis; bukan production/UAT. evidence/m08/REPORT.md |
 | M09 | passed | Source617e179 (PR #24): lokal245/2414, Flutter164, seluruh CI SUCCESS, staging live48/138, Android emulator nyata; Drive native belum. Penerimaan staging sintetis; bukan production/UAT. evidence/m09/REPORT.md |
-| M10 | in_progress | Dibuka 17 Oktober (`codex/m10-community-push`): push FCM HTTP v1 fleksibel shared/VPS, perangkat, pengingat H-1 catch-up/dedup, zona waktu, deep link aman, admin agenda/pengumuman; lokal 283/2768, Flutter 188. FCM nyata/HP blocked (project Firebase) |
+| M10 | passed | Staging `a86a497` + HP Android pemilik: push foreground/background/terminated, izin ditolak; lokal 284/2778, Flutter 192; FCM `rt05-takeda`. Penerimaan staging sintetis; bukan production/UAT. evidence/m10/ANDROID_RESULTS.md |
 | M11 | in_progress | Tarif/tagihan idempotent/catch-up/transparansi; tes CI lulus |
 | M12 | in_progress | Pembayaran offline/idempotency/pembalikan/koreksi/kas/CSV; tes CI lulus |
 | M13 | planned | CMS API belum operasional |

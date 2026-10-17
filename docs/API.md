@@ -212,7 +212,7 @@ M10 (implementasi 17 Oktober 2026):
 | --- | --- |
 | GET /dues/my | Tagihan/histori rumah akun |
 | GET /dues/transparency | Kode rumah, period, amount/status; warga aktif |
-| GET /cash/summary | Saldo/pemasukan/pengeluaran agregat dan daftar tersanitasi |
+| GET /admin/cash/summary | Khusus pengurus (ADR26): saldo, pemasukan/pengeluaran bulan ini, 30 mutasi terakhir. Warga 403 |
 | GET/POST /admin/dues-rates | Tarif efektif; reason wajib |
 | POST /admin/dues/generate | Generate/catch-up periode idempotent |
 | GET /admin/dues-charges | Filter house/period/status |

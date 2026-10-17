@@ -20,7 +20,7 @@ Kode BR dipakai pada API, tes, issue, dan kriteria milestone. Bagian A mempertah
 | BR12 | Status belum bayar berubah setelah transaksi pencatatan berhasil |
 | BR13 | Menunggak dan membayar beberapa bulan sekaligus diperbolehkan |
 | BR14 | Tarif dapat diubah untuk periode yang ditentukan; riwayat minimal 12 bulan |
-| BR15 | Warga terdaftar melihat transparansi iuran/status dan kas |
+| BR15 | Warga terdaftar melihat iuran rumahnya dan transparansi status iuran per kode rumah (tersembunyi secara bawaan, dibuka atas pilihan warga). Kas RT hanya untuk pengurus (keputusan pemilik 17 Oktober 2026, ADR26) |
 | BR16 | Pemasukan iuran harus berhubungan dengan pembayaran yang dicatat |
 | BR17 | Koreksi keuangan dapat dilakukan admin dan historinya tetap tersedia |
 | BR18 | Hapus dari tampilan menggunakan arsip untuk data penting |
@@ -116,7 +116,8 @@ Jika anonymous_to_residents=true, resource warga tidak memuat user_id, nama, kon
 | Pengaduan/aspirasi | Tidak | Baca tersanitasi; buat/milik sendiri | Tidak | Kelola |
 | Agenda/pengumuman | Tidak | Baca | Tidak | Kelola |
 | Usulan kegiatan | Tidak | Buat dan baca milik sendiri; dokumen hanya milik sendiri | Tidak | Tinjau dan putuskan; persetujuan otomatis menjadi agenda |
-| Transparansi iuran/kas | Tidak | Ringkasan dan status rumah | Tidak | Detail/kelola |
+| Transparansi iuran | Tidak | Status per kode rumah, setelah warga memilih menampilkannya | Tidak | Detail/kelola |
+| Kas RT (saldo, mutasi) | Tidak | Tidak (ADR26) | Tidak | Detail/kelola |
 | Token registrasi | Tidak | Tidak | Tidak | Lihat/rotasi |
 | Audit/ekspor administrasi | Tidak | Tidak | Tidak | Baca/ekspor |
 
