@@ -14,6 +14,7 @@ use App\Models\TransaksiKas;
 use App\Support\Audit;
 use App\Support\Idempotency;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -101,10 +102,7 @@ class FinanceController extends Controller
 
     public function rates(): JsonResponse
     {
-        return Api::data(TarifIuran::orderByDesc('mulai_periode')->get()->map(fn ($t) => [
-            'id' => $t->id, 'nominal' => $t->nominal, 'mulai_periode' => $t->mulai_periode->format('Y-m'), 'alasan' => $t->alasan,
-            'created_at' => Present::ts($t->created_at),
-        ]));
+        return Api::data(TarifIuran::orderByDesc('mulai_periode')->get()->map(fn ($t) => self::rate($t))->values());
     }
 
     /** POST /admin/dues-rates — tarif baru untuk periode mendatang; tagihan lama tidak berubah. */
@@ -119,14 +117,66 @@ class FinanceController extends Controller
         if (TagihanIuran::where('periode', '>=', $period->toDateString())->exists()) {
             throw new DomainConflict('RATE_PERIOD_HAS_CHARGES', 'Periode tersebut sudah memiliki tagihan. Tetapkan tarif untuk periode berikutnya.', 422);
         }
-        $rate = DB::transaction(function () use ($request, $data, $period) {
-            $r = TarifIuran::create(['nominal' => $data['nominal'], 'mulai_periode' => $period->toDateString(), 'alasan' => $data['alasan'], 'dibuat_oleh_id' => $request->user()->id]);
-            Audit::record($request->user(), 'tarif_iuran.dibuat', 'tarif_iuran', $r->id, ['nominal' => $r->nominal, 'mulai' => $data['mulai_periode']]);
+        $exists = fn () => new DomainConflict('RATE_PERIOD_EXISTS', 'Tarif untuk periode itu sudah ditetapkan. Pilih periode lain.', 409);
+        if (TarifIuran::where('mulai_periode', $period->toDateString())->exists()) {
+            throw $exists();
+        }
+        try {
+            $rate = DB::transaction(function () use ($request, $data, $period) {
+                $r = TarifIuran::create(['nominal' => $data['nominal'], 'mulai_periode' => $period->toDateString(), 'alasan' => $data['alasan'], 'dibuat_oleh_id' => $request->user()->id]);
+                Audit::record($request->user(), 'tarif_iuran.dibuat', 'tarif_iuran', $r->id, ['nominal' => $r->nominal, 'mulai' => $data['mulai_periode']]);
 
-            return $r;
-        });
+                return $r;
+            });
+        } catch (UniqueConstraintViolationException) {
+            throw $exists(); // dua pengurus menyimpan periode yang sama bersamaan
+        }
 
-        return Api::data(['id' => $rate->id, 'nominal' => $rate->nominal, 'mulai_periode' => $data['mulai_periode']], 201);
+        return Api::data(self::rate($rate->refresh()), 201);
+    }
+
+    private static function rate(TarifIuran $t): array
+    {
+        return [
+            'id' => $t->id, 'nominal' => $t->nominal, 'mulai_periode' => $t->mulai_periode->format('Y-m'), 'alasan' => $t->alasan,
+            'created_at' => Present::ts($t->created_at),
+        ];
+    }
+
+    /**
+     * GET /admin/dues-recap — rekap bulanan pengurus (M11): jumlah dan nominal lunas/belum per periode,
+     * per rumah dengan jumlah bulan tunggakan sebelum periode itu. Hanya kode rumah, tanpa nama.
+     */
+    public function recap(Request $request): JsonResponse
+    {
+        $period = Dues::period((string) $request->query('periode', CarbonImmutable::now('Asia/Jakarta')->format('Y-m')));
+        $date = $period->toDateString();
+        $charges = TagihanIuran::with(['rumah:id,kode_rumah', 'alokasi' => fn ($q) => $q->whereNull('dibatalkan_at')->with('pembayaran:id,tanggal_bayar')])
+            ->where('periode', $date)->get()->sortBy(fn ($t) => $t->rumah->kode_rumah)->values();
+        $arrears = TagihanIuran::where('periode', '<', $date)->where('status', 'belum_bayar')
+            ->selectRaw('rumah_id, count(*) AS bulan, sum(nominal_tagihan) AS total')->groupBy('rumah_id')->get()->keyBy('rumah_id');
+        $sum = fn (string $status) => [
+            'rumah' => $charges->where('status', $status)->count(),
+            'nominal' => (int) $charges->where('status', $status)->sum('nominal_tagihan'),
+        ];
+
+        return Api::data([
+            'periode' => $period->format('Y-m'),
+            'tarif' => TarifIuran::where('mulai_periode', '<=', $date)->orderByDesc('mulai_periode')->value('nominal'),
+            'jumlah_rumah' => $charges->count(),
+            'lunas' => $sum('lunas'),
+            'belum_bayar' => $sum('belum_bayar'),
+            'tunggakan_sebelumnya' => ['rumah' => $arrears->count(), 'nominal' => (int) $arrears->sum('total')],
+            'rumah' => $charges->map(fn (TagihanIuran $t) => [
+                'rumah_id' => $t->rumah_id,
+                'kode_rumah' => $t->rumah->kode_rumah,
+                'nominal' => $t->nominal_tagihan,
+                'status' => $t->status,
+                'status_label' => $t->status === 'lunas' ? 'Lunas' : 'Belum dibayar',
+                'tanggal_bayar' => $t->alokasi->first()?->pembayaran?->tanggal_bayar?->toDateString(),
+                'bulan_tunggakan_sebelumnya' => (int) ($arrears[$t->rumah_id]->bulan ?? 0),
+            ])->values(),
+        ]);
     }
 
     public function generate(Request $request): JsonResponse

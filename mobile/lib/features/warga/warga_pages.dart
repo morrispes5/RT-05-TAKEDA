@@ -1147,16 +1147,6 @@ class _Stat extends StatelessWidget {
   );
 }
 
-/// Tab Transparansi pengurus (tanpa gerbang; pengurus mengelola iuran).
-class TransparencyView extends ConsumerWidget {
-  const TransparencyView({super.key});
-  @override
-  Widget build(BuildContext context, WidgetRef ref) => RefreshIndicator(
-    onRefresh: () async => ref.invalidate(transparencyProvider(null)),
-    child: ListView(padding: const EdgeInsets.all(16), children: const [_TransparencyBody()]),
-  );
-}
-
 /// Status iuran per kode rumah tanpa nama/kontak (BR15). Data baru diminta saat widget ini tampil.
 class _TransparencyBody extends ConsumerWidget {
   const _TransparencyBody();
