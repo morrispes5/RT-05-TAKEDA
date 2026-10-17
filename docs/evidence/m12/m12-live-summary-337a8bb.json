@@ -1,0 +1,49 @@
+{
+ "run": "2026-10-17T13:11:01.051Z",
+ "cases": [
+  {
+   "name": "M01 daftar kas memuat dapat_dibalik",
+   "result": "PASS",
+   "status": 200,
+   "baris": 8,
+   "saldo": 605000
+  },
+  {
+   "name": "M02 kas iuran tidak dapat dibalik langsung",
+   "result": "PASS",
+   "kas_iuran": 6
+  },
+  {
+   "name": "M03 total ekspor kas = saldo ledger",
+   "result": "PASS",
+   "status": 200,
+   "cache": "no-store, private",
+   "baris": 8,
+   "total_ekspor": 605000
+  },
+  {
+   "name": "M04 warga ekspor iuran ditolak",
+   "result": "PASS",
+   "status": 403
+  },
+  {
+   "name": "M04 warga ekspor kas ditolak",
+   "result": "PASS",
+   "status": 403
+  },
+  {
+   "name": "M04 warga ekspor rumah ditolak",
+   "result": "PASS",
+   "status": 403
+  },
+  {
+   "name": "M05 warga daftar kas ditolak",
+   "result": "PASS",
+   "status": 403
+  }
+ ],
+ "summary": {
+  "total": 7,
+  "pass": 7
+ }
+}

@@ -1,6 +1,6 @@
 # Progress — RT05 TAKEDA
 
-## M12 — Pembayaran offline, kas, koreksi, ekspor — 17 Oktober 2026: **passed** (lokal + CI; staging di bagian ini)
+## M12 — Pembayaran offline, kas, koreksi, ekspor — 17 Oktober 2026: **passed** (lokal, CI, staging `337a8bb`)
 
 Dibuka atas instruksi pemilik setelah M11. Kode pembayaran/kas/pembalikan sudah ada sejak jalur layanan-inti; M12
 mengaudit terhadap gate ROADMAP dan TESTING FIN-1..18, lalu melengkapi (branch `codex/m12-payments-cash`, ADR27).
@@ -26,6 +26,7 @@ dialog hasil, `showApiError`; Catat kas dengan dialog saldo negatif.
 | `vendor/bin/pint`; Redocly lint | bersih; valid |
 | `flutter analyze`; `dart format --set-exit-if-changed`; `flutter test` | bersih; 0 changed; **207 lulus** (+8 `m12_finance_admin_test`) |
 
+PR #35 merged `337a8bb`, deploy staging 0 GAGAL; rekonsiliasi data uji staging **0 ketidakcocokan** (saldo 605.000); cek live **7/7 PASS** ([LIVE_RESULTS.md](evidence/m12/LIVE_RESULTS.md)).
 Keterbatasan: ekspor besar lewat worker/unduhan privat kedaluwarsa ditunda (skala RT kecil, ADR27). Warga tidak melihat
 kas (ADR26). Uji HP pengurus untuk alur keuangan multi-bulan masuk UAT M15.
 
