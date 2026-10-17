@@ -51,7 +51,7 @@ Bottom navigation warga: Beranda, Layanan, Agenda, Iuran, Akun. Notifikasi dari 
 
 Dashboard; rumah/keluarga/warga; review akun tambahan; token lihat/salin/rotasi; pengaduan/aspirasi dan status; agenda/pengumuman; iuran/rekap/tarif; pencatatan pembayaran beberapa bulan; kas/pengeluaran/koreksi; ekspor; konten publik/fasilitas; profil.
 
-Navigasi admin: Ringkasan, Warga, Layanan, Keuangan, Lainnya. Form finance menampilkan preview nominal/periode sebelum submit. Reverse/correct memerlukan alasan dan konfirmasi. Tidak menambah pembatasan hak bendahara dibanding admin lain.
+Navigasi admin: Ringkasan, Warga, Layanan, Keuangan (Pembayaran, Kas, Rekap bulanan dengan navigasi bulan dan tombol buat tagihan yang belum ada), Lainnya (termasuk Tarif iuran: riwayat dan tarif baru untuk bulan berikutnya). Form finance menampilkan preview nominal/periode sebelum submit. Reverse/correct memerlukan alasan dan konfirmasi. Tidak menambah pembatasan hak bendahara dibanding admin lain.
 
 ## Perilaku UI
 

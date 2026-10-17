@@ -151,6 +151,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::post('dues-rates', [FinanceController::class, 'storeRate']);
     Route::post('dues/generate', [FinanceController::class, 'generate']);
     Route::get('dues-charges', [FinanceController::class, 'charges']);
+    Route::get('dues-recap', [FinanceController::class, 'recap']);
     Route::get('dues-payments', [FinanceController::class, 'payments']);
     Route::post('dues-payments', [FinanceController::class, 'storePayment']);
     Route::get('dues-payments/{id}', [FinanceController::class, 'payment'])->whereUuid('id');
