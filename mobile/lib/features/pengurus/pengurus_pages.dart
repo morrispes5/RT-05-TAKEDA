@@ -9,6 +9,7 @@ import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/widgets.dart';
+import 'dues_admin.dart';
 import '../household/admin_census.dart';
 import '../household/admin_links.dart';
 import '../household/census_providers.dart';
@@ -534,11 +535,11 @@ class FinanceAdminPage extends ConsumerWidget {
             tabs: [
               Tab(text: 'Pembayaran'),
               Tab(text: 'Kas'),
-              Tab(text: 'Transparansi'),
+              Tab(text: 'Rekap'),
             ],
           ),
         ),
-        Expanded(child: TabBarView(children: [_PaymentsView(), const _AdminCashView(), const TransparencyView()])),
+        Expanded(child: TabBarView(children: [_PaymentsView(), const _AdminCashView(), const DuesRecapView()])),
       ],
     ),
   );
@@ -926,6 +927,13 @@ class MoreAdminPage extends ConsumerWidget {
               title: const Text('Agenda & pengumuman'),
               subtitle: const Text('Buat, ubah, atau arsipkan. Warga menerima notifikasi dan pengingat H-1'),
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityAdminPage())),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.price_change_outlined, color: Brand.navy),
+              title: const Text('Tarif iuran'),
+              subtitle: const Text('Riwayat tarif dan tarif baru untuk bulan berikutnya'),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DuesRatesPage())),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,

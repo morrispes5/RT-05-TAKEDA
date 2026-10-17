@@ -213,9 +213,10 @@ M10 (implementasi 17 Oktober 2026):
 | GET /dues/my | Tagihan/histori rumah akun |
 | GET /dues/transparency | Kode rumah, period, amount/status; warga aktif |
 | GET /admin/cash/summary | Khusus pengurus (ADR26): saldo, pemasukan/pengeluaran bulan ini, 30 mutasi terakhir. Warga 403 |
-| GET/POST /admin/dues-rates | Tarif efektif; reason wajib |
+| GET/POST /admin/dues-rates | Tarif efektif; alasan wajib. Periode yang sudah punya tagihan 422 `RATE_PERIOD_HAS_CHARGES`; periode yang sudah punya tarif 409 `RATE_PERIOD_EXISTS` (termasuk simpan bersamaan) |
 | POST /admin/dues/generate | Generate/catch-up periode idempotent |
 | GET /admin/dues-charges | Filter house/period/status |
+| GET /admin/dues-recap?periode=YYYY-MM | M11: rekap bulanan pengurus (default bulan berjalan WIB): lunas/belum (rumah + nominal), tunggakan bulan sebelumnya, per kode rumah dengan tanggal bayar dan jumlah bulan tunggakan; tanpa nama/kontak |
 | POST /admin/dues-payments | Pencatatan offline sinkron |
 | GET /admin/dues-payments/{id} | Detail allocations dan audit yang diizinkan |
 | POST /admin/dues-payments/{id}/reverse | Reason; buka charge; reversal ledger |
