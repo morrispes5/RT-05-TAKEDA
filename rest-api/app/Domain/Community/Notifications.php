@@ -55,6 +55,8 @@ final class Notifications
                 'Pengingat iuran', 'Iuran RT bulan ini belum tercatat. Abaikan bila sudah membayar kepada pengurus.'),
             // Dicatat untuk audit/integrasi berikutnya; v1 sengaja tanpa notifikasi inbox.
             'akun.registrasi_utama', 'iuran.tagihan_dibuat', 'iuran.pembayaran_dibalik' => null,
+            // M13: invalidasi cache konten publik dibaca website (M14); tanpa notifikasi inbox.
+            'konten.diterbitkan', 'konten.diarsipkan' => null,
             default => throw new UnknownOutboxEvent($event->type),
         };
     }

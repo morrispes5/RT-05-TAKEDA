@@ -240,11 +240,11 @@ Server menentukan total dari charge snapshot; nominal contoh hanya benar jika ke
 
 ## Konten
 
-Public GET /public/site-profile, /public/facilities, /public/articles, /public/articles/{slug}, /public/albums, /public/albums/{slug}. Hanya published snapshot.
+M13 (ADR28). Publik tanpa akun, hanya snapshot terbit: `GET /public/articles`, `/public/articles/{slug}`, `/public/albums`, `/public/albums/{slug}`, `/public/facilities`, `/public/facilities/{slug}`, `/public/site-profile`, `/public/media/{id}` (foto unggahan hanya bila dirujuk konten terbit). Slug lama → 301 `Location` + `data.redirect_slug`. Draf/arsip 404. `Cache-Control: public, max-age=60`, ETag.
 
-Admin GET/POST/PATCH /admin/articles, /admin/albums, /admin/facilities; detail by UUID; POST {id}/publish dan /archive. PUT /admin/site-profile untuk fakta profil tervalidasi. CMS web memakai articles/albums; mobile admin dapat memakai seluruh domain konten.
+Pengurus: `GET/POST /admin/{articles|albums|facilities}`, `GET/PUT /admin/{type}/{id}` (`{slug, draf, versi}`), `POST /admin/{type}/{id}/publish` dan `/archive` (`{versi}`), `GET/PUT /admin/site-profile` (PUT = simpan + terbit, versi wajib), `POST /admin/content-media` (multipart `foto`), `GET /admin/content-media/{id}/file` (pratinjau). Kode: VERSION_CONFLICT, SLUG_TAKEN, MEDIA_NOT_READY, CONTENT_ARCHIVED, UNSUPPORTED_MEDIA_TYPE (415). Payload draf per jenis divalidasi server; respons admin memuat `ada_perubahan_belum_terbit`.
 
-Optimistic version pada save/publish; slug collision 409. Web SSR memakai public endpoints lewat internal network, bukan query DB.
+Impor baseline: `php artisan rt05:konten-impor` (idempotent) setelah migrasi M13 di setiap environment.
 
 ## Media
 

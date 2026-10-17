@@ -72,11 +72,9 @@ dipertahankan untuk image M06 dan diperbarui dalam transaksi yang sama dengan hi
 | announcements | id, title, body, status, published_at, created_by, version, archived_at |
 | notifications | id, event_id, recipient_id, type, safe_payload json, read_at, created_at; unique event/recipient. M10: `push_status` (terkirim/dilewati/gagal, null = menunggu) dan `push_at` |
 | perangkat_push (device_tokens) | id, akun_id, personal_access_token_id (FK cascade), device_identifier unik, token_hash unik, fcm_token encrypted, platform android, last_seen_at. Implementasi M10 |
-| articles | id, slug unique, draft_payload json, published_payload json, status, version, published_at, created_by, archived_at |
-| albums | id, slug unique, title, description, event_date nullable, cover_media_id, status, version, published_at |
-| album_photos | id, album_id, media_asset_id, sort_order, alt, caption; unique album/media dan ordering tervalidasi |
-| facilities | id, slug, title, description, location_description, condition_note, media_asset_id, status, version, archived_at |
-| media_assets | id, owner_user_id, purpose, attachable_type, attachable_id, storage_key, mime, bytes, width, height, visibility, state, created_at |
+| konten (M13, ADR28; menggantikan rancangan articles/albums/facilities/site profile) | id, jenis artikel/album/fasilitas/profil, slug unik per jenis, versi, status draf/terbit/arsip, draf jsonb, terbit jsonb (snapshot), slug_terbit, versi_terbit, published_at, sumber pengurus/impor, urutan, dibuat/diubah_oleh_id, archived_at. Profil satu baris |
+| konten_slug_lama | konten_id, jenis, slug unik per jenis: slug terbit lama untuk redirect 301 |
+| konten_media (M13; media_assets untuk konten publik) | id, sumber unggah/statis, storage_key acak (unggah) atau path_statis /images/… (foto website yang diterima), ukuran_statis, mime, bytes, lebar, tinggi, status siap/gagal, dibuat_oleh_id. Foto album/sampul/fasilitas dirujuk dari payload draf (urutan, alt, caption di JSON) |
 
 Relasi media polymorphic diterapkan dengan allowlist morph map; tidak menerima nama kelas arbitrary dari client. Policy selalu memeriksa parent. Orphan/staging tidak public. Foto lampiran laporan menempel melalui media_assets; album_photos menyimpan urutan/metadata khusus album.
 

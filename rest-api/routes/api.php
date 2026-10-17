@@ -1,10 +1,12 @@
 <?php
 
+use App\Domain\Content\Contents;
 use App\Http\Controllers\ActivityProposalController;
 use App\Http\Controllers\Admin\OperationsController;
 use App\Http\Controllers\Admin\ResidentsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\ContentController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\HouseholdController;
@@ -22,6 +24,16 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', ServiceInfoController::class)->name('api.v1.info');
+
+// Konten publik M13: hanya snapshot terbit, tanpa akun.
+Route::middleware('throttle:120,1')->prefix('public')->group(function () {
+    foreach (array_keys(Contents::TYPES) as $type) {
+        Route::get($type, [ContentController::class, 'publicIndex'])->defaults('type', $type);
+        Route::get("$type/{slug}", [ContentController::class, 'publicShow'])->defaults('type', $type)->where('slug', '[a-z0-9-]{1,120}');
+    }
+    Route::get('site-profile', [ContentController::class, 'publicProfile']);
+    Route::get('media/{id}', [ContentController::class, 'publicMedia'])->whereUuid('id');
+});
 
 // Unduhan dokumen usulan lewat tautan bertanda tangan relatif (5 menit) yang dibuat untuk pengusul/pengurus;
 // dipakai aplikasi untuk membuka PDF/TXT di browser tanpa token. Tanda tangan salah/kedaluwarsa 403.
@@ -150,6 +162,20 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::get('dues-rates', [FinanceController::class, 'rates']);
     Route::post('dues-rates', [FinanceController::class, 'storeRate']);
     Route::post('dues/generate', [FinanceController::class, 'generate']);
+    // Konten publik M13: draf/terbit/arsip dengan versi.
+    foreach (array_keys(Contents::TYPES) as $type) {
+        Route::get($type, [ContentController::class, 'index'])->defaults('type', $type);
+        Route::post($type, [ContentController::class, 'store'])->defaults('type', $type);
+        Route::get("$type/{id}", [ContentController::class, 'show'])->defaults('type', $type)->whereUuid('id');
+        Route::put("$type/{id}", [ContentController::class, 'update'])->defaults('type', $type)->whereUuid('id');
+        Route::post("$type/{id}/publish", [ContentController::class, 'publish'])->defaults('type', $type)->whereUuid('id');
+        Route::post("$type/{id}/archive", [ContentController::class, 'archive'])->defaults('type', $type)->whereUuid('id');
+    }
+    Route::get('site-profile', [ContentController::class, 'profile']);
+    Route::put('site-profile', [ContentController::class, 'updateProfile']);
+    Route::post('content-media', [ContentController::class, 'uploadMedia'])->middleware('throttle:60,1');
+    Route::get('content-media/{id}/file', [ContentController::class, 'mediaFile'])->whereUuid('id');
+
     Route::get('dues-charges', [FinanceController::class, 'charges']);
     Route::get('dues-recap', [FinanceController::class, 'recap']);
     Route::get('dues-payments', [FinanceController::class, 'payments']);
