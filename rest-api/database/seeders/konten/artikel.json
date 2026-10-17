@@ -1,0 +1,129 @@
+[
+  {
+    "slug": "cara-mencuci-tangan",
+    "title": "Tangan bersih, kebiasaan baik dari rumah.",
+    "category": "Kesehatan",
+    "art": "hands",
+    "summary": "Langkah sederhana mencuci tangan dengan sabun dan air mengalir.",
+    "intro": "Mencuci tangan membantu mengurangi penyebaran kuman. Kebiasaan ini terutama berguna sebelum makan dan setelah menggunakan toilet.",
+    "sections": [
+      {
+        "title": "Basahi dan gunakan sabun",
+        "body": "Basahi tangan dengan air bersih yang mengalir. Matikan keran, lalu gunakan sabun. Gosok hingga berbusa pada telapak, punggung tangan, sela-sela jari, dan bagian bawah kuku."
+      },
+      {
+        "title": "Gosok setidaknya 20 detik",
+        "body": "Luangkan setidaknya 20 detik untuk menggosok seluruh bagian tangan. Setelah itu, bilas dengan air bersih yang mengalir dan keringkan menggunakan handuk bersih atau pengering udara."
+      },
+      {
+        "title": "Pilih waktu yang tepat",
+        "body": "Cuci tangan sebelum menyiapkan makanan dan sebelum makan, setelah dari toilet, setelah membuang sampah, serta setelah batuk, bersin, atau membuang ingus."
+      },
+      {
+        "title": "Jika air dan sabun tidak tersedia",
+        "body": "Gunakan pembersih tangan berbasis alkohol dengan kadar sedikitnya 60%. Jika tangan tampak kotor atau berminyak, utamakan mencuci dengan sabun dan air."
+      }
+    ],
+    "note": "Diringkas dari panduan CDC, diperiksa 9 Oktober 2026. Materi edukasi umum.",
+    "source": {
+      "url": "https://www.cdc.gov/clean-hands/about/index.html",
+      "label": "CDC — About Handwashing"
+    }
+  },
+  {
+    "slug": "memilah-sampah-rumah",
+    "title": "Mulai memilah sampah dari dapur sendiri.",
+    "category": "Lingkungan",
+    "art": "waste",
+    "summary": "Menata tempat sampah dan mengurangi barang sekali pakai, selangkah demi selangkah.",
+    "intro": "Memilah sampah lebih mudah jika tempatnya disiapkan sejak awal. Mulailah dari kebiasaan yang bisa dilakukan secara konsisten di rumah, lalu sesuaikan dengan layanan pengumpulan yang tersedia di lingkungan.",
+    "sections": [
+      {
+        "title": "Sediakan tempat yang terpisah",
+        "body": "Pisahkan sisa makanan dari kemasan kering. Beri penanda sederhana pada wadah agar seluruh anggota rumah memahami tempatnya. Simpan wadah dengan rapi dan hindari sampah tercecer."
+      },
+      {
+        "title": "Kurangi sebelum membuang",
+        "body": "Bawa tas belanja sendiri dan gunakan kembali wadah yang masih layak sesuai fungsinya. Sebelum berbelanja, periksa persediaan makanan agar tidak membeli lebih dari yang diperlukan."
+      },
+      {
+        "title": "Pastikan jalur pengumpulannya",
+        "body": "Tidak semua kemasan diterima oleh setiap pengumpul. Tanyakan jenis barang dan kondisi yang diterima sebelum menyetorkannya. Jadwal pengangkutan serta lokasi penyerahan perlu mengikuti informasi resmi setempat."
+      },
+      {
+        "title": "Jangan campur semua barang",
+        "body": "Pisahkan baterai bekas, lampu, dan barang elektronik dari sampah sehari-hari. Cari informasi fasilitas pengumpulan yang sesuai; jangan membongkar atau membakar barang tersebut sendiri."
+      }
+    ],
+    "note": "Bacaan editorial tentang kebiasaan rumah tangga. Bukan jadwal pengangkutan atau kebijakan pengelolaan sampah resmi RT."
+  },
+  {
+    "slug": "menjaga-aliran-air",
+    "title": "Beri jalan untuk air, mulai dari depan rumah.",
+    "category": "Lingkungan",
+    "art": "water",
+    "summary": "Perhatikan sampah dan saluran kecil sebelum hujan datang.",
+    "intro": "Lingkungan yang nyaman membutuhkan perhatian pada ruang yang sering luput dari pandangan, termasuk jalur air di sekitar rumah. Pemeriksaan sederhana membantu mengenali hambatan sebelum menjadi persoalan bersama.",
+    "sections": [
+      {
+        "title": "Amati dari tempat yang aman",
+        "body": "Perhatikan apakah ada daun atau sampah yang menutup jalur air di permukaan. Jangan masuk ke saluran, membuka penutup berat, atau mendekati arus deras. Pekerjaan yang berisiko perlu ditangani petugas yang sesuai."
+      },
+      {
+        "title": "Jaga sampah tetap pada tempatnya",
+        "body": "Pastikan sampah rumah tangga tidak tercecer dan terbawa air ke saluran. Hindari menaruh barang pada jalur aliran. Ajak anggota keluarga menjaga area depan rumah tetap rapi."
+      },
+      {
+        "title": "Sampaikan temuan dengan jelas",
+        "body": "Jika terlihat hambatan yang tidak dapat ditangani dengan aman, catat lokasi umum dan kondisi yang terlihat untuk disampaikan kepada pengurus melalui kanal yang tersedia. Jangan membagikan foto yang memuat informasi pribadi tetangga."
+      }
+    ],
+    "note": "Ajakan perawatan lingkungan sehari-hari, bukan jaminan pencegahan banjir atau panduan penanganan keadaan darurat."
+  },
+  {
+    "slug": "bertetangga-dengan-peduli",
+    "title": "Lingkungan aman dimulai dari saling peduli.",
+    "category": "Bertetangga",
+    "art": "home",
+    "summary": "Kebiasaan sederhana menjaga rumah sekaligus menghormati privasi tetangga.",
+    "intro": "Kepedulian pada lingkungan bisa dilakukan tanpa mengawasi kehidupan pribadi orang lain. Mulailah dari menjaga rumah sendiri dan berkomunikasi dengan wajar bersama tetangga.",
+    "sections": [
+      {
+        "title": "Periksa sebelum meninggalkan rumah",
+        "body": "Biasakan mengecek pintu dan jendela. Simpan barang berharga agar tidak terlihat dari luar. Jika meminta bantuan tetangga selama bepergian, bagikan hanya informasi yang diperlukan kepada orang yang dipercaya."
+      },
+      {
+        "title": "Jangan sebarkan dugaan",
+        "body": "Bedakan kejadian yang benar-benar terlihat dari kabar yang belum jelas. Hindari mengunggah wajah, nomor kendaraan, atau alamat seseorang disertai tuduhan. Sampaikan temuan kepada pihak yang tepat tanpa mengajak orang melakukan konfrontasi."
+      },
+      {
+        "title": "Berkomunikasi dengan tenang",
+        "body": "Kenali tetangga dan saling bertukar informasi yang bermanfaat. Untuk kebutuhan lingkungan, gunakan kanal pengurus yang sudah terkonfirmasi. Website ini belum menyediakan kanal pelaporan darurat."
+      }
+    ],
+    "note": "Bacaan editorial tentang kepedulian dan privasi. Tidak menyatakan adanya sistem keamanan atau layanan darurat khusus RT."
+  },
+  {
+    "slug": "merawat-fasilitas-bersama",
+    "title": "Datang nyaman, pulang meninggalkan kerapian.",
+    "category": "Bertetangga",
+    "art": "park",
+    "summary": "Etika sederhana saat menggunakan lapangan, taman, dan sekretariat.",
+    "intro": "Ruang bersama terasa menyenangkan jika setiap orang ikut merawatnya. Tindakan kecil setelah menggunakan fasilitas membuat orang berikutnya dapat menikmati tempat yang sama dengan nyaman.",
+    "sections": [
+      {
+        "title": "Baca aturan di lokasi",
+        "body": "Perhatikan papan petunjuk sebelum menggunakan fasilitas. Gunakan alat dan barang sesuai fungsinya. Jika ragu tentang penggunaan suatu ruang, tanyakan kepada pengurus terlebih dahulu."
+      },
+      {
+        "title": "Rapikan setelah selesai",
+        "body": "Buang sampah pada tempatnya dan kembalikan barang yang digunakan. Setelah menggunakan perlengkapan makan atau minum, bersihkan dan simpan kembali dengan rapi."
+      },
+      {
+        "title": "Berbagi ruang dengan orang lain",
+        "body": "Perhatikan pengguna lain, dampingi anak saat bermain, dan hindari meletakkan barang di jalur orang berjalan. Jika ada fasilitas yang rusak, hentikan penggunaan bagian tersebut dan sampaikan kepada pengurus."
+      }
+    ],
+    "note": "Ajakan penggunaan fasilitas secara tertib. Untuk ketentuan resmi, lihat papan peraturan yang terpasang di lingkungan."
+  }
+]

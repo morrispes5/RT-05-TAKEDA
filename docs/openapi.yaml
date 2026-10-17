@@ -260,27 +260,6 @@ paths:
           description: Berhasil tanpa body.
         default:
           $ref: "#/components/responses/Error"
-  /api/v1/admin/albums:
-    get:
-      operationId: adminAlbumsIndex
-      tags:
-        - Content
-      summary: Kelola album
-      x-status: planned
-      x-milestone: M13
-      responses:
-        default:
-          $ref: "#/components/responses/Error"
-    post:
-      operationId: adminAlbumsStore
-      tags:
-        - Content
-      summary: Buat draf album
-      x-status: planned
-      x-milestone: M13
-      responses:
-        default:
-          $ref: "#/components/responses/Error"
   /api/v1/admin/announcements:
     get:
       operationId: adminAnnouncementsIndex
@@ -332,27 +311,6 @@ paths:
       responses:
         "204":
           description: Berhasil tanpa body.
-        default:
-          $ref: "#/components/responses/Error"
-  /api/v1/admin/articles:
-    get:
-      operationId: adminArticlesIndex
-      tags:
-        - Content
-      summary: Kelola artikel
-      x-status: planned
-      x-milestone: M13
-      responses:
-        default:
-          $ref: "#/components/responses/Error"
-    post:
-      operationId: adminArticlesStore
-      tags:
-        - Content
-      summary: Buat draf artikel
-      x-status: planned
-      x-milestone: M13
-      responses:
         default:
           $ref: "#/components/responses/Error"
   /api/v1/admin/aspirations/{id}/archive:
@@ -728,27 +686,6 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/Data"
-        default:
-          $ref: "#/components/responses/Error"
-  /api/v1/admin/facilities:
-    get:
-      operationId: adminFacilitiesIndex
-      tags:
-        - Content
-      summary: Kelola fasilitas
-      x-status: planned
-      x-milestone: M13
-      responses:
-        default:
-          $ref: "#/components/responses/Error"
-    post:
-      operationId: adminFacilitiesStore
-      tags:
-        - Content
-      summary: Buat fasilitas
-      x-status: planned
-      x-milestone: M13
-      responses:
         default:
           $ref: "#/components/responses/Error"
   /api/v1/admin/families:
@@ -1175,17 +1112,6 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/Data"
-        default:
-          $ref: "#/components/responses/Error"
-  /api/v1/admin/site-profile:
-    put:
-      operationId: adminSiteProfileUpdate
-      tags:
-        - Content
-      summary: Fakta profil tervalidasi
-      x-status: planned
-      x-milestone: M13
-      responses:
         default:
           $ref: "#/components/responses/Error"
   /api/v1/agendas:
@@ -2250,82 +2176,6 @@ paths:
           $ref: "#/components/responses/Data"
         default:
           $ref: "#/components/responses/Error"
-  /api/v1/public/albums:
-    get:
-      operationId: publicAlbums
-      tags:
-        - Content
-      summary: Album published
-      x-status: planned
-      x-milestone: M13
-      security: []
-      responses:
-        default:
-          $ref: "#/components/responses/Error"
-  /api/v1/public/albums/{slug}:
-    parameters:
-      - $ref: "#/components/parameters/Slug"
-    get:
-      operationId: publicAlbumShow
-      tags:
-        - Content
-      summary: Detail album published
-      x-status: planned
-      x-milestone: M13
-      security: []
-      responses:
-        default:
-          $ref: "#/components/responses/Error"
-  /api/v1/public/articles:
-    get:
-      operationId: publicArticles
-      tags:
-        - Content
-      summary: Artikel published
-      x-status: planned
-      x-milestone: M13
-      security: []
-      responses:
-        default:
-          $ref: "#/components/responses/Error"
-  /api/v1/public/articles/{slug}:
-    parameters:
-      - $ref: "#/components/parameters/Slug"
-    get:
-      operationId: publicArticleShow
-      tags:
-        - Content
-      summary: Detail artikel published
-      x-status: planned
-      x-milestone: M13
-      security: []
-      responses:
-        default:
-          $ref: "#/components/responses/Error"
-  /api/v1/public/facilities:
-    get:
-      operationId: publicFacilities
-      tags:
-        - Content
-      summary: Fasilitas published
-      x-status: planned
-      x-milestone: M13
-      security: []
-      responses:
-        default:
-          $ref: "#/components/responses/Error"
-  /api/v1/public/site-profile:
-    get:
-      operationId: publicSiteProfile
-      tags:
-        - Content
-      summary: Profil publik published
-      x-status: planned
-      x-milestone: M13
-      security: []
-      responses:
-        default:
-          $ref: "#/components/responses/Error"
   /health/live:
     get:
       operationId: healthLive
@@ -2410,6 +2260,623 @@ paths:
       responses:
         "204":
           description: Cookie rt05_api_xsrf dan rt05_api_session; CMS membaca rt05_api_xsrf lalu mengirim X-XSRF-TOKEN. Cookie API terpisah dari cookie website.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/articles:
+    get:
+      operationId: adminArticlesIndex
+      tags:
+        - Content
+      summary: Daftar artikel (draf/terbit; arsip dengan ?status=arsip)
+      x-status: implemented
+      x-milestone: M13
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: {type: string, enum: [draf, terbit, arsip]}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminListEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminArticlesStore
+      tags:
+        - Content
+      summary: Buat draf artikel
+      description: Slug unik per jenis (409 SLUG_TAKEN). Draf tidak tampil publik.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentInput'}
+      responses:
+        "201":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/articles/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: adminArticlesShow
+      tags:
+        - Content
+      summary: Detail artikel (draf + status terbit)
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      operationId: adminArticlesUpdate
+      tags:
+        - Content
+      summary: Simpan draf artikel
+      description: Versi wajib (409 VERSION_CONFLICT). Snapshot terbit tidak berubah sampai diterbitkan. Arsip 409 CONTENT_ARCHIVED.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentUpdateInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/articles/{id}/publish:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminArticlesPublish
+      tags:
+        - Content
+      summary: Terbitkan draf artikel
+      description: Validasi penuh; foto belum siap/tidak ada 422 MEDIA_NOT_READY. Slug terbit lama disimpan untuk redirect 301. Mencatat outbox konten.diterbitkan.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentVersionInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/articles/{id}/archive:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminArticlesArchive
+      tags:
+        - Content
+      summary: Arsipkan artikel
+      description: Hilang dari publik (404); riwayat tetap.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentVersionInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/articles:
+    get:
+      operationId: publicArticles
+      tags:
+        - Content
+      summary: Artikel terbit (tanpa akun)
+      description: Hanya snapshot terbit. Cache-Control public, max-age=60.
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PublicContentListEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/articles/{slug}:
+    parameters:
+      - $ref: "#/components/parameters/Slug"
+    get:
+      operationId: publicArticlesShow
+      tags:
+        - Content
+      summary: Detail artikel terbit
+      description: Slug lama dari konten yang masih terbit → 301 dengan Location ke slug baru; draf/arsip 404. ETag per versi terbit.
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PublicContentEnvelope'}
+        "301":
+          description: Slug lama; Location menunjuk slug baru.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/albums:
+    get:
+      operationId: adminAlbumsIndex
+      tags:
+        - Content
+      summary: Daftar album (draf/terbit; arsip dengan ?status=arsip)
+      x-status: implemented
+      x-milestone: M13
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: {type: string, enum: [draf, terbit, arsip]}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminListEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminAlbumsStore
+      tags:
+        - Content
+      summary: Buat draf album
+      description: Slug unik per jenis (409 SLUG_TAKEN). Draf tidak tampil publik.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentInput'}
+      responses:
+        "201":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/albums/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: adminAlbumsShow
+      tags:
+        - Content
+      summary: Detail album (draf + status terbit)
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      operationId: adminAlbumsUpdate
+      tags:
+        - Content
+      summary: Simpan draf album
+      description: Versi wajib (409 VERSION_CONFLICT). Snapshot terbit tidak berubah sampai diterbitkan. Arsip 409 CONTENT_ARCHIVED.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentUpdateInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/albums/{id}/publish:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminAlbumsPublish
+      tags:
+        - Content
+      summary: Terbitkan draf album
+      description: Validasi penuh; foto belum siap/tidak ada 422 MEDIA_NOT_READY. Slug terbit lama disimpan untuk redirect 301. Mencatat outbox konten.diterbitkan.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentVersionInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/albums/{id}/archive:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminAlbumsArchive
+      tags:
+        - Content
+      summary: Arsipkan album
+      description: Hilang dari publik (404); riwayat tetap.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentVersionInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/albums:
+    get:
+      operationId: publicAlbums
+      tags:
+        - Content
+      summary: Album terbit (tanpa akun)
+      description: Hanya snapshot terbit. Cache-Control public, max-age=60.
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PublicContentListEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/albums/{slug}:
+    parameters:
+      - $ref: "#/components/parameters/Slug"
+    get:
+      operationId: publicAlbumsShow
+      tags:
+        - Content
+      summary: Detail album terbit
+      description: Slug lama dari konten yang masih terbit → 301 dengan Location ke slug baru; draf/arsip 404. ETag per versi terbit.
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PublicContentEnvelope'}
+        "301":
+          description: Slug lama; Location menunjuk slug baru.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/facilities:
+    get:
+      operationId: adminFacilitiesIndex
+      tags:
+        - Content
+      summary: Daftar fasilitas (draf/terbit; arsip dengan ?status=arsip)
+      x-status: implemented
+      x-milestone: M13
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: {type: string, enum: [draf, terbit, arsip]}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminListEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: adminFacilitiesStore
+      tags:
+        - Content
+      summary: Buat draf fasilitas
+      description: Slug unik per jenis (409 SLUG_TAKEN). Draf tidak tampil publik.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentInput'}
+      responses:
+        "201":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/facilities/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: adminFacilitiesShow
+      tags:
+        - Content
+      summary: Detail fasilitas (draf + status terbit)
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      operationId: adminFacilitiesUpdate
+      tags:
+        - Content
+      summary: Simpan draf fasilitas
+      description: Versi wajib (409 VERSION_CONFLICT). Snapshot terbit tidak berubah sampai diterbitkan. Arsip 409 CONTENT_ARCHIVED.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentUpdateInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/facilities/{id}/publish:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminFacilitiesPublish
+      tags:
+        - Content
+      summary: Terbitkan draf fasilitas
+      description: Validasi penuh; foto belum siap/tidak ada 422 MEDIA_NOT_READY. Slug terbit lama disimpan untuk redirect 301. Mencatat outbox konten.diterbitkan.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentVersionInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/facilities/{id}/archive:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminFacilitiesArchive
+      tags:
+        - Content
+      summary: Arsipkan fasilitas
+      description: Hilang dari publik (404); riwayat tetap.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentVersionInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/facilities:
+    get:
+      operationId: publicFacilities
+      tags:
+        - Content
+      summary: Fasilitas terbit (tanpa akun)
+      description: Hanya snapshot terbit. Cache-Control public, max-age=60.
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PublicContentListEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/facilities/{slug}:
+    parameters:
+      - $ref: "#/components/parameters/Slug"
+    get:
+      operationId: publicFacilitiesShow
+      tags:
+        - Content
+      summary: Detail fasilitas terbit
+      description: Slug lama dari konten yang masih terbit → 301 dengan Location ke slug baru; draf/arsip 404. ETag per versi terbit.
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PublicContentEnvelope'}
+        "301":
+          description: Slug lama; Location menunjuk slug baru.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/site-profile:
+    get:
+      operationId: adminSiteProfileShow
+      tags:
+        - Content
+      summary: Profil situs (draf + terbit)
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      operationId: adminSiteProfileUpdate
+      tags:
+        - Content
+      summary: Simpan dan terbitkan fakta profil
+      description: Versi wajib. Simpan draf lalu terbitkan dalam satu transaksi. Fakta yang belum dipublikasikan tetap ditulis demikian.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ProfileUpdateInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/site-profile:
+    get:
+      operationId: publicSiteProfile
+      tags:
+        - Content
+      summary: Profil situs terbit
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PublicContentEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/content-media:
+    post:
+      operationId: adminContentMediaUpload
+      tags:
+        - Content
+      summary: Unggah foto konten (JPG/PNG/WebP)
+      description: Diproses di request (magic bytes, encode ulang JPEG ≤1600 px, EXIF dibuang). Publik hanya bila dirujuk konten terbit.
+      x-status: implemented
+      x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [foto]
+              properties:
+                foto: {type: string, format: binary}
+      responses:
+        "201":
+          description: Foto siap.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentMediaEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/content-media/{id}/file:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: adminContentMediaFile
+      tags:
+        - Content
+      summary: Pratinjau foto draf (pengurus, no-store)
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: JPEG.
+          content:
+            image/jpeg:
+              schema: {type: string, format: binary}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/public/media/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      operationId: publicContentMedia
+      tags:
+        - Content
+      summary: Foto konten terbit
+      description: 404 bila foto tidak dirujuk konten terbit (draf/arsip tidak bocor).
+      x-status: implemented
+      x-milestone: M13
+      responses:
+        "200":
+          description: JPEG.
+          content:
+            image/jpeg:
+              schema: {type: string, format: binary}
         default:
           $ref: "#/components/responses/Error"
 security:
@@ -3243,6 +3710,102 @@ components:
       required: [data, meta]
       properties:
         data: {$ref: '#/components/schemas/Agenda'}
+        meta: {$ref: '#/components/schemas/Meta'}
+    ContentInput:
+      type: object
+      required: [slug, draf]
+      properties:
+        slug: {type: string, pattern: '^[a-z0-9]+(-[a-z0-9]+)*$', maxLength: 120}
+        draf: {type: object, description: 'Payload per jenis (artikel/album/fasilitas), divalidasi server.'}
+    ContentUpdateInput:
+      allOf:
+        - {$ref: '#/components/schemas/ContentInput'}
+        - type: object
+          required: [versi]
+          properties:
+            versi: {type: integer, minimum: 1}
+    ContentVersionInput:
+      type: object
+      required: [versi]
+      properties:
+        versi: {type: integer, minimum: 1}
+    ProfileUpdateInput:
+      type: object
+      required: [versi, draf]
+      properties:
+        versi: {type: integer, minimum: 1}
+        draf: {type: object}
+    ContentAdmin:
+      type: object
+      additionalProperties: false
+      required: [id, jenis, slug, status, versi, draf, slug_terbit, ada_perubahan_belum_terbit, sumber, published_at, updated_at, archived_at]
+      properties:
+        id: {type: string, format: uuid}
+        jenis: {type: string, enum: [artikel, album, fasilitas, profil]}
+        slug: {type: string}
+        status: {type: string, enum: [draf, terbit, arsip]}
+        versi: {type: integer}
+        draf: {type: object}
+        slug_terbit: {type: [string, 'null']}
+        ada_perubahan_belum_terbit: {type: boolean}
+        sumber: {type: string, enum: [pengurus, impor]}
+        published_at: {type: [string, 'null'], format: date-time}
+        updated_at: {type: [string, 'null'], format: date-time}
+        archived_at: {type: [string, 'null'], format: date-time}
+    ContentAdminEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data: {$ref: '#/components/schemas/ContentAdmin'}
+        meta: {$ref: '#/components/schemas/Meta'}
+    ContentAdminListEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data: {type: array, items: {$ref: '#/components/schemas/ContentAdmin'}}
+        meta: {type: object}
+        links: {type: object}
+    PublicContent:
+      type: object
+      required: [slug, published_at]
+      description: Snapshot terbit (field per jenis). Tidak memuat ID akun pembuat/pengubah.
+      properties:
+        slug: {type: string}
+        published_at: {type: [string, 'null'], format: date-time}
+        title: {type: string}
+    PublicContentEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data: {$ref: '#/components/schemas/PublicContent'}
+        meta: {$ref: '#/components/schemas/Meta'}
+    PublicContentListEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data: {type: array, items: {$ref: '#/components/schemas/PublicContent'}}
+        meta: {type: object}
+        links: {type: object}
+    ContentMedia:
+      type: object
+      additionalProperties: false
+      required: [id, url, srcset, lebar, tinggi, status, pratinjau_url]
+      properties:
+        id: {type: string, format: uuid}
+        url: {type: string}
+        srcset: {type: [string, 'null']}
+        lebar: {type: integer}
+        tinggi: {type: integer}
+        status: {type: string, enum: [siap, gagal]}
+        pratinjau_url: {type: string}
+    ContentMediaEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        data: {$ref: '#/components/schemas/ContentMedia'}
         meta: {$ref: '#/components/schemas/Meta'}
     DuesRate:
       type: object
