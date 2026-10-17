@@ -1,0 +1,66 @@
+[
+    {
+        "slug": "lapangan",
+        "title": "Lapangan serbaguna",
+        "description": "Ruang terbuka dengan permukaan beton di lingkungan RT 05. Menara air dan sekretariat tampak di sisinya. Gunakan fasilitas dengan memperhatikan peraturan yang terpasang.",
+        "photo": {
+            "slug": "lapangan",
+            "alt": "Lapangan beton serbaguna dengan menara air biru dan atap pos di belakangnya.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        }
+    },
+    {
+        "slug": "taman-bermain",
+        "title": "Bermain di bawah pepohonan",
+        "description": "Taman bermain dengan kubah panjat, perosotan, dan area ban berwarna. Mari dampingi anak saat bermain dan jaga kebersihan area setelah digunakan.",
+        "photo": {
+            "slug": "taman-bermain",
+            "alt": "Taman bermain dengan kubah panjat biru dan perosotan kuning di bawah pohon rindang.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        }
+    },
+    {
+        "slug": "sekretariat",
+        "title": "Sekretariat RT 05/07",
+        "description": "Bangunan dengan rangka kuning dan warna biru yang khas. Sekretariat menjadi tempat pengurus dan warga bertemu. Informasi jam pelayanan akan dilengkapi pengurus.",
+        "photo": {
+            "slug": "sekretariat",
+            "alt": "Pos Sekretariat RT 05/07 berangka kuning dengan bangku dan meja di halamannya.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        }
+    },
+    {
+        "slug": "area-hijau",
+        "title": "Area hijau",
+        "description": "Rumput dan pepohonan menghiasi tepi lapangan, berdekatan dengan rumah-rumah di lingkungan. Ruang ini ikut memberi suasana teduh pada area bersama.",
+        "photo": {
+            "slug": "area-hijau",
+            "alt": "Lapangan berumput dengan deretan rumah dan pohon palem di latar belakang.",
+            "lebar": 1600,
+            "tinggi": 1200,
+            "ukuran": [
+                480,
+                960,
+                1600
+            ]
+        }
+    }
+]

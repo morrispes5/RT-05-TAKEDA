@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Community\Notifications;
+use App\Domain\Content\Catalog;
 use App\Domain\Finance\Dues;
 use App\Domain\Finance\Reconciliation;
 use App\Domain\Identity\RegistrationToken;
@@ -82,6 +83,12 @@ Artisan::command('rt05:push-recover {--stale-minutes=10}', function () {
     }
     $this->info('Event push dikirim ulang: '.$events->count());
 })->purpose('Pulihkan push notifikasi yang belum terproses');
+
+Artisan::command('rt05:konten-impor', function () {
+    // M13: katalog konten yang sudah diterima website; idempotent, tidak menimpa suntingan pengurus.
+    $r = Catalog::import();
+    $this->info("Konten baru: {$r['dibuat']}, dilewati (sudah ada): {$r['dilewati']}");
+})->purpose('Impor katalog artikel/album/fasilitas/profil baseline website (idempotent)');
 
 Artisan::command('rt05:rekonsiliasi-keuangan', function () {
     // M12: tagihan ↔ pembayaran ↔ alokasi ↔ buku kas. Hanya angka (tanpa kode rumah/nama).

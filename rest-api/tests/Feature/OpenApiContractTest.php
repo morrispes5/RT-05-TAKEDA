@@ -39,9 +39,10 @@ class OpenApiContractTest extends TestCase
     public function test_planned_operations_are_not_served(): void
     {
         $planned = array_keys(array_filter(OpenApi::operations(), fn ($meta) => $meta['status'] === 'planned'));
-        $this->assertGreaterThan(10, count($planned));
+        // Sisa operasi planned setelah M13 (media umum, versi aplikasi) tetap belum dilayani.
+        $this->assertGreaterThanOrEqual(5, count($planned));
 
-        foreach (['GET /api/v1/public/articles', 'POST /api/v1/media', 'GET /api/v1/app-version'] as $operation) {
+        foreach (['POST /api/v1/media', 'GET /api/v1/media/{id}/status', 'GET /api/v1/app-version'] as $operation) {
             $this->assertContains($operation, $planned);
             [$method, $path] = explode(' ', $operation);
             $this->json($method, $path)->assertNotFound();
