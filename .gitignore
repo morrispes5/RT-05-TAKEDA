@@ -27,4 +27,4 @@ key.properties
 
 # Kredensial Firebase/FCM (M10) tidak pernah di Git.
 *service-account*.json
-firebase-adminsdk*.json
+*firebase-adminsdk*.json
