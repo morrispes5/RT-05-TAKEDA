@@ -1,5 +1,32 @@
 # Progress — RT05 TAKEDA
 
+## M13 — Konten publik backend dan pengelolaan mobile — 17 Oktober 2026: **passed** (lokal + CI; staging di bagian ini)
+
+Sebelumnya seluruh endpoint konten berstatus planned. Dibangun di branch `codex/m13-public-content` (ADR28).
+
+| Gate ROADMAP M13 | Bukti |
+| --- | --- |
+| Impor ganda aman | `rt05:konten-impor` dua kali: 13 lalu 0 baru; suntingan pengurus tidak ditimpa |
+| Draf tidak bocor | Draf/edit draf tidak muncul di daftar/detail publik; isi draf rahasia tidak ada di respons publik |
+| Terbit hanya media siap | Media tidak ada → 422 MEDIA_NOT_READY; foto unggahan publik 404 sampai terbit dan lagi setelah arsip |
+| Edit bersamaan 409 | Versi basi → 409 VERSION_CONFLICT (simpan dan terbit) |
+| Snapshot stabil | Publik tetap versi terbit sampai diterbitkan ulang |
+| Redirect slug | Slug lama 301 ke slug baru; slug lama tidak bisa dipakai konten lain; kembali ke slug lama sendiri boleh |
+| Fakta diterima tetap | artikel/album salinan byte-identik website; deskripsi fasilitas kata per kata dari Blade; sekretaris/bendahara "Nama belum dipublikasikan"; album 17 Agustus tanpa tahun; urutan fasilitas sama |
+
+Mobile pengurus: Lainnya → Konten website (Artikel/Album/Fasilitas/Profil) dengan editor draf, unggah foto + teks
+alternatif, terbit/arsip berkonfirmasi, profil simpan = terbit. Tes menemukan tab "Profil" di luar layar 360 dp → tab
+dibagi rata dengan skala label dibatasi 1,3×.
+
+| Perintah | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17.10 sementara) | **303/303** (+7 `M13ContentTest`; uji kontrak planned disesuaikan karena konten kini implemented) |
+| `vendor/bin/pint`; Redocly lint | bersih; valid tanpa peringatan |
+| `flutter analyze`; `dart format --set-exit-if-changed`; `flutter test` | bersih; 0 changed; **216 lulus** (+9 `m13_content_admin_test`) |
+
+Belum (M14): website membaca API ini (saat ini website masih Blade/JSON statis), CMS web, konsumsi outbox untuk
+invalidasi cache.
+
 ## M12 — Pembayaran offline, kas, koreksi, ekspor — 17 Oktober 2026: **passed** (lokal, CI, staging `337a8bb`)
 
 Dibuka atas instruksi pemilik setelah M11. Kode pembayaran/kas/pembalikan sudah ada sejak jalur layanan-inti; M12
@@ -532,7 +559,7 @@ ditentukan hanya oleh tersedianya kode.
 | M10 | passed | Staging `a86a497` + HP Android pemilik: push foreground/background/terminated, izin ditolak; lokal 284/2778, Flutter 192; FCM `rt05-takeda`. Penerimaan staging sintetis; bukan production/UAT. evidence/m10/ANDROID_RESULTS.md |
 | M11 | passed | 17 Oktober: audit gate + rekap bulanan pengurus, tarif admin mobile, generator bersamaan teruji, bug tarif ganda 500→409; lokal 288/2834, Flutter 199. Bagian "M11" teratas |
 | M12 | passed | 17 Oktober: FIN critical + konkurensi antarproses + timeout replay + rekonsiliasi harian + konfirmasi saldo negatif + aksi pembalikan mobile; lokal 296/2917, Flutter 207. Bagian "M12" teratas |
-| M13 | planned | CMS API belum operasional |
+| M13 | passed | 17 Oktober: API konten publik (draf/terbit/arsip, snapshot, slug redirect, media, impor katalog) + Konten website di mobile pengurus; lokal 303, Flutter 216. Bagian "M13" teratas |
 | M14 | planned | Website real publication belum terintegrasi |
 | M15 | planned | UAT/full QA belum dilakukan |
 | M16 | planned | Production baru belum dirilis |
@@ -542,7 +569,7 @@ M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. 
 Catatan M10–M12: kode awal dari jalur layanan-inti sudah berada di `main`, dan
 status `in_progress` di atas adalah catatan lama dari jalur itu. Belum ada
 gate penerimaan (live, Android, dokumentasi) yang dijalankan untuk ketiganya.
-M10, M11, dan M12 dibuka dan ditutup 17 Oktober (bagian atas berkas ini).
+M10–M13 dibuka dan ditutup 17 Oktober (bagian atas berkas ini).
 
 ## Riwayat pembukaan M06 (checkpoint 12 Oktober)
 

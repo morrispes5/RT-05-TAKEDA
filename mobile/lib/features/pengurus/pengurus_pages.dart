@@ -9,6 +9,7 @@ import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/widgets.dart';
+import 'content_admin.dart';
 import 'dues_admin.dart';
 import 'finance_actions.dart';
 import '../household/admin_census.dart';
@@ -967,6 +968,13 @@ class MoreAdminPage extends ConsumerWidget {
               title: const Text('Agenda & pengumuman'),
               subtitle: const Text('Buat, ubah, atau arsipkan. Warga menerima notifikasi dan pengingat H-1'),
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityAdminPage())),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.public, color: Brand.navy),
+              title: const Text('Konten website'),
+              subtitle: const Text('Artikel, album, fasilitas, dan profil RT. Tampil setelah diterbitkan'),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ContentAdminPage())),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,

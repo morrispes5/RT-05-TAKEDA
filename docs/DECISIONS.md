@@ -205,6 +205,15 @@ Saldo negatif: kas manual memakai advisory lock transaksi agar saldo yang diperi
 Ekspor: CSV iuran/kas/rumah tetap di-stream sinkron untuk pengurus (`Cache-Control: no-store`, audit `ekspor.csv`, sel formula diberi prefiks). Skala satu RT (ratusan baris) kecil, sesuai catatan profil shared "ekspor kecil boleh stream". Ekspor besar via worker/unduhan privat kedaluwarsa (FR19) ditunda sampai ada kebutuhan volume; bukan blocker M12.
 Mobile pengurus: pembatalan pembayaran lewat tombol "Batalkan" yang terlihat (bukan tekan lama), kas manual bisa dibalik (`dapat_dibalik`), alasan minimal 5 karakter, konfirmasi bahaya, dialog hasil. Warga tidak melihat kas (ADR26), jadi bagian ROADMAP "warga … cash" digantikan keputusan itu.
 
+### ADR28 — Konten publik M13: satu tabel berjenis, draf berversi, snapshot terbit
+
+Tanggal/status: 17 Oktober 2026, implementasi M13.
+Keputusan: artikel, album, fasilitas, dan profil situs memakai satu tabel `konten` (jenis + slug unik per jenis) dengan `draf` jsonb yang diedit berversi (409 VERSION_CONFLICT) dan `terbit` jsonb sebagai snapshot terpisah. Pengunjung hanya membaca snapshot, jadi draf tidak pernah bocor dan edit draf tidak mengubah website sampai diterbitkan. Ini lebih sederhana daripada empat tabel ERD rancangan (articles, albums, album_photos, facilities) dengan perilaku yang sama: aturan payload per jenis divalidasi server, dan urutan/alt/caption foto album disimpan di payload.
+Terbit: validasi penuh; semua media yang dirujuk harus ada dan berstatus siap (422 MEDIA_NOT_READY); snapshot memuat URL media yang sudah diselesaikan. Mengganti slug lalu terbit menyimpan slug lama di `konten_slug_lama` → GET publik slug lama 301 ke slug baru; slug lama tidak bisa dipakai konten lain (409 SLUG_TAKEN). Arsip menghapus dari publik (404) dan mengunci edit (409 CONTENT_ARCHIVED). Terbit/arsip mencatat outbox `konten.diterbitkan/diarsipkan` untuk invalidasi cache website (dikonsumsi M14; v1 tanpa inbox).
+Media: unggahan pengurus diproses di request (magic bytes, encode ulang JPEG ≤1600 px, EXIF dibuang), disimpan privat dengan nama acak; publik hanya bila dirujuk snapshot terbit (`/public/media/{id}`), pratinjau draf hanya pengurus (no-store). Foto website yang sudah diterima dirujuk lewat path `/images/…` (sumber statis), tidak disalin.
+Impor: `rt05:konten-impor` dari `rest-api/database/seeders/konten/` — artikel.json dan album.json salinan byte-identik website (diuji), fasilitas.json dan profil.json diekstrak kata per kata dari Blade website (diuji). Idempotent; slug yang ada atau pernah diganti tidak ditimpa. Tidak mengarang fakta: sekretaris/bendahara tetap "Nama belum dipublikasikan", album 17 Agustus tanpa tahun.
+Publik: `GET /public/{articles|albums|facilities}[/{slug}]`, `/public/site-profile`; tanpa akun, throttle 120/menit, `Cache-Control: public, max-age=60`, ETag per versi terbit, tanpa ID akun pembuat.
+
 ## Input operasional yang belum tersedia
 
 ### ADR22 — Aspirasi M09: domain terpisah, anonimitas sama dengan pengaduan, tiga status
