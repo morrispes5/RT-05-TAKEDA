@@ -1,4 +1,4 @@
-// Pemakaian: node infra/scripts/m11-stage-check.mjs (fixture privat di %USERPROFILE%.rt05, di luar Git).
+// Pemakaian: node infra/scripts/m11-stage-check.mjs (fixture privat di %USERPROFILE%/.rt05, di luar Git).
 // Cek live M11 staging, hanya baca. Tanpa mencetak kredensial, token, email, atau nama.
 import fs from 'node:fs';
 const ORIGIN = 'https://takeda-staging.morriz.tech', O = ORIGIN + '/api/v1';
