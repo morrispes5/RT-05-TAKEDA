@@ -2,6 +2,7 @@
 
 use App\Domain\Community\Notifications;
 use App\Domain\Finance\Dues;
+use App\Domain\Finance\Reconciliation;
 use App\Domain\Identity\RegistrationToken;
 use App\Domain\Operations\OutboxDispatcher;
 use App\Domain\Services\Photo;
@@ -17,6 +18,7 @@ use App\Support\SharedHosting;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Storage;
 
@@ -80,6 +82,21 @@ Artisan::command('rt05:push-recover {--stale-minutes=10}', function () {
     }
     $this->info('Event push dikirim ulang: '.$events->count());
 })->purpose('Pulihkan push notifikasi yang belum terproses');
+
+Artisan::command('rt05:rekonsiliasi-keuangan', function () {
+    // M12: tagihan ↔ pembayaran ↔ alokasi ↔ buku kas. Hanya angka (tanpa kode rumah/nama).
+    $r = Reconciliation::run();
+    $this->line(json_encode($r, JSON_UNESCAPED_UNICODE));
+    if ($r['total_masalah'] > 0) {
+        Log::warning('keuangan.rekonsiliasi_tidak_cocok', $r);
+        $this->error('Rekonsiliasi menemukan '.$r['total_masalah'].' ketidakcocokan. Koreksi lewat pembalikan oleh pengurus.');
+
+        return 1;
+    }
+    $this->info('Rekonsiliasi cocok.');
+
+    return 0;
+})->purpose('Periksa konsistensi tagihan, pembayaran, alokasi, dan buku kas');
 
 Artisan::command('rt05:siaran-sistem {kategori : kebijakan|pembaruan_aplikasi} {--judul=} {--isi=}', function () {
     $kategori = (string) $this->argument('kategori');
@@ -175,6 +192,10 @@ if (SharedHosting::enabled()) {
         ->when(fn () => in_array($wib()->day, [5, 20], true) && $wib()->hour >= 8
             && SharedHosting::dueSlot('pengingat-iuran', $wib()->toDateString()))
         ->onSuccess(fn () => SharedHosting::markRan('pengingat-iuran', $wib()->toDateString()));
+    Schedule::command('rt05:rekonsiliasi-keuangan')->everyMinute()->withoutOverlapping()
+        ->when(fn () => $wib()->hour >= 1 && SharedHosting::dueSlot('rekonsiliasi-keuangan', $wib()->toDateString()))
+        // after, bukan onSuccess: ketidakcocokan (exit 1) cukup dilaporkan sekali per hari, bukan tiap tick.
+        ->after(fn () => SharedHosting::markRan('rekonsiliasi-keuangan', $wib()->toDateString()));
 } else {
     // Heartbeat scheduler M03: dibaca rt05:heartbeat-check, tidak lewat endpoint publik.
     Schedule::call(fn () => Heartbeat::beat('scheduler'))->everyMinute()->name('rt05:heartbeat-scheduler');
@@ -182,6 +203,7 @@ if (SharedHosting::enabled()) {
     Schedule::command('rt05:tagihan-generate')->dailyAt('00:10')->timezone('Asia/Jakarta')->withoutOverlapping()->onOneServer();
     Schedule::command('rt05:media-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer();
     Schedule::command('rt05:push-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer();
+    Schedule::command('rt05:rekonsiliasi-keuangan')->dailyAt('01:30')->timezone('Asia/Jakarta')->withoutOverlapping()->onOneServer();
     Schedule::command('rt05:pengingat-agenda')->hourly()->withoutOverlapping()->onOneServer();
     Schedule::command('rt05:pengingat-iuran')->monthlyOn(5, '08:00')->timezone('Asia/Jakarta')->onOneServer();
     Schedule::command('rt05:pengingat-iuran')->monthlyOn(20, '08:00')->timezone('Asia/Jakarta')->onOneServer();

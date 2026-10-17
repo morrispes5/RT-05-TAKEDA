@@ -1,5 +1,34 @@
 # Progress — RT05 TAKEDA
 
+## M12 — Pembayaran offline, kas, koreksi, ekspor — 17 Oktober 2026: **passed** (lokal + CI; staging di bagian ini)
+
+Dibuka atas instruksi pemilik setelah M11. Kode pembayaran/kas/pembalikan sudah ada sejak jalur layanan-inti; M12
+mengaudit terhadap gate ROADMAP dan TESTING FIN-1..18, lalu melengkapi (branch `codex/m12-payments-cash`, ADR27).
+
+| Gate ROADMAP M12 / TESTING | Bukti |
+| --- | --- |
+| Seluruh FIN critical | FIN-1..8, 11, 13–15, 18 (FinanceTest, AsyncOutboxTest); FIN-9/10 dan pembalikan bersamaan (M12ConcurrencyTest); FIN-12 (AsyncOutboxTest antrean mati setelah commit); FIN-16/17 (M12FinanceTest) |
+| Independent concurrency | 3 proses PHP terpisah: dua pengurus membayar tagihan sama dengan kunci berbeda → 1×201, 2×409 `CHARGE_ALREADY_PAID`; 3 pembatalan bersamaan → 1 sukses, 2×409, satu baris pembalikan |
+| Timeout replay | 3 proses dengan Idempotency-Key sama bersamaan → satu posting, semua respons sukses memakai nomor bukti yang sama, satu reservasi |
+| Partial/overpay ditolak | FinanceTest (tanpa tulisan sebagian) |
+| Queue/provider gagal setelah commit | AsyncOutboxTest + M10 (push gagal tidak menyentuh event) |
+| Reversal sekali | FinanceTest + konkurensi + rekonsiliasi bersih |
+| CSV aman dan batas akses | Formula diberi prefiks; total ekspor kas = saldo ledger; warga 403 untuk tiga ekspor; jenis tak dikenal 404; `no-store`; audit `ekspor.csv` |
+
+Ditambahkan: `rt05:rekonsiliasi-keuangan` + jadwal harian (VPS/shared); konfirmasi saldo negatif (422 → kirim ulang
+dengan flag, BUSINESS_RULES); `dapat_dibalik` di daftar kas. Mobile pengurus: tombol **Batalkan** pembayaran yang
+terlihat (sebelumnya tekan lama tersembunyi), kas manual bisa **Balik**, alasan minimal 5 karakter, konfirmasi bahaya,
+dialog hasil, `showApiError`; Catat kas dengan dialog saldo negatif.
+
+| Perintah | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17.10 sementara) | **296/296, 2917 assertion** (+5 `M12FinanceTest`, +3 `M12ConcurrencyTest`) |
+| `vendor/bin/pint`; Redocly lint | bersih; valid |
+| `flutter analyze`; `dart format --set-exit-if-changed`; `flutter test` | bersih; 0 changed; **207 lulus** (+8 `m12_finance_admin_test`) |
+
+Keterbatasan: ekspor besar lewat worker/unduhan privat kedaluwarsa ditunda (skala RT kecil, ADR27). Warga tidak melihat
+kas (ADR26). Uji HP pengurus untuk alur keuangan multi-bulan masuk UAT M15.
+
 ## M11 — Tarif, tagihan, tunggakan — 17 Oktober 2026: **passed** (lokal, CI, staging `0713226`)
 
 Dibuka atas instruksi pemilik setelah M10 ditutup. Kode tarif/tagihan/catch-up sudah ada sejak jalur layanan-inti;
@@ -501,7 +530,7 @@ ditentukan hanya oleh tersedianya kode.
 | M09 | passed | Source617e179 (PR #24): lokal245/2414, Flutter164, seluruh CI SUCCESS, staging live48/138, Android emulator nyata; Drive native belum. Penerimaan staging sintetis; bukan production/UAT. evidence/m09/REPORT.md |
 | M10 | passed | Staging `a86a497` + HP Android pemilik: push foreground/background/terminated, izin ditolak; lokal 284/2778, Flutter 192; FCM `rt05-takeda`. Penerimaan staging sintetis; bukan production/UAT. evidence/m10/ANDROID_RESULTS.md |
 | M11 | passed | 17 Oktober: audit gate + rekap bulanan pengurus, tarif admin mobile, generator bersamaan teruji, bug tarif ganda 500→409; lokal 288/2834, Flutter 199. Bagian "M11" teratas |
-| M12 | in_progress | Pembayaran offline/idempotency/pembalikan/koreksi/kas/CSV; tes CI lulus |
+| M12 | passed | 17 Oktober: FIN critical + konkurensi antarproses + timeout replay + rekonsiliasi harian + konfirmasi saldo negatif + aksi pembalikan mobile; lokal 296/2917, Flutter 207. Bagian "M12" teratas |
 | M13 | planned | CMS API belum operasional |
 | M14 | planned | Website real publication belum terintegrasi |
 | M15 | planned | UAT/full QA belum dilakukan |
@@ -512,7 +541,7 @@ M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. 
 Catatan M10–M12: kode awal dari jalur layanan-inti sudah berada di `main`, dan
 status `in_progress` di atas adalah catatan lama dari jalur itu. Belum ada
 gate penerimaan (live, Android, dokumentasi) yang dijalankan untuk ketiganya.
-M10 dan M11 dibuka dan ditutup 17 Oktober (bagian atas berkas ini); M12 belum dibuka.
+M10, M11, dan M12 dibuka dan ditutup 17 Oktober (bagian atas berkas ini).
 
 ## Riwayat pembukaan M06 (checkpoint 12 Oktober)
 

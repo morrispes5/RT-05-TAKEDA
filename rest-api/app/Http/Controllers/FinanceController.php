@@ -88,6 +88,7 @@ class FinanceController extends Controller
     public function cashSummary(): JsonResponse
     {
         $month = CarbonImmutable::now('Asia/Jakarta')->startOfMonth();
+        $reversed = self::reversedIds();
 
         return Api::data([
             'saldo' => Dues::balance(),
@@ -96,8 +97,14 @@ class FinanceController extends Controller
                 'pengeluaran' => (int) -TransaksiKas::where('tanggal', '>=', $month->toDateString())->where('nominal', '<', 0)->sum('nominal'),
             ],
             'mutasi_terakhir' => TransaksiKas::orderByDesc('tanggal')->orderByDesc('created_at')->limit(30)->get()
-                ->map(fn ($k) => Present::kas($k))->values(),
+                ->map(fn ($k) => Present::kas($k, isset($reversed[$k->id])))->values(),
         ]);
+    }
+
+    /** @return array<string, int> id transaksi kas yang sudah punya pembalikan */
+    private static function reversedIds(): array
+    {
+        return TransaksiKas::whereNotNull('membalik_id')->pluck('membalik_id')->flip()->all();
     }
 
     public function rates(): JsonResponse
@@ -267,7 +274,8 @@ class FinanceController extends Controller
             ->when($request->query('jenis'), fn ($q, $j) => $q->where('jenis', $j))
             ->orderByDesc('tanggal')->orderByDesc('created_at');
 
-        $response = Api::paginate($request, $q, fn (TransaksiKas $k) => Present::kas($k));
+        $reversed = self::reversedIds();
+        $response = Api::paginate($request, $q, fn (TransaksiKas $k) => Present::kas($k, isset($reversed[$k->id])));
         $body = $response->getData(true);
         $body['meta']['saldo'] = Dues::balance();
 
@@ -281,11 +289,13 @@ class FinanceController extends Controller
             'nominal' => ['required', 'integer', 'min:1', 'max:1000000000'],
             'tanggal' => ['required', 'date', 'before_or_equal:'.now('Asia/Jakarta')->toDateString()],
             'kategori' => ['required', 'string', 'max:60'],
-            'keterangan' => ['required', 'string', 'max:500'],
+            'keterangan' => ['required', 'string', 'min:5', 'max:500'],
+            'konfirmasi_saldo_negatif' => ['sometimes', 'boolean'],
         ]);
 
         return Idempotency::run($request, $request->user(), 'cash.store', $data, function () use ($request, $data) {
-            $entry = Dues::recordCash($request->user(), $data['jenis'], (int) $data['nominal'], $data['tanggal'], $data['kategori'], $data['keterangan']);
+            $entry = Dues::recordCash($request->user(), $data['jenis'], (int) $data['nominal'], $data['tanggal'], $data['kategori'], $data['keterangan'],
+                (bool) ($data['konfirmasi_saldo_negatif'] ?? false));
             $warning = Dues::balance() < 0 ? 'Saldo kas menjadi negatif setelah pencatatan ini.' : null;
 
             return Api::data(Present::kas($entry), 201, array_filter(['peringatan' => $warning]));
