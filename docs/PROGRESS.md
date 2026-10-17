@@ -1,6 +1,6 @@
 # Progress — RT05 TAKEDA
 
-## M11 — Tarif, tagihan, tunggakan — 17 Oktober 2026: **passed** (lokal + CI; staging menyusul di bagian ini)
+## M11 — Tarif, tagihan, tunggakan — 17 Oktober 2026: **passed** (lokal, CI, staging `0713226`)
 
 Dibuka atas instruksi pemilik setelah M10 ditutup. Kode tarif/tagihan/catch-up sudah ada sejak jalur layanan-inti;
 M11 mengaudit terhadap gate ROADMAP lalu melengkapi kekurangan (branch `codex/m11-dues`).
@@ -28,6 +28,7 @@ error server di field).
 | `vendor/bin/pint`; Redocly lint | bersih; valid |
 | `flutter analyze`; `dart format --set-exit-if-changed`; `flutter test` | bersih; 0 changed; **199 lulus** (+7 `m11_dues_admin_test`) |
 
+PR #33 merged `0713226`, deploy staging 0 GAGAL, cek live hanya-baca **7/7 PASS** ([LIVE_RESULTS.md](evidence/m11/LIVE_RESULTS.md)).
 Tidak termasuk (ROADMAP): mencatat uang nyata (M12). Tidak membuat tarif sintetis di staging karena tarif tidak bisa
 dihapus dari riwayat.
 
