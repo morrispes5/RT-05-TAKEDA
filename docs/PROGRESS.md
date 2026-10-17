@@ -1,5 +1,36 @@
 # Progress — RT05 TAKEDA
 
+## M11 — Tarif, tagihan, tunggakan — 17 Oktober 2026: **passed** (lokal + CI; staging menyusul di bagian ini)
+
+Dibuka atas instruksi pemilik setelah M10 ditutup. Kode tarif/tagihan/catch-up sudah ada sejak jalur layanan-inti;
+M11 mengaudit terhadap gate ROADMAP lalu melengkapi kekurangan (branch `codex/m11-dues`).
+
+| Gate ROADMAP M11 | Bukti |
+| --- | --- |
+| Generator rerun/concurrent unique | `M11ConcurrencyTest`: 4 proses PHP terpisah (barrier advisory lock) membuat tagihan periode sama → total tepat 1 per rumah, rerun 0; UNIQUE(rumah_id, periode) + insertOrIgnore |
+| Tarif lama stabil | Snapshot `nominal_tagihan`; tarif baru tidak boleh untuk periode yang sudah ditagih (422); FinanceTest + M11DuesTest |
+| Tidak menagih sebelum mulai | `mulai_tagih` + `tagihan_aktif`; FinanceTest |
+| Riwayat 12 bulan | `M11DuesTest`: 15 bulan lintas tarif 70.000→75.000; `?bulan=3` tetap 12 |
+| Transparansi kode rumah tanpa PII | FinanceTest; rekap pengurus juga tanpa nama/email |
+| Warna + label | StatusChip lunas hijau/belum merah dengan label teks dan ikon; tes skala 2,0 |
+| Jadwal bulanan dan slot pengingat | VPS `dailyAt 00:10` + catch-up; shared jatuh tempo per tanggal WIB (M10); pengingat iuran dedup per tagihan+tanggal |
+
+Ditambahkan: `GET /admin/dues-recap` (rekap bulanan per kode rumah, tunggakan bulan sebelumnya, tanggal bayar);
+**bug diperbaiki**: tarif kedua untuk bulan yang sama sebelumnya 500 (unique violation) → 409 `RATE_PERIOD_EXISTS`,
+termasuk simpan bersamaan. Mobile pengurus: Keuangan → **Rekap** (navigasi bulan, angka server, tombol "Buat tagihan
+yang belum ada" dengan konfirmasi/alert) menggantikan tab Transparansi pengurus; Lainnya → **Tarif iuran** (tarif
+berlaku, riwayat, form tarif baru bulan depan s.d. 24 bulan, bulan terpakai tidak bisa dipilih, konfirmasi, dialog hasil,
+error server di field).
+
+| Perintah | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17.10 sementara) | **288/288, 2834 assertion** (+3 `M11DuesTest`, +1 `M11ConcurrencyTest`) |
+| `vendor/bin/pint`; Redocly lint | bersih; valid |
+| `flutter analyze`; `dart format --set-exit-if-changed`; `flutter test` | bersih; 0 changed; **199 lulus** (+7 `m11_dues_admin_test`) |
+
+Tidak termasuk (ROADMAP): mencatat uang nyata (M12). Tidak membuat tarif sintetis di staging karena tarif tidak bisa
+dihapus dari riwayat.
+
 ## Revisi iuran/kas — 17 Oktober 2026 (branch `codex/m10-kas-pengurus`, ADR26)
 
 Instruksi pemilik saat uji HP M10: kas RT tidak boleh terlihat warga; tab Iuran warga menampilkan iuran sendiri lebih
@@ -468,7 +499,7 @@ ditentukan hanya oleh tersedianya kode.
 | M08 | passed | Source6b6987c (head PR a3d80e5): lokal230/2233, Flutter157, seluruh CI SUCCESS, staging live42/130 (rerun 13 Oktober), Android emulator nyata (putaran 2), bagian Drive native disisipkan dan dibaca ulang. Penerimaan staging sintetis; bukan production/UAT. evidence/m08/REPORT.md |
 | M09 | passed | Source617e179 (PR #24): lokal245/2414, Flutter164, seluruh CI SUCCESS, staging live48/138, Android emulator nyata; Drive native belum. Penerimaan staging sintetis; bukan production/UAT. evidence/m09/REPORT.md |
 | M10 | passed | Staging `a86a497` + HP Android pemilik: push foreground/background/terminated, izin ditolak; lokal 284/2778, Flutter 192; FCM `rt05-takeda`. Penerimaan staging sintetis; bukan production/UAT. evidence/m10/ANDROID_RESULTS.md |
-| M11 | in_progress | Tarif/tagihan idempotent/catch-up/transparansi; tes CI lulus |
+| M11 | passed | 17 Oktober: audit gate + rekap bulanan pengurus, tarif admin mobile, generator bersamaan teruji, bug tarif ganda 500→409; lokal 288/2834, Flutter 199. Bagian "M11" teratas |
 | M12 | in_progress | Pembayaran offline/idempotency/pembalikan/koreksi/kas/CSV; tes CI lulus |
 | M13 | planned | CMS API belum operasional |
 | M14 | planned | Website real publication belum terintegrasi |
@@ -480,7 +511,7 @@ M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. 
 Catatan M10–M12: kode awal dari jalur layanan-inti sudah berada di `main`, dan
 status `in_progress` di atas adalah catatan lama dari jalur itu. Belum ada
 gate penerimaan (live, Android, dokumentasi) yang dijalankan untuk ketiganya.
-M10 dibuka 17 Oktober (bagian teratas berkas ini); M11/M12 belum dibuka.
+M10 dan M11 dibuka dan ditutup 17 Oktober (bagian atas berkas ini); M12 belum dibuka.
 
 ## Riwayat pembukaan M06 (checkpoint 12 Oktober)
 
