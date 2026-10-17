@@ -51,6 +51,8 @@ Jangan menandai event completed hanya karena enqueue. Crash sesudah enqueue sebe
 
 Inbox dibuat idempotent lebih dahulu. Push eksternal tidak memiliki exactly-once guarantee; retry memakai logical notification ID dan payload/collapse behavior yang sesuai. Duplicate delivery bisa terjadi dan tidak boleh menggandakan finance.
 
+M12 (ADR27): `rt05:rekonsiliasi-keuangan` harian (VPS 01.30 WIB; shared sekali per tanggal) hanya membaca dan melaporkan angka ketidakcocokan; tidak mengubah data.
+
 M10 (ADR25): setelah inbox dan `completed_at` commit, consumer mengantrekan `SendPush` (event ID) di antrean `notifications`. Job push mengunci baris notifikasi `push_status IS NULL` per 50 penerima, mengirim FCM HTTP v1, mencatat terkirim/dilewati/gagal, release 30/120/600 detik untuk 429/5xx/jaringan, dan tidak pernah menyentuh event atau inbox. Tag/collapse Android `rt05-<notifikasi_id>` membuat pengiriman ganda menggantikan notifikasi lama. `rt05:push-recover` mengantrekan ulang notifikasi yang tertahan >10 menit; notifikasi >24 jam ditandai dilewati. Pengingat H-1 `rt05:pengingat-agenda` aman dijalankan ulang (kunci baris + penanda) dan mengejar setelah downtime selama agenda belum dimulai.
 
 ### Pemulihan implementasi M03

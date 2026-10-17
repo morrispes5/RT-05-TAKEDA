@@ -17,7 +17,8 @@ trait CommittedData
     /** Tabel anak lebih dulu agar FK RESTRICT tidak menolak penghapusan. */
     private const COMMITTED_TABLES = [
         'perangkat_push', 'personal_access_tokens', 'password_reset_tokens', 'notifikasi', 'preferensi_notifikasi', 'pengumuman',
-        'permohonan_akun', 'audit_logs', 'outbox_events', 'token_registrasi', 'tautan_akun', 'keanggotaan_keluarga', 'tagihan_iuran', 'akun',
+        'permohonan_akun', 'audit_logs', 'outbox_events', 'token_registrasi', 'tautan_akun', 'keanggotaan_keluarga', 'riwayat_transaksi_kas', 'transaksi_kas', 'alokasi_pembayaran', 'pembayaran_iuran', 'idempotency_requests',
+        'tagihan_iuran', 'akun',
         'penghunian', 'warga', 'keluarga', 'rumah',
     ];
 
@@ -35,9 +36,14 @@ trait CommittedData
     {
         DB::connection('pgsql_migrations')->transaction(function ($db) {
             $db->statement('ALTER TABLE audit_logs DISABLE TRIGGER audit_logs_no_update_delete');
+            // Buku kas append-only (trigger) hanya dibuka di dalam transaksi pembersihan database *_test.
+            $db->statement('ALTER TABLE transaksi_kas DISABLE TRIGGER transaksi_kas_immutable');
+            $db->statement('ALTER TABLE riwayat_transaksi_kas DISABLE TRIGGER riwayat_transaksi_kas_immutable');
             foreach (self::COMMITTED_TABLES as $table) {
                 $db->table($table)->where('created_at', '>=', $this->committedSince)->delete();
             }
+            $db->statement('ALTER TABLE riwayat_transaksi_kas ENABLE TRIGGER riwayat_transaksi_kas_immutable');
+            $db->statement('ALTER TABLE transaksi_kas ENABLE TRIGGER transaksi_kas_immutable');
             $db->statement('ALTER TABLE audit_logs ENABLE TRIGGER audit_logs_no_update_delete');
         });
         DB::connection('pgsql_migrations')->disconnect();

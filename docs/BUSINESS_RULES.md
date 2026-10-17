@@ -91,7 +91,7 @@ Jika anonymous_to_residents=true, resource warga tidak memuat user_id, nama, kon
 - Pemasukan lain/pengeluaran manual menggunakan entry immutable setelah posted; koreksi lewat reversal.
 - Opening balance adalah entry khusus satu kali per go-live kas dengan sumber dan alasan, bukan penambahan saldo manual berkali-kali.
 - Saldo = total pemasukan posted - pengeluaran posted + nilai reversal sesuai sign. Reversal tidak dihitung dua kali.
-- Tidak menambahkan larangan saldo negatif tanpa kesepakatan; admin mendapat peringatan dan wajib alasan bila pencatatan membuat saldo negatif.
+- Tidak menambahkan larangan saldo negatif tanpa kesepakatan; admin mendapat peringatan dan wajib alasan bila pencatatan membuat saldo negatif. Implementasi M12: server menolak dulu (422 `NEGATIVE_BALANCE_CONFIRMATION_REQUIRED`, tanpa tulisan), lalu menerima setelah konfirmasi eksplisit; keterangan minimal 5 karakter menjadi alasan.
 
 ### Konten, agenda, notifikasi
 

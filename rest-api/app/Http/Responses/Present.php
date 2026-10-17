@@ -420,9 +420,11 @@ final class Present
     }
 
     /** Kas hanya untuk pengurus (ADR26), jadi selalu detail lengkap. */
-    public static function kas(TransaksiKas $k): array
+    public static function kas(TransaksiKas $k, bool $reversed = false): array
     {
         return array_filter([
+            // Hanya kas manual non-iuran yang belum dibalik; kas iuran dibatalkan lewat pembayaran.
+            'dapat_dibalik' => $k->sumber !== 'iuran' && $k->jenis !== 'pembalikan' && ! $reversed,
             'id' => $k->id,
             'jenis' => $k->jenis,
             'sumber' => $k->sumber,

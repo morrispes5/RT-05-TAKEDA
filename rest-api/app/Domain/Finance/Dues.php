@@ -249,16 +249,27 @@ final class Dues
         });
     }
 
-    /** Kas manual non-iuran: pemasukan lain, pengeluaran, saldo awal (sekali). */
-    public static function recordCash(Akun $pengurus, string $jenis, int $amount, string $date, string $kategori, string $keterangan): TransaksiKas
+    /**
+     * Kas manual non-iuran: pemasukan lain, pengeluaran, saldo awal (sekali). Bila pencatatan membuat
+     * saldo negatif, pengurus wajib mengonfirmasi lebih dulu (BUSINESS_RULES: peringatan + alasan),
+     * tanpa melarang saldo negatif.
+     */
+    public static function recordCash(Akun $pengurus, string $jenis, int $amount, string $date, string $kategori, string $keterangan, bool $confirmNegative = false): TransaksiKas
     {
         if (! in_array($jenis, ['pemasukan', 'pengeluaran', 'saldo_awal'], true) || $amount <= 0) {
             throw new DomainConflict('INVALID_CASH_ENTRY', 'Jenis atau nominal kas tidak valid.', 422);
         }
 
-        return DB::transaction(function () use ($pengurus, $jenis, $amount, $date, $kategori, $keterangan) {
+        return DB::transaction(function () use ($pengurus, $jenis, $amount, $date, $kategori, $keterangan, $confirmNegative) {
+            // Satu pencatatan kas manual pada satu waktu: saldo yang diperiksa tidak basi.
+            DB::select("SELECT pg_advisory_xact_lock(hashtext('rt05:kas-manual'))");
             if ($jenis === 'saldo_awal' && TransaksiKas::where('jenis', 'saldo_awal')->exists()) {
                 throw new DomainConflict('OPENING_BALANCE_EXISTS', 'Saldo awal kas sudah pernah dicatat.');
+            }
+            $after = self::balance() + ($jenis === 'pengeluaran' ? -$amount : $amount);
+            if ($after < 0 && ! $confirmNegative) {
+                throw new DomainConflict('NEGATIVE_BALANCE_CONFIRMATION_REQUIRED',
+                    'Pencatatan ini membuat saldo kas menjadi -Rp'.number_format(-$after, 0, ',', '.').'. Periksa nominal; bila benar, konfirmasi dan jelaskan di keterangan.', 422);
             }
             $entry = TransaksiKas::create([
                 'jenis' => $jenis,

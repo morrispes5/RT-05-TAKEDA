@@ -197,7 +197,7 @@ class FinanceTest extends TestCase
     public function test_cash_ledger_is_immutable_and_manual_dues_income_impossible(): void
     {
         $pengurus = $this->pengurus();
-        $entry = Dues::recordCash($pengurus, 'pengeluaran', 20000, '2026-10-10', 'Kebersihan', 'tes');
+        $entry = Dues::recordCash($pengurus, 'pengeluaran', 20000, '2026-10-10', 'Kebersihan', 'tes', confirmNegative: true);
         $this->assertSame(-20000, $entry->nominal);
 
         try {
