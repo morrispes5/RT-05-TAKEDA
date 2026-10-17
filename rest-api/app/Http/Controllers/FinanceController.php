@@ -164,7 +164,7 @@ class FinanceController extends Controller
             'periode' => ['required', 'array', 'min:1', 'max:24'],
             'periode.*' => ['required', 'date_format:Y-m'],
             'nominal' => ['required', 'integer', 'min:1'],
-            'tanggal_bayar' => ['required', 'date', 'before_or_equal:today'],
+            'tanggal_bayar' => ['required', 'date', 'before_or_equal:'.now('Asia/Jakarta')->toDateString()],
             'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -203,7 +203,7 @@ class FinanceController extends Controller
             'periode' => ['required', 'array', 'min:1', 'max:24'],
             'periode.*' => ['required', 'date_format:Y-m'],
             'nominal' => ['required', 'integer', 'min:1'],
-            'tanggal_bayar' => ['required', 'date', 'before_or_equal:today'],
+            'tanggal_bayar' => ['required', 'date', 'before_or_equal:'.now('Asia/Jakarta')->toDateString()],
             'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -230,7 +230,7 @@ class FinanceController extends Controller
         $data = $request->validate([
             'jenis' => ['required', 'in:pemasukan,pengeluaran,saldo_awal'],
             'nominal' => ['required', 'integer', 'min:1', 'max:1000000000'],
-            'tanggal' => ['required', 'date', 'before_or_equal:today'],
+            'tanggal' => ['required', 'date', 'before_or_equal:'.now('Asia/Jakarta')->toDateString()],
             'kategori' => ['required', 'string', 'max:60'],
             'keterangan' => ['required', 'string', 'max:500'],
         ]);

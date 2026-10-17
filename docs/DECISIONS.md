@@ -179,6 +179,17 @@ Status: `diajukan`, `ditinjau`, `perlu_revisi`, `disetujui`, `ditolak`. Catatan 
 Notifikasi: `usulan.diajukan`/`usulan.diperbaiki` ke pengurus, `usulan.status_berubah` ke pengusul, `agenda.dibuat` ke semua warga aktif.
 Setiap tombol aksi memakai standar alert yang sama (konfirmasi, spinner, alert sukses/gagal/konflik, dialog hasil) — §7 requirement.
 
+### ADR25 — Push M10: FCM HTTP v1 tanpa SDK, sama di shared hosting dan VPS
+
+Tanggal/status: 17 Oktober 2026, instruksi pemilik ("jangan andalkan VPS, buat fleksibel"). Implementasi; live FCM menunggu project Firebase pemilik.
+Keputusan: push memakai FCM HTTP v1 lewat Laravel HTTP client + ext-openssl (JWT service account → token OAuth, cache terenkripsi ±55 menit). Tidak ada paket Composer, daemon, atau Redis tambahan, sehingga jalur yang sama berjalan di shared hosting (antrean database setelah response + `rt05:shared-tick`) dan VPS (Redis + worker). Kredensial hanya dari env (`FCM_CREDENTIALS_PATH` di luar web root atau `FCM_CREDENTIALS_BASE64`); tanpa kredensial `NullGateway`: inbox tetap, `notifikasi.push_status=dilewati`.
+Alur: `ProcessOutboxEvent` menulis inbox dan menandai event selesai, **baru kemudian** mengantrekan `SendPush` (event ID). `SendPush` mengunci notifikasi `FOR UPDATE SKIP LOCKED` per 50 penerima, mengirim paralel 20, maksimal 15 detik per putaran lalu melanjutkan dengan job baru. Hasil: terkirim, dilewati (preferensi mati, tanpa HP, kedaluwarsa >24 jam, tanpa kredensial), gagal (ditolak provider atau 4 percobaan habis). 429/5xx/jaringan → release 30/120/600 detik. Token UNREGISTERED/404 dihapus. Event outbox dan inbox tidak pernah diubah oleh kegagalan push. `rt05:push-recover` (VPS tiap 10 menit, shared di sweep 15 menit) mengantrekan ulang push yang hilang.
+Perangkat: tabel `perangkat_push` (token terenkripsi APP_KEY, `token_hash` unik, FK cascade ke `personal_access_tokens`). Push hanya ke akun aktif dengan sesi mobile berlaku.
+Pengingat H-1: dikirim saat agenda masuk jendela 24 jam (catch-up setelah downtime selama agenda belum mulai), dedup dengan kunci baris + `pengingat_terkirim_at`, dilewati bila warga sudah diberi tahu di dalam jendela (`agenda.dibuat`/`agenda.diubah`); pengingat basi (waktu berubah atau agenda sudah mulai) tidak membuat inbox.
+Jadwal shared: ekspresi tetap (`hourly`, `dailyAt`) bisa terlewat bila cron 15 menit terlambat. Profil shared memeriksa tiap task setiap tick dan menjalankannya bila jatuh tempo (`SharedHosting::dueEvery/dueSlot`, penanda di cache file, tanpa query database saat belum jatuh tempo). Profil VPS tidak berubah.
+Mobile: `firebase_messaging` dengan `FirebaseOptions` dari `--dart-define` (nilai klien, bukan secret; CI dari repository variables `FIREBASE_*` tervalidasi). Tanpa nilai itu `NoPushClient`. Data push hanya petunjuk: jenis dari daftar tetap dan UUID, detail dimuat ulang dari API.
+Batas: belum ada bukti provider nyata, HP foreground/background/terminated, dan project Firebase. Bukan WhatsApp otomatis atau sinkronisasi Google Calendar.
+
 ## Input operasional yang belum tersedia
 
 ### ADR22 — Aspirasi M09: domain terpisah, anonimitas sama dengan pengaduan, tiga status
@@ -229,7 +240,7 @@ pengaman sebelumnya tetap dicatat dan tidak diakali.
 | VPS access/proxy/resources actual | M04 | Images/runbook bisa dibuat; deploy live perlu akses |
 | DNS morriz.tech dan otorisasi record | M04/M16 | Tidak menebak IP atau mengubah apex |
 | SMTP credentials | M06/M10 | Adapter local tersedia; reset real belum passed |
-| FCM project/service account | M10 | Inbox jalan; push real belum passed |
+| FCM project/service account | M10 | Kode push siap (ADR25); tanpa kredensial inbox saja. Pemilik membuat project Firebase Spark (gratis) dan app Android `tech.morriz.takeda` |
 | Offsite backup destination/key | M16 | Production recovery gate belum passed |
 | Android app ID/signing key | M05/M15 | Pin app ID tanpa konflik; release perlu key aman |
 | Kontak nyata/privacy retention mitra | M15 | Tidak memasukkan data nyata sebelum notice final |

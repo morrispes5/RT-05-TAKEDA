@@ -47,20 +47,36 @@ class CommunityController extends Controller
         ]);
     }
 
-    private function agendaRules(): array
+    /**
+     * Waktu wajib ISO 8601 dengan zona eksplisit (Z atau +07:00): tanpa zona, server tidak dapat
+     * membedakan WIB dari UTC (gate timezone M10). Disimpan UTC, ditampilkan Asia/Jakarta.
+     */
+    private function agendaRules(bool $future = true): array
+    {
+        $zoned = 'regex:/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/';
+
+        return [
+            'nama' => ['required', 'string', 'min:3', 'max:160'],
+            'deskripsi' => ['required', 'string', 'max:5000'],
+            'lokasi' => ['required', 'string', 'min:3', 'max:200'],
+            'mulai_at' => array_merge(['required', 'date', $zoned], $future ? ['after:now'] : []),
+            'selesai_at' => ['nullable', 'date', $zoned, 'after:mulai_at'],
+        ];
+    }
+
+    private function agendaMessages(): array
     {
         return [
-            'nama' => ['required', 'string', 'max:160'],
-            'deskripsi' => ['required', 'string', 'max:5000'],
-            'lokasi' => ['required', 'string', 'max:200'],
-            'mulai_at' => ['required', 'date'],
-            'selesai_at' => ['nullable', 'date', 'after_or_equal:mulai_at'],
+            'mulai_at.regex' => 'Waktu mulai harus memuat zona waktu (mis. 2026-10-23T09:00:00+07:00).',
+            'selesai_at.regex' => 'Waktu selesai harus memuat zona waktu.',
+            'mulai_at.after' => 'Waktu mulai harus setelah saat ini.',
+            'selesai_at.after' => 'Waktu selesai harus setelah waktu mulai.',
         ];
     }
 
     public function storeAgenda(Request $request): JsonResponse
     {
-        $data = $request->validate($this->agendaRules());
+        $data = $request->validate($this->agendaRules(), $this->agendaMessages());
         $agenda = DB::transaction(function () use ($request, $data) {
             $a = Agenda::create($data + ['dibuat_oleh_id' => $request->user()->id]);
             Audit::record($request->user(), 'agenda.dibuat', 'agenda', $a->id);
@@ -75,15 +91,22 @@ class CommunityController extends Controller
     public function updateAgenda(Request $request, string $id): JsonResponse
     {
         $agenda = Agenda::whereNull('archived_at')->findOrFail($id);
-        $data = $request->validate($this->agendaRules());
+        // Waktu baru wajib di masa depan; ubah deskripsi agenda yang sudah lewat tetap boleh.
+        $moved = $request->filled('mulai_at') && strtotime((string) $request->input('mulai_at')) !== $agenda->mulai_at->getTimestamp();
+        $data = $request->validate($this->agendaRules($moved), $this->agendaMessages());
         DB::transaction(function () use ($request, $agenda, $data) {
             $timeChanged = Carbon::parse($data['mulai_at'])->ne($agenda->mulai_at);
-            $agenda->fill($data);
+            $placeChanged = trim($data['lokasi']) !== $agenda->lokasi;
+            $agenda->fill($data + ['selesai_at' => null]);
             if ($timeChanged) {
                 $agenda->pengingat_terkirim_at = null; // pengingat H-1 dijadwalkan ulang untuk waktu baru.
             }
             $agenda->save();
             Audit::record($request->user(), 'agenda.diubah', 'agenda', $agenda->id);
+            // Warga diberi tahu bila jadwal atau tempat berubah; ubah deskripsi saja tidak.
+            if ($timeChanged || $placeChanged) {
+                Outbox::record('agenda.diubah', 'agenda', $agenda->id, ['mulai_at' => $agenda->mulai_at->toIso8601String()]);
+            }
         });
 
         return Api::data(Present::agenda($agenda->refresh()));

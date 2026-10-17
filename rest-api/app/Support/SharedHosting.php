@@ -99,6 +99,30 @@ final class SharedHosting
         });
     }
 
+    /**
+     * Catch-up jadwal shared: cron 15 menit bisa terlambat sehingga ekspresi tetap (hourly,
+     * dailyAt 00:00, tanggal 5 08:00) terlewat. Task dicek tiap tick dan jalan bila intervalnya
+     * sudah lewat sejak run sukses terakhir. Penanda di cache file: tick idle tetap tanpa database.
+     * Penanda hilang hanya membuat task jalan lagi; semua task idempotent.
+     */
+    public static function dueEvery(string $task, int $seconds): bool
+    {
+        return now()->getTimestamp() - (int) Cache::store('file')->get('rt05:shared:ran:'.$task, 0) >= $seconds - 60;
+    }
+
+    /** Sekali per slot (mis. tanggal WIB). */
+    public static function dueSlot(string $task, string $slot): bool
+    {
+        return Cache::store('file')->get('rt05:shared:slot:'.$task) !== $slot;
+    }
+
+    public static function markRan(string $task, ?string $slot = null): void
+    {
+        $slot === null
+            ? Cache::store('file')->put('rt05:shared:ran:'.$task, now()->getTimestamp(), 86400 * 7)
+            : Cache::store('file')->put('rt05:shared:slot:'.$task, $slot, 86400 * 40);
+    }
+
     public static function backlog(): bool
     {
         foreach (self::QUEUES as $queue) {
