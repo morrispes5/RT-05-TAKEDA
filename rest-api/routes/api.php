@@ -93,7 +93,6 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
 
     Route::get('dues/my', [FinanceController::class, 'my']);
     Route::get('dues/transparency', [FinanceController::class, 'transparency']);
-    Route::get('cash/summary', [FinanceController::class, 'cashSummary']);
 });
 
 // Pengurus.
@@ -157,6 +156,8 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::get('dues-payments/{id}', [FinanceController::class, 'payment'])->whereUuid('id');
     Route::post('dues-payments/{id}/reverse', [FinanceController::class, 'reversePayment'])->whereUuid('id');
     Route::post('dues-payments/{id}/correct', [FinanceController::class, 'correctPayment'])->whereUuid('id');
+    // Ringkasan kas hanya pengurus (keputusan pemilik 17 Oktober 2026, ADR26); warga melihat iuran sendiri + transparansi.
+    Route::get('cash/summary', [FinanceController::class, 'cashSummary']);
     Route::get('cash-transactions', [FinanceController::class, 'cash']);
     Route::post('cash-transactions', [FinanceController::class, 'storeCash']);
     Route::post('cash-transactions/{id}/reverse', [FinanceController::class, 'reverseCash'])->whereUuid('id');

@@ -10,7 +10,8 @@ final transparencyProvider = FutureProvider.autoDispose.family<Json, String?>(
   (ref, p) async => Json.from(await ref.read(apiProvider).get('/dues/transparency', query: {'periode': ?p}) as Map),
 );
 
-final cashProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await ref.read(apiProvider).get('/cash/summary') as Map));
+/// Kas RT khusus pengurus (ADR26); warga mendapat 403 dari server.
+final cashProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await ref.read(apiProvider).get('/admin/cash/summary') as Map));
 
 final householdProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await ref.read(apiProvider).get('/household') as Map));
 

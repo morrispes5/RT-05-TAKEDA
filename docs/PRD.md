@@ -46,7 +46,7 @@ CMS operasional khusus Artikel dan Dokumentasi. Draf, unggah media, pratinjau, p
 
 ### Mobile warga
 
-Registrasi, login/logout, pemulihan akun, profil/keluarga, pengaduan, aspirasi, kalender agenda, pengumuman, status/histori iuran, transparansi kas/iuran, notifikasi, pengaturan privasi.
+Registrasi, login/logout, pemulihan akun, profil/keluarga, pengaduan, aspirasi, kalender agenda, pengumuman, status/histori iuran, transparansi status iuran per kode rumah (tersembunyi secara bawaan), notifikasi, pengaturan privasi.
 
 ### Mobile pengurus
 
@@ -71,7 +71,7 @@ Ringkasan; CRUD/arsip data warga/rumah/keluarga; persetujuan akun tambahan; toke
 | FR13 | Pembayaran offline dicatat admin untuk satu atau beberapa periode |
 | FR14 | Belum bayar tetap merah sampai pencatatan berhasil; warna disertai teks |
 | FR15 | Tunggakan, rekap lunas/belum, dan histori minimal 12 bulan tersedia |
-| FR16 | Warga terdaftar melihat transparansi status rumah dan ringkasan kas, tanpa data pribadi berlebihan |
+| FR16 | Warga terdaftar melihat transparansi status iuran per kode rumah tanpa data pribadi; tampilan ini tersembunyi secara bawaan dan dibuka atas pilihan warga. Ringkasan kas RT hanya untuk pengurus (revisi pemilik 17 Oktober 2026, ADR26) |
 | FR17 | Kas memuat iuran yang tercatat, pemasukan lain, pengeluaran, dan pembalikan koreksi |
 | FR18 | Perubahan warga/keuangan/token/konten dan tindakan admin memiliki audit |
 | FR19 | Ekspor CSV sesuai hak akses; ekspor besar via worker dan unduhan privat |

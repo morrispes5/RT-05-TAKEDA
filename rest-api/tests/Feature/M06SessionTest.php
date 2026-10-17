@@ -296,7 +296,7 @@ class M06SessionTest extends TestCase
 
         $this->withBearer($token, 'GET', '/api/v1/auth/me')->assertOk()->assertJsonPath('data.status', 'menunggu');
         $this->withBearer($token, 'GET', '/api/v1/auth/additional-account-status')->assertOk();
-        foreach (['/api/v1/household', '/api/v1/complaints', '/api/v1/agendas', '/api/v1/dues/my', '/api/v1/cash/summary'] as $uri) {
+        foreach (['/api/v1/household', '/api/v1/complaints', '/api/v1/agendas', '/api/v1/dues/my', '/api/v1/admin/cash/summary'] as $uri) {
             $this->withBearer($token, 'GET', $uri)->assertForbidden();
         }
         $this->withBearer($token, 'PATCH', '/api/v1/auth/password', [])->assertForbidden();

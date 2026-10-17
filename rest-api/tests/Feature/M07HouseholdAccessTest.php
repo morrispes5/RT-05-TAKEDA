@@ -24,7 +24,7 @@ class M07HouseholdAccessTest extends TestCase
     protected array $connectionsToTransact = ['pgsql'];
 
     private const FEEDS = ['/api/v1/household', '/api/v1/complaints', '/api/v1/aspirations', '/api/v1/agendas',
-        '/api/v1/announcements', '/api/v1/dues/my', '/api/v1/dues/transparency', '/api/v1/cash/summary', '/api/v1/notifications'];
+        '/api/v1/announcements', '/api/v1/dues/my', '/api/v1/dues/transparency', '/api/v1/notifications'];
 
     public function test_registration_writes_membership_and_primary_link_history(): void
     {
