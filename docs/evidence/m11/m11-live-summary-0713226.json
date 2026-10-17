@@ -1,0 +1,51 @@
+{
+ "run": "2026-10-17T12:28:00.404Z",
+ "cases": [
+  {
+   "name": "L01 tarif terdaftar",
+   "result": "PASS",
+   "status": 200,
+   "jumlah_tarif": 1,
+   "tarif_terbaru": 75000
+  },
+  {
+   "name": "L02 rekap bulan berjalan WIB",
+   "result": "PASS",
+   "status": 200,
+   "periode": "2026-10",
+   "jumlah_rumah": 11,
+   "lunas": 1,
+   "belum": 10,
+   "tunggakan_rumah": 2
+  },
+  {
+   "name": "L03 rekap tanpa email/nama",
+   "result": "PASS"
+  },
+  {
+   "name": "L04 periode tidak valid 422",
+   "result": "PASS",
+   "status": 422
+  },
+  {
+   "name": "L05 warga ditolak rekap",
+   "result": "PASS",
+   "status": 403
+  },
+  {
+   "name": "L06 warga ditolak tarif",
+   "result": "PASS",
+   "status": 403
+  },
+  {
+   "name": "L07 warga melihat iuran sendiri",
+   "result": "PASS",
+   "status": 200,
+   "jumlah_tagihan": 1
+  }
+ ],
+ "summary": {
+  "total": 7,
+  "pass": 7
+ }
+}

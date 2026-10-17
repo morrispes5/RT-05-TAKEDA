@@ -1,0 +1,31 @@
+// Pemakaian: node infra/scripts/m11-stage-check.mjs (fixture privat di %USERPROFILE%/.rt05, di luar Git).
+// Cek live M11 staging, hanya baca. Tanpa mencetak kredensial, token, email, atau nama.
+import fs from 'node:fs';
+const ORIGIN = 'https://takeda-staging.morriz.tech', O = ORIGIN + '/api/v1';
+const p = process.env.USERPROFILE + '/.rt05/';
+const admin = JSON.parse(fs.readFileSync(p + 'm06-stage-check/fixtures.json', 'utf8')).accounts.admin;
+const warga = JSON.parse(fs.readFileSync(p + 'm07-stage-check/m07-state.private.json', 'utf8')).actors.a3;
+const h = { 'Content-Type': 'application/json', Accept: 'application/json' };
+const login = async c => (await (await fetch(O + '/auth/mobile-login', { method: 'POST', headers: h, body: JSON.stringify({ email: c.email, password: c.password, device_name: 'M11 live check' }) })).json()).data.token;
+const get = async (t, u) => { const r = await fetch(O + u, { headers: { ...h, Authorization: 'Bearer ' + t } }); return { status: r.status, body: await r.json().catch(() => null) }; };
+const out = { run: new Date().toISOString(), cases: [] };
+const rec = (name, ok, detail) => { out.cases.push({ name, result: ok ? 'PASS' : 'FAIL', ...detail }); };
+const ta = await login(admin), tw = await login(warga);
+const nowWib = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 7);
+let r = await get(ta, '/admin/dues-rates');
+rec('L01 tarif terdaftar', r.status === 200 && r.body.data.length >= 1, { status: r.status, jumlah_tarif: r.body?.data?.length, tarif_terbaru: r.body?.data?.[0]?.nominal });
+r = await get(ta, '/admin/dues-recap');
+const d = r.body?.data;
+rec('L02 rekap bulan berjalan WIB', r.status === 200 && d.periode === nowWib && d.jumlah_rumah === d.lunas.rumah + d.belum_bayar.rumah, { status: r.status, periode: d?.periode, jumlah_rumah: d?.jumlah_rumah, lunas: d?.lunas?.rumah, belum: d?.belum_bayar?.rumah, tunggakan_rumah: d?.tunggakan_sebelumnya?.rumah });
+rec('L03 rekap tanpa email/nama', !JSON.stringify(r.body).includes('@') && !('nama' in (d?.rumah?.[0] ?? {})), {});
+r = await get(ta, '/admin/dues-recap?periode=2026-13');
+rec('L04 periode tidak valid 422', r.status === 422, { status: r.status });
+r = await get(tw, '/admin/dues-recap');
+rec('L05 warga ditolak rekap', r.status === 403, { status: r.status });
+r = await get(tw, '/admin/dues-rates');
+rec('L06 warga ditolak tarif', r.status === 403, { status: r.status });
+r = await get(tw, '/dues/my');
+rec('L07 warga melihat iuran sendiri', r.status === 200 && Array.isArray(r.body.data.tagihan), { status: r.status, jumlah_tagihan: r.body?.data?.tagihan?.length });
+for (const t of [ta, tw]) await fetch(O + '/auth/logout', { method: 'POST', headers: { ...h, Authorization: 'Bearer ' + t } });
+out.summary = { total: out.cases.length, pass: out.cases.filter(c => c.result === 'PASS').length };
+console.log(JSON.stringify(out, null, 1));
