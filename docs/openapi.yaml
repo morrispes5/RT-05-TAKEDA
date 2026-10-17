@@ -1761,12 +1761,13 @@ paths:
                 $ref: "#/components/schemas/AccountEnvelope"
         default:
           $ref: "#/components/responses/Error"
-  /api/v1/cash/summary:
+  /api/v1/admin/cash/summary:
     get:
       operationId: cashSummary
       tags:
         - Finance
-      summary: Ringkasan kas tersanitasi
+      summary: Ringkasan kas (saldo, bulan ini, mutasi terakhir)
+      description: Khusus pengurus (ADR26, keputusan pemilik 17 Oktober 2026). Warga 403; warga melihat iuran sendiri dan transparansi status iuran per kode rumah.
       x-status: implemented
       x-milestone: M12
       responses:

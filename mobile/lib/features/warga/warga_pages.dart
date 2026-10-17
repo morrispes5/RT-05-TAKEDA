@@ -986,39 +986,73 @@ class AnnouncementPage extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────── Iuran & kas
-class DuesPage extends ConsumerWidget {
+/// Tab Iuran warga (keputusan pemilik 17 Oktober 2026, ADR26): iuran rumah sendiri sebagai prioritas;
+/// transparansi rumah lain disembunyikan secara bawaan dan baru dimuat setelah warga memilih melihatnya;
+/// kas RT tidak tampil untuk warga (server menolak dengan 403).
+class DuesPage extends ConsumerStatefulWidget {
   const DuesPage({super.key});
+  @override
+  ConsumerState<DuesPage> createState() => _DuesPageState();
+}
+
+class _DuesPageState extends ConsumerState<DuesPage> {
+  bool _showTransparency = false;
+
+  Future<void> _reveal() async {
+    final ok = await confirm(
+      context,
+      title: 'Lihat status iuran rumah lain?',
+      message:
+          'Yang tampil hanya kode rumah, nominal, dan status bulan ini, tanpa nama atau kontak. '
+          'Mohon tidak disebarkan atau dipakai untuk menagih tetangga.',
+      yes: 'Tampilkan',
+      icon: Icons.visibility_outlined,
+    );
+    if (ok && mounted) setState(() => _showTransparency = true);
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => DefaultTabController(
-    length: 3,
-    child: Column(
-      children: [
-        const Material(
-          color: Colors.white,
-          child: TabBar(
-            labelColor: Brand.navy,
-            indicatorColor: Brand.yellow,
-            indicatorWeight: 3,
-            tabs: [
-              Tab(text: 'Iuran saya'),
-              Tab(text: 'Transparansi'),
-              Tab(text: 'Kas RT'),
-            ],
-          ),
-        ),
-        Expanded(child: TabBarView(children: [_MyDues(), const TransparencyView(), const CashView()])),
-      ],
+  Widget build(BuildContext context) => _MyDues(
+    footer: SectionCard(
+      key: const ValueKey('transparansi-warga'),
+      title: 'Transparansi iuran warga',
+      trailing: _showTransparency
+          ? TextButton.icon(
+              key: const ValueKey('sembunyikan-transparansi'),
+              onPressed: () => setState(() => _showTransparency = false),
+              icon: const Icon(Icons.visibility_off_outlined, size: 18),
+              label: const Text('Sembunyikan'),
+            )
+          : null,
+      child: _showTransparency
+          ? const _TransparencyBody()
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Status iuran rumah lain per kode rumah. Disembunyikan secara bawaan untuk menjaga privasi tetangga.',
+                  style: TextStyle(color: Brand.muted, height: 1.4),
+                ),
+                const SizedBox(height: 12),
+                BusyButton(label: 'Lihat transparansi iuran', icon: Icons.visibility_outlined, outlined: true, onPressed: _reveal),
+              ],
+            ),
     ),
   );
 }
 
 class _MyDues extends ConsumerWidget {
+  const _MyDues({this.footer});
+  final Widget? footer;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dues = ref.watch(duesMyProvider);
     return RefreshIndicator(
-      onRefresh: () async => ref.invalidate(duesMyProvider),
+      onRefresh: () async {
+        ref.invalidate(duesMyProvider);
+        ref.invalidate(transparencyProvider(null));
+      },
       child: AsyncView(
         value: dues,
         onRetry: () => ref.invalidate(duesMyProvider),
@@ -1064,12 +1098,29 @@ class _MyDues extends ConsumerWidget {
               for (final t in list)
                 Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(periode(t.periode), style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: Text(rupiah(t.nominal)),
-                    trailing: StatusChip(t.status, label: t.label),
+                  // Wrap, bukan ListTile: label status turun ke baris berikutnya pada skala teks besar.
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(periode(t.periode), style: const TextStyle(fontWeight: FontWeight.w700)),
+                            Text(rupiah(t.nominal), style: const TextStyle(color: Brand.muted)),
+                          ],
+                        ),
+                        StatusChip(t.status, label: t.label),
+                      ],
+                    ),
                   ),
                 ),
+              if (footer != null) ...[const SizedBox(height: 16), footer!],
             ],
           );
         },
@@ -1096,48 +1147,68 @@ class _Stat extends StatelessWidget {
   );
 }
 
+/// Tab Transparansi pengurus (tanpa gerbang; pengurus mengelola iuran).
 class TransparencyView extends ConsumerWidget {
   const TransparencyView({super.key});
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final data = ref.watch(transparencyProvider(null));
-    return RefreshIndicator(
-      onRefresh: () async => ref.invalidate(transparencyProvider(null)),
-      child: AsyncView(
-        value: data,
-        onRetry: () => ref.invalidate(transparencyProvider(null)),
-        builder: (d) => ListView(
-          padding: const EdgeInsets.all(16),
+  Widget build(BuildContext context, WidgetRef ref) => RefreshIndicator(
+    onRefresh: () async => ref.invalidate(transparencyProvider(null)),
+    child: ListView(padding: const EdgeInsets.all(16), children: const [_TransparencyBody()]),
+  );
+}
+
+/// Status iuran per kode rumah tanpa nama/kontak (BR15). Data baru diminta saat widget ini tampil.
+class _TransparencyBody extends ConsumerWidget {
+  const _TransparencyBody();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => AsyncView(
+    value: ref.watch(transparencyProvider(null)),
+    onRetry: () => ref.invalidate(transparencyProvider(null)),
+    builder: (d) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Status iuran ${periode('${d['periode']}')}', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        Row(
           children: [
-            SectionCard(
-              title: 'Status iuran ${periode('${d['periode']}')}',
-              child: Row(
+            Expanded(child: _Stat('Lunas', '${d['lunas']} rumah')),
+            Expanded(child: _Stat('Belum dibayar', '${d['belum_bayar']} rumah', danger: (d['belum_bayar'] as num) > 0)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text('Ditampilkan per kode rumah tanpa nama atau kontak warga.', style: TextStyle(color: Brand.muted, fontSize: 13)),
+        const SizedBox(height: 8),
+        for (final r in (d['rumah'] as List).cast<Map>())
+          Card(
+            margin: const EdgeInsets.only(bottom: 6),
+            // Wrap, bukan ListTile: pada skala teks besar label status turun ke baris berikutnya.
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 6,
                 children: [
-                  Expanded(child: _Stat('Lunas', '${d['lunas']} rumah')),
-                  Expanded(child: _Stat('Belum dibayar', '${d['belum_bayar']} rumah', danger: (d['belum_bayar'] as num) > 0)),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('${r['kode_rumah']}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                      Text(rupiah(r['nominal'] as num), style: const TextStyle(color: Brand.muted)),
+                    ],
+                  ),
+                  StatusChip('${r['status']}', label: '${r['status_label']}'),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-            const Text('Ditampilkan per kode rumah tanpa nama atau kontak warga.', style: TextStyle(color: Brand.muted, fontSize: 13)),
-            const SizedBox(height: 8),
-            for (final r in (d['rumah'] as List).cast<Map>())
-              Card(
-                margin: const EdgeInsets.only(bottom: 6),
-                child: ListTile(
-                  dense: true,
-                  title: Text('${r['kode_rumah']}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text(rupiah(r['nominal'] as num)),
-                  trailing: StatusChip('${r['status']}', label: '${r['status_label']}'),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+          ),
+      ],
+    ),
+  );
 }
 
+/// Ringkasan kas RT, khusus pengurus (ADR26). Dipakai di tab Keuangan → Kas.
 class CashView extends ConsumerWidget {
   const CashView({super.key});
   @override

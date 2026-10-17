@@ -246,6 +246,21 @@ class FinanceTest extends TestCase
         $this->as($warga)->postJson('/api/v1/admin/dues-payments', [], ['Idempotency-Key' => (string) Str::uuid()])->assertForbidden();
     }
 
+    public function test_cash_summary_is_pengurus_only_while_residents_keep_own_dues_and_transparency(): void
+    {
+        [$warga] = $this->setupHouse();
+        Dues::generate(Dues::period('2026-10'));
+
+        $this->as($warga)->getJson('/api/v1/admin/cash/summary')->assertForbidden();
+        $this->as($warga)->getJson('/api/v1/cash/summary')->assertNotFound();
+        $this->as($warga)->getJson('/api/v1/admin/cash-transactions')->assertForbidden();
+        $this->as($warga)->getJson('/api/v1/dues/my')->assertOk();
+        $this->as($warga)->getJson('/api/v1/dues/transparency')->assertOk();
+
+        $this->as($this->pengurus())->getJson('/api/v1/admin/cash/summary')->assertOk()
+            ->assertJsonStructure(['data' => ['saldo', 'bulan_ini' => ['pemasukan', 'pengeluaran'], 'mutasi_terakhir']]);
+    }
+
     public function test_my_dues_separates_arrears_and_explains_offline(): void
     {
         [$warga] = $this->setupHouse();

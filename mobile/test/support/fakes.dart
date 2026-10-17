@@ -167,7 +167,7 @@ Map<String, Object?> shellFixtures() {
         ],
       },
     },
-    '/api/v1/cash/summary': {
+    '/api/v1/admin/cash/summary': {
       'data': {
         'saldo': 1250000,
         'bulan_ini': {'pemasukan': 225000, 'pengeluaran': 50000},

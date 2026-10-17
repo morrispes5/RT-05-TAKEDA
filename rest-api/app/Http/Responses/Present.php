@@ -419,7 +419,8 @@ final class Present
         ];
     }
 
-    public static function kas(TransaksiKas $k, bool $detail): array
+    /** Kas hanya untuk pengurus (ADR26), jadi selalu detail lengkap. */
+    public static function kas(TransaksiKas $k): array
     {
         return array_filter([
             'id' => $k->id,
@@ -428,10 +429,9 @@ final class Present
             'kategori' => $k->kategori,
             'nominal' => $k->nominal,
             'tanggal' => $k->tanggal->toDateString(),
-            // Warga melihat keterangan umum; detail (nomor bukti/rumah) hanya untuk pengurus.
-            'keterangan' => $detail ? $k->keterangan : ($k->sumber === 'iuran' ? 'Iuran warga' : $k->keterangan),
-            'membalik_id' => $detail ? $k->membalik_id : null,
-            'pembayaran_id' => $detail ? $k->pembayaran_id : null,
+            'keterangan' => $k->keterangan,
+            'membalik_id' => $k->membalik_id,
+            'pembayaran_id' => $k->pembayaran_id,
             'created_at' => self::ts($k->created_at),
         ], fn ($v) => $v !== null);
     }
