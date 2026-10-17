@@ -69,6 +69,9 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@takeda.morriz.tech}
       MAIL_FROM_NAME: "RT05 TAKEDA"
+      # M10 push (ADR25): service account FCM sebagai base64 di env privat server; kosong = inbox saja.
+      FCM_CREDENTIALS_BASE64: ${FCM_CREDENTIALS_BASE64:-}
+      FCM_PROJECT_ID: ${FCM_PROJECT_ID:-}
     volumes:
       - api-storage:/app/storage/app
     depends_on:
