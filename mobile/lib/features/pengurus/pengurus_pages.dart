@@ -10,6 +10,7 @@ import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/widgets.dart';
 import 'dues_admin.dart';
+import 'finance_actions.dart';
 import '../household/admin_census.dart';
 import '../household/admin_links.dart';
 import '../household/census_providers.dart';
@@ -573,38 +574,52 @@ class _PaymentsView extends ConsumerWidget {
                 children: [
                   for (final p in list)
                     Card(
+                      key: ValueKey('bayar-${p['id']}'),
                       margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        title: Text('${p['nomor_bukti']} • ${(p['rumah'] as Map?)?['kode_rumah']}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                        subtitle: Text(
-                          '${(p['periode'] as List).map((x) => periode('$x')).join(', ')}\n${rupiah(p['total_bayar'] as num)} • dibayar ${p['tanggal_bayar']}',
-                        ),
-                        isThreeLine: true,
-                        trailing: StatusChip('${p['status']}'),
-                        onLongPress: p['status'] != 'tercatat'
-                            ? null
-                            : () async {
-                                final reason = await askText(
-                                  context,
-                                  title: 'Batalkan pembayaran ${p['nomor_bukti']}?',
-                                  label: 'Alasan pembatalan (wajib)',
-                                  hint: 'mis. salah rumah',
-                                );
-                                if (reason == null) return;
-                                try {
-                                  await ref
-                                      .read(apiProvider)
-                                      .post('/admin/dues-payments/${p['id']}/reverse', data: {'alasan': reason}, idempotencyKey: newKey());
-                                  ref.invalidate(paymentsProvider);
-                                  if (context.mounted) showMessage(context, 'Pembayaran dibalik; tagihan kembali belum dibayar.');
-                                } on ApiException catch (e) {
-                                  if (context.mounted) showMessage(context, e.display, error: true);
-                                }
-                              },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ListTile(
+                            title: Text('${p['nomor_bukti']} • ${(p['rumah'] as Map?)?['kode_rumah']}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                            subtitle: Text(
+                              '${(p['periode'] as List).map((x) => periode('$x')).join(', ')}\n${rupiah(p['total_bayar'] as num)} • dibayar ${p['tanggal_bayar']}',
+                            ),
+                            isThreeLine: true,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+                            child: Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 8,
+                              children: [
+                                StatusChip('${p['status']}'),
+                                if (p['status'] == 'tercatat')
+                                  TextButton.icon(
+                                    key: ValueKey('batalkan-${p['id']}'),
+                                    onPressed: () async {
+                                      final done = await reverseEntry(
+                                        context,
+                                        ref,
+                                        path: '/admin/dues-payments/${p['id']}/reverse',
+                                        title: 'Batalkan pembayaran ${p['nomor_bukti']}?',
+                                        done: 'Pembayaran dibatalkan',
+                                        effect:
+                                            'Tagihan ${(p['periode'] as List).map((x) => periode('$x')).join(', ')} kembali belum dibayar dan kas dikurangi ${rupiah(p['total_bayar'] as num)}.',
+                                      );
+                                      if (done) ref.invalidate(paymentsProvider);
+                                    },
+                                    icon: const Icon(Icons.undo),
+                                    label: const Text('Batalkan'),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   const Text(
-                    'Tekan lama pembayaran untuk membatalkan (pembalikan tercatat, data asal tidak dihapus).',
+                    'Pembatalan mencatat pembalikan dengan alasan; data asal tidak dihapus.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Brand.muted, fontSize: 13),
                   ),
@@ -631,7 +646,19 @@ class _AdminCashView extends ConsumerWidget {
         ref.invalidate(cashProvider);
       },
     ),
-    body: const CashView(),
+    body: CashView(
+      onReverse: (k) async {
+        final done = await reverseEntry(
+          context,
+          ref,
+          path: '/admin/cash-transactions/${k['id']}/reverse',
+          title: 'Balik transaksi kas?',
+          done: 'Transaksi kas dibalik',
+          effect: '${cashJenisLabel('${k['jenis']}')} ${rupiah((k['nominal'] as num).abs())} (${k['kategori'] ?? '-'}) dinetralkan dengan baris pembalikan.',
+        );
+        if (done) ref.invalidate(cashProvider);
+      },
+    ),
   );
 }
 
@@ -862,38 +889,51 @@ class _CashEntryPageState extends ConsumerState<CashEntryPage> {
           label: 'Simpan',
           onPressed: () async {
             final n = int.tryParse(_nominal.text) ?? 0;
-            if (n <= 0 || _kategori.text.trim().isEmpty || _ket.text.trim().isEmpty) {
-              showMessage(context, 'Lengkapi nominal, kategori, dan keterangan.', error: true);
+            if (n <= 0 || _kategori.text.trim().isEmpty || _ket.text.trim().length < 5) {
+              showMessage(context, 'Lengkapi nominal, kategori, dan keterangan (minimal 5 karakter).', kind: AlertKind.warning, title: 'Belum lengkap');
               return;
             }
             if (!await confirm(
               context,
               title: 'Simpan transaksi kas?',
-              message: '$_jenis ${rupiah(n)}\nTransaksi tidak dapat diedit; koreksi melalui pembalikan.',
+              message: '${cashJenisLabel(_jenis)} ${rupiah(n)}\nTransaksi tidak dapat diedit; koreksi melalui pembalikan.',
             )) {
               return;
             }
+            final now = toJakarta(DateTime.now().toUtc());
+            final body = {
+              'jenis': _jenis,
+              'nominal': n,
+              'tanggal': '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}',
+              'kategori': _kategori.text.trim(),
+              'keterangan': _ket.text.trim(),
+            };
+            Future<void> post([Map<String, Object> extra = const {}]) =>
+                ref.read(apiProvider).post('/admin/cash-transactions', idempotencyKey: _key, data: {...body, ...extra});
             try {
-              final now = toJakarta(DateTime.now().toUtc());
-              await ref
-                  .read(apiProvider)
-                  .post(
-                    '/admin/cash-transactions',
-                    idempotencyKey: _key,
-                    data: {
-                      'jenis': _jenis,
-                      'nominal': n,
-                      'tanggal': '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}',
-                      'kategori': _kategori.text.trim(),
-                      'keterangan': _ket.text.trim(),
-                    },
-                  );
+              try {
+                await post();
+              } on ApiException catch (e) {
+                if (e.code != negativeBalanceCode || !context.mounted) rethrow;
+                // Saldo boleh negatif, tetapi pengurus wajib sadar dan menjelaskan di keterangan.
+                final sure = await confirm(
+                  context,
+                  title: 'Saldo kas akan negatif',
+                  message: '${e.message}\n\nKeterangan: ${_ket.text.trim()}',
+                  yes: 'Tetap catat',
+                  danger: true,
+                  icon: Icons.warning_amber_rounded,
+                );
+                if (!sure || !context.mounted) return;
+                // Penolakan tidak menyimpan reservasi kunci, jadi kunci yang sama aman dipakai ulang.
+                await post({'konfirmasi_saldo_negatif': true});
+              }
               if (context.mounted) {
-                showMessage(context, 'Transaksi kas tercatat.');
-                Navigator.pop(context);
+                await showResultDialog(context, title: 'Transaksi kas tercatat', message: '${cashJenisLabel(_jenis)} ${rupiah(n)} tersimpan.');
+                if (context.mounted) Navigator.pop(context);
               }
             } on ApiException catch (e) {
-              if (context.mounted) showMessage(context, e.display, error: true);
+              if (context.mounted) showApiError(context, e);
             }
           },
         ),

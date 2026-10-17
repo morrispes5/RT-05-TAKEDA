@@ -219,9 +219,9 @@ M10 (implementasi 17 Oktober 2026):
 | GET /admin/dues-recap?periode=YYYY-MM | M11: rekap bulanan pengurus (default bulan berjalan WIB): lunas/belum (rumah + nominal), tunggakan bulan sebelumnya, per kode rumah dengan tanggal bayar dan jumlah bulan tunggakan; tanpa nama/kontak |
 | POST /admin/dues-payments | Pencatatan offline sinkron |
 | GET /admin/dues-payments/{id} | Detail allocations dan audit yang diizinkan |
-| POST /admin/dues-payments/{id}/reverse | Reason; buka charge; reversal ledger |
+| POST /admin/dues-payments/{id}/reverse | Reason; buka charge; reversal ledger. Pembatalan bersamaan: tepat satu sukses, lainnya 409 `PAYMENT_ALREADY_REVERSED` |
 | POST /admin/dues-payments/{id}/correct | Reverse+replacement atomik |
-| GET/POST /admin/cash-transactions | Manual nondues income/expense/opening |
+| GET/POST /admin/cash-transactions | Manual nondues income/expense/opening. Baris memuat `dapat_dibalik`. Hasil negatif → 422 `NEGATIVE_BALANCE_CONFIRMATION_REQUIRED` sampai dikirim ulang dengan `konfirmasi_saldo_negatif: true` (ADR27) |
 | POST /admin/cash-transactions/{id}/reverse | Satu reversal dengan alasan |
 
 Mutation finance wajib Idempotency-Key. Key UUID unik per niat transaksi. Key sama/payload sama replay respons asal; key sama/payload lain 409. Retry setelah timeout memakai key lama, bukan membuat key baru.

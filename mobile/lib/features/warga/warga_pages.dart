@@ -1200,7 +1200,10 @@ class _TransparencyBody extends ConsumerWidget {
 
 /// Ringkasan kas RT, khusus pengurus (ADR26). Dipakai di tab Keuangan → Kas.
 class CashView extends ConsumerWidget {
-  const CashView({super.key});
+  const CashView({super.key, this.onReverse});
+
+  /// Pengurus: balik kas manual yang `dapat_dibalik` (kas iuran dibatalkan lewat pembayaran).
+  final Future<void> Function(Json entry)? onReverse;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final data = ref.watch(cashProvider);
@@ -1241,17 +1244,44 @@ class CashView extends ConsumerWidget {
               const SizedBox(height: 8),
               for (final k in (d['mutasi_terakhir'] as List).cast<Map>())
                 Card(
+                  key: ValueKey('kas-${k['id']}'),
                   margin: const EdgeInsets.only(bottom: 6),
-                  child: ListTile(
-                    leading: Icon(
-                      (k['nominal'] as num) >= 0 ? Icons.south_west : Icons.north_east,
-                      color: (k['nominal'] as num) >= 0 ? Brand.success : Brand.danger,
-                    ),
-                    title: Text('${k['keterangan']}', maxLines: 2, overflow: TextOverflow.ellipsis),
-                    subtitle: Text('${k['tanggal']} • ${k['kategori'] ?? k['jenis']}'),
-                    trailing: Text(
-                      rupiah(k['nominal'] as num),
-                      style: TextStyle(fontWeight: FontWeight.w700, color: (k['nominal'] as num) >= 0 ? Brand.success : Brand.danger),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2, right: 12),
+                          child: Icon(
+                            (k['nominal'] as num) >= 0 ? Icons.south_west : Icons.north_east,
+                            color: (k['nominal'] as num) >= 0 ? Brand.success : Brand.danger,
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('${k['keterangan']}', maxLines: 2, overflow: TextOverflow.ellipsis),
+                              Text('${k['tanggal']} • ${k['kategori'] ?? k['jenis']}', style: const TextStyle(color: Brand.muted, fontSize: 13)),
+                              Text(
+                                rupiah(k['nominal'] as num),
+                                style: TextStyle(fontWeight: FontWeight.w700, color: (k['nominal'] as num) >= 0 ? Brand.success : Brand.danger),
+                              ),
+                              if (onReverse != null && k['dapat_dibalik'] == true)
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    key: ValueKey('balik-${k['id']}'),
+                                    onPressed: () => onReverse!(Json.from(k)),
+                                    icon: const Icon(Icons.undo),
+                                    label: const Text('Balik'),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

@@ -197,6 +197,14 @@ Keputusan: ringkasan kas RT (saldo, pemasukan/pengeluaran bulan ini, mutasi) **h
 Tab Iuran warga: satu halaman, **iuran rumah sendiri lebih dulu**; bagian "Transparansi iuran warga" tersembunyi setiap kali aplikasi dibuka. Data rumah lain baru diminta dari API setelah warga menekan "Lihat transparansi iuran" dan mengonfirmasi dialog ("hanya kode rumah, nominal, status; jangan disebarkan atau dipakai menagih"), lalu bisa disembunyikan lagi. Isi transparansi tetap BR15: kode rumah, periode, nominal, status, tanpa nama/kontak. Pengurus tetap memiliki tab Pembayaran, Kas, dan Transparansi tanpa gerbang.
 Alasan: pemilik menilai kas tidak perlu dibuka ke warga; RT meminta transparansi iuran tetap ada, jadi tampil hanya atas pilihan sadar warga.
 
+### ADR27 — Keuangan M12: rekonsiliasi harian, konfirmasi saldo negatif, ekspor CSV stream
+
+Tanggal/status: 17 Oktober 2026, implementasi M12.
+Rekonsiliasi: `rt05:rekonsiliasi-keuangan` (domain `Reconciliation`) memeriksa tagihan ↔ alokasi aktif ↔ pembayaran ↔ buku kas (lunas tanpa alokasi, belum bayar beralokasi, alokasi beda nominal/lintas rumah, pembayaran tercatat tanpa kas atau kas dibalik, pembayaran batal masih beralokasi atau tanpa pembalikan, kas iuran tanpa pembayaran, pembalikan tidak netral, saldo awal ganda). Hanya membaca dan mengeluarkan angka tanpa kode rumah/nama; exit 1 + log warning bila tidak cocok. Tidak memperbaiki otomatis: koreksi selalu lewat pembalikan oleh pengurus. Jadwal VPS `dailyAt 01:30 WIB`; shared sekali per tanggal WIB setelah 01.00 (dicatat walau gagal agar tidak berulang tiap tick).
+Saldo negatif: kas manual memakai advisory lock transaksi agar saldo yang diperiksa tidak basi; hasil negatif tanpa `konfirmasi_saldo_negatif` → 422 tanpa tulisan; kunci idempotensi yang sama boleh dipakai ulang karena reservasi ikut dibatalkan.
+Ekspor: CSV iuran/kas/rumah tetap di-stream sinkron untuk pengurus (`Cache-Control: no-store`, audit `ekspor.csv`, sel formula diberi prefiks). Skala satu RT (ratusan baris) kecil, sesuai catatan profil shared "ekspor kecil boleh stream". Ekspor besar via worker/unduhan privat kedaluwarsa (FR19) ditunda sampai ada kebutuhan volume; bukan blocker M12.
+Mobile pengurus: pembatalan pembayaran lewat tombol "Batalkan" yang terlihat (bukan tekan lama), kas manual bisa dibalik (`dapat_dibalik`), alasan minimal 5 karakter, konfirmasi bahaya, dialog hasil. Warga tidak melihat kas (ADR26), jadi bagian ROADMAP "warga … cash" digantikan keputusan itu.
+
 ## Input operasional yang belum tersedia
 
 ### ADR22 — Aspirasi M09: domain terpisah, anonimitas sama dengan pengaduan, tiga status
