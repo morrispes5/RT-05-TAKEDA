@@ -51,7 +51,7 @@ class SharedTick extends Command
                 return self::SUCCESS;
             }
 
-            if ($sweep && $this->call('rt05:media-recover') !== 0) {
+            if ($sweep && ($this->call('rt05:media-recover') !== 0 || $this->call('rt05:push-recover') !== 0)) {
                 return self::FAILURE;
             }
             $result = OutboxDispatcher::dispatch(25);

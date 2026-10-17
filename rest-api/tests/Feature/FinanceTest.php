@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\OperationsController;
 use App\Models\TagihanIuran;
 use App\Models\TarifIuran;
 use App\Models\TransaksiKas;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -64,6 +65,18 @@ class FinanceTest extends TestCase
         DB::table('rumah')->where('id', $rumah->id)->update(['mulai_tagih' => '2026-12-01']);
 
         $this->assertSame(0, Dues::generate(Dues::period('2026-10')));
+    }
+
+    public function test_payment_dated_today_in_jakarta_is_accepted_before_utc_midnight_rolls_over(): void
+    {
+        // 06.30 WIB tanggal 17 = 23.30 UTC tanggal 16: "hari ini" mengikuti Asia/Jakarta.
+        $this->travelTo(CarbonImmutable::parse('2026-10-16 23:30:00', 'UTC'));
+        [, $rumah] = $this->setupHouse();
+        Dues::generate(Dues::period('2026-10'));
+        $this->as($this->pengurus());
+
+        $this->pay(['rumah_id' => $rumah->id, 'periode' => ['2026-10'], 'nominal' => 75000, 'tanggal_bayar' => '2026-10-17'])->assertCreated();
+        $this->pay(['rumah_id' => $rumah->id, 'periode' => ['2026-11'], 'nominal' => 75000, 'tanggal_bayar' => '2026-10-18'])->assertStatus(422);
     }
 
     public function test_multi_month_payment_uses_snapshots_and_posts_everything_once(): void

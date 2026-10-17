@@ -20,6 +20,21 @@ class HomeShell extends ConsumerStatefulWidget {
 class _HomeShellState extends ConsumerState<HomeShell> {
   int _index = 0;
 
+  // Kembali ke aplikasi: muat ulang lencana inbox (push bisa ditolak atau belum tersedia).
+  late final AppLifecycleListener _lifecycle = AppLifecycleListener(onResume: () => ref.invalidate(notificationsProvider));
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle;
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(sessionProvider);

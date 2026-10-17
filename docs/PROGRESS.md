@@ -1,5 +1,58 @@
 # Progress — RT05 TAKEDA
 
+## M10 — Agenda, pengumuman, inbox, push — 17 Oktober 2026 (branch `codex/m10-community-push`)
+
+Instruksi pemilik 17 Oktober: mulai M10 dan **jangan mengandalkan VPS**; target shared hosting, VPS opsi terakhir,
+"buat fleksibel". Status **in_progress**: kode, tes lokal, dan kontrak selesai; FCM nyata dan uji HP **blocked**
+menunggu project Firebase pemilik. Keputusan teknis: [ADR25](DECISIONS.md).
+
+Yang dibangun:
+
+- Push FCM HTTP v1 tanpa paket/daemon (Laravel HTTP + ext-openssl), jalur sama di shared (antrean database setelah
+  response + tick cron) dan VPS (Redis + worker). Tanpa kredensial: inbox saja, `push_status=dilewati`.
+- Job `SendPush` setelah inbox commit: preferensi per jenis, akun aktif dengan sesi mobile berlaku, batch 50 dan
+  paralel 20, token UNREGISTERED dihapus, 429/5xx release dengan backoff, gagal tidak menyentuh event/inbox,
+  `rt05:push-recover`.
+- `PUT/DELETE /devices/{id}` (implemented): token terenkripsi, terikat token Sanctum (logout menghapus), pindah
+  akun tanpa duplikat, akun menunggu boleh mendaftar.
+- Pengingat H-1: jendela 24 jam, catch-up setelah downtime, dedup kunci baris, dilewati bila sudah diberi tahu,
+  pengingat basi tidak membuat inbox. `agenda.diubah` untuk perubahan waktu/lokasi.
+- Zona waktu: waktu agenda wajib berzona; **bug ditemukan dan diperbaiki**: (1) `Present::ts` memberi jam WIB
+  berlabel `Z` pada respons create/update (model belum dimuat ulang); (2) tanggal bayar/kas `before_or_equal:today`
+  memakai tanggal UTC sehingga pukul 00.00–07.00 WIB pembayaran bertanggal hari ini ditolak (tes Finance gagal saat
+  dijalankan 06.12 WIB). Keduanya punya tes regresi.
+- Jadwal shared catch-up: task dicek tiap tick dan jalan bila jatuh tempo (cache file, tanpa query saat idle);
+  sebelumnya `hourly`/`dailyAt` terlewat bila cron 15 menit terlambat.
+- `rt05:siaran-sistem` untuk notifikasi kebijakan/pembaruan aplikasi.
+- Mobile: `firebase_messaging` opsional lewat `--dart-define`; izin Android 13; foreground alert; ketukan
+  background/terminated → inbox → detail via API; tautan basi/tidak berhak "tidak lagi tersedia"; Pengaturan
+  notifikasi (status izin + preferensi); inbox membuka agenda/pengumuman/iuran; pengurus Agenda & pengumuman
+  (buat/ubah/arsipkan, waktu selesai, konfirmasi, dialog hasil, error per field). CI menerima variabel
+  `FIREBASE_*` tervalidasi.
+
+| Perintah | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17.10 sementara, bukan Neon) | **283/283, 2768 assertion** (+13 `M10CommunityPushTest`, +1 Finance zona waktu, +1 shared inbox+push setelah response) |
+| `vendor/bin/pint`; `npx @redocly/cli@2 lint docs/openapi.yaml` | bersih; valid |
+| `flutter analyze`; `dart format --set-exit-if-changed lib test`; `flutter test` | No issues; 0 changed; **188 lulus** (+12 `m10_notifications_test`) |
+| `node infra/scripts/check-mobile-build-config.mjs --self-test`; `node infra/scripts/check-repo.mjs` | OK; OK |
+
+Gate ROADMAP M10:
+
+| Gate | Status |
+| --- | --- |
+| Timezone | Tes lokal: tanpa zona 422, `+07:00` disimpan/ditampilkan benar, ICS UTC, Google Calendar `ctz=Asia/Jakarta`, tanggal bayar WIB |
+| Reminder dedup / changed agenda / downtime | Tes lokal lulus (lihat di atas) |
+| Provider gagal tidak menghapus event | Tes lokal (404/503/tanpa kredensial) lulus |
+| Permission denial | Widget test (layanan tetap, panduan); HP nyata belum |
+| Stale/unauthorized deep link aman | Tes API 404 + widget "tidak lagi tersedia" + validasi data push; HP nyata belum |
+| Shared inbox ≤60 detik | `SharedRuntimeTest`: inbox+push selesai di `terminate` tanpa cron; host shared nyata belum |
+| HP foreground/background/terminated, FCM nyata | **blocked**: butuh project Firebase pemilik |
+
+Blocker (tidak ditebak): project Firebase Spark (gratis) dengan app Android `tech.morriz.takeda`; nilai klien
+`FIREBASE_*` sebagai GitHub repository variables; service account JSON di env privat server (bukan Git). Uji HP
+memakai HP pemilik via adb (bukan emulator, atas permintaan hemat RAM). Belum di-deploy ke staging.
+
 ## Usulan kegiatan warga — 16 Oktober 2026 (PR #27, merged dan staging)
 
 Instruksi pemilik 16 Oktober: warga mengajukan kegiatan (contoh "Badminton bersama di lapangan RT 05") lewat form
@@ -376,7 +429,7 @@ ditentukan hanya oleh tersedianya kode.
 | M07 | passed | Source979634f; 220tes/2125assertion, Flutter152, 9CI SUCCESS, deploy additive/backfill, API live77/327, Android nyata dan native Drive; evidence/m07/REPORT.md |
 | M08 | passed | Source6b6987c (head PR a3d80e5): lokal230/2233, Flutter157, seluruh CI SUCCESS, staging live42/130 (rerun 13 Oktober), Android emulator nyata (putaran 2), bagian Drive native disisipkan dan dibaca ulang. Penerimaan staging sintetis; bukan production/UAT. evidence/m08/REPORT.md |
 | M09 | passed | Source617e179 (PR #24): lokal245/2414, Flutter164, seluruh CI SUCCESS, staging live48/138, Android emulator nyata; Drive native belum. Penerimaan staging sintetis; bukan production/UAT. evidence/m09/REPORT.md |
-| M10 | in_progress | Agenda/ICS/Google Calendar, pengumuman, inbox; push FCM blocked (tanpa project Firebase) |
+| M10 | in_progress | Dibuka 17 Oktober (`codex/m10-community-push`): push FCM HTTP v1 fleksibel shared/VPS, perangkat, pengingat H-1 catch-up/dedup, zona waktu, deep link aman, admin agenda/pengumuman; lokal 283/2768, Flutter 188. FCM nyata/HP blocked (project Firebase) |
 | M11 | in_progress | Tarif/tagihan idempotent/catch-up/transparansi; tes CI lulus |
 | M12 | in_progress | Pembayaran offline/idempotency/pembalikan/koreksi/kas/CSV; tes CI lulus |
 | M13 | planned | CMS API belum operasional |
@@ -388,8 +441,8 @@ M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. 
 
 Catatan M10–M12: kode awal dari jalur layanan-inti sudah berada di `main`, dan
 status `in_progress` di atas adalah catatan lama dari jalur itu. Belum ada
-gate penerimaan (live, Android, dokumentasi) yang dijalankan untuk ketiganya;
-M10 belum dibuka.
+gate penerimaan (live, Android, dokumentasi) yang dijalankan untuk ketiganya.
+M10 dibuka 17 Oktober (bagian teratas berkas ini); M11/M12 belum dibuka.
 
 ## Riwayat pembukaan M06 (checkpoint 12 Oktober)
 

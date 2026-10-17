@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Domain\Community\Push\FcmGateway;
+use App\Domain\Community\Push\NullGateway;
+use App\Domain\Community\Push\PushGateway;
 use App\Support\Heartbeat;
 use App\Support\SharedHosting;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -17,7 +20,9 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(PushGateway::class, fn () => config('rt05.push.driver') === 'fcm'
+            ? new FcmGateway((array) config('rt05.push.fcm'))
+            : new NullGateway);
     }
 
     public function boot(): void

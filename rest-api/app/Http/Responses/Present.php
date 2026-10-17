@@ -31,7 +31,9 @@ final class Present
 {
     public static function ts(?DateTimeInterface $t): ?string
     {
-        return $t?->format('Y-m-d\TH:i:s\Z');
+        // Selalu dikonversi ke UTC: model yang baru diisi dari input "+07:00" belum dimuat ulang dari
+        // database, sehingga format langsung akan memberi jam WIB berlabel Z (gate timezone M10).
+        return $t ? \DateTimeImmutable::createFromInterface($t)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z') : null;
     }
 
     /** Profil akun. Keluarga/rumah/hak ubah dari tautan aktif (M07), bukan pointer warga_id. */
