@@ -83,10 +83,9 @@ class FinanceController extends Controller
         ]);
     }
 
-    /** GET /cash/summary — saldo dan mutasi tersanitasi untuk warga aktif. */
-    public function cashSummary(Request $request): JsonResponse
+    /** GET /admin/cash/summary — saldo dan mutasi kas, khusus pengurus (ADR26; warga tidak melihat kas). */
+    public function cashSummary(): JsonResponse
     {
-        $detail = $request->user()->isPengurus();
         $month = CarbonImmutable::now('Asia/Jakarta')->startOfMonth();
 
         return Api::data([
@@ -96,7 +95,7 @@ class FinanceController extends Controller
                 'pengeluaran' => (int) -TransaksiKas::where('tanggal', '>=', $month->toDateString())->where('nominal', '<', 0)->sum('nominal'),
             ],
             'mutasi_terakhir' => TransaksiKas::orderByDesc('tanggal')->orderByDesc('created_at')->limit(30)->get()
-                ->map(fn ($k) => Present::kas($k, $detail))->values(),
+                ->map(fn ($k) => Present::kas($k))->values(),
         ]);
     }
 
@@ -218,7 +217,7 @@ class FinanceController extends Controller
             ->when($request->query('jenis'), fn ($q, $j) => $q->where('jenis', $j))
             ->orderByDesc('tanggal')->orderByDesc('created_at');
 
-        $response = Api::paginate($request, $q, fn (TransaksiKas $k) => Present::kas($k, true));
+        $response = Api::paginate($request, $q, fn (TransaksiKas $k) => Present::kas($k));
         $body = $response->getData(true);
         $body['meta']['saldo'] = Dues::balance();
 
@@ -239,7 +238,7 @@ class FinanceController extends Controller
             $entry = Dues::recordCash($request->user(), $data['jenis'], (int) $data['nominal'], $data['tanggal'], $data['kategori'], $data['keterangan']);
             $warning = Dues::balance() < 0 ? 'Saldo kas menjadi negatif setelah pencatatan ini.' : null;
 
-            return Api::data(Present::kas($entry, true), 201, array_filter(['peringatan' => $warning]));
+            return Api::data(Present::kas($entry), 201, array_filter(['peringatan' => $warning]));
         });
     }
 
@@ -248,7 +247,7 @@ class FinanceController extends Controller
         $data = $request->validate(['alasan' => ['required', 'string', 'max:300']]);
 
         return Idempotency::run($request, $request->user(), 'cash.reverse', $data + ['id' => $id], fn () => Api::data(Present::kas(
-            Dues::reverseCash($request->user(), $id, $data['alasan']), true
+            Dues::reverseCash($request->user(), $id, $data['alasan'])
         ), 201));
     }
 }

@@ -190,6 +190,13 @@ Jadwal shared: ekspresi tetap (`hourly`, `dailyAt`) bisa terlewat bila cron 15 m
 Mobile: `firebase_messaging` dengan `FirebaseOptions` dari `--dart-define` (nilai klien, bukan secret; CI dari repository variables `FIREBASE_*` tervalidasi). Tanpa nilai itu `NoPushClient`. Data push hanya petunjuk: jenis dari daftar tetap dan UUID, detail dimuat ulang dari API.
 Batas: belum ada bukti provider nyata, HP foreground/background/terminated, dan project Firebase. Bukan WhatsApp otomatis atau sinkronisasi Google Calendar.
 
+### ADR26 — Kas RT khusus pengurus; transparansi iuran tersembunyi secara bawaan
+
+Tanggal/status: 17 Oktober 2026, instruksi pemilik (jalan tengah dengan permintaan Ketua RT). Mengubah BR15/FR16.
+Keputusan: ringkasan kas RT (saldo, pemasukan/pengeluaran bulan ini, mutasi) **hanya untuk pengurus**. Endpoint dipindah dari `GET /cash/summary` (warga) ke `GET /admin/cash/summary` (pengurus); warga 403, path lama 404. Penolakan ditegakkan server, bukan hanya disembunyikan di aplikasi. Karena kas tidak lagi dibaca warga, keterangan mutasi tidak lagi disanitasi (`Present::kas` selalu detail).
+Tab Iuran warga: satu halaman, **iuran rumah sendiri lebih dulu**; bagian "Transparansi iuran warga" tersembunyi setiap kali aplikasi dibuka. Data rumah lain baru diminta dari API setelah warga menekan "Lihat transparansi iuran" dan mengonfirmasi dialog ("hanya kode rumah, nominal, status; jangan disebarkan atau dipakai menagih"), lalu bisa disembunyikan lagi. Isi transparansi tetap BR15: kode rumah, periode, nominal, status, tanpa nama/kontak. Pengurus tetap memiliki tab Pembayaran, Kas, dan Transparansi tanpa gerbang.
+Alasan: pemilik menilai kas tidak perlu dibuka ke warga; RT meminta transparansi iuran tetap ada, jadi tampil hanya atas pilihan sadar warga.
+
 ## Input operasional yang belum tersedia
 
 ### ADR22 — Aspirasi M09: domain terpisah, anonimitas sama dengan pengaduan, tiga status

@@ -1,5 +1,23 @@
 # Progress — RT05 TAKEDA
 
+## Revisi iuran/kas — 17 Oktober 2026 (branch `codex/m10-kas-pengurus`, ADR26)
+
+Instruksi pemilik saat uji HP M10: kas RT tidak boleh terlihat warga; tab Iuran warga menampilkan iuran sendiri lebih
+dulu; transparansi warga tetap ada (permintaan Ketua RT) tetapi tersembunyi secara bawaan dan dibuka atas pilihan.
+Server: `GET /cash/summary` → `GET /admin/cash/summary` (pengurus; warga 403, path lama 404). Mobile: tab Iuran warga
+tanpa sub-tab Kas, transparansi tidak diminta ke API sebelum warga menekan "Lihat transparansi iuran" dan
+mengonfirmasi; bisa disembunyikan lagi. Tes skala teks 2,0 menemukan **bug lama**: label status di riwayat tagihan dan
+transparansi meluber di layar 320–360 dp (ListTile) → diganti tata letak Wrap.
+
+| Perintah | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17.10 sementara) | **284/284, 2778 assertion** (+1 akses kas pengurus-only) |
+| `vendor/bin/pint`; `flutter analyze`; `dart format --set-exit-if-changed` | bersih |
+| `flutter test` | **192 lulus** (+4 `dues_privacy_test`: urutan, tanpa kas, transparansi tidak dimuat sebelum diminta, batal/sembunyikan, skala 2,0 di 360/320) |
+
+Uji HP M10 (staging `a86a497`, HP pemilik, akun warga sintetis): perangkat terdaftar; **push foreground** muncul
+sebagai alert; **push background** muncul dan diketuk membuka detail pengumuman. Terminated menyusul.
+
 ## M10 — Agenda, pengumuman, inbox, push — 17 Oktober 2026 (branch `codex/m10-community-push`)
 
 Instruksi pemilik 17 Oktober: mulai M10 dan **jangan mengandalkan VPS**; target shared hosting, VPS opsi terakhir,

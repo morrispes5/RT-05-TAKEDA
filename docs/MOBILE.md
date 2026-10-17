@@ -41,7 +41,7 @@ Gunakan repository interface untuk fake fixtures dan API nyata; fake adapter han
 | Pengaduan | Feed, filter, detail/histori, form kategori/foto/privasi, laporan sendiri |
 | Aspirasi | Feed, detail/histori, form dan status |
 | Komunitas | Kalender/list agenda, detail, add-to-calendar, pengumuman/detail |
-| Keuangan | Iuran rumah, riwayat 12 bulan+, status transparansi rumah, ringkasan kas |
+| Keuangan | Warga: iuran rumah dan riwayat 12 bulan+ lebih dulu; transparansi status rumah tersembunyi secara bawaan, dibuka lewat konfirmasi. Kas RT hanya pengurus (ADR26) |
 | Notifikasi | Inbox/detail/read state, pengaturan push |
 | Informasi | Privasi, tentang aplikasi, versi/update |
 
