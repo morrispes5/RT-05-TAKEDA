@@ -6,6 +6,8 @@
 
 Laravel web + Laravel API + Flutter + PostgreSQL tetap. Website tidak mendapat DSN warga. Anggaran tahun pertama hosting/domain maksimal Rp500.000; promo diizinkan. Kandidat Biznet Personal Large Rp399.000/tahun pertama dengan domain gratis .com sesuai ketentuan. Pastikan pajak/checkout total. Harga pembanding halaman Rp981.000 tidak dianggap tagihan renewal final; catat renewal hosting/domain sebelum handover.
 
+**18 Oktober 2026 (ADR29):** kuota Neon yang habis tidak boleh mematikan aplikasi. Satu PostgreSQL cadangan di penyedia lain (Supabase Free, dipilih pemilik; jeda 7 hari dimitigasi sinkron berkala + pemantau) dipakai aktif-pasif dengan pindah terencana sebelum kuota habis. Cron sweep 15 menit saat ini membangunkan Neon walau idle; menguranginya adalah prioritas pertama.
+
 Neon Free: halaman resmi saat diperiksa 15 Oktober 2026 mencantumkan 100 CU-hours dan 1 GB database/project. Changelog 2 Oktober 2026 menaikkan storage dari 0,5 GB ke 1 GB. Pisahkan project produksi dari pengujian, bukan membagi data RT ke banyak project demi kuota. Pada 0,25 CU, 100 CU-hours hanya 400 jam compute aktif. Jaring tiap 15 menit yang membangunkan compute lalu tidur lagi setelah 5 menit sekitar 60 CU-hours/30 hari TANPA trafik lain. Itu hitungan kasar, bukan jaminan. Ukur minimal tujuh hari sebelum produksi.
 
 Resend Free (halaman harga resmi): 3.000 email/bulan, 100/hari (hari UTC), dan sampai 3 domain. Email terkirim maupun diterima dihitung; beberapa penerima pada satu pesan dihitung terpisah. Cukup untuk reset, bukan pengingat massal. Integrasi staging yang sudah lulus memakai SMTP (ADR20). Target profil shared adalah HTTP Resend karena shared hosting sering memblokir SMTP, tetapi paket `resend/resend-php` belum ada di composer.json: jangan mengganti MAIL_MAILER sebelum paket terpasang dan inbox nyata lulus. Gmail hanya penerima. FCM tanpa biaya untuk push; belum ada bukti provider M10. Foto di disk privat hosting. Aktivasi R2 meminta metode pembayaran walaupun ada kuota gratis, jadi R2 bukan default. Backup terenkripsi offsite tetap wajib; tujuan belum dipilih. Jangan gunakan Git repo publik untuk backup.
@@ -46,6 +48,7 @@ Foto shared dibatasi server ke 4 MiB dan 6 juta piksel, output ≤1600 px; batas
 5. Document root hanya public, .env/vendor/storage privat tidak dapat diunduh. Web/API mempunyai APP_KEY/cookie berbeda; API CLI memakai key yang sama dengan API web.
 6. Resource CPU/RAM/proses/IO diuji; jangan menilai hanya dari SSD. Batas foto, kuota harian, dan upload PHP selaras; alert disk wajib sebelum live.
 7. Dua front controller same-origin: /api/v1, /sanctum/csrf-cookie, /health/*, serta GET/POST /reset-password menuju API; path lain website. Sketsa ada di `infra/shared/public-htaccess.example`. Sketsa itu belum diuji pada akun hosting. Jangan menaruh seluruh repo dalam public_html.
+8. PostgreSQL cadangan Supabase (ADR29): koneksi TLS verify-full dari hosting ke pooler IPv4 Supabase, migrasi penuh lulus, latensi request API diukur. Bila hosting menyediakan PostgreSQL ≥13 di cPanel, catat versinya sebagai kandidat standby.
 
 ## Persiapan staging dan rollout
 
@@ -70,6 +73,7 @@ Foto shared dibatasi server ke 4 MiB dan 6 juta piksel, output ≤1600 px; batas
 | Media | Batas byte/piksel, kuota harian, transkode setelah response, kamera/galeri, RAM; alert kapasitas |
 | M10–M14 | FCM nyata, reminder catch-up, finance critical tests, ekspor aman, same-origin CMS. M10 kode (17 Okt): push lewat HTTP saja tanpa paket/daemon; inbox+push selesai setelah response diuji (`SharedRuntimeTest`); jadwal catch-up via cache file. FCM nyata dan PoC host belum. M12: rekonsiliasi harian per tanggal WIB; ekspor CSV kecil di-stream (ADR27) |
 | Operasi | Backup terenkripsi DB+media konsisten, restore RPO≤24h/RTO≤4h, rollback |
+| Cadangan DB (ADR29) | Pemantau kuota Neon; satu siklus pindah terencana + kembali di staging tanpa tulisan hilang; jumlah baris dan rekonsiliasi keuangan identik; antrean/outbox diproses sekali; pindah darurat dengan RPO tercatat; bukti sinkron mencegah jeda 7 hari Supabase dan pemantau mendeteksi project terjeda |
 | Production | Insiden R07 ditutup; credential dirotasi/revokasi; domain RT, APK signed, UAT, kontak support |
 
 Tidak menandai milestone passed hanya karena config ada. Test CI tidak membuktikan hosting cocok. Tidak menjanjikan nol error.
