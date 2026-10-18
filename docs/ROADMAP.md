@@ -21,8 +21,8 @@ Nomor M00–M16 dan kelulusan VPS tetap. Tambahan M03/M04 `in_progress`: profil 
 | M12 | Keuangan atomik; ekspor kecil boleh stream, ekspor besar tetap job privat FR19 |
 | M13 | Media privat/published terpisah; cache invalidation |
 | M14 | Dua aplikasi pada satu origin, reset routes, cookie/CSRF, public fallback |
-| M15 | UAT dan beban pada shared; cold start/Neon CU-hours, Android nyata |
-| M16 | Domain RT, rotasi credential, offsite backup/restore, rollback dan handover |
+| M15 | UAT dan beban pada shared; cold start/Neon CU-hours, Android nyata; latihan pindah/kembali ke PostgreSQL cadangan (ADR29) |
+| M16 | Domain RT, rotasi credential, offsite backup/restore, rollback dan handover; PostgreSQL cadangan aktif-pasif + pemantau kuota Neon (ADR29) |
 
 
 M00 adalah frontend yang sudah diterima. Ada 16 milestone lanjutan menuju rilis penuh. Milestone adalah unit hasil yang dapat diperiksa, bukan perkiraan durasi atau batas jumlah developer.
