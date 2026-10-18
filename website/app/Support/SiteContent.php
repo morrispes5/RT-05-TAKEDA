@@ -19,6 +19,9 @@ class SiteContent
 
     private const LAST_GOOD = 'rt05:site-content:last-good';
 
+    /** Setelah gagal, jangan coba API lagi selama ini (detik) agar halaman tidak menunggu timeout tiap request. */
+    private const DOWN = 'rt05:site-content:down';
+
     /** @var array{articles: array, albums: array, source: string}|null */
     private static ?array $loaded = null;
 
@@ -77,6 +80,9 @@ class SiteContent
         if (is_array($fresh = $store->get(self::FRESH))) {
             return self::$loaded = $fresh + ['source' => 'api'];
         }
+        if ($store->has(self::DOWN)) {
+            return self::$loaded = self::fallback($store);
+        }
         try {
             $get = fn (string $path) => Http::baseUrl($base)->acceptJson()
                 ->connectTimeout(max(1, (int) config('services.rt05_content.timeout', 3)))
@@ -92,10 +98,17 @@ class SiteContent
             return self::$loaded = $data + ['source' => 'api'];
         } catch (Throwable $e) {
             Log::warning('site_content.api_unavailable', ['exception' => class_basename($e)]);
-            $last = $store->get(self::LAST_GOOD);
+            $store->put(self::DOWN, true, 30);
 
-            return self::$loaded = is_array($last) ? $last + ['source' => 'cache'] : self::baked();
+            return self::$loaded = self::fallback($store);
         }
+    }
+
+    private static function fallback($store): array
+    {
+        $last = $store->get(self::LAST_GOOD);
+
+        return is_array($last) ? $last + ['source' => 'cache'] : self::baked();
     }
 
     private static function baked(): array

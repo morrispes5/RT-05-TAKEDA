@@ -2850,6 +2850,7 @@ paths:
       tags:
         - Content
       summary: Pratinjau foto draf (pengurus, no-store)
+      description: Foto unggahan dikirim sebagai JPEG privat. Foto statis website (impor baseline) dialihkan ke path /images/… agar editor CMS web dapat menampilkannya (M14).
       x-status: implemented
       x-milestone: M13
       responses:
@@ -2858,6 +2859,11 @@ paths:
           content:
             image/jpeg:
               schema: {type: string, format: binary}
+        "302":
+          description: Foto statis website; Location berisi path /images/….
+          headers:
+            Location:
+              schema: {type: string}
         default:
           $ref: "#/components/responses/Error"
   /api/v1/public/media/{id}:
