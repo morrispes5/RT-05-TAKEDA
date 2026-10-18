@@ -2,6 +2,13 @@
 
 return [
 
+    // M14: API konten publik RT05 (jaringan internal/same-origin). Kosong = JSON baked (preview statis).
+    'rt05_content' => [
+        'api' => env('RT05_CONTENT_API'),
+        'timeout' => (int) env('RT05_CONTENT_API_TIMEOUT', 3),
+        'fresh_seconds' => (int) env('RT05_CONTENT_FRESH_SECONDS', 60),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
