@@ -1,6 +1,6 @@
 # Progress — RT05 TAKEDA
 
-## M13 — Konten publik backend dan pengelolaan mobile — 17 Oktober 2026: **passed** (lokal + CI; staging di bagian ini)
+## M13 — Konten publik backend dan pengelolaan mobile — 17 Oktober 2026: **passed** (lokal + CI); deploy staging **blocked**
 
 Sebelumnya seluruh endpoint konten berstatus planned. Dibangun di branch `codex/m13-public-content` (ADR28).
 
@@ -23,6 +23,15 @@ dibagi rata dengan skala label dibatasi 1,3×.
 | `php artisan test` (Postgres 17.10 sementara) | **303/303** (+7 `M13ContentTest`; uji kontrak planned disesuaikan karena konten kini implemented) |
 | `vendor/bin/pint`; Redocly lint | bersih; valid tanpa peringatan |
 | `flutter analyze`; `dart format --set-exit-if-changed`; `flutter test` | bersih; 0 changed; **216 lulus** (+9 `m13_content_admin_test`) |
+
+PR #37 merged `aa72ce1` (CI 9/9). **Deploy staging blocked** 17–18 Oktober karena **jalur jaringan ISP PC pemilik**
+ke rentang IP Hostinger (VPS `187.77.113.136` dan konsol `dci.hostingervps.com` 153.92.14.35) putus: dari PC SSH/HTTPS/
+ping time out, traceroute berhenti setelah hop ISP `103.75.97.250`. **VPS sehat**: check-host.net Jakarta, Singapura,
+Jerman → `/health/ready` 200 dan port 22 terbuka; panel Hostinger CPU 14%, memori 23%, tanpa event DDoS. Agen sempat
+menyimpulkan proxy mati (alat cek eksternal agen juga ditolak oleh situs Hostinger lain yang sehat, jadi tidak valid) lalu
+me-reboot VPS dari panel atas instruksi pemilik (18 Oktober 11.52 UTC). Reboot ternyata tidak perlu; semua layanan kembali
+200. Skrip deploy M13 belum pernah dimulai. Setelah jalur pulih (atau lewat jaringan lain): deploy `aa72ce1`,
+`php artisan rt05:konten-impor`, `node infra/scripts/m13-stage-check.mjs`.
 
 Belum (M14): website membaca API ini (saat ini website masih Blade/JSON statis), CMS web, konsumsi outbox untuk
 invalidasi cache.
@@ -559,7 +568,7 @@ ditentukan hanya oleh tersedianya kode.
 | M10 | passed | Staging `a86a497` + HP Android pemilik: push foreground/background/terminated, izin ditolak; lokal 284/2778, Flutter 192; FCM `rt05-takeda`. Penerimaan staging sintetis; bukan production/UAT. evidence/m10/ANDROID_RESULTS.md |
 | M11 | passed | 17 Oktober: audit gate + rekap bulanan pengurus, tarif admin mobile, generator bersamaan teruji, bug tarif ganda 500→409; lokal 288/2834, Flutter 199. Bagian "M11" teratas |
 | M12 | passed | 17 Oktober: FIN critical + konkurensi antarproses + timeout replay + rekonsiliasi harian + konfirmasi saldo negatif + aksi pembalikan mobile; lokal 296/2917, Flutter 207. Bagian "M12" teratas |
-| M13 | passed | 17 Oktober: API konten publik (draf/terbit/arsip, snapshot, slug redirect, media, impor katalog) + Konten website di mobile pengurus; lokal 303, Flutter 216. Bagian "M13" teratas |
+| M13 | passed | 17 Oktober (staging deploy blocked: jaringan PC ke Hostinger putus, VPS sehat): API konten publik (draf/terbit/arsip, snapshot, slug redirect, media, impor katalog) + Konten website di mobile pengurus; lokal 303, Flutter 216. Bagian "M13" teratas |
 | M14 | planned | Website real publication belum terintegrasi |
 | M15 | planned | UAT/full QA belum dilakukan |
 | M16 | planned | Production baru belum dirilis |
