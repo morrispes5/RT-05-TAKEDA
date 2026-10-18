@@ -181,10 +181,13 @@ class ContentController extends Controller
         return Api::data(Media::view($m) + ['status' => $m->status, 'pratinjau_url' => '/api/v1/admin/content-media/'.$m->id.'/file'], 201);
     }
 
-    /** Pratinjau draf untuk pengurus (belum tentu publik). */
+    /** Pratinjau draf untuk pengurus (belum tentu publik). Foto statis website → redirect ke path /images/…. */
     public function mediaFile(string $id): Response
     {
-        $m = KontenMedia::where('sumber', 'unggah')->findOrFail($id);
+        $m = KontenMedia::findOrFail($id);
+        if ($m->sumber === 'statis') {
+            return redirect($m->path_statis, 302, ['Cache-Control' => 'private, no-store']);
+        }
 
         return Storage::disk('local')->response($m->storage_key, $m->id.'.jpg', ['Content-Type' => 'image/jpeg', 'Cache-Control' => 'private, no-store']);
     }

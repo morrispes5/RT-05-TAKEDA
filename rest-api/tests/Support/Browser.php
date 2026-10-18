@@ -37,7 +37,7 @@ trait Browser
      * @param  array<string, string>  $headers
      * @param  bool|string  $csrf  true = kirim X-XSRF-TOKEN dari jar; string = nilai mentah; false = tanpa
      */
-    protected function browser(string $method, string $uri, array $data = [], array $headers = [], bool|string $csrf = true, string $jar = 'a', ?string $origin = self::CMS_ORIGIN): TestResponse
+    protected function browser(string $method, string $uri, array $data = [], array $headers = [], bool|string $csrf = true, string $jar = 'a', ?string $origin = self::CMS_ORIGIN, bool $multipart = false): TestResponse
     {
         $this->app['auth']->forgetGuards();
         $this->app['session']->forgetDrivers();
@@ -55,7 +55,11 @@ trait Browser
 
         $this->defaultCookies = [];
         $this->unencryptedCookies = [];
-        $response = $this->withCredentials()->withUnencryptedCookies($cookies)->json($method, $uri, $data, $headers + ['Accept' => 'application/json']);
+        $headers += ['Accept' => 'application/json'];
+        // Multipart (unggah foto CMS) memakai post() agar UploadedFile terkirim sebagai berkas.
+        $response = $multipart
+            ? $this->withCredentials()->withUnencryptedCookies($cookies)->post($uri, $data, $headers)
+            : $this->withCredentials()->withUnencryptedCookies($cookies)->json($method, $uri, $data, $headers);
         $this->flushHeaders();
 
         foreach ($response->headers->getCookies() as $cookie) {
