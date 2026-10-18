@@ -1,0 +1,79 @@
+{
+ "run": "2026-10-18T14:11:01.329Z",
+ "cases": [
+  {
+   "name": "K01 artikel publik hasil impor",
+   "result": "PASS",
+   "status": 200,
+   "jumlah": 5,
+   "cache": "max-age=60, public"
+  },
+  {
+   "name": "K02 album 17 Agustus tanpa tahun, foto statis",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "K03 fasilitas urutan katalog",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "K04 profil: ketua dan pengurus anonim",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "K05 respons publik tanpa ID akun",
+   "result": "PASS"
+  },
+  {
+   "name": "K06 warga ditolak admin konten",
+   "result": "PASS",
+   "status": 403
+  },
+  {
+   "name": "K07 buat draf",
+   "result": "PASS",
+   "status": 201
+  },
+  {
+   "name": "K08 draf tidak bocor",
+   "result": "PASS",
+   "status": 404
+  },
+  {
+   "name": "K09 terbitkan",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "K10 publik setelah terbit",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "K11 versi basi 409",
+   "result": "PASS",
+   "status": 409
+  },
+  {
+   "name": "K12 snapshot stabil",
+   "result": "PASS"
+  },
+  {
+   "name": "K13 arsipkan uji",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "K14 arsip hilang dari publik",
+   "result": "PASS",
+   "status": 404
+  }
+ ],
+ "summary": {
+  "total": 14,
+  "pass": 14
+ }
+}

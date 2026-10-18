@@ -20,7 +20,7 @@ Belum: provision penyedia standby, kode pindah/kembali/sinkron/pemantau kuota, p
 Status cadangan DB: **blocked** sampai PoC penyedia dan tes pindah/kembali lulus. Hanya dokumen yang berubah; tidak ada akun dibuat,
 deploy, atau DDL.
 
-## M13 — Konten publik backend dan pengelolaan mobile — 17 Oktober 2026: **passed** (lokal + CI); deploy staging **blocked**
+## M13 — Konten publik backend dan pengelolaan mobile — 17 Oktober 2026: **passed** (lokal, CI, staging `88c7302`)
 
 Sebelumnya seluruh endpoint konten berstatus planned. Dibangun di branch `codex/m13-public-content` (ADR28).
 
@@ -52,6 +52,8 @@ menyimpulkan proxy mati (alat cek eksternal agen juga ditolak oleh situs Hosting
 me-reboot VPS dari panel atas instruksi pemilik (18 Oktober 11.52 UTC). Reboot ternyata tidak perlu; semua layanan kembali
 200. Skrip deploy M13 belum pernah dimulai. Setelah jalur pulih (atau lewat jaringan lain): deploy `aa72ce1`,
 `php artisan rt05:konten-impor`, `node infra/scripts/m13-stage-check.mjs`.
+
+**Pemulihan 18 Oktober:** akses PC lewat Cloudflare WARP + IPv6 VPS (alias `rt05-vps-v6`). Deploy `88c7302` 0 GAGAL, impor 13 lalu 0, cek live **14/14 PASS** ([LIVE_RESULTS.md](evidence/m13/LIVE_RESULTS.md)).
 
 Belum (M14): website membaca API ini (saat ini website masih Blade/JSON statis), CMS web, konsumsi outbox untuk
 invalidasi cache.
@@ -588,7 +590,7 @@ ditentukan hanya oleh tersedianya kode.
 | M10 | passed | Staging `a86a497` + HP Android pemilik: push foreground/background/terminated, izin ditolak; lokal 284/2778, Flutter 192; FCM `rt05-takeda`. Penerimaan staging sintetis; bukan production/UAT. evidence/m10/ANDROID_RESULTS.md |
 | M11 | passed | 17 Oktober: audit gate + rekap bulanan pengurus, tarif admin mobile, generator bersamaan teruji, bug tarif ganda 500→409; lokal 288/2834, Flutter 199. Bagian "M11" teratas |
 | M12 | passed | 17 Oktober: FIN critical + konkurensi antarproses + timeout replay + rekonsiliasi harian + konfirmasi saldo negatif + aksi pembalikan mobile; lokal 296/2917, Flutter 207. Bagian "M12" teratas |
-| M13 | passed | 17 Oktober (staging deploy blocked: jaringan PC ke Hostinger putus, VPS sehat): API konten publik (draf/terbit/arsip, snapshot, slug redirect, media, impor katalog) + Konten website di mobile pengurus; lokal 303, Flutter 216. Bagian "M13" teratas |
+| M13 | passed | 17–18 Oktober, staging `88c7302` live 14/14: API konten publik (draf/terbit/arsip, snapshot, slug redirect, media, impor katalog) + Konten website di mobile pengurus; lokal 303, Flutter 216. Bagian "M13" teratas |
 | M14 | planned | Website real publication belum terintegrasi |
 | M15 | planned | UAT/full QA belum dilakukan |
 | M16 | planned | Production baru belum dirilis |
