@@ -1,5 +1,30 @@
 # Progress — RT05 TAKEDA
 
+## M14 — Website membaca API konten + CMS web nyata — 19 Oktober 2026: **in_progress** (lokal + e2e lulus; staging belum)
+
+Branch `codex/m14-website-api`. Keputusan: ADR30.
+
+File: `website/app/Support/SiteContent.php` (API → fresh 60 dtk → penanda gagal 30 dtk → last-good → JSON baked),
+`website/resources/js/content-api.js` (repository HTTP + sesi cookie/CSRF), `website/resources/js/cms-preview.js`
+(mode server: login, Simpan draf, Terbitkan, Arsipkan, pesan berhasil/gagal, 409), `website/resources/views/pengurus.blade.php`
+(`data-cms-mode`), `website/scripts/export-preview.php` (boot kernel sebelum daftar path), `infra/compose.production.yml`
+(`RT05_CONTENT_API` web → `http://api`), `rest-api/app/Http/Controllers/ContentController.php` (pratinjau foto statis 302),
+tes `rest-api/tests/Feature/M14CmsWebTest.php`, `website/tests/Feature/{SiteContentApiTest,CmsServerModeTest}.php`.
+
+Validasi lokal 19 Oktober 2026 (Postgres 17 lokal, bukan Neon):
+- `php artisan test` rest-api: 306 tes / 3118 assertion lulus; `vendor/bin/pint --test` lulus (rest-api dan website).
+- `php artisan test` website: 14 tes / 256 assertion lulus. `npm.cmd run build:preview` + `npm.cmd run test:preview` exit 0 (CMS demo, hero, a11y, tanpa error browser); preview tetap `data-cms-mode="demo"`.
+- `npx @redocly/cli@2 lint docs/openapi.yaml` valid; `node infra/scripts/check-repo.mjs` OK; `git diff --check` bersih.
+- E2E browser lokal (API + website + gateway satu origin di 127.0.0.1, DB lokal terpisah `rt05_m14e2e`, akun sintetis):
+  belum login → dialihkan ke `/pengurus/masuk`; akun warga ditolak pesan generik; pengurus masuk; daftar dari API;
+  artikel baru → Simpan draf (URL beralih ke ID server) → `/artikel` dan `/api/v1/public/articles/{slug}` 404 (draf terisolasi)
+  → Terbitkan → halaman publik website menampilkan isi; album + unggah foto → muat ulang editor (foto dari server) → Terbitkan →
+  halaman album + `/api/v1/public/media/{id}` 200 image/jpeg; foto statis album impor tampil lewat 302; Arsipkan → hilang dari daftar;
+  perubahan dari perangkat lain → Simpan draf 409 dengan pesan, isian tetap; label "Terbit, ada perubahan belum terbit";
+  API dimatikan → `/artikel` dan detail tetap 200 dari last-good, CMS menampilkan pesan server bermasalah; Keluar → `auth/me` 401.
+
+Belum: CI PR, deploy staging, uji live browser-ke-browser di staging, bukti `docs/evidence/m14`. Gate M14 belum dinyatakan passed.
+
 ## ADR29 — PostgreSQL cadangan aktif-pasif — 18 Oktober 2026: **keputusan dicatat; implementasi belum**
 
 Pemilik meminta evaluasi deployment shared hosting untuk 100–200 pengguna dan anggaran ≤Rp500.000/tahun. Hasil evaluasi: storage
@@ -591,7 +616,7 @@ ditentukan hanya oleh tersedianya kode.
 | M11 | passed | 17 Oktober: audit gate + rekap bulanan pengurus, tarif admin mobile, generator bersamaan teruji, bug tarif ganda 500→409; lokal 288/2834, Flutter 199. Bagian "M11" teratas |
 | M12 | passed | 17 Oktober: FIN critical + konkurensi antarproses + timeout replay + rekonsiliasi harian + konfirmasi saldo negatif + aksi pembalikan mobile; lokal 296/2917, Flutter 207. Bagian "M12" teratas |
 | M13 | passed | 17–18 Oktober, staging `88c7302` live 14/14: API konten publik (draf/terbit/arsip, snapshot, slug redirect, media, impor katalog) + Konten website di mobile pengurus; lokal 303, Flutter 216. Bagian "M13" teratas |
-| M14 | planned | Website real publication belum terintegrasi |
+| M14 | in_progress | Website membaca API + CMS web nyata; lokal/e2e lulus, staging belum (ADR30) |
 | M15 | planned | UAT/full QA belum dilakukan |
 | M16 | planned | Production baru belum dirilis |
 
