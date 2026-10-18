@@ -1,6 +1,6 @@
 # Progress — RT05 TAKEDA
 
-## M14 — Website membaca API konten + CMS web nyata — 19 Oktober 2026: **in_progress** (lokal + e2e lulus; staging belum)
+## M14 — Website membaca API konten + CMS web nyata — 19 Oktober 2026: **passed** (lokal, CI, staging `08f2a1e`)
 
 Branch `codex/m14-website-api`. Keputusan: ADR30.
 
@@ -23,7 +23,15 @@ Validasi lokal 19 Oktober 2026 (Postgres 17 lokal, bukan Neon):
   perubahan dari perangkat lain → Simpan draf 409 dengan pesan, isian tetap; label "Terbit, ada perubahan belum terbit";
   API dimatikan → `/artikel` dan detail tetap 200 dari last-good, CMS menampilkan pesan server bermasalah; Keluar → `auth/me` 401.
 
-Belum: CI PR, deploy staging, uji live browser-ke-browser di staging, bukti `docs/evidence/m14`. Gate M14 belum dinyatakan passed.
+CI PR #41 6/6 lulus, merge `08f2a1e`. Staging 19 Oktober 2026 ([LIVE_RESULTS](evidence/m14/LIVE_RESULTS.md)):
+deploy immutable `08f2a1e` Selesai 0 GAGAL, 9 container sehat, web `RT05_CONTENT_API=http://api`;
+`infra/scripts/m14-stage-check.mjs` **21/21 PASS** (sesi cookie + CSRF seperti browser: warga ditolak, tanpa CSRF 419,
+origin asing 401, draf terisolasi, unggah foto, terbit → tampil di website browser lain ≤60 dtk, 409, arsip hilang,
+keluar 401); drill `docker stop` api ±70 dtk → halaman website 200 ±40 ms dari last-good, API kembali healthy.
+
+Gate ROADMAP M14: auth/CSRF/role deny ✓; draft isolation ✓; live server upload/publish ✓; API outage fallback ✓;
+baseline navigasi/desain website (14 tes + `test:preview`) ✓. Keterbatasan: bukan production/UAT warga (M15),
+shared hosting belum diuji, login UI staging dengan kata sandi tidak diketik agent (alur UI diperagakan pada stack lokal).
 
 ## ADR29 — PostgreSQL cadangan aktif-pasif — 18 Oktober 2026: **keputusan dicatat; implementasi belum**
 
@@ -616,7 +624,7 @@ ditentukan hanya oleh tersedianya kode.
 | M11 | passed | 17 Oktober: audit gate + rekap bulanan pengurus, tarif admin mobile, generator bersamaan teruji, bug tarif ganda 500→409; lokal 288/2834, Flutter 199. Bagian "M11" teratas |
 | M12 | passed | 17 Oktober: FIN critical + konkurensi antarproses + timeout replay + rekonsiliasi harian + konfirmasi saldo negatif + aksi pembalikan mobile; lokal 296/2917, Flutter 207. Bagian "M12" teratas |
 | M13 | passed | 17–18 Oktober, staging `88c7302` live 14/14: API konten publik (draf/terbit/arsip, snapshot, slug redirect, media, impor katalog) + Konten website di mobile pengurus; lokal 303, Flutter 216. Bagian "M13" teratas |
-| M14 | in_progress | Website membaca API + CMS web nyata; lokal/e2e lulus, staging belum (ADR30) |
+| M14 | passed | Website membaca API + CMS web nyata (ADR30); staging `08f2a1e` 21/21 + drill API mati |
 | M15 | planned | UAT/full QA belum dilakukan |
 | M16 | planned | Production baru belum dirilis |
 
