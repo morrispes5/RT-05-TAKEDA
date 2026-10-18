@@ -1,5 +1,25 @@
 # Progress — RT05 TAKEDA
 
+## ADR29 — PostgreSQL cadangan aktif-pasif — 18 Oktober 2026: **keputusan dicatat; implementasi belum**
+
+Pemilik meminta evaluasi deployment shared hosting untuk 100–200 pengguna dan anggaran ≤Rp500.000/tahun. Hasil evaluasi: storage
+(<1 GB foto/tahun, DB <100 MB/tahun) dan RAM bukan hambatan. Risiko utama adalah kuota compute Neon Free (100 CU-hours; habis →
+compute disuspend sampai bulan berikutnya). Sweep `rt05:shared-tick` tiap 900 detik membangunkan Neon walau idle (perkiraan ≈60
+CU-hours/bulan), dan trafik siang bisa menambah sekitar 120. Pemilik memutuskan (P20): tetap PostgreSQL, tambah satu PostgreSQL gratis
+di penyedia lain sebagai cadangan, risiko yang sepadan diterima, dan perawatan diserahkan ke agent. Dari lima opsi PostgreSQL yang punya
+plugin di Claude (Supabase, Neon kedua, PlanetScale, Railway, Render), pemilik memilih **Supabase Free** karena gratis dan tanpa kuota jam
+compute. Jeda 7 hari dimitigasi sinkron berkala + pemantau harian. Desain di ADR29 (DECISIONS.md).
+
+| Berkas | Perubahan |
+| --- | --- |
+| docs/DECISIONS.md | P20, ADR29 |
+| docs/SHARED_HOSTING.md | ringkasan ADR29, preflight #8, gate "Cadangan DB" |
+| docs/ROADMAP.md | M15 latihan pindah/kembali, M16 cadangan aktif-pasif |
+
+Belum: provision penyedia standby, kode pindah/kembali/sinkron/pemantau kuota, pengurangan sweep idle, tes, dan latihan staging.
+Status cadangan DB: **blocked** sampai PoC penyedia dan tes pindah/kembali lulus. Hanya dokumen yang berubah; tidak ada akun dibuat,
+deploy, atau DDL.
+
 ## M13 — Konten publik backend dan pengelolaan mobile — 17 Oktober 2026: **passed** (lokal + CI); deploy staging **blocked**
 
 Sebelumnya seluruh endpoint konten berstatus planned. Dibangun di branch `codex/m13-public-content` (ADR28).
