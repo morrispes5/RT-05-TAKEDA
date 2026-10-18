@@ -1,0 +1,124 @@
+{
+ "run": "2026-10-18T17:43:15.811Z",
+ "cases": [
+  {
+   "name": "W01 website /artikel dirender dari konten (impor)",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "W02 area pengurus mode server",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "W03 warga tidak mendapat sesi CMS (pesan generik)",
+   "result": "PASS",
+   "status": 422
+  },
+  {
+   "name": "W04 web-login tanpa CSRF ditolak",
+   "result": "PASS",
+   "status": 419
+  },
+  {
+   "name": "W05 pengurus masuk lewat cookie, tanpa token",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "W06 mutation tanpa CSRF ditolak",
+   "result": "PASS",
+   "status": 419
+  },
+  {
+   "name": "W07 origin asing tidak memakai cookie",
+   "result": "PASS",
+   "status": 401
+  },
+  {
+   "name": "W08 draf artikel dibuat lewat sesi cookie",
+   "result": "PASS",
+   "status": 201
+  },
+  {
+   "name": "W09 unggah foto lewat sesi cookie",
+   "result": "PASS",
+   "status": 201
+  },
+  {
+   "name": "W10 pratinjau foto draf privat untuk pengurus",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "W11 foto draf belum publik",
+   "result": "PASS",
+   "status": 404
+  },
+  {
+   "name": "W12 draf album dengan foto unggahan",
+   "result": "PASS",
+   "status": 201
+  },
+  {
+   "name": "W13 draf tidak tampil di website publik",
+   "result": "PASS",
+   "status": 404
+  },
+  {
+   "name": "W14 terbitkan artikel dan album",
+   "result": "PASS",
+   "status": [
+    200,
+    200
+   ]
+  },
+  {
+   "name": "W15 artikel terbit tampil di website (browser lain, tanpa akun)",
+   "result": "PASS",
+   "waitedSeconds": 45
+  },
+  {
+   "name": "W16 album terbit tampil di website dengan foto unggahan",
+   "result": "PASS",
+   "waitedSeconds": 0
+  },
+  {
+   "name": "W17 foto publik setelah terbit",
+   "result": "PASS",
+   "status": 200
+  },
+  {
+   "name": "W18 versi basi 409 (tab lain)",
+   "result": "PASS",
+   "status": 409,
+   "code": "VERSION_CONFLICT"
+  },
+  {
+   "name": "W19 arsipkan konten uji",
+   "result": "PASS",
+   "status": [
+    200,
+    200
+   ]
+  },
+  {
+   "name": "W20 arsip hilang dari website",
+   "result": "PASS",
+   "waitedSeconds": 60
+  },
+  {
+   "name": "W21 keluar mengakhiri sesi cookie",
+   "result": "PASS",
+   "status": [
+    204,
+    401
+   ]
+  }
+ ],
+ "summary": {
+  "total": 21,
+  "pass": 21
+ }
+}
