@@ -15,6 +15,8 @@ foreach (['APP_ENV' => 'production', 'APP_DEBUG' => 'false', 'SESSION_DRIVER' =>
 }
 $app = require $root.'/bootstrap/app.php';
 $kernel = $app->make(Kernel::class);
+// SiteContent membaca config (M14); boot dulu sebelum daftar path dibuat.
+$kernel->bootstrap();
 $fs = new Filesystem;
 $normalize = static function (string $html): string {
     $html = str_replace(["\r\n", 'https://rt05takeda.vercel.app/'], ["\n", '/'], $html);

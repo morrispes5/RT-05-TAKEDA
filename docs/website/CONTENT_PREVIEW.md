@@ -38,3 +38,14 @@ Foto utama pada bingkai lengkung menjadi slideshow: gapura → taman bermain →
 Reduced motion menonaktifkan autoplay dan fade; pengunjung tetap bisa memilih foto melalui indikator. Tanpa JavaScript, foto gapura dan caption pertama tetap tampil, sementara indikator disembunyikan. Foto berikutnya dimuat lebih awal dan didekode sebelum tampil; kegagalan decode mempertahankan foto saat ini dan melewati foto gagal pada putaran otomatis berikutnya. Foto gagal dapat dicoba kembali lewat indikator. Sumber foto tetap katalog lingkungan yang telah diverifikasi, tanpa penambahan foto atau unggahan baru.
 
 Navy `#123e65`, kuning `#f2cd5a`, sky `#eef5fa`, Bricolage Grotesque, Public Sans, serta logo gapura menjadi fondasi seluruh halaman. Artikel mempunyai pencarian judul, filter kategori, dan isi baca 18 px. Dokumentasi memakai tab Kegiatan/Lingkungan, album editorial, caption, dan dialog perbesar dengan pengembalian fokus.
+
+## Mode server (M14)
+
+Saat website berjalan dengan `RT05_CONTENT_API` (staging/production), area `/pengurus` berubah ke mode server (ADR30):
+
+- Masuk di `/pengurus/masuk` dengan akun pengurus aplikasi RT05 TAKEDA. Akun warga, nonaktif, atau sandi salah mendapat pesan yang sama. Tombol **Keluar** ada di bilah atas.
+- Draf disimpan ke server dengan **Simpan draf** dan tidak tampil di website sampai **Terbitkan**. Daftar menunjukkan status: draf, terbit, atau terbit dengan perubahan yang belum terbit. **Arsipkan** menurunkan konten dari website.
+- Foto dipilih dari perangkat, diperkecil di browser, dan diunggah saat draf disimpan. Foto baru menjadi publik setelah konten diterbitkan.
+- Halaman publik diperbarui paling lambat ±1 menit setelah terbit. Jika API tidak tersedia, website menampilkan konten terakhir yang berhasil dibaca, lalu konten bawaan.
+
+Preview statis Vercel tetap memakai mode demo di atas (draf hanya di browser, tanpa login).

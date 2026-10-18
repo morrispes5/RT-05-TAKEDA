@@ -75,6 +75,10 @@ class SiteContentApiTest extends TestCase
         Http::fake(['*' => Http::response('down', 503)]);
         $this->get('/artikel')->assertOk()->assertSee('Kerja bakti Oktober bersama warga');
         $this->assertSame('cache', SiteContent::source());
+        // Selama penanda gagal masih berlaku, request berikutnya tidak menunggu API lagi.
+        SiteContent::forget();
+        $this->get('/artikel/kerja-bakti-oktober')->assertOk();
+        Http::assertSentCount(1);
 
         Cache::store('file')->flush();
         SiteContent::forget();

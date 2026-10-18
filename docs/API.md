@@ -242,9 +242,11 @@ Server menentukan total dari charge snapshot; nominal contoh hanya benar jika ke
 
 M13 (ADR28). Publik tanpa akun, hanya snapshot terbit: `GET /public/articles`, `/public/articles/{slug}`, `/public/albums`, `/public/albums/{slug}`, `/public/facilities`, `/public/facilities/{slug}`, `/public/site-profile`, `/public/media/{id}` (foto unggahan hanya bila dirujuk konten terbit). Slug lama → 301 `Location` + `data.redirect_slug`. Draf/arsip 404. `Cache-Control: public, max-age=60`, ETag.
 
-Pengurus: `GET/POST /admin/{articles|albums|facilities}`, `GET/PUT /admin/{type}/{id}` (`{slug, draf, versi}`), `POST /admin/{type}/{id}/publish` dan `/archive` (`{versi}`), `GET/PUT /admin/site-profile` (PUT = simpan + terbit, versi wajib), `POST /admin/content-media` (multipart `foto`), `GET /admin/content-media/{id}/file` (pratinjau). Kode: VERSION_CONFLICT, SLUG_TAKEN, MEDIA_NOT_READY, CONTENT_ARCHIVED, UNSUPPORTED_MEDIA_TYPE (415). Payload draf per jenis divalidasi server; respons admin memuat `ada_perubahan_belum_terbit`.
+Pengurus: `GET/POST /admin/{articles|albums|facilities}`, `GET/PUT /admin/{type}/{id}` (`{slug, draf, versi}`), `POST /admin/{type}/{id}/publish` dan `/archive` (`{versi}`), `GET/PUT /admin/site-profile` (PUT = simpan + terbit, versi wajib), `POST /admin/content-media` (multipart `foto`), `GET /admin/content-media/{id}/file` (pratinjau; foto statis website → 302 ke `/images/…`, M14). Kode: VERSION_CONFLICT, SLUG_TAKEN, MEDIA_NOT_READY, CONTENT_ARCHIVED, UNSUPPORTED_MEDIA_TYPE (415). Payload draf per jenis divalidasi server; respons admin memuat `ada_perubahan_belum_terbit`.
 
 Impor baseline: `php artisan rt05:konten-impor` (idempotent) setelah migrasi M13 di setiap environment.
+
+M14 (ADR30): CMS web memakai endpoint pengurus yang sama lewat sesi cookie `web-login` + `X-XSRF-TOKEN`, bukan bearer. Website membaca `/public/articles|albums` dari server (env `RT05_CONTENT_API`) dengan cache fresh 60 dtk dan last-good.
 
 ## Media
 
