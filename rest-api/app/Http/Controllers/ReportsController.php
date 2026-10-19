@@ -49,7 +49,7 @@ class ReportsController extends Controller
             'deskripsi' => ['required', 'string', 'max:5000'],
             'sembunyikan_identitas' => ['boolean'],
             'foto' => ['array', 'max:5'],
-            'foto.*' => ['file', 'max:'.(SharedHosting::enabled() ? 4096 : 12288)],
+            'foto.*' => ['file', 'max:'.(SharedHosting::enabled() ? 4096 : 5120)],
         ]);
         $p = Reports::createComplaint($request->user(), $data, $request->file('foto', []));
 
@@ -79,6 +79,28 @@ class ReportsController extends Controller
             'sembunyikan_identitas' => ['sometimes', 'boolean'],
         ]);
         $p = Reports::updateOwnComplaint($request->user(), $this->visibleComplaint($request, $id), $data);
+
+        return Api::data(Present::pengaduan($p->load(['kategori', 'pelapor', 'foto']), $request->user()));
+    }
+
+    /** POST /complaints/{id}/photos — pemilik menambah foto selama diajukan (multipart foto[], versi). */
+    public function addComplaintPhotos(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate([
+            'versi' => ['required', 'integer'],
+            'foto' => ['required', 'array', 'min:1', 'max:'.Reports::MAX_PHOTOS],
+            'foto.*' => ['file', 'max:'.(SharedHosting::enabled() ? 4096 : 5120)],
+        ]);
+        $p = Reports::addComplaintPhotos($request->user(), $this->visibleComplaint($request, $id), (int) $data['versi'], $request->file('foto', []));
+
+        return Api::data(Present::pengaduan($p->load(['kategori', 'pelapor', 'foto']), $request->user()));
+    }
+
+    /** DELETE /complaints/{id}/photos/{photoId}?versi= — pemilik menghapus satu foto selama diajukan. */
+    public function removeComplaintPhoto(Request $request, string $id, string $photoId): JsonResponse
+    {
+        $data = $request->validate(['versi' => ['required', 'integer']]);
+        $p = Reports::removeComplaintPhoto($request->user(), $this->visibleComplaint($request, $id), $photoId, (int) $data['versi']);
 
         return Api::data(Present::pengaduan($p->load(['kategori', 'pelapor', 'foto']), $request->user()));
     }

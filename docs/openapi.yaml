@@ -1791,7 +1791,7 @@ paths:
       summary: Buat pengaduan
       x-status: implemented
       x-milestone: M08
-      description: 'Foto opsional maks. 5, JPG/PNG/WebP berdasarkan magic bytes yang cocok dengan header gambar; profil VPS >12 MB ditolak (validasi 422 atau 413 PAYLOAD_TOO_LARGE), >50 MP 413; profil shared >4 MiB atau >6 MP ditolak 413, dan akun yang sudah membuat 5 pengaduan atau akan melewati 25 foto pada hari yang sama (WIB) ditolak 429 DAILY_QUOTA. Format lain/spoof 415 UNSUPPORTED_MEDIA_TYPE. Foto disimpan privat berstatus diproses lalu ditranskode (metadata EXIF/GPS dibuang) menjadi siap atau gagal; laporan tetap tersimpan walau antrean gagal (rt05:media-recover mengirim ulang).'
+      description: 'Foto opsional maks. 5, JPG/PNG/WebP berdasarkan magic bytes yang cocok dengan header gambar; profil VPS >5 MB ditolak (validasi 422 atau 413 PAYLOAD_TOO_LARGE), >50 MP 413; profil shared >4 MiB atau >6 MP ditolak 413. Semua profil (sejak UAT M15): akun yang sudah membuat 5 pengaduan atau akan melewati 25 foto pada hari yang sama (WIB) ditolak 429 DAILY_QUOTA. Format lain/spoof 415 UNSUPPORTED_MEDIA_TYPE. Foto disimpan privat berstatus diproses lalu ditranskode (metadata EXIF/GPS dibuang) menjadi siap atau gagal; laporan tetap tersimpan walau antrean gagal (rt05:media-recover mengirim ulang).'
       requestBody:
         required: true
         content:
@@ -1866,6 +1866,43 @@ paths:
           $ref: "#/components/responses/Data"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/complaints/{id}/photos:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: complaintsAddPhotos
+      tags:
+        - Complaints
+      summary: Tambah foto pengaduan milik sendiri selama diajukan
+      x-status: implemented
+      x-milestone: M15
+      description: Hanya pelapor, status diajukan, belum diarsip; total foto maks. 5 (422 TOO_MANY_PHOTOS), batas harian 25 foto per akun (429 DAILY_QUOTA), ukuran sama dengan buat pengaduan. Versi basi 409; selain pemilik/status 403 COMPLAINT_LOCKED. Foto baru berstatus diproses lalu siap/gagal; versi naik.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [versi, foto]
+              properties:
+                versi:
+                  type: integer
+                foto:
+                  type: array
+                  minItems: 1
+                  maxItems: 5
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "200":
+          description: Pengaduan dengan daftar foto terbaru.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintEnvelope"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/complaints/{id}/photos/{photoId}:
     parameters:
       - $ref: "#/components/parameters/Id"
@@ -1891,6 +1928,29 @@ paths:
               schema:
                 type: string
                 format: binary
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      operationId: complaintsRemovePhoto
+      tags:
+        - Complaints
+      summary: Hapus satu foto pengaduan milik sendiri selama diajukan
+      x-status: implemented
+      x-milestone: M15
+      description: Hanya pelapor, status diajukan, belum diarsip; versi wajib (query). Versi basi 409; selain pemilik/status 403 COMPLAINT_LOCKED; foto bukan milik laporan 404. Berkas privat ikut dihapus; versi naik.
+      parameters:
+        - name: versi
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Pengaduan dengan daftar foto terbaru.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComplaintEnvelope"
         default:
           $ref: "#/components/responses/Error"
   /api/v1/devices/{device_identifier}:
