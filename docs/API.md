@@ -121,6 +121,7 @@ Kode 409 domain: `HOUSE_OCCUPIED`,
 | --- | --- |
 | GET/POST /complaints | Feed tersanitasi / create milik actor |
 | GET/PATCH /complaints/{id} | Baca role-aware / owner edit saat submitted |
+| POST /complaints/{id}/photos, DELETE /complaints/{id}/photos/{photoId}?versi= | UAT M15: pelapor menambah/menghapus foto selama diajukan (total ≤5, versi naik) |
 | GET /complaints/{id}/history | Histori yang aman |
 | GET/POST /aspirations | Feed / create terpisah |
 | GET/PATCH /aspirations/{id} | Baca / owner edit saat submitted |

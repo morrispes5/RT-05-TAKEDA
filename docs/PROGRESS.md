@@ -45,6 +45,13 @@ Selesai di sesi ini (lokal; staging/APK menyusul):
   Axe WCAG 2.1 A/AA staging 7 halaman (termasuk login CMS) desktop + 360 px: 0 pelanggaran; keyboard OK.
   Bukti: [docs/evidence/m15/REPORT.md](evidence/m15/REPORT.md).
 
+- UAT tim pemilik 19 Okt malam (4 penguji, data staging; audit: 4 pengaduan, 2 pembayaran, 1 kas, usulan, agenda,
+  registrasi; 0 error 5xx; rekonsiliasi cocok). Keluhan → hasil: (a) foto pengaduan tidak bisa diedit = batasan ADR21,
+  diubah ADR32 (tambah/hapus selama diajukan); (b) kas admin layar putih = APK M10 lama memanggil `/cash/summary`
+  (dipindah ADR26), APK M15 lulus `m15_finance_uat_test`; (c) batas unggah per akun semua profil (5 pengaduan, 25 foto/
+  hari, 5 MB); (d) form usulan: crash jam selesai sebelum jam mulai dan usulan bertanggal lewat (regresi gagal pada kode
+  lama, lulus setelah perbaikan). Branch `codex/m15-uat-fixes`, PR #51. rest-api 314 tes / 3211; mobile 226 tes.
+
 Belum: pemasangan APK rilis di HP pemilik (perlu uninstall APK debug sekali), uji Android nyata (kamera ditutup paksa, koneksi lambat, push), ulang uji beban setelah deploy + ukur Neon
 dingin, UAT mitra (peserta nyata, tidak dikarang), privacy notice final (kontak/retensi dari pemilik/mitra), verifikasi
 developer Android (identitas pemilik), aksesibilitas manual, latihan pindah PostgreSQL cadangan (ADR29, belum

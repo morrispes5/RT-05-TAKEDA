@@ -31,22 +31,29 @@ final class Reports
 
     public const ASPIRATION_FLOW = ['diajukan' => ['ditinjau'], 'ditinjau' => ['selesai'], 'selesai' => ['ditinjau']];
 
-    /** Profil shared: cegah unggahan beruntun yang mengisi disk hosting. */
-    public const SHARED_DAILY_REPORTS = 5;
+    /** Batas per akun per hari (WIB), semua profil sejak UAT M15: cegah spam unggahan yang mengisi penyimpanan. */
+    public const DAILY_REPORTS = 5;
 
-    public const SHARED_DAILY_PHOTOS = 25;
+    public const DAILY_PHOTOS = 25;
+
+    public const MAX_PHOTOS = 5;
+
+    /** Nama lama (profil shared, ADR23) tetap dipakai tes. */
+    public const SHARED_DAILY_REPORTS = self::DAILY_REPORTS;
+
+    public const SHARED_DAILY_PHOTOS = self::DAILY_PHOTOS;
 
     /** @param list<UploadedFile> $photos */
     public static function createComplaint(Akun $akun, array $data, array $photos): Pengaduan
     {
-        if (count($photos) > 5) {
+        if (count($photos) > self::MAX_PHOTOS) {
             throw new DomainConflict('TOO_MANY_PHOTOS', 'Maksimal 5 foto.', 422);
         }
         $kategori = KategoriPengaduan::whereKey($data['kategori_id'])->where('aktif', true)->first();
         if (! $kategori) {
             throw new DomainConflict('CATEGORY_INACTIVE', 'Kategori tidak tersedia.', 422);
         }
-        self::assertSharedDailyQuota($akun, count($photos));
+        self::assertDailyQuota($akun, count($photos), newReport: true);
 
         // Foto divalidasi lalu disalin mentah ke folder privat sebelum transaksi; transkode dan
         // penghapusan metadata dilakukan setelah response (shared) atau worker-media (VPS).
@@ -57,10 +64,9 @@ final class Reports
                 $stored[] = Photo::stage($file);
             }
             $pengaduan = DB::transaction(function () use ($akun, $data, $stored, $kategori) {
-                if (SharedHosting::enabled()) {
-                    Akun::whereKey($akun->id)->lockForUpdate()->first();
-                    self::assertSharedDailyQuota($akun, count($stored));
-                }
+                // Kunci akun: dua unggahan paralel tidak bisa sama-sama lolos batas harian.
+                Akun::whereKey($akun->id)->lockForUpdate()->first();
+                self::assertDailyQuota($akun, count($stored), newReport: true);
                 $pengaduan = Pengaduan::create([
                     'pelapor_id' => $akun->id,
                     'kategori_id' => $kategori->id,
@@ -113,23 +119,106 @@ final class Reports
         }
     }
 
-    /** Batas harian profil shared. Tidak mengubah profil VPS. */
-    public static function assertSharedDailyQuota(Akun $akun, int $newPhotos): void
+    /** Batas harian per akun (pengaduan baru dan total foto yang diunggah hari ini, termasuk foto tambahan). */
+    public static function assertDailyQuota(Akun $akun, int $newPhotos, bool $newReport = false): void
     {
-        if (! SharedHosting::enabled()) {
-            return;
-        }
         $start = now('Asia/Jakarta')->startOfDay()->utc();
-        $reports = Pengaduan::where('pelapor_id', $akun->id)->where('created_at', '>=', $start)->count();
-        if ($reports >= self::SHARED_DAILY_REPORTS) {
-            throw new DomainConflict('DAILY_QUOTA', 'Maksimal 5 pengaduan per hari.', 429);
+        if ($newReport) {
+            $reports = Pengaduan::where('pelapor_id', $akun->id)->where('created_at', '>=', $start)->count();
+            if ($reports >= self::DAILY_REPORTS) {
+                throw new DomainConflict('DAILY_QUOTA', 'Maksimal 5 pengaduan per hari. Coba lagi besok.', 429);
+            }
         }
         $photos = FotoPengaduan::whereHas('pengaduan', fn ($q) => $q->where('pelapor_id', $akun->id))
             ->where('created_at', '>=', $start)
             ->count();
-        if ($photos + $newPhotos > self::SHARED_DAILY_PHOTOS) {
-            throw new DomainConflict('DAILY_QUOTA', 'Maksimal 25 foto per hari.', 429);
+        if ($photos + $newPhotos > self::DAILY_PHOTOS) {
+            throw new DomainConflict('DAILY_QUOTA', 'Maksimal 25 foto per hari. Coba lagi besok.', 429);
         }
+    }
+
+    /**
+     * UAT M15: pemilik menambah foto selama pengaduan masih diajukan (total maks. 5, batas harian
+     * tetap berlaku). Versi naik; foto baru diproses worker-media seperti saat pengaduan dibuat.
+     *
+     * @param  list<UploadedFile>  $photos
+     */
+    public static function addComplaintPhotos(Akun $akun, Pengaduan $pengaduan, int $versi, array $photos): Pengaduan
+    {
+        if ($photos === []) {
+            throw new DomainConflict('VALIDATION_FAILED', 'Pilih setidaknya satu foto.', 422);
+        }
+        $stored = [];
+        $created = [];
+        try {
+            foreach ($photos as $file) {
+                $stored[] = Photo::stage($file);
+            }
+            $locked = DB::transaction(function () use ($akun, $pengaduan, $versi, $stored, &$created) {
+                Akun::whereKey($akun->id)->lockForUpdate()->first();
+                $locked = self::lockOwnSubmitted($akun, $pengaduan, $versi);
+                $existing = FotoPengaduan::where('pengaduan_id', $locked->id)->count();
+                if ($existing + count($stored) > self::MAX_PHOTOS) {
+                    throw new DomainConflict('TOO_MANY_PHOTOS', 'Maksimal 5 foto per pengaduan. Hapus foto lain dulu.', 422);
+                }
+                self::assertDailyQuota($akun, count($stored));
+                $next = (int) FotoPengaduan::where('pengaduan_id', $locked->id)->max('urutan');
+                foreach ($stored as $i => $meta) {
+                    $created[] = FotoPengaduan::create($meta + ['pengaduan_id' => $locked->id, 'urutan' => $next + $i + 1])->id;
+                }
+                $locked->versi++;
+                $locked->save();
+                Audit::record($akun, 'pengaduan.foto_ditambah', 'pengaduan', $locked->id, ['foto' => count($stored)]);
+
+                return $locked;
+            });
+        } catch (Throwable $e) {
+            foreach ($stored as $meta) {
+                Storage::disk(Photo::DISK)->delete($meta['storage_key']);
+            }
+            throw $e;
+        }
+        foreach ($created as $fotoId) {
+            self::enqueuePhoto($fotoId);
+        }
+
+        return $locked->refresh();
+    }
+
+    /** UAT M15: pemilik menghapus satu foto selama pengaduan masih diajukan. Berkas ikut dihapus setelah commit. */
+    public static function removeComplaintPhoto(Akun $akun, Pengaduan $pengaduan, string $fotoId, int $versi): Pengaduan
+    {
+        $key = null;
+        $locked = DB::transaction(function () use ($akun, $pengaduan, $fotoId, $versi, &$key) {
+            $locked = self::lockOwnSubmitted($akun, $pengaduan, $versi);
+            $foto = FotoPengaduan::where('pengaduan_id', $locked->id)->lockForUpdate()->findOrFail($fotoId);
+            $key = $foto->storage_key;
+            $foto->delete();
+            $locked->versi++;
+            $locked->save();
+            Audit::record($akun, 'pengaduan.foto_dihapus', 'pengaduan', $locked->id);
+
+            return $locked;
+        });
+        try {
+            Storage::disk(Photo::DISK)->delete($key);
+        } catch (Throwable $e) {
+            // Berkas yatim dibersihkan rt05:media-recover; penghapusan baris sudah commit.
+            Log::warning('media.delete_failed', ['exception' => $e::class]);
+        }
+
+        return $locked->refresh();
+    }
+
+    private static function lockOwnSubmitted(Akun $akun, Pengaduan $pengaduan, mixed $versi): Pengaduan
+    {
+        $locked = Pengaduan::whereKey($pengaduan->id)->lockForUpdate()->firstOrFail();
+        if ($locked->pelapor_id !== $akun->id || $locked->status !== 'diajukan' || $locked->archived_at) {
+            throw new DomainConflict('COMPLAINT_LOCKED', 'Pengaduan hanya dapat diubah pemiliknya selama masih diajukan.', 403);
+        }
+        self::assertVersion($locked->versi, $versi);
+
+        return $locked;
     }
 
     public static function updateOwnComplaint(Akun $akun, Pengaduan $pengaduan, array $data): Pengaduan
