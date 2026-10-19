@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -71,6 +72,7 @@ Future<ProviderContainer> _pump(
   required MemoryDraftStore store,
   ImagePicker? picker,
   List<XFile> lost = const [],
+  LostPhotos? lostFn,
   FakeHandler? handler,
 }) async {
   final container = ProviderContainer(
@@ -79,7 +81,7 @@ Future<ProviderContainer> _pump(
       tokenStorageProvider.overrideWithValue(MemoryTokenStorage('t')),
       httpAdapterProvider.overrideWithValue(FakeAdapter(handler ?? apiHandler(me: akunJson, fixtures: _categories))),
       reportDraftStoreProvider.overrideWithValue(store),
-      lostPhotosProvider.overrideWithValue((_) async => lost),
+      lostPhotosProvider.overrideWithValue(lostFn ?? (_) async => lost),
     ],
   );
   addTearDown(container.dispose);
@@ -151,5 +153,38 @@ void main() {
     expect(find.text('Foto 1'), findsOneWidget);
     expect(store.draft, isNull);
     expect(store.log, ['write:true:Lampu jalan mati', 'clear']);
+  });
+
+  testWidgets('halaman ditutup saat menunggu foto hilang: draf tidak terhapus dan dapat dipulihkan lagi (#48)', (tester) async {
+    useCompactScreen(tester, height: 1400);
+    final before = File('${tmp.path}/galeri.jpg')..writeAsBytesSync([1, 2, 3]);
+    final camera = File('${tmp.path}/kamera.jpg')..writeAsBytesSync([4, 5, 6]);
+    final store = MemoryDraftStore(
+      ReportDraft(akunId: 'a-1', kategori: 'k-1', judul: 'Saluran tersumbat', isi: 'Air meluap di depan rumah A-01.', photos: [before.path], kamera: true),
+    );
+    final gate = Completer<List<XFile>>();
+    // Plugin kamera hanya menyerahkan foto hilang satu kali: panggilan kedua kosong.
+    var consumed = false;
+    Future<List<XFile>> once(ImagePicker _) {
+      if (consumed) return Future.value(const <XFile>[]);
+      consumed = true;
+      return gate.future;
+    }
+
+    await _pump(tester, store: store, lostFn: once);
+    // Pengguna kembali sebelum foto hilang selesai dibaca.
+    await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+    gate.complete([XFile(camera.path)]);
+    await tester.pumpAndSettle();
+
+    expect(store.draft, isNotNull, reason: 'draf tidak boleh hilang walau halaman sudah ditutup');
+    expect(store.draft!.photos, [before.path, camera.path]);
+    expect(store.draft!.kamera, isFalse);
+
+    await _pump(tester, store: store, lostFn: once);
+    expect(find.text('Saluran tersumbat'), findsOneWidget);
+    expect(find.text('Foto 1'), findsOneWidget);
+    expect(find.text('Foto 2'), findsOneWidget);
+    expect(store.draft, isNull, reason: 'draf dihapus setelah benar-benar dipulihkan ke formulir');
   });
 }
