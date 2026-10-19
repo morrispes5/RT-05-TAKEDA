@@ -34,6 +34,11 @@ Selesai di sesi ini (lokal; staging/APK menyusul):
 - Uji beban setelah deploy `6c7f864` (last_used_at mati): 844 request, 0 error, P95 total 781 ms (sebelumnya 928),
   semua endpoint API P95 702–989 ms (<1 dtk).
 
+- Insiden staging (high, diperbaiki): setelah deploy `0717e51` outbox macet karena mutex `withoutOverlapping()` 24 jam
+  tertinggal dari scheduler yang dihentikan di tengah run. `infra/scripts/m15-notify-latency.mjs` dari kondisi idle:
+  notifikasi tidak muncul dalam 120 dtk (FAIL, 03:25 UTC). Dipulihkan `schedule:clear-cache`; perbaikan mutex pendek
+  (ADR31 butir 7) + tes `M15IdleGuardTest` (mutex kedaluwarsa 5 menit). rest-api 310 tes / 3170.
+
 Belum: CI + merge, APK rilis pertama dari workflow + verifikasi sertifikat, pemasangan di HP pemilik (perlu uninstall APK
 debug sekali), uji Android nyata (kamera ditutup paksa, koneksi lambat, push), ulang uji beban setelah deploy + ukur Neon
 dingin, UAT mitra (peserta nyata, tidak dikarang), privacy notice final (kontak/retensi dari pemilik/mitra), verifikasi

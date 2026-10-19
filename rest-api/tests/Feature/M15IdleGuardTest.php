@@ -47,6 +47,26 @@ class M15IdleGuardTest extends TestCase
         $this->assertTrue($this->event('rt05:media-recover')->filtersPass($this->app));
     }
 
+    public function test_overlap_mutexes_are_short_so_a_killed_run_cannot_stall_the_outbox_for_a_day(): void
+    {
+        foreach (app(Schedule::class)->events() as $event) {
+            if ($event->withoutOverlapping) {
+                $this->assertLessThanOrEqual(60, $event->expiresAt, (string) $event->command);
+            }
+        }
+        $dispatch = $this->event('rt05:outbox-dispatch');
+        $this->assertSame(5, $dispatch->expiresAt);
+
+        // Deploy membunuh scheduler di tengah run: mutex tertinggal, lalu kedaluwarsa dalam 5 menit.
+        Cache::flush();
+        IdleGuard::touch();
+        $dispatch->mutex->create($dispatch);
+        $this->assertFalse($dispatch->filtersPass($this->app));
+        $this->travel(6)->minutes();
+        IdleGuard::touch();
+        $this->assertTrue($dispatch->filtersPass($this->app));
+    }
+
     public function test_rolled_back_transaction_does_not_mark_activity(): void
     {
         Cache::flush();
