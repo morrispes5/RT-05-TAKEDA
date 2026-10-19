@@ -25,6 +25,9 @@ final class Outbox
                 SharedHosting::wake();
                 SharedHosting::drainAfterResponse();
             });
+        } else {
+            // Profil VPS: sweep outbox tiap menit hanya saat ada event baru (IdleGuard, ADR31).
+            DB::afterCommit(fn () => IdleGuard::touch());
         }
 
         return $event;
