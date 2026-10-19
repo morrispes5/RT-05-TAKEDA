@@ -1,5 +1,34 @@
 # Progress — RT05 TAKEDA
 
+## M15 — Integrasi, UAT, keamanan, kandidat rilis — 19 Oktober 2026: **in_progress**
+
+Branch `codex/m15-uat-release`. Keputusan: ADR31.
+
+Selesai di sesi ini (lokal; staging/APK menyusul):
+- APK rilis kunci tetap: `.github/workflows/mobile-release.yml`, `infra/scripts/check-mobile-build-config.mjs`
+  (`--build-release`, `--verify-cert`, self-test diperluas), `mobile/android/app/build.gradle.kts` (signingConfig dari
+  `key.properties`). Kunci dibuat 19 Okt atas persetujuan pemilik; secret environment `release` + variable
+  `RT05_RELEASE_CERT_SHA256` terpasang; cadangan hanya di folder Drive pribadi pemilik (izin: owner saja, hash diverifikasi
+  setelah unduh ulang); salinan lokal dihapus.
+- Pemulihan draf pengaduan saat Android menutup aplikasi ketika kamera terbuka (ditunda dari M08):
+  `mobile/lib/features/warga/report_draft.dart`, `warga_pages.dart`; tes `mobile/test/m15_report_draft_test.dart` (3).
+- Keamanan: `composer audit` rest-api/website 0 advisory; `npm audit` website 0; secret scanning GitHub 0 alert terbuka;
+  pemindaian riwayat Git untuk pola kredensial (Neon, private key, token GitHub, APP_KEY) 0 temuan. Repo publik;
+  Dependabot nonaktif (rekomendasi untuk pemilik). Header live staging: tidak ada HSTS dan proteksi framing pada website →
+  middleware `website/app/Http/Middleware/SecurityHeaders.php` + `SecurityHeadersTest`.
+- Performa staging (`infra/scripts/m15-load-check.mjs`, akun sintetis, sebelum perubahan M15): 20 pengguna × 60 dtk,
+  837 request, 0 error, P95 total 928 ms, P50 416 ms; per endpoint API P95 774–1160 ms; halaman website P95 107–143 ms.
+  Satu pengguna: P50 API ±370 ms. Penyebab diukur di container API: koneksi Neon 130–440 ms, query ±60 ms (pooled = direct).
+  Perbaikan: `config/sanctum.php` `last_used_at` dimatikan; `M15PerformanceBudgetTest` menjaga jumlah query per layar.
+- Validasi lokal: rest-api `php artisan test` 307 tes / 3143 assertion; website 15 tes / 290 assertion, pint lulus;
+  mobile `flutter analyze` bersih, `flutter test` 219 lulus, `dart format` bersih.
+
+Belum: CI + merge, APK rilis pertama dari workflow + verifikasi sertifikat, pemasangan di HP pemilik (perlu uninstall APK
+debug sekali), uji Android nyata (kamera ditutup paksa, koneksi lambat, push), ulang uji beban setelah deploy + ukur Neon
+dingin, UAT mitra (peserta nyata, tidak dikarang), privacy notice final (kontak/retensi dari pemilik/mitra), verifikasi
+developer Android (identitas pemilik), aksesibilitas manual, latihan pindah PostgreSQL cadangan (ADR29, belum
+diimplementasi).
+
 ## M14 — Website membaca API konten + CMS web nyata — 19 Oktober 2026: **passed** (lokal, CI, staging `08f2a1e`)
 
 Branch `codex/m14-website-api`. Keputusan: ADR30.
@@ -625,7 +654,7 @@ ditentukan hanya oleh tersedianya kode.
 | M12 | passed | 17 Oktober: FIN critical + konkurensi antarproses + timeout replay + rekonsiliasi harian + konfirmasi saldo negatif + aksi pembalikan mobile; lokal 296/2917, Flutter 207. Bagian "M12" teratas |
 | M13 | passed | 17–18 Oktober, staging `88c7302` live 14/14: API konten publik (draf/terbit/arsip, snapshot, slug redirect, media, impor katalog) + Konten website di mobile pengurus; lokal 303, Flutter 216. Bagian "M13" teratas |
 | M14 | passed | Website membaca API + CMS web nyata (ADR30); staging `08f2a1e` 21/21 + drill API mati |
-| M15 | planned | UAT/full QA belum dilakukan |
+| M15 | in_progress | APK rilis kunci tetap, pemulihan draf kamera, keamanan & beban staging; UAT/HP nyata belum (ADR31) |
 | M16 | planned | Production baru belum dirilis |
 
 M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. M01–M16 menggunakan planned/in_progress/passed/blocked.
