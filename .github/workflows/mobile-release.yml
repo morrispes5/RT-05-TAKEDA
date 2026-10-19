@@ -59,13 +59,12 @@ jobs:
         env:
           RT05_FLAVOR: ${{ inputs.flavor }}
           RT05_API_BASE_URL: ${{ inputs.flavor == 'prod' && 'https://takeda.morriz.tech' || 'https://takeda-staging.morriz.tech' }}
-          # versionCode naik tiap rilis; 1000 + nomor run agar selalu di atas APK debug (versionCode 1).
-          RT05_BUILD_NUMBER: ${{ 1000 + github.run_number }}
           RT05_FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
           RT05_FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
           RT05_FIREBASE_SENDER_ID: ${{ vars.FIREBASE_SENDER_ID }}
           RT05_FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
-        run: node ../infra/scripts/check-mobile-build-config.mjs --build-release
+        # versionCode naik tiap rilis; 1000 + nomor run agar selalu di atas APK debug (versionCode 1).
+        run: RT05_BUILD_NUMBER=$((1000 + GITHUB_RUN_NUMBER)) node ../infra/scripts/check-mobile-build-config.mjs --build-release
       - name: Hapus kunci dari runner
         if: always()
         run: rm -f android/key.properties "$RUNNER_TEMP/rt05-release.jks"
@@ -75,9 +74,11 @@ jobs:
         run: |
           set -eu
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
-          apk="$(ls build/app/outputs/flutter-apk/rt05-takeda-${{ inputs.flavor }}-*.apk)"
-          "$apksigner" verify --verbose "$apk" | grep -E '^Verified using v2 scheme \(APK Signature Scheme v2\): true$'
-          "$apksigner" verify --print-certs "$apk" | node ../infra/scripts/check-mobile-build-config.mjs --verify-cert
+          for apk in build/app/outputs/flutter-apk/rt05-takeda-${{ inputs.flavor }}-*.apk; do
+            echo "$apk"
+            "$apksigner" verify --verbose "$apk" | grep -E '^Verified using v2 scheme \(APK Signature Scheme v2\): true$'
+            "$apksigner" verify --print-certs "$apk" | node ../infra/scripts/check-mobile-build-config.mjs --verify-cert
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: rt05-takeda-${{ inputs.flavor }}-release-${{ github.run_number }}
