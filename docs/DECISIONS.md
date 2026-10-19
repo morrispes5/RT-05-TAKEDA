@@ -374,3 +374,11 @@ Tanggal: 19 Oktober 2026. Status: **diterapkan di branch `codex/m15-uat-release`
 5. **Header keamanan website** dari middleware aplikasi (`SecurityHeaders`), bukan gateway, agar sama di VPS dan shared
    hosting: `X-Frame-Options: DENY` (CMS tidak bisa dibingkai), `Permissions-Policy`, dan HSTS 1 tahun tanpa
    `includeSubDomains` hanya lewat HTTPS.
+6. **Neon boleh tidur saat idle (profil VPS).** 19 Oktober 2026 branch `staging` tercatat aktif ±95% waktu (48 CU-jam
+   dalam 8,4 hari) karena `rt05:outbox-dispatch` tiap menit, `media-recover`/`push-recover` tiap 10 menit, dan
+   healthcheck website `/` (merender beranda → baca konten API). Kuota Free 100 CU-jam/bulan per **project** dipakai
+   bersama branch `production`, jadi laju itu menghabiskan kuota ±28 Oktober. Keputusan: `IdleGuard` (penanda Redis
+   10 menit dari `Outbox::record` setelah commit) — sweep database jalan tiap menit hanya saat aktif, selain itu sweep
+   pengaman tiap jam; cache gagal = dianggap aktif. Healthcheck website memakai `/up`. Notifikasi baru tetap ≤60 detik.
+   Profil shared tetap memakai mekanisme `shared-tick` (ADR23). Pengurangan bangun yang tersisa (pengingat agenda dan
+   rotasi token tiap jam) diterima: ±1 bangun per jam.
