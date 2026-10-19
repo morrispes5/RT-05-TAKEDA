@@ -27,6 +27,8 @@ jobs:
           node-version: '22'
       - name: Kontrak statis Redis/worker M03
         run: node infra/scripts/check-m03-compose.mjs
+      - name: Penilaian bukti M15 (klasifikasi status, P95, exit code)
+        run: node --test infra/scripts/m15-evidence-lib.test.mjs
       - name: Regresi isolasi credential DB
         run: python3 -B infra/scripts/check_database_isolation.py --self-test
       - name: Secrets/cache tidak masuk build context
