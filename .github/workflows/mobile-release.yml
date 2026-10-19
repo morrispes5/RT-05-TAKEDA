@@ -1,0 +1,88 @@
+name: Mobile release APK
+# M15: APK rilis bertanda tangan kunci tetap (distribusi warga tanpa Play Store, ADR31).
+# Hanya dijalankan manual. Kunci ada di secret environment `release`; sidik jari sertifikat di
+# repository variable RT05_RELEASE_CERT_SHA256 dan diverifikasi sebelum APK diunggah sebagai artifact.
+on:
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: 'Target rilis (staging untuk kandidat/UAT, prod untuk warga).'
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - prod
+permissions:
+  contents: read
+concurrency:
+  group: mobile-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: release
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+      - run: node ../infra/scripts/check-mobile-build-config.mjs --self-test
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - name: Tulis kunci rilis sementara
+        env:
+          KEYSTORE_BASE64: ${{ secrets.RT05_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.RT05_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RT05_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.RT05_KEY_PASSWORD }}
+        run: |
+          set -eu
+          test -n "$KEYSTORE_BASE64" && test -n "$KEYSTORE_PASSWORD" && test -n "$KEY_ALIAS" && test -n "$KEY_PASSWORD"
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/rt05-release.jks"
+          printf 'storeFile=%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$RUNNER_TEMP/rt05-release.jks" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > android/key.properties
+      - name: Build APK rilis
+        env:
+          RT05_FLAVOR: ${{ inputs.flavor }}
+          RT05_API_BASE_URL: ${{ inputs.flavor == 'prod' && 'https://takeda.morriz.tech' || 'https://takeda-staging.morriz.tech' }}
+          # versionCode naik tiap rilis; 1000 + nomor run agar selalu di atas APK debug (versionCode 1).
+          RT05_BUILD_NUMBER: ${{ 1000 + github.run_number }}
+          RT05_FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
+          RT05_FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
+          RT05_FIREBASE_SENDER_ID: ${{ vars.FIREBASE_SENDER_ID }}
+          RT05_FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+        run: node ../infra/scripts/check-mobile-build-config.mjs --build-release
+      - name: Hapus kunci dari runner
+        if: always()
+        run: rm -f android/key.properties "$RUNNER_TEMP/rt05-release.jks"
+      - name: Verifikasi sertifikat = kunci rilis tetap
+        env:
+          RT05_RELEASE_CERT_SHA256: ${{ vars.RT05_RELEASE_CERT_SHA256 }}
+        run: |
+          set -eu
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
+          apk="$(ls build/app/outputs/flutter-apk/rt05-takeda-${{ inputs.flavor }}-*.apk)"
+          "$apksigner" verify --verbose "$apk" | grep -E '^Verified using v2 scheme \(APK Signature Scheme v2\): true$'
+          "$apksigner" verify --print-certs "$apk" | node ../infra/scripts/check-mobile-build-config.mjs --verify-cert
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rt05-takeda-${{ inputs.flavor }}-release-${{ github.run_number }}
+          path: |
+            mobile/build/app/outputs/flutter-apk/rt05-takeda-${{ inputs.flavor }}-*.apk
+            mobile/build/app/outputs/flutter-apk/rt05-takeda-${{ inputs.flavor }}-*.apk.sha256
+          retention-days: 90
+          if-no-files-found: error

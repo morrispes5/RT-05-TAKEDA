@@ -345,3 +345,32 @@ Tanggal: 18–19 Oktober 2026. Status: **diterapkan di branch `codex/m14-website
 Alasan: implementasi paling sederhana yang memenuhi gate M14 tanpa mengganti UI yang diterima dan tanpa layanan baru. Tradeoff: perubahan terbit muncul di website paling lambat ±60 detik (cache fresh); diterima demi mengurangi bangun Neon.
 
 Terdampak: `website/` (SiteContent, cms-preview.js, content-api.js, pengurus.blade.php, export-preview.php), `infra/compose.production.yml` (env web), `rest-api` ContentController + tes M14, `docs/openapi.yaml`, `docs/website/CONTENT_PREVIEW.md`.
+
+### ADR31 — M15: APK rilis dengan kunci tetap, pemulihan draf kamera, dan anggaran latensi Neon
+
+Tanggal: 19 Oktober 2026. Status: **diterapkan di branch `codex/m15-uat-release`**.
+
+1. **Kunci rilis tetap.** Keystore PKCS12 RSA 4096 (alias `rt05-takeda-release`, berlaku s.d. 2056) dibuat agent atas
+   persetujuan pemilik. Disimpan hanya di dua tempat: secret GitHub environment `release` (dipakai CI, tidak bisa dibaca
+   ulang) dan folder Google Drive pribadi pemilik "RT05 TAKEDA - Kunci rilis Android (RAHASIA, jangan dibagikan)" (izin:
+   hanya pemilik; salinan diverifikasi hash `f5e3a3a5…`). Tidak ada salinan di PC atau repo. Sidik jari sertifikat publik
+   `DB:A8:BC:3F:61:79:CB:74:7A:AC:E1:B9:BA:DA:7A:BB:C5:68:58:3D:26:BB:17:64:93:74:F6:B7:59:E4:06:9A` disimpan sebagai
+   repository variable `RT05_RELEASE_CERT_SHA256` dan dipakai untuk verifikasi developer Android (pemilik).
+2. **Workflow `Mobile release APK`** (`.github/workflows/mobile-release.yml`) hanya `workflow_dispatch` (staging/prod),
+   menjalankan analyze + test, menulis `key.properties` sementara, build `--release` dengan versionCode `1000 + run`,
+   menghapus kunci dari runner, lalu memverifikasi skema v2 dan sertifikat == variabel di atas sebelum mengunggah artifact.
+   Gradle memakai kunci debug bila `key.properties` tidak ada (build lokal); APK seperti itu gagal di verifikasi CI.
+   APK rilis tidak bisa menimpa APK debug yang sudah terpasang (tanda tangan berbeda): pasang rilis setelah uninstall sekali.
+3. **Pemulihan draf kamera** (ditunda dari M08): sebelum kamera dibuka, isian pengaduan baru disimpan terenkripsi
+   (`flutter_secure_storage`), terikat ID akun. Bila Android menutup aplikasi, formulir memulihkan isian + foto
+   (`ImagePicker.retrieveLostData`) dan beranda menampilkan kartu "Pengaduan belum terkirim". Draf akun lain dihapus,
+   tidak ditampilkan. Tidak ada data dikirim ke server sebelum pengguna menekan Kirim.
+4. **Anggaran latensi.** Diukur 19 Oktober 2026 dari container API staging: koneksi baru ke Neon 130–440 ms, tiap query
+   ±55–65 ms (pooled dan direct sama; TCP 17 ms; jarak Indonesia→Singapura + proxy Neon). Latensi API = koneksi + jumlah
+   query × ±60 ms. Keputusan: (a) Sanctum tidak menulis `last_used_at` per request (kolom tidak dipakai; satu UPDATE
+   hilang dari setiap request bearer); (b) jumlah query per layar dijaga tes anggaran `M15PerformanceBudgetTest`;
+   (c) **tidak** memakai koneksi persisten PDO: transaksi yang terputus bisa terbawa ke request berikutnya (risiko ADR05),
+   jadi biaya koneksi diterima.
+5. **Header keamanan website** dari middleware aplikasi (`SecurityHeaders`), bukan gateway, agar sama di VPS dan shared
+   hosting: `X-Frame-Options: DENY` (CMS tidak bisa dibingkai), `Permissions-Policy`, dan HSTS 1 tahun tanpa
+   `includeSubDomains` hanya lewat HTTPS.
