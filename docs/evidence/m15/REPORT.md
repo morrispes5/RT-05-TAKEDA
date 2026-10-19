@@ -67,8 +67,15 @@ Latensi didominasi jarak Indonesia→Neon Singapura × jumlah query (ADR31 butir
   aktif terus sejak 17 Okt), lalu `current_state: idle`, `suspended_at` 04.15.02 UTC, ±5 menit setelah `last_active`
   04.09.51. Sisa bangun terjadwal: sweep pengaman + pengingat agenda + rotasi token di menit :00/:05 tiap jam.
 
+## Aksesibilitas otomatis (`website/scripts/a11y-live.mjs`, axe-core WCAG 2.1 A/AA, staging `244a73c`)
+
+`/`, `/profil`, `/fasilitas`, `/dokumentasi`, `/artikel`, `/kontak`, `/pengurus/masuk` (CMS mode server) pada 1280 px
+dan 360 px: **0 pelanggaran**. Keyboard: Tab pertama = "Lewati ke konten", isian email login CMS terjangkau dengan Tab.
+Slideshow hero (interval, tanpa tombol jeda, reduced motion, tab tersembunyi) diuji `npm.cmd run test:preview` (PASS).
+Ini bukan pengganti uji pembaca layar/TalkBack manual di HP.
+
 ## Belum (bukan PASS)
 
 UAT mitra (peserta nyata, `docs/UAT_M15.md`), pemasangan APK rilis + uji HP nyata (kamera ditutup paksa, koneksi lambat,
 push fg/bg/terminated), verifikasi developer Android (identitas pemilik), privacy notice final (kontak/retensi),
-aksesibilitas manual, latihan pindah PostgreSQL cadangan (ADR29 belum diimplementasi), uji shared hosting.
+uji TalkBack/pembaca layar manual, latihan pindah PostgreSQL cadangan (ADR29 belum diimplementasi), uji shared hosting.
