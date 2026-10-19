@@ -74,9 +74,11 @@ jobs:
         run: |
           set -eu
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
-          apk="$(ls build/app/outputs/flutter-apk/rt05-takeda-${{ inputs.flavor }}-*.apk)"
-          "$apksigner" verify --verbose "$apk" | grep -E '^Verified using v2 scheme \(APK Signature Scheme v2\): true$'
-          "$apksigner" verify --print-certs "$apk" | node ../infra/scripts/check-mobile-build-config.mjs --verify-cert
+          for apk in build/app/outputs/flutter-apk/rt05-takeda-${{ inputs.flavor }}-*.apk; do
+            echo "$apk"
+            "$apksigner" verify --verbose "$apk" | grep -E '^Verified using v2 scheme \(APK Signature Scheme v2\): true$'
+            "$apksigner" verify --print-certs "$apk" | node ../infra/scripts/check-mobile-build-config.mjs --verify-cert
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: rt05-takeda-${{ inputs.flavor }}-release-${{ github.run_number }}

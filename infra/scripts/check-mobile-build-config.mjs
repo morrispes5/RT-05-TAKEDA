@@ -160,6 +160,10 @@ function releaseArgs(checked, firebase = []) {
         'build',
         'apk',
         '--release',
+        // APK per arsitektur: arm64 (hampir semua HP warga) dan armeabi-v7a (HP lama); x86_64 hanya emulator.
+        // Flutter menambah 1000×ABI pada versionCode (arm64 = 2000 + build), tetap naik tiap rilis.
+        '--split-per-abi',
+        '--target-platform=android-arm,android-arm64',
         `--build-number=${checked.buildNumber}`,
         `--dart-define=API_BASE_URL=${checked.apiBaseUrl}`,
         `--dart-define=FLAVOR=${checked.flavor}`,
@@ -304,6 +308,7 @@ function selfTest() {
     const rel = validateRelease('prod', `${DEFAULTS.prod}/`, '42');
     const relArgs = rel.ok ? releaseArgs(rel, firebaseDefines(fb).defines) : [];
     expect(failures, relArgs.includes('--release') && !relArgs.includes('--debug') && relArgs.includes('--build-number=42') && relArgs.includes(`--dart-define=API_BASE_URL=${DEFAULTS.prod}`), 'release-args');
+    expect(failures, relArgs.includes('--split-per-abi') && relArgs.includes('--target-platform=android-arm,android-arm64'), 'release-split');
     const digest = 'AB:'.repeat(31) + 'AB';
     expect(failures, normalizeCertDigest(digest) === 'ab'.repeat(32) && normalizeCertDigest('ab'.repeat(32)) === 'ab'.repeat(32), 'cert-normalize');
     expect(failures, normalizeCertDigest('ab'.repeat(31)) === null && normalizeCertDigest('') === null, 'cert-invalid');
@@ -397,16 +402,18 @@ function buildRelease() {
         process.exit(proc.status || 1);
     }
     const outDir = path.join('build', 'app', 'outputs', 'flutter-apk');
-    const apk = path.join(outDir, 'app-release.apk');
-    if (!existsSync(apk)) {
-        console.error('apk rilis tidak ditemukan');
-        process.exit(1);
+    for (const abi of ['arm64-v8a', 'armeabi-v7a']) {
+        const apk = path.join(outDir, `app-${abi}-release.apk`);
+        if (!existsSync(apk)) {
+            console.error(`apk rilis ${abi} tidak ditemukan`);
+            process.exit(1);
+        }
+        const named = path.join(outDir, `rt05-takeda-${result.flavor}-${result.buildNumber}-${abi}.apk`);
+        copyFileSync(apk, named);
+        const hash = createHash('sha256').update(readFileSync(named)).digest('hex');
+        writeFileSync(`${named}.sha256`, `${hash}  ${path.basename(named)}\n`);
+        console.log(`APK rilis: ${path.basename(named)} sha256 ${hash}`);
     }
-    const named = path.join(outDir, `rt05-takeda-${result.flavor}-${result.buildNumber}.apk`);
-    copyFileSync(apk, named);
-    const hash = createHash('sha256').update(readFileSync(named)).digest('hex');
-    writeFileSync(`${named}.sha256`, `${hash}  ${path.basename(named)}\n`);
-    console.log(`APK rilis: ${path.basename(named)} sha256 ${hash}`);
 }
 
 // Bandingkan sertifikat APK (keluaran `apksigner verify --print-certs`, via stdin) dengan sidik jari yang
