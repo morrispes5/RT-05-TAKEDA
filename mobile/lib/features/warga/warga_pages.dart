@@ -415,12 +415,29 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
     final draft = await pendingDraftFor(store, ref.read(sessionProvider).akun?.id);
     if (draft == null) return;
     final lost = draft.kamera ? await ref.read(lostPhotosProvider)(_picker) : const <XFile>[];
-    await store.clear();
-    if (!mounted) return;
     final kept = [
       for (final p in draft.photos)
         if (File(p).existsSync()) XFile(p),
     ];
+    if (!mounted) {
+      // Halaman ditutup saat menunggu: plugin kamera hanya menyerahkan foto hilang sekali, jadi
+      // simpan lagi ke draf (kamera=false) agar pemulihan berikutnya tidak kehilangan apa pun.
+      if (lost.isNotEmpty) {
+        await store.write(
+          ReportDraft(
+            akunId: draft.akunId,
+            kategori: draft.kategori,
+            judul: draft.judul,
+            isi: draft.isi,
+            anonim: draft.anonim,
+            photos: [
+              for (final f in [...kept, ...lost].take(5)) f.path,
+            ],
+          ),
+        );
+      }
+      return;
+    }
     setState(() {
       _kategori = draft.kategori;
       _judul.text = draft.judul;
@@ -430,6 +447,8 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
         ..clear()
         ..addAll([...kept, ...lost].take(5));
     });
+    await store.clear();
+    if (!mounted) return;
     showMessage(context, 'Isian pengaduan yang belum terkirim dipulihkan. Periksa lalu kirim.');
   }
 
