@@ -39,8 +39,13 @@ Selesai di sesi ini (lokal; staging/APK menyusul):
   notifikasi tidak muncul dalam 120 dtk (FAIL, 03:25 UTC). Dipulihkan `schedule:clear-cache`; perbaikan mutex pendek
   (ADR31 butir 7) + tes `M15IdleGuardTest` (mutex kedaluwarsa 5 menit). rest-api 310 tes / 3170.
 
-Belum: CI + merge, APK rilis pertama dari workflow + verifikasi sertifikat, pemasangan di HP pemilik (perlu uninstall APK
-debug sekali), uji Android nyata (kamera ditutup paksa, koneksi lambat, push), ulang uji beban setelah deploy + ukur Neon
+- Staging `244a73c` (PR #45): notifikasi dari idle 6,3 dtk, aktif 44,4 dtk, ±2 menit pasca-deploy 50,1 dtk (≤60 ✓).
+  Neon API: compute staging `idle`, `suspended_at` 04.15.02 UTC (±5 menit setelah aktivitas terakhir) — kuota aman.
+  APK rilis per ABI (run 39191579464): arm64 22,4 MB terkirim ke pemilik, sertifikat = kunci rilis.
+  Axe WCAG 2.1 A/AA staging 7 halaman (termasuk login CMS) desktop + 360 px: 0 pelanggaran; keyboard OK.
+  Bukti: [docs/evidence/m15/REPORT.md](evidence/m15/REPORT.md).
+
+Belum: pemasangan APK rilis di HP pemilik (perlu uninstall APK debug sekali), uji Android nyata (kamera ditutup paksa, koneksi lambat, push), ulang uji beban setelah deploy + ukur Neon
 dingin, UAT mitra (peserta nyata, tidak dikarang), privacy notice final (kontak/retensi dari pemilik/mitra), verifikasi
 developer Android (identitas pemilik), aksesibilitas manual, latihan pindah PostgreSQL cadangan (ADR29, belum
 diimplementasi).
