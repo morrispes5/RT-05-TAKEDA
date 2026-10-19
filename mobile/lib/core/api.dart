@@ -124,7 +124,8 @@ class Api {
 
   Future<dynamic> put(String path, {Object? data}) => _wrap(() => _dio.put(path, data: data), (b) => b is Map ? b['data'] : null);
 
-  Future<void> delete(String path, {Object? data}) => _wrap(() => _dio.delete(path, data: data), (_) {});
+  /// Mengembalikan `data` bila ada (mis. hapus foto pengaduan); 204 → null.
+  Future<dynamic> delete(String path, {Object? data}) => _wrap(() => _dio.delete(path, data: data), (b) => b is Map ? b['data'] : null);
 }
 
 final apiProvider = Provider<Api>((ref) => Api(ref));

@@ -243,20 +243,27 @@ class _ActivityProposalFormPageState extends ConsumerState<ActivityProposalFormP
   }
 
   Future<void> _pickWhen({required bool start}) async {
-    final base = (start ? _mulai : _selesai) ?? _mulai ?? _nowJakarta().add(const Duration(days: 2));
+    final now = _nowJakarta();
+    final first = DateTime(now.year, now.month, now.day);
+    final last = now.add(const Duration(days: 365));
+    final base = (start ? _mulai : _selesai) ?? _mulai ?? now.add(const Duration(days: 2));
+    // UAT M15: usulan lama yang tanggalnya sudah lewat atau terlalu jauh tidak boleh membuat pemilih tanggal crash.
+    final initial = base.isBefore(first) ? first : (base.isAfter(last) ? last : base);
     final day = start || _mulai == null
         ? await showDatePicker(
             context: context,
-            initialDate: base,
-            firstDate: DateTime(_nowJakarta().year, _nowJakarta().month, _nowJakarta().day),
-            lastDate: _nowJakarta().add(const Duration(days: 365)),
+            initialDate: initial,
+            firstDate: first,
+            lastDate: last,
             helpText: start ? 'Tanggal kegiatan' : 'Tanggal selesai',
           )
         : _mulai;
     if (day == null || !mounted) return;
+    // Jam selesai dipilih sebelum jam mulai: pakai tanggal yang dipilih, bukan _mulai yang masih kosong.
+    final fallback = _mulai?.add(const Duration(hours: 2)) ?? base;
     final time = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(start ? base : (_selesai ?? _mulai!.add(const Duration(hours: 2)))),
+      initialTime: TimeOfDay.fromDateTime(start ? base : (_selesai ?? fallback)),
       helpText: start ? 'Jam mulai (WIB)' : 'Jam selesai (WIB)',
     );
     if (time == null || !mounted) return;
@@ -323,6 +330,10 @@ class _ActivityProposalFormPageState extends ConsumerState<ActivityProposalFormP
       if (!mounted) return;
       setState(() => _errors = {for (final f in e.fields.entries) f.key.split('.').first: f.value.first});
       showApiError(context, e);
+    } catch (_) {
+      if (mounted) {
+        showMessage(context, 'Berkas lampiran tidak dapat dibaca. Hapus lampiran itu lalu coba lagi.', kind: AlertKind.error, title: 'Usulan belum terkirim');
+      }
     }
   }
 

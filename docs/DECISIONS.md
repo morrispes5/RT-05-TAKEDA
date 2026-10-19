@@ -388,3 +388,22 @@ Tanggal: 19 Oktober 2026. Status: **diterapkan di branch `codex/m15-uat-release`
    Dipulihkan dengan `php artisan schedule:clear-cache` (event terkirim 03:30). Keputusan: semua task memakai
    `withoutOverlapping(N)` — outbox 5 menit, recover 10 menit, lainnya 60 menit — juga di profil shared (proses yang
    dibunuh timeout hosting). Risiko ini sudah ada sebelum IdleGuard; terlihat karena uji latensi M15.
+
+### ADR32 — UAT M15: edit foto pengaduan dan batas unggah per akun
+
+Tanggal: 19 Oktober 2026 (UAT tim pemilik, 4 penguji). Status: **diterapkan di branch `codex/m15-uat-fixes`**.
+Instruksi pemilik: banyak keluhan foto pengaduan tidak bisa diedit; batasi ukuran dan spam unggahan
+("1 orang iseng upload foto 20 MB × 100"). Aspirasi tetap teks saja (pemilik memilih tidak menambah foto aspirasi).
+
+1. **Mengubah ADR21 butir "foto hanya saat laporan dibuat".** Pelapor dapat menambah (`POST /complaints/{id}/photos`)
+   dan menghapus (`DELETE /complaints/{id}/photos/{photoId}?versi=`) foto selama pengaduan **diajukan** dan belum
+   diarsip, total maks. 5. Aturan versi sama dengan edit teks (409 bila basi, 403 `COMPLAINT_LOCKED` selain pemilik/
+   status). Foto baru melewati jalur ADR21 yang sama (stage privat → worker-media → siap/gagal, metadata dibuang);
+   berkas foto yang dihapus ikut dihapus setelah commit. Audit `pengaduan.foto_ditambah` / `pengaduan.foto_dihapus`.
+2. **Batas unggah semua profil** (sebelumnya batas harian hanya profil shared, ADR23): per akun per hari WIB maks.
+   5 pengaduan dan 25 foto (termasuk foto tambahan), dikunci baris akun agar unggahan paralel tidak lolos; ukuran
+   maks. 5 MB per foto di VPS (shared tetap 4 MB); throttle `laporan` 20/jam juga berlaku untuk tambah foto.
+   Aplikasi sudah memperkecil foto ke ≤1600 px kualitas 80, jadi batas 5 MB hanya menolak unggahan di luar aplikasi.
+3. Keluhan "halaman kas admin putih" berasal dari APK M10: memanggil `/api/v1/cash/summary` yang dipindah ke
+   `/api/v1/admin/cash/summary` (ADR26). APK M15+ memakai endpoint baru; tes `m15_finance_uat_test` memakai bentuk
+   respons staging pada lebar 320–360 dp dan teks 2×.
