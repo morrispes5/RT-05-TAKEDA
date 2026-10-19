@@ -186,26 +186,28 @@ Artisan::command('rt05:media-recover {--stale-minutes=10}', function () {
     $this->info("Foto dikirim ulang: $requeued, ditandai gagal: $failed, berkas yatim dihapus: $orphans");
 })->purpose('Pulihkan antrean foto pengaduan yang tertahan dan hapus berkas mentah yatim');
 
+// Mutex overlap berumur pendek (bukan bawaan 24 jam): proses yang terbunuh di tengah run (deploy,
+// timeout hosting) hanya menahan task beberapa menit. Insiden staging 19 Okt 2026: outbox macet setelah deploy.
 if (SharedHosting::enabled()) {
     // Dipanggil shared-tick saja (cron ≤15 menit, bisa terlambat). Ekspresi tetap (hourly, dailyAt)
     // terlewat bila tick tidak tepat di menit itu, jadi tiap task dicek setiap tick dan jalan bila
     // jatuh tempo (catch-up). Pengecekan hanya membaca cache file; outbox/media/push lewat tick.
     $wib = fn () => CarbonImmutable::now('Asia/Jakarta');
-    Schedule::command('rt05:tagihan-generate')->everyMinute()->withoutOverlapping()
+    Schedule::command('rt05:tagihan-generate')->everyMinute()->withoutOverlapping(60)
         ->when(fn () => SharedHosting::dueSlot('tagihan-generate', $wib()->toDateString()))
         ->onSuccess(fn () => SharedHosting::markRan('tagihan-generate', $wib()->toDateString()));
-    Schedule::command('rt05:pengingat-agenda')->everyMinute()->withoutOverlapping()
+    Schedule::command('rt05:pengingat-agenda')->everyMinute()->withoutOverlapping(60)
         ->when(fn () => SharedHosting::dueEvery('pengingat-agenda', 3600))
         ->onSuccess(fn () => SharedHosting::markRan('pengingat-agenda'));
-    Schedule::command('rt05:token-rotate --if-due')->everyMinute()->withoutOverlapping()
+    Schedule::command('rt05:token-rotate --if-due')->everyMinute()->withoutOverlapping(60)
         ->when(fn () => SharedHosting::dueEvery('token-rotate', 3600))
         ->onSuccess(fn () => SharedHosting::markRan('token-rotate'));
     // Tanggal 5 dan 20 mulai 08:00 WIB: tick pertama setelahnya mengirim; dedup slot per tanggal.
-    Schedule::command('rt05:pengingat-iuran')->everyMinute()->withoutOverlapping()
+    Schedule::command('rt05:pengingat-iuran')->everyMinute()->withoutOverlapping(60)
         ->when(fn () => in_array($wib()->day, [5, 20], true) && $wib()->hour >= 8
             && SharedHosting::dueSlot('pengingat-iuran', $wib()->toDateString()))
         ->onSuccess(fn () => SharedHosting::markRan('pengingat-iuran', $wib()->toDateString()));
-    Schedule::command('rt05:rekonsiliasi-keuangan')->everyMinute()->withoutOverlapping()
+    Schedule::command('rt05:rekonsiliasi-keuangan')->everyMinute()->withoutOverlapping(60)
         ->when(fn () => $wib()->hour >= 1 && SharedHosting::dueSlot('rekonsiliasi-keuangan', $wib()->toDateString()))
         // after, bukan onSuccess: ketidakcocokan (exit 1) cukup dilaporkan sekali per hari, bukan tiap tick.
         ->after(fn () => SharedHosting::markRan('rekonsiliasi-keuangan', $wib()->toDateString()));
@@ -214,17 +216,17 @@ if (SharedHosting::enabled()) {
     Schedule::call(fn () => Heartbeat::beat('scheduler'))->everyMinute()->name('rt05:heartbeat-scheduler');
     // ADR31: sweep yang menanyai database hanya saat aktif (event baru ≤10 menit) atau pengaman per jam,
     // agar compute Neon dapat tidur saat idle. Event baru tetap terkirim ≤60 detik.
-    Schedule::command('rt05:outbox-dispatch')->everyMinute()->withoutOverlapping()->onOneServer()
+    Schedule::command('rt05:outbox-dispatch')->everyMinute()->withoutOverlapping(5)->onOneServer()
         ->when(fn () => IdleGuard::shouldRun('outbox-dispatch'))->onSuccess(fn () => IdleGuard::markRan('outbox-dispatch'));
-    Schedule::command('rt05:tagihan-generate')->dailyAt('00:10')->timezone('Asia/Jakarta')->withoutOverlapping()->onOneServer();
-    Schedule::command('rt05:media-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer()
+    Schedule::command('rt05:tagihan-generate')->dailyAt('00:10')->timezone('Asia/Jakarta')->withoutOverlapping(60)->onOneServer();
+    Schedule::command('rt05:media-recover')->everyTenMinutes()->withoutOverlapping(10)->onOneServer()
         ->when(fn () => IdleGuard::shouldRun('media-recover'))->onSuccess(fn () => IdleGuard::markRan('media-recover'));
-    Schedule::command('rt05:push-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer()
+    Schedule::command('rt05:push-recover')->everyTenMinutes()->withoutOverlapping(10)->onOneServer()
         ->when(fn () => IdleGuard::shouldRun('push-recover'))->onSuccess(fn () => IdleGuard::markRan('push-recover'));
-    Schedule::command('rt05:rekonsiliasi-keuangan')->dailyAt('01:30')->timezone('Asia/Jakarta')->withoutOverlapping()->onOneServer();
-    Schedule::command('rt05:pengingat-agenda')->hourly()->withoutOverlapping()->onOneServer();
+    Schedule::command('rt05:rekonsiliasi-keuangan')->dailyAt('01:30')->timezone('Asia/Jakarta')->withoutOverlapping(60)->onOneServer();
+    Schedule::command('rt05:pengingat-agenda')->hourly()->withoutOverlapping(60)->onOneServer();
     Schedule::command('rt05:pengingat-iuran')->monthlyOn(5, '08:00')->timezone('Asia/Jakarta')->onOneServer();
     Schedule::command('rt05:pengingat-iuran')->monthlyOn(20, '08:00')->timezone('Asia/Jakarta')->onOneServer();
     // Rotasi mingguan tahan scheduler terlewat: dicek tiap jam, rotasi saat token berumur 7 hari.
-    Schedule::command('rt05:token-rotate --if-due')->hourlyAt(5)->withoutOverlapping()->onOneServer();
+    Schedule::command('rt05:token-rotate --if-due')->hourlyAt(5)->withoutOverlapping(60)->onOneServer();
 }
