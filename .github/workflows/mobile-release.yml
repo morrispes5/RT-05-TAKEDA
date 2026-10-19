@@ -59,13 +59,12 @@ jobs:
         env:
           RT05_FLAVOR: ${{ inputs.flavor }}
           RT05_API_BASE_URL: ${{ inputs.flavor == 'prod' && 'https://takeda.morriz.tech' || 'https://takeda-staging.morriz.tech' }}
-          # versionCode naik tiap rilis; 1000 + nomor run agar selalu di atas APK debug (versionCode 1).
-          RT05_BUILD_NUMBER: ${{ 1000 + github.run_number }}
           RT05_FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
           RT05_FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
           RT05_FIREBASE_SENDER_ID: ${{ vars.FIREBASE_SENDER_ID }}
           RT05_FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
-        run: node ../infra/scripts/check-mobile-build-config.mjs --build-release
+        # versionCode naik tiap rilis; 1000 + nomor run agar selalu di atas APK debug (versionCode 1).
+        run: RT05_BUILD_NUMBER=$((1000 + GITHUB_RUN_NUMBER)) node ../infra/scripts/check-mobile-build-config.mjs --build-release
       - name: Hapus kunci dari runner
         if: always()
         run: rm -f android/key.properties "$RUNNER_TEMP/rt05-release.jks"
