@@ -77,6 +77,9 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
     Route::patch('complaints/{id}', [ReportsController::class, 'updateComplaint'])->whereUuid('id');
     Route::get('complaints/{id}/history', [ReportsController::class, 'complaintHistory'])->whereUuid('id');
     Route::get('complaints/{id}/photos/{photoId}', [ReportsController::class, 'complaintPhoto'])->whereUuid(['id', 'photoId']);
+    // UAT M15: pemilik menambah/menghapus foto selama pengaduan diajukan; batas unggah per jam sama dengan buat laporan.
+    Route::post('complaints/{id}/photos', [ReportsController::class, 'addComplaintPhotos'])->whereUuid('id')->middleware('throttle:laporan');
+    Route::delete('complaints/{id}/photos/{photoId}', [ReportsController::class, 'removeComplaintPhoto'])->whereUuid(['id', 'photoId']);
 
     Route::get('aspirations', [ReportsController::class, 'aspirations']);
     Route::post('aspirations', [ReportsController::class, 'storeAspiration'])->middleware('throttle:laporan');
