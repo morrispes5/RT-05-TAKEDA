@@ -23,6 +23,17 @@ Selesai di sesi ini (lokal; staging/APK menyusul):
 - Validasi lokal: rest-api `php artisan test` 307 tes / 3143 assertion; website 15 tes / 290 assertion, pint lulus;
   mobile `flutter analyze` bersih, `flutter test` 219 lulus, `dart format` bersih.
 
+- Kuota Neon (high, operasional): project `rt05-takeda` dipakai branch staging + production; staging aktif ±95% waktu
+  (48 CU-jam / 8,4 hari; kuota Free 100 CU-jam/bulan per project → habis ±28 Okt). Penyebab: sweep scheduler VPS tiap
+  menit/10 menit + healthcheck website `/`. Perbaikan: `rest-api/app/Support/IdleGuard.php`, `routes/console.php`,
+  `app/Support/Outbox.php`, `infra/docker/web.Dockerfile` (`/up`); tes `M15IdleGuardTest`. rest-api 309 tes / 3151.
+- Workflow rilis: ekspresi `${{ 1000 + github.run_number }}` ditolak GitHub (tanpa aritmatika) → dihitung di shell.
+  Run 39190119952 (branch `codex/m15-release-fix`): analyze, 219 tes, build, verifikasi v2 + sertifikat lulus;
+  `rt05-takeda-staging-1004.apk` 63,8 MB, SHA-256 diverifikasi ulang di PC, sertifikat `dba8bc3f…069a`, package
+  `tech.morriz.takeda`, versionCode 1004, tidak debuggable, `allowBackup=false`.
+- Uji beban setelah deploy `6c7f864` (last_used_at mati): 844 request, 0 error, P95 total 781 ms (sebelumnya 928),
+  semua endpoint API P95 702–989 ms (<1 dtk).
+
 Belum: CI + merge, APK rilis pertama dari workflow + verifikasi sertifikat, pemasangan di HP pemilik (perlu uninstall APK
 debug sekali), uji Android nyata (kamera ditutup paksa, koneksi lambat, push), ulang uji beban setelah deploy + ukur Neon
 dingin, UAT mitra (peserta nyata, tidak dikarang), privacy notice final (kontak/retensi dari pemilik/mitra), verifikasi

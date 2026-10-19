@@ -14,6 +14,7 @@ use App\Models\Agenda;
 use App\Models\FotoPengaduan;
 use App\Models\TagihanIuran;
 use App\Support\Heartbeat;
+use App\Support\IdleGuard;
 use App\Support\Outbox;
 use App\Support\SharedHosting;
 use Carbon\CarbonImmutable;
@@ -29,7 +30,12 @@ use Illuminate\Support\Facades\Storage;
 */
 
 Artisan::command('rt05:outbox-dispatch {--limit=100}', function () {
-    $r = OutboxDispatcher::dispatch((int) $this->option('limit'));
+    $limit = (int) $this->option('limit');
+    $r = OutboxDispatcher::dispatch($limit);
+    if ($r['claimed'] > 0) {
+        // Masih ada kerja (batch penuh, enqueue gagal → backoff): sweep tetap tiap menit.
+        IdleGuard::touch();
+    }
     $this->info("Event diklaim: {$r['claimed']}, dikirim ke antrean: {$r['enqueued']}, gagal enqueue: {$r['failed']}");
 
     // Antrean tidak tersedia: event tetap pending di Postgres; exit non-zero agar terlihat di log scheduler.
@@ -206,10 +212,15 @@ if (SharedHosting::enabled()) {
 } else {
     // Heartbeat scheduler M03: dibaca rt05:heartbeat-check, tidak lewat endpoint publik.
     Schedule::call(fn () => Heartbeat::beat('scheduler'))->everyMinute()->name('rt05:heartbeat-scheduler');
-    Schedule::command('rt05:outbox-dispatch')->everyMinute()->withoutOverlapping()->onOneServer();
+    // ADR31: sweep yang menanyai database hanya saat aktif (event baru ≤10 menit) atau pengaman per jam,
+    // agar compute Neon dapat tidur saat idle. Event baru tetap terkirim ≤60 detik.
+    Schedule::command('rt05:outbox-dispatch')->everyMinute()->withoutOverlapping()->onOneServer()
+        ->when(fn () => IdleGuard::shouldRun('outbox-dispatch'))->onSuccess(fn () => IdleGuard::markRan('outbox-dispatch'));
     Schedule::command('rt05:tagihan-generate')->dailyAt('00:10')->timezone('Asia/Jakarta')->withoutOverlapping()->onOneServer();
-    Schedule::command('rt05:media-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer();
-    Schedule::command('rt05:push-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer();
+    Schedule::command('rt05:media-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer()
+        ->when(fn () => IdleGuard::shouldRun('media-recover'))->onSuccess(fn () => IdleGuard::markRan('media-recover'));
+    Schedule::command('rt05:push-recover')->everyTenMinutes()->withoutOverlapping()->onOneServer()
+        ->when(fn () => IdleGuard::shouldRun('push-recover'))->onSuccess(fn () => IdleGuard::markRan('push-recover'));
     Schedule::command('rt05:rekonsiliasi-keuangan')->dailyAt('01:30')->timezone('Asia/Jakarta')->withoutOverlapping()->onOneServer();
     Schedule::command('rt05:pengingat-agenda')->hourly()->withoutOverlapping()->onOneServer();
     Schedule::command('rt05:pengingat-iuran')->monthlyOn(5, '08:00')->timezone('Asia/Jakarta')->onOneServer();

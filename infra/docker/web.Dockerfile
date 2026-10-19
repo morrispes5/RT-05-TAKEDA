@@ -27,6 +27,7 @@ RUN chmod +x /usr/local/bin/rt05-entrypoint \
     && chown -R www-data:www-data storage bootstrap/cache
 ENV APP_ENV=production APP_DEBUG=false LOG_CHANNEL=stderr SESSION_DRIVER=file CACHE_STORE=file DB_CONNECTION=sqlite SERVER_NAME=:80 SERVER_ROOT=/app/public
 EXPOSE 80
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD php -r "exit(@file_get_contents('http://127.0.0.1/') === false ? 1 : 0);"
+# /up (Laravel health): tidak merender beranda, jadi healthcheck tidak memicu baca konten API → Neon (ADR31).
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD php -r "exit(@file_get_contents('http://127.0.0.1/up') === false ? 1 : 0);"
 ENTRYPOINT ["rt05-entrypoint"]
 CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
