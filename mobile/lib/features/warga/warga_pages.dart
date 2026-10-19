@@ -1,3 +1,5 @@
+import 'dart:io' show File;
+
 import 'package:dio/dio.dart' show FormData, MultipartFile;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show PlatformException;
@@ -18,6 +20,7 @@ import 'activity_proposals.dart';
 import 'notification_center.dart';
 import 'providers.dart';
 import 'report_actions.dart';
+import 'report_draft.dart';
 
 // ─────────────────────────────────────────── Beranda warga
 class WargaHomePage extends ConsumerWidget {
@@ -82,6 +85,24 @@ class WargaHomePage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
+          ...switch (ref.watch(pendingReportDraftProvider(ref.watch(sessionProvider).akun?.id)).value) {
+            null => const <Widget>[],
+            _ => [
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.restore_page_outlined, color: Brand.navy),
+                  title: const Text('Pengaduan belum terkirim'),
+                  subtitle: const Text('Aplikasi sempat tertutup saat kamera terbuka. Isianmu masih tersimpan di HP ini.'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    await Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportFormPage(aspirasi: false)));
+                    ref.invalidate(pendingReportDraftProvider);
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          },
           Row(
             children: [
               _QuickAction(
@@ -370,6 +391,17 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
 
   bool get _editing => widget.existing != null;
 
+  /// Pengaduan baru saja yang punya foto/kamera; draf M15 hanya untuk alur ini.
+  bool get _drafted => !_editing && !widget.aspirasi;
+
+  late final ImagePicker _picker = widget.picker ?? ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    if (_drafted) _restoreDraft();
+  }
+
   @override
   void dispose() {
     _judul.dispose();
@@ -377,9 +409,51 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
     super.dispose();
   }
 
+  /// Android sempat menutup aplikasi saat kamera terbuka: kembalikan isian dan foto.
+  Future<void> _restoreDraft() async {
+    final store = ref.read(reportDraftStoreProvider);
+    final draft = await pendingDraftFor(store, ref.read(sessionProvider).akun?.id);
+    if (draft == null) return;
+    final lost = draft.kamera ? await ref.read(lostPhotosProvider)(_picker) : const <XFile>[];
+    await store.clear();
+    if (!mounted) return;
+    final kept = [
+      for (final p in draft.photos)
+        if (File(p).existsSync()) XFile(p),
+    ];
+    setState(() {
+      _kategori = draft.kategori;
+      _judul.text = draft.judul;
+      _isi.text = draft.isi;
+      _anon = draft.anonim;
+      _photos
+        ..clear()
+        ..addAll([...kept, ...lost].take(5));
+    });
+    showMessage(context, 'Isian pengaduan yang belum terkirim dipulihkan. Periksa lalu kirim.');
+  }
+
+  ReportDraft? _currentDraft({bool kamera = false}) {
+    final akun = ref.read(sessionProvider).akun?.id;
+    if (akun == null) return null;
+    return ReportDraft(
+      akunId: akun,
+      kategori: _kategori,
+      judul: _judul.text,
+      isi: _isi.text,
+      anonim: _anon,
+      photos: [for (final p in _photos) p.path],
+      kamera: kamera,
+    );
+  }
+
   Future<void> _pick(ImageSource source) async {
+    final store = ref.read(reportDraftStoreProvider);
+    final camera = _drafted && source == ImageSource.camera;
+    final draft = camera ? _currentDraft(kamera: true) : null;
+    if (draft != null) await store.write(draft);
     try {
-      final file = await (widget.picker ?? ImagePicker()).pickImage(source: source, maxWidth: 1600, maxHeight: 1600, imageQuality: 80);
+      final file = await _picker.pickImage(source: source, maxWidth: 1600, maxHeight: 1600, imageQuality: 80);
       if (file != null && mounted) setState(() => _photos.add(file));
     } on PlatformException catch (e) {
       if (mounted) {
@@ -389,6 +463,9 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
           error: true,
         );
       }
+    } finally {
+      // Aplikasi tetap hidup: isian ada di memori, draf pengaman tidak diperlukan lagi.
+      if (draft != null) await store.clear();
     }
   }
 
@@ -420,6 +497,7 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
           form.files.add(MapEntry('foto[]', await MultipartFile.fromFile(p.path, filename: 'foto.jpg')));
         }
         await api.post('/complaints', data: form);
+        await ref.read(reportDraftStoreProvider).clear();
       }
       if (!mounted) return;
       showMessage(

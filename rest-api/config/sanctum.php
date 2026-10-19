@@ -21,6 +21,10 @@ return [
 
     'token_prefix' => env('SANCTUM_TOKEN_PREFIX', 'rt05_'),
 
+    // M15: tidak menulis last_used_at di setiap request bearer. Kolom tidak dipakai (kedaluwarsa dari
+    // created_at); satu UPDATE per request ke Neon (±60 ms dari Indonesia) dan bangun compute dihemat.
+    'last_used_at' => (bool) env('SANCTUM_TRACK_LAST_USED_AT', false),
+
     'middleware' => [
         'authenticate_session' => AuthenticateSession::class,
         'encrypt_cookies' => EncryptCookies::class,

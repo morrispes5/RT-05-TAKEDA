@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -15,7 +17,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // ID tetap sejak M05; didaftarkan pada verifikasi developer Android bersama sertifikat rilis.
         applicationId = "tech.morriz.takeda"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -29,11 +31,25 @@ android {
         versionName = flutter.versionName
     }
 
+    // M15: kunci rilis tetap hanya dari key.properties yang ditulis CI (secret environment `release`)
+    // atau path RT05_KEY_PROPERTIES. Tanpa itu, build release lokal memakai kunci debug; CI rilis
+    // memverifikasi sidik jari sertifikat sehingga APK bertanda debug tidak pernah diterbitkan.
+    val keyFile = rootProject.file(System.getenv("RT05_KEY_PROPERTIES") ?: "key.properties")
+    val releaseKey = Properties().apply { if (keyFile.exists()) keyFile.inputStream().use { load(it) } }
+    signingConfigs {
+        if (releaseKey.isNotEmpty()) {
+            create("release") {
+                storeFile = file(releaseKey.getProperty("storeFile"))
+                storePassword = releaseKey.getProperty("storePassword")
+                keyAlias = releaseKey.getProperty("keyAlias")
+                keyPassword = releaseKey.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 }
