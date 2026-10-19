@@ -1,0 +1,90 @@
+{
+ "run": "2026-10-19T00:57:24.125Z",
+ "origin": "https://takeda-staging.morriz.tech",
+ "seconds": 30,
+ "users": 1,
+ "endpoints": [
+  {
+   "label": "GET /agendas",
+   "n": 3,
+   "errors": 0,
+   "p50": 304,
+   "p95": 523,
+   "max": 523
+  },
+  {
+   "label": "GET /auth/me",
+   "n": 4,
+   "errors": 0,
+   "p50": 363,
+   "p95": 457,
+   "max": 457
+  },
+  {
+   "label": "GET /complaints",
+   "n": 2,
+   "errors": 0,
+   "p50": 415,
+   "p95": 426,
+   "max": 426
+  },
+  {
+   "label": "GET /dues/my",
+   "n": 1,
+   "errors": 0,
+   "p50": 468,
+   "p95": 468,
+   "max": 468
+  },
+  {
+   "label": "GET /household",
+   "n": 4,
+   "errors": 0,
+   "p50": 480,
+   "p95": 793,
+   "max": 793
+  },
+  {
+   "label": "GET /notifications",
+   "n": 3,
+   "errors": 0,
+   "p50": 371,
+   "p95": 374,
+   "max": 374
+  },
+  {
+   "label": "GET /public/articles",
+   "n": 1,
+   "errors": 0,
+   "p50": 367,
+   "p95": 367,
+   "max": 367
+  },
+  {
+   "label": "WEB /",
+   "n": 2,
+   "errors": 0,
+   "p50": 61,
+   "p95": 63,
+   "max": 63
+  },
+  {
+   "label": "WEB /artikel",
+   "n": 4,
+   "errors": 0,
+   "p50": 50,
+   "p95": 61,
+   "max": 61
+  }
+ ],
+ "total": {
+  "requests": 24,
+  "errors": 0,
+  "rps": 0.8,
+  "p50": 367,
+  "p95": 545
+ },
+ "statuses": {
+  "200": 24
+ }
+}

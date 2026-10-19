@@ -382,3 +382,9 @@ Tanggal: 19 Oktober 2026. Status: **diterapkan di branch `codex/m15-uat-release`
    pengaman tiap jam; cache gagal = dianggap aktif. Healthcheck website memakai `/up`. Notifikasi baru tetap ≤60 detik.
    Profil shared tetap memakai mekanisme `shared-tick` (ADR23). Pengurangan bangun yang tersisa (pengingat agenda dan
    rotasi token tiap jam) diterima: ±1 bangun per jam.
+7. **Mutex scheduler berumur pendek.** Insiden staging 19 Oktober 2026: deploy `0717e51` menghentikan scheduler lama di
+   tengah `rt05:outbox-dispatch`; mutex `withoutOverlapping()` bawaan Laravel (24 jam, di Redis cache yang persisten)
+   tertinggal, sehingga outbox tidak dikirim (notifikasi uji tidak sampai 120 dtk; event 03:10 dan 03:25 UTC tertahan).
+   Dipulihkan dengan `php artisan schedule:clear-cache` (event terkirim 03:30). Keputusan: semua task memakai
+   `withoutOverlapping(N)` — outbox 5 menit, recover 10 menit, lainnya 60 menit — juga di profil shared (proses yang
+   dibunuh timeout hosting). Risiko ini sudah ada sebelum IdleGuard; terlihat karena uji latensi M15.
