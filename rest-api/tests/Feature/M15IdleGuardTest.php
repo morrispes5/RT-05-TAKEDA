@@ -67,6 +67,44 @@ class M15IdleGuardTest extends TestCase
         $this->assertTrue($dispatch->filtersPass($this->app));
     }
 
+    /**
+     * #46: backoff enqueue (maks 15 menit) dan ambang stale (900 detik) lebih panjang dari ACTIVE_SECONDS.
+     * Selama masih ada event yang belum selesai, dispatcher harus tetap dijadwalkan tiap menit walau tidak
+     * ada event baru; begitu semuanya selesai, guard boleh idle lagi (Neon tidur).
+     */
+    public function test_pending_outbox_work_keeps_dispatcher_awake_past_active_window_then_goes_idle(): void
+    {
+        Cache::flush();
+        foreach (['outbox-dispatch', 'media-recover', 'push-recover'] as $task) {
+            IdleGuard::markRan($task);
+        }
+        $event = DB::transaction(fn () => Outbox::record('uji.idle', 'uji', null));
+        // Enqueue gagal berulang: event baru boleh dicoba lagi 15 menit kemudian (backoff maksimum).
+        DB::table('outbox_events')->where('id', $event->id)->update(['available_at' => DB::raw("now() + interval '15 minutes'")]);
+        $dispatch = $this->event('rt05:outbox-dispatch');
+
+        // Tiap menit scheduler menjalankan dispatcher; tidak ada yang diklaim karena belum jatuh tempo.
+        for ($minute = 1; $minute <= 14; $minute++) {
+            $this->travel(1)->minutes();
+            $this->assertTrue($dispatch->filtersPass($this->app), "menit $minute: event tertunda harus tetap dipantau");
+            $this->artisan('rt05:outbox-dispatch')->assertExitCode(0);
+        }
+
+        // Job published tetapi hilang (belum completed): pemulihan stale harus tetap berjalan tanpa event baru.
+        DB::table('outbox_events')->where('id', $event->id)->update(['published_at' => DB::raw('now()'), 'available_at' => DB::raw('now()')]);
+        $this->travel(1)->minutes();
+        $this->artisan('rt05:outbox-dispatch')->assertExitCode(0);
+        $this->travel(IdleGuard::ACTIVE_SECONDS - 60)->seconds();
+        $this->assertTrue($dispatch->filtersPass($this->app), 'event published tanpa completed tetap dipantau');
+
+        // Semua selesai: tidak ada kerja tertunda, guard tidak diperpanjang dan Neon boleh tidur.
+        DB::table('outbox_events')->where('id', $event->id)->update(['completed_at' => DB::raw('now()')]);
+        $this->artisan('rt05:outbox-dispatch')->assertExitCode(0);
+        $this->travel(IdleGuard::ACTIVE_SECONDS + 1)->seconds();
+        $this->assertFalse(IdleGuard::active());
+        $this->assertFalse($dispatch->filtersPass($this->app));
+    }
+
     public function test_rolled_back_transaction_does_not_mark_activity(): void
     {
         Cache::flush();
