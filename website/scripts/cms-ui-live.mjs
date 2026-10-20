@@ -1,12 +1,13 @@
 // Pemakaian (dari website/): node --require <preload-dns> scripts/cms-ui-live.mjs [folder-hasil]
 // UAT M15 putaran 2 (20 Okt 2026): uji UI CMS mode server di staging lewat Chromium. Akun admin sintetis dari fixture
 // privat %USERPROFILE%/.rt05/m06-stage-check/fixtures.json (di luar Git, tidak dicetak). Artikel uji diarsipkan di akhir.
-// Alur: login → tulis → terbit → tampil publik → edit artikel terbit → pesan "tekan Terbitkan" → terbit ulang →
+// Alur: login → tulis + foto sampul asli → terbit → tampil publik (foto, bukan SVG) → edit artikel terbit → pesan "tekan Terbitkan" → terbit ulang →
 // versi baru publik → arsipkan → hilang dari daftar dan website → tampil di "Lihat arsip" (hanya baca).
 // RT05_RESOLVE_V6=<IPv6 VPS> memetakan host staging untuk Chromium bila IPv4 ISP ke VPS bermasalah (lihat docs/HANDOFF.md).
 import { chromium } from '@playwright/test';
 import fs from 'node:fs';
 const ORIGIN = 'https://takeda-staging.morriz.tech';
+const coverPhoto = process.env.USERPROFILE + '/.rt05/m14-stage-check/uji-sintetis.jpg';
 const admin = JSON.parse(fs.readFileSync(process.env.USERPROFILE + '/.rt05/m06-stage-check/fixtures.json', 'utf8')).accounts.admin;
 const out = process.argv[2] || 'artifacts/cms-ui-live';
 fs.mkdirSync(out, { recursive: true });
@@ -49,6 +50,8 @@ try {
     await page.getByLabel('Pembuka').fill('Paragraf pembuka artikel uji sintetis.');
     await page.getByLabel('Subjudul bagian 1').fill('Bagian uji');
     await page.getByLabel('Isi bagian 1').fill('Isi bagian uji sintetis untuk UAT.');
+    await page.locator('.cms-field input[type=file]').first().setInputFiles(coverPhoto);
+    await page.getByLabel('Deskripsi foto sampul').fill('Foto uji sintetis kotak warna');
     await page.getByRole('button', { name: 'Simpan draf', exact: true }).click();
     await page.getByText('Draf tersimpan di server').waitFor({ timeout: 20000 });
     rec('C04 simpan draf baru', true);
@@ -57,6 +60,8 @@ try {
     await shot('terbit');
     let t = await publicHas('Ringkasan awal ' + run);
     rec('C05 artikel terbit tampil di website publik', t >= 0, { detik: t });
+    const listing = await (await fetch(ORIGIN + '/artikel?_=' + Date.now())).text();
+    rec('C05b foto sampul asli tampil di website (bukan SVG)', listing.includes('aria-label="Baca ' + title + '"><img class="article-cover" src="/api/v1/public/media/'));
 
     // Ganti isi artikel yang sudah terbit (temuan UAT E).
     await page.getByLabel('Ringkasan').fill('Ringkasan diganti ' + run + ' setelah terbit.');

@@ -125,6 +125,12 @@ class SiteContent
             'slug' => $a['slug'], 'title' => $a['title'], 'category' => $a['category'], 'art' => $a['art'] ?? 'home',
             'summary' => $a['summary'], 'intro' => $a['intro'], 'sections' => $a['sections'] ?? [],
             'note' => $a['note'] ?? null, 'source' => $a['source'] ?? null,
+            // UAT M15: foto sampul asli dari CMS menggantikan ilustrasi SVG; tanpa sampul tetap SVG.
+            'cover' => empty($a['cover']['url']) ? null : [
+                'src' => $a['cover']['url'], 'srcset' => $a['cover']['srcset'] ?? null,
+                'width' => $a['cover']['lebar'] ?? null, 'height' => $a['cover']['tinggi'] ?? null,
+                'alt' => $a['cover_alt'] ?? $a['title'],
+            ],
         ];
     }
 

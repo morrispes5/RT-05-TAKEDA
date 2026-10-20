@@ -428,3 +428,7 @@ Tanggal: 20 Oktober 2026 (laporan UAT tim pemilik). Status: **diterapkan di bran
 5. **Dokumen usulan**: PDF dan TXT maks. 1 MB (disimpan apa adanya); foto maks. 8 MB karena diperkecil ulang.
 6. **CMS web**: tampilan *Lihat arsip* (hanya baca), pesan jelas bahwa draf konten terbit belum tampil sampai
    *Terbitkan*, dan cache konten website 15 detik (sebelumnya 60).
+7. **Foto sampul artikel** (temuan E, dikonfirmasi 20 Okt dari data staging: sampul asli tersimpan dan terbit, tetapi
+   website tetap menggambar SVG): bila artikel punya sampul, website menampilkan foto asli itu di kartu, artikel
+   pilihan, dan halaman baca (`partials/article-visual`); tanpa sampul tetap ilustrasi SVG yang diterima. Tidak ada
+   gambar AI. Katalog baked/Vercel tanpa sampul, sehingga tampilannya tidak berubah.
