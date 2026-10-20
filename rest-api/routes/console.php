@@ -32,8 +32,11 @@ use Illuminate\Support\Facades\Storage;
 Artisan::command('rt05:outbox-dispatch {--limit=100}', function () {
     $limit = (int) $this->option('limit');
     $r = OutboxDispatcher::dispatch($limit);
-    if ($r['claimed'] > 0) {
-        // Masih ada kerja (batch penuh, enqueue gagal → backoff): sweep tetap tiap menit.
+    // Masih ada kerja (batch penuh, enqueue gagal → backoff sampai 15 menit, published tanpa completed
+    // sampai stale 900 detik): sweep tetap tiap menit. Hanya event yang sudah diklaim tidak cukup,
+    // karena guard 10 menit lebih pendek daripada backoff/stale dan pemulihan baru menunggu sweep per jam.
+    // Query ini hanya berjalan saat guard aktif atau pada sweep pengaman, jadi Neon tetap tidur saat idle.
+    if ($r['claimed'] > 0 || DB::table('outbox_events')->whereNull('completed_at')->whereNull('failed_at')->exists()) {
         IdleGuard::touch();
     }
     $this->info("Event diklaim: {$r['claimed']}, dikirim ke antrean: {$r['enqueued']}, gagal enqueue: {$r['failed']}");
