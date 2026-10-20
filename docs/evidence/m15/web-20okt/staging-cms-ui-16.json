@@ -1,0 +1,73 @@
+{
+  "run": "2026-10-20T05:14:28.353Z",
+  "cases": [
+    {
+      "name": "C01 belum masuk diarahkan ke login",
+      "result": "PASS"
+    },
+    {
+      "name": "C02 login pengurus kembali ke daftar artikel",
+      "result": "PASS"
+    },
+    {
+      "name": "C03 tombol Lihat arsip ada",
+      "result": "PASS"
+    },
+    {
+      "name": "C04 simpan draf baru",
+      "result": "PASS"
+    },
+    {
+      "name": "C05 artikel terbit tampil di website publik",
+      "result": "PASS",
+      "detik": 0
+    },
+    {
+      "name": "C06 simpan perubahan artikel terbit memberi petunjuk Terbitkan",
+      "result": "PASS"
+    },
+    {
+      "name": "C07 sebelum Terbitkan, website masih versi lama",
+      "result": "PASS"
+    },
+    {
+      "name": "C08 daftar menandai ada perubahan belum terbit",
+      "result": "PASS"
+    },
+    {
+      "name": "C09 editor memuat ringkasan yang diganti",
+      "result": "PASS"
+    },
+    {
+      "name": "C10 setelah Terbitkan, website menampilkan versi baru",
+      "result": "PASS",
+      "detik": 15
+    },
+    {
+      "name": "C11 artikel hilang dari daftar aktif",
+      "result": "PASS"
+    },
+    {
+      "name": "C12 artikel muncul di Arsip artikel, berlabel Diarsipkan",
+      "result": "PASS"
+    },
+    {
+      "name": "C13 arsip hanya baca (tanpa Edit/Arsipkan)",
+      "result": "PASS"
+    },
+    {
+      "name": "C14 isi arsip dapat dibaca",
+      "result": "PASS"
+    },
+    {
+      "name": "C15 arsip hilang dari website",
+      "result": "PASS",
+      "detik": 10
+    },
+    {
+      "name": "C16 tanpa error JavaScript",
+      "result": "PASS",
+      "errors": []
+    }
+  ]
+}
