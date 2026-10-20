@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\Finance\Dues;
 use App\Domain\Identity\Registration;
 use App\Domain\Identity\RegistrationToken;
 use App\Domain\Residents\Accounts;
@@ -75,7 +76,8 @@ class ResidentsController extends Controller
     public function storeHouse(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'blok' => ['nullable', 'string', 'max:30'],
+            // UAT M15: blok wajib agar akun kepala keluarga dan anggota cocok ke rumah yang sama.
+            'blok' => ['required', 'string', 'max:30'],
             'jalan' => ['required', 'string', 'max:150'],
             'nomor' => ['required', 'string', 'max:20'],
             'kode_rumah' => ['nullable', 'string', 'max:30', 'regex:/^[A-Z0-9-]+$/'],
@@ -100,6 +102,7 @@ class ResidentsController extends Controller
 
             return $r;
         });
+        Dues::catchUpQuietly($request->user());
 
         return Api::data(Present::rumah($rumah->refresh()), 201);
     }
@@ -111,7 +114,7 @@ class ResidentsController extends Controller
     public function updateHouse(Request $request, string $id): JsonResponse
     {
         $data = $request->validate([
-            'blok' => ['sometimes', 'nullable', 'string', 'max:30'],
+            'blok' => ['sometimes', 'required', 'string', 'max:30'],
             'jalan' => ['sometimes', 'string', 'max:150'],
             'nomor' => ['sometimes', 'string', 'max:20'],
             'tagihan_aktif' => ['sometimes', 'boolean'],
@@ -155,6 +158,7 @@ class ResidentsController extends Controller
 
             return $rumah;
         });
+        Dues::catchUpQuietly($request->user());
 
         return Api::data(Present::rumah($rumah->refresh()));
     }
@@ -428,6 +432,15 @@ class ResidentsController extends Controller
             'warga_id' => ['sometimes', 'nullable', 'uuid'],
         ]);
         Registration::approve(PermohonanAkun::findOrFail($id), $request->user(), $data['rumah_id'] ?? null, $data['catatan'] ?? null, $data['warga_id'] ?? null);
+
+        return Api::data(Present::permohonan(PermohonanAkun::with(['akun', 'rumah'])->findOrFail($id)));
+    }
+
+    /** POST /admin/additional-account-requests/{id}/revision — minta pemohon memperbaiki data (UAT M15). */
+    public function requestRevision(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['catatan' => ['required', 'string', 'min:5', 'max:300']]);
+        Registration::requestRevision(PermohonanAkun::findOrFail($id), $request->user(), $data['catatan']);
 
         return Api::data(Present::permohonan(PermohonanAkun::with(['akun', 'rumah'])->findOrFail($id)));
     }

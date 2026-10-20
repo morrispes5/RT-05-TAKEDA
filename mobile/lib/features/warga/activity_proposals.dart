@@ -460,7 +460,7 @@ class _ActivityProposalFormPageState extends ConsumerState<ActivityProposalFormP
           ),
           const SizedBox(height: 6),
           const Text(
-            'PDF, TXT (maks. 1 MB), atau foto JPG/PNG/WebP; maks. 8 MB per berkas. Dokumen Word simpan sebagai PDF dulu. Hanya pengurus RT yang dapat membuka dokumen.',
+            'PDF atau TXT maks. 1 MB per berkas; foto JPG/PNG/WebP maks. 8 MB (diperkecil otomatis). Dokumen Word simpan sebagai PDF dulu. Hanya pengurus RT yang dapat membuka dokumen.',
             style: TextStyle(color: Brand.muted, fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: 12),

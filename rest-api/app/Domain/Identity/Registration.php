@@ -2,6 +2,7 @@
 
 namespace App\Domain\Identity;
 
+use App\Domain\Finance\Dues;
 use App\Domain\Residents\Address;
 use App\Domain\Residents\Links;
 use App\Exceptions\DomainConflict;
@@ -39,7 +40,7 @@ final class Registration
      */
     public static function primary(array $data, string $tokenCode): Akun
     {
-        return self::guarded(function () use ($data, $tokenCode) {
+        $akun = self::guarded(function () use ($data, $tokenCode) {
             $token = self::lockAndVerify($tokenCode);
 
             $email = self::email($data['email']);
@@ -119,6 +120,10 @@ final class Registration
 
             return $akun;
         });
+        // UAT M15: rumah baru langsung punya tagihan bulan berjalan di akun warga.
+        Dues::catchUpQuietly();
+
+        return $akun;
     }
 
     /** Akun tambahan: status menunggu sampai pengurus menyetujui; rumah dicocokkan diam-diam. */
@@ -228,7 +233,7 @@ final class Registration
     {
         DB::transaction(function () use ($permohonan, $pengurus, $alasan) {
             $permohonan = PermohonanAkun::whereKey($permohonan->id)->lockForUpdate()->firstOrFail();
-            if ($permohonan->status !== 'diajukan') {
+            if (! in_array($permohonan->status, ['diajukan', 'perlu_revisi'], true)) {
                 throw new DomainConflict('REQUEST_ALREADY_PROCESSED', 'Permohonan sudah diproses.');
             }
             $permohonan->forceFill(['status' => 'ditolak', 'diproses_oleh_id' => $pengurus->id, 'diproses_at' => now(), 'catatan' => $alasan])->save();
@@ -236,6 +241,49 @@ final class Registration
             $akun->revokeAllAccess();
 
             Audit::record($pengurus, 'permohonan_akun.ditolak', 'permohonan_akun', $permohonan->id, ['alasan' => $alasan]);
+        });
+    }
+
+    /**
+     * UAT M15: pengurus meminta pemohon akun tambahan memperbaiki data (nama/hubungan/alamat tidak cocok).
+     * Akun tetap menunggu; catatan terlihat pemohon di layar status.
+     */
+    public static function requestRevision(PermohonanAkun $permohonan, Akun $pengurus, string $catatan): void
+    {
+        DB::transaction(function () use ($permohonan, $pengurus, $catatan) {
+            $permohonan = PermohonanAkun::whereKey($permohonan->id)->lockForUpdate()->firstOrFail();
+            if ($permohonan->status !== 'diajukan' || $permohonan->jenis !== 'tambahan') {
+                throw new DomainConflict('REQUEST_ALREADY_PROCESSED', 'Permohonan sudah diproses.');
+            }
+            $permohonan->forceFill(['status' => 'perlu_revisi', 'diproses_oleh_id' => $pengurus->id, 'diproses_at' => now(), 'catatan' => $catatan])->save();
+            Audit::record($pengurus, 'permohonan_akun.perlu_revisi', 'permohonan_akun', $permohonan->id, ['catatan' => $catatan]);
+        });
+    }
+
+    /** Pemohon memperbaiki data lalu mengajukan ulang; rumah dicocokkan ulang diam-diam dari alamat. */
+    public static function reviseOwn(Akun $akun, array $data): PermohonanAkun
+    {
+        return DB::transaction(function () use ($akun, $data) {
+            $permohonan = PermohonanAkun::where('akun_id', $akun->id)->lockForUpdate()->first();
+            if (! $permohonan || $permohonan->status !== 'perlu_revisi') {
+                throw new DomainConflict('REQUEST_NOT_REVISABLE', 'Permohonan tidak sedang menunggu perbaikan.', 409);
+            }
+            $rumah = Rumah::where('alamat_key', Address::key($data['blok'] ?? null, $data['jalan'], $data['nomor']))->first();
+            $permohonan->forceFill([
+                'status' => 'diajukan',
+                'nama_pemohon' => trim($data['nama']),
+                'hubungan_keluarga' => trim($data['hubungan_keluarga']),
+                'alamat_diajukan' => trim(($data['blok'] ?? '').' '.$data['jalan'].' '.$data['nomor']),
+                'rumah_id' => $rumah?->id,
+                'diproses_oleh_id' => null,
+                'diproses_at' => null,
+                'catatan' => null,
+            ])->save();
+            $akun->forceFill(['nama' => trim($data['nama'])])->save();
+            Audit::record($akun, 'permohonan_akun.diperbaiki', 'permohonan_akun', $permohonan->id, ['rumah_cocok' => (bool) $rumah]);
+            Outbox::record('akun.permohonan_tambahan', 'akun', $akun->id);
+
+            return $permohonan;
         });
     }
 

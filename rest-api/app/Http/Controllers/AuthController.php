@@ -42,7 +42,7 @@ class AuthController extends Controller
             'device_name' => ['required', 'string', 'max:100'],
             'nama_kepala' => ['required', 'string', 'max:120'],
             'whatsapp' => ['nullable', 'string', 'max:25', 'regex:/^[0-9+ -]{8,25}$/'],
-            'blok' => ['nullable', 'string', 'max:30'],
+            'blok' => ['required', 'string', 'max:30'],
             'jalan' => ['required', 'string', 'max:150'],
             'nomor' => ['required', 'string', 'max:20'],
             'jenis_hunian' => ['required', 'in:pemilik,kontrak'],
@@ -249,8 +249,30 @@ class AuthController extends Controller
 
         return Api::data([
             'status_akun' => $request->user()->status,
-            'permohonan' => $p ? ['jenis' => $p->jenis, 'status' => $p->status, 'catatan' => $p->status === 'ditolak' ? $p->catatan : null, 'created_at' => Present::ts($p->created_at)] : null,
+            'permohonan' => $p ? [
+                'jenis' => $p->jenis, 'status' => $p->status,
+                'catatan' => in_array($p->status, ['ditolak', 'perlu_revisi'], true) ? $p->catatan : null,
+                // UAT M15: isian sebelumnya untuk form perbaikan (alamat diketik ulang; rumah tetap tidak dibuka).
+                'nama' => $p->status === 'perlu_revisi' ? $p->nama_pemohon : null,
+                'hubungan_keluarga' => $p->status === 'perlu_revisi' ? $p->hubungan_keluarga : null,
+                'created_at' => Present::ts($p->created_at),
+            ] : null,
         ]);
+    }
+
+    /** PATCH /auth/additional-account-request — pemohon memperbaiki permohonan yang diminta revisi (UAT M15). */
+    public function reviseAdditionalRequest(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nama' => ['required', 'string', 'min:2', 'max:120'],
+            'hubungan_keluarga' => ['required', 'string', 'max:40'],
+            'blok' => ['nullable', 'string', 'max:30'],
+            'jalan' => ['required', 'string', 'max:150'],
+            'nomor' => ['required', 'string', 'max:20'],
+        ]);
+        $p = Registration::reviseOwn($request->user(), $data);
+
+        return Api::data(['status' => $p->status]);
     }
 
     /**
