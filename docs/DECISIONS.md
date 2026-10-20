@@ -388,3 +388,43 @@ Tanggal: 19 Oktober 2026. Status: **diterapkan di branch `codex/m15-uat-release`
    Dipulihkan dengan `php artisan schedule:clear-cache` (event terkirim 03:30). Keputusan: semua task memakai
    `withoutOverlapping(N)` — outbox 5 menit, recover 10 menit, lainnya 60 menit — juga di profil shared (proses yang
    dibunuh timeout hosting). Risiko ini sudah ada sebelum IdleGuard; terlihat karena uji latensi M15.
+
+### ADR32 — UAT M15: edit foto pengaduan dan batas unggah per akun
+
+Tanggal: 19 Oktober 2026 (UAT tim pemilik, 4 penguji). Status: **diterapkan di branch `codex/m15-uat-fixes`**.
+Instruksi pemilik: banyak keluhan foto pengaduan tidak bisa diedit; batasi ukuran dan spam unggahan
+("1 orang iseng upload foto 20 MB × 100"). Aspirasi tetap teks saja (pemilik memilih tidak menambah foto aspirasi).
+
+1. **Mengubah ADR21 butir "foto hanya saat laporan dibuat".** Pelapor dapat menambah (`POST /complaints/{id}/photos`)
+   dan menghapus (`DELETE /complaints/{id}/photos/{photoId}?versi=`) foto selama pengaduan **diajukan** dan belum
+   diarsip, total maks. 5. Aturan versi sama dengan edit teks (409 bila basi, 403 `COMPLAINT_LOCKED` selain pemilik/
+   status). Foto baru melewati jalur ADR21 yang sama (stage privat → worker-media → siap/gagal, metadata dibuang);
+   berkas foto yang dihapus ikut dihapus setelah commit. Audit `pengaduan.foto_ditambah` / `pengaduan.foto_dihapus`.
+2. **Batas unggah semua profil** (sebelumnya batas harian hanya profil shared, ADR23): per akun per hari WIB maks.
+   5 pengaduan dan 25 foto (termasuk foto tambahan), dikunci baris akun agar unggahan paralel tidak lolos; ukuran
+   maks. 5 MB per foto di VPS (shared tetap 4 MB); throttle `laporan` 20/jam juga berlaku untuk tambah foto.
+   Aplikasi sudah memperkecil foto ke ≤1600 px kualitas 80, jadi batas 5 MB hanya menolak unggahan di luar aplikasi.
+3. Keluhan "halaman kas admin putih" berasal dari APK M10: memanggil `/api/v1/cash/summary` yang dipindah ke
+   `/api/v1/admin/cash/summary` (ADR26). APK M15+ memakai endpoint baru; tes `m15_finance_uat_test` memakai bentuk
+   respons staging pada lebar 320–360 dp dan teks 2×.
+
+### ADR33 — UAT M15 putaran 2: ekspor CSV di aplikasi, tagihan langsung, blok wajib, revisi permohonan akun
+
+Tanggal: 20 Oktober 2026 (laporan UAT tim pemilik). Status: **diterapkan di branch `codex/m15-uat-fixes-2`**.
+
+1. **Ekspor CSV di aplikasi pengurus** (permintaan klien): tombol *Ekspor CSV* di tab Pembayaran, Kas, dan Rekap
+   (rekap = `exports/iuran?periode=YYYY-MM`). Ekspor baru `pembayaran` (nomor bukti, rumah, tanggal, periode, total,
+   status, catatan, alasan pembatalan). CSV UTF-8 ber-BOM agar langsung terbuka di Excel/Google Sheets; disimpan
+   lewat dialog "Simpan sebagai" Android (`file_picker`). Sel formula tetap diberi prefiks (ADR27).
+2. **Tagihan langsung**: rumah baru (pengurus), perubahan tagihan rumah, dan registrasi akun utama menjalankan
+   `Dues::catchUp` setelah commit (idempotent, gagal hanya dicatat log), sehingga warga baru langsung melihat tagihan
+   bulan berjalan tanpa menunggu generator harian/Rekap. *Mulai tagih* dipilih lewat dialog bulan, bukan diketik.
+3. **Blok wajib** untuk rumah baru (pengurus) dan registrasi akun utama; akun tambahan tetap opsional karena
+   dicocokkan ke rumah lama yang mungkin tanpa blok.
+4. **Revisi permohonan akun tambahan**: status baru `perlu_revisi` (migrasi aditif). Pengurus *Minta perbaikan*
+   dengan catatan wajib; pemohon melihat catatan di layar status dan mengirim ulang nama/hubungan/alamat
+   (`PATCH /auth/additional-account-request`), rumah dicocokkan ulang diam-diam, pengurus diberi tahu. Tolak tetap
+   tersedia dari `diajukan` maupun `perlu_revisi`.
+5. **Dokumen usulan**: PDF dan TXT maks. 1 MB (disimpan apa adanya); foto maks. 8 MB karena diperkecil ulang.
+6. **CMS web**: tampilan *Lihat arsip* (hanya baca), pesan jelas bahwa draf konten terbit belum tampil sampai
+   *Terbitkan*, dan cache konten website 15 detik (sebelumnya 60).

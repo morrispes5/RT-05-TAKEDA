@@ -26,6 +26,8 @@
 	}
 
 	handle /unduh/* {
+		# APK unduhan publik; CORS hanya baca agar dapat disalin ke Google Drive dari browser (UAT M15).
+		header Access-Control-Allow-Origin "*"
 		root * /srv
 		file_server
 	}

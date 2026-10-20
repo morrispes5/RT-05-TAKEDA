@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -124,7 +127,28 @@ class Api {
 
   Future<dynamic> put(String path, {Object? data}) => _wrap(() => _dio.put(path, data: data), (b) => b is Map ? b['data'] : null);
 
-  Future<void> delete(String path, {Object? data}) => _wrap(() => _dio.delete(path, data: data), (_) {});
+  /// Unduhan berkas (mis. ekspor CSV). Respons error JSON tetap diubah menjadi [ApiException].
+  Future<Uint8List> download(String path, {Map<String, dynamic>? query}) async {
+    try {
+      final res = await _dio.get<List<int>>(
+        path,
+        queryParameters: query,
+        options: Options(responseType: ResponseType.bytes, headers: {'Accept': 'text/csv, application/json'}),
+      );
+      return Uint8List.fromList(res.data ?? const []);
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      if (data is List<int>) {
+        try {
+          e.response!.data = jsonDecode(utf8.decode(data));
+        } catch (_) {}
+      }
+      throw ApiException.from(e);
+    }
+  }
+
+  /// Mengembalikan `data` bila ada (mis. hapus foto pengaduan); 204 → null.
+  Future<dynamic> delete(String path, {Object? data}) => _wrap(() => _dio.delete(path, data: data), (b) => b is Map ? b['data'] : null);
 }
 
 final apiProvider = Provider<Api>((ref) => Api(ref));

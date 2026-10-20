@@ -1,0 +1,31 @@
+{
+  "routes": 21,
+  "responsiveCases": 105,
+  "a11yCases": 45,
+  "internalLinks": 37,
+  "browserErrors": [],
+  "interactions": "PASS",
+  "contentPreview": {
+    "article": "PASS",
+    "album": "PASS",
+    "persistence": "PASS",
+    "isolation": "PASS",
+    "failedSaveRecovery": "PASS",
+    "textSafety": "PASS",
+    "reset": "PASS",
+    "networkWrites": 0,
+    "a11yCases": 3
+  },
+  "heroSlideshow": {
+    "intervalMs": 3000,
+    "photos": 4,
+    "timing": "PASS",
+    "wraparound": "PASS",
+    "noPauseButton": "PASS",
+    "selectThenAutoplay": "PASS",
+    "keyboardAndHoverAutoplay": "PASS",
+    "offscreen": "PASS",
+    "reducedMotion": "PASS",
+    "noJavaScript": "PASS"
+  }
+}

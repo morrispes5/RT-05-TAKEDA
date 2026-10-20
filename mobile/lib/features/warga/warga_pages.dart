@@ -386,6 +386,10 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
   late bool _anon = widget.existing?.anonim ?? false;
   late int? _versi = widget.existing?.versi;
   final List<XFile> _photos = [];
+
+  /// UAT M15: foto pengaduan yang sudah tersimpan (mode edit); ditambah/dihapus langsung ke server.
+  late List<Json> _saved = [...?widget.existing?.foto];
+  bool _photoBusy = false;
   String? _formError;
   bool _locked = false;
 
@@ -464,6 +468,72 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
       photos: [for (final p in _photos) p.path],
       kamera: kamera,
     );
+  }
+
+  /// Edit pengaduan: unggah satu foto baru lalu perbarui versi dan daftar foto dari respons server.
+  Future<void> _addSaved(ImageSource source) async {
+    final XFile? file;
+    try {
+      file = await _picker.pickImage(source: source, maxWidth: 1600, maxHeight: 1600, imageQuality: 80);
+    } on PlatformException catch (e) {
+      if (mounted) {
+        showMessage(context, photoPickMessage(e.code, camera: source == ImageSource.camera) ?? 'Foto tidak dapat diambil.', error: true);
+      }
+      return;
+    }
+    if (file == null || !mounted) return;
+    setState(() => _photoBusy = true);
+    try {
+      final form = FormData()
+        ..fields.add(MapEntry('versi', '$_versi'))
+        ..files.add(MapEntry('foto[]', MultipartFile.fromBytes(await file.readAsBytes(), filename: 'foto.jpg')));
+      final res = Laporan(Json.from(await ref.read(apiProvider).post('/complaints/${widget.existing!.id}/photos', data: form) as Map), aspirasi: false);
+      if (!mounted) return;
+      setState(() {
+        _versi = res.versi;
+        _saved = res.foto;
+      });
+      showMessage(context, 'Foto ditambahkan. Foto sedang diproses server.');
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      if (staleConflict(e)) await _reloadVersi();
+      if (mounted) showMessage(context, e.display, error: true);
+    } catch (_) {
+      if (mounted) showMessage(context, 'Foto tidak dapat dibaca atau diunggah. Coba foto lain.', error: true);
+    } finally {
+      if (mounted) setState(() => _photoBusy = false);
+    }
+  }
+
+  Future<void> _removeSaved(Json foto, int index) async {
+    if (!await confirm(
+      context,
+      title: 'Hapus foto ${index + 1}?',
+      message: 'Foto dihapus dari laporan ini dan tidak dapat dikembalikan.',
+      yes: 'Hapus',
+      danger: true,
+    )) {
+      return;
+    }
+    setState(() => _photoBusy = true);
+    try {
+      final res = Laporan(
+        Json.from(await ref.read(apiProvider).delete('/complaints/${widget.existing!.id}/photos/${foto['id']}?versi=$_versi') as Map),
+        aspirasi: false,
+      );
+      if (!mounted) return;
+      setState(() {
+        _versi = res.versi;
+        _saved = res.foto;
+      });
+      showMessage(context, 'Foto dihapus.');
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      if (staleConflict(e)) await _reloadVersi();
+      if (mounted) showMessage(context, e.display, error: true);
+    } finally {
+      if (mounted) setState(() => _photoBusy = false);
+    }
   }
 
   Future<void> _pick(ImageSource source) async {
@@ -591,7 +661,7 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
               child: Text(
                 widget.aspirasi
                     ? 'Judul, isi, dan pilihan identitas dapat diperbaiki selama aspirasi masih Diajukan.'
-                    : 'Judul, isi, dan pilihan identitas dapat diperbaiki selama laporan masih Diajukan. Kategori dan foto tetap.',
+                    : 'Judul, isi, pilihan identitas, dan foto dapat diperbaiki selama laporan masih Diajukan. Kategori tetap.',
                 style: const TextStyle(color: Brand.muted),
               ),
             ),
@@ -636,7 +706,41 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
               ],
             ),
             const SizedBox(height: 6),
-            const Text('JPG/PNG/WebP. Foto diproses ulang di server; metadata lokasi (GPS) dihapus.', style: TextStyle(color: Brand.muted, fontSize: 13)),
+            const Text(photoLimitNote, style: TextStyle(color: Brand.muted, fontSize: 13)),
+          ],
+          if (!widget.aspirasi && _editing) ...[
+            const SizedBox(height: 8),
+            Text('Foto (${_saved.length} dari 5)', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final (i, f) in _saved.indexed)
+                  InputChip(
+                    key: ValueKey('foto-${f['id']}'),
+                    label: Text('Foto ${i + 1}${f['status'] == 'siap' ? '' : ' (${photoStatusLabel('${f['status']}').toLowerCase()})'}'),
+                    avatar: const Icon(Icons.image_outlined),
+                    deleteButtonTooltipMessage: 'Hapus foto ${i + 1}',
+                    onDeleted: _photoBusy || _locked ? null : () => _removeSaved(f, i),
+                  ),
+                if (_saved.length < 5 && !_locked) ...[
+                  ActionChip(
+                    avatar: const Icon(Icons.photo_camera_outlined),
+                    label: const Text('Kamera'),
+                    onPressed: _photoBusy ? null : () => _addSaved(ImageSource.camera),
+                  ),
+                  ActionChip(
+                    avatar: const Icon(Icons.photo_library_outlined),
+                    label: const Text('Galeri'),
+                    onPressed: _photoBusy ? null : () => _addSaved(ImageSource.gallery),
+                  ),
+                ],
+              ],
+            ),
+            if (_photoBusy) const Padding(padding: EdgeInsets.only(top: 8), child: LinearProgressIndicator()),
+            const SizedBox(height: 6),
+            const Text('Tambah/hapus foto langsung tersimpan. $photoLimitNote', style: TextStyle(color: Brand.muted, fontSize: 13)),
           ],
           if (_formError != null) ...[const SizedBox(height: 12), Text(_formError!, style: const TextStyle(color: Brand.danger, height: 1.35))],
           const SizedBox(height: 24),
@@ -827,13 +931,14 @@ class ReportDetailPage extends ConsumerWidget {
                     label: Text('Perbaiki $noun'),
                     style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
                     onPressed: () async {
-                      final saved = await Navigator.push<bool>(
+                      await Navigator.push<bool>(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ReportFormPage(aspirasi: aspirasi, existing: r),
                         ),
                       );
-                      if (saved == true) ref.invalidate(reportDetailProvider((aspirasi, id)));
+                      // Foto bisa berubah tanpa menekan Simpan (tambah/hapus langsung tersimpan).
+                      ref.invalidate(reportDetailProvider((aspirasi, id)));
                     },
                   ),
                   Padding(
@@ -852,6 +957,10 @@ class ReportDetailPage extends ConsumerWidget {
     );
   }
 }
+
+/// Batas unggah yang sama dengan server (UAT M15): jumlah, ukuran, dan kuota harian per akun.
+const photoLimitNote =
+    'JPG/PNG/WebP, maks. 5 foto per laporan dan 25 foto per hari; foto diperkecil otomatis (maks. 5 MB). Metadata lokasi (GPS) dihapus server.';
 
 class _PhotoPlaceholder extends StatelessWidget {
   const _PhotoPlaceholder({required this.status});
@@ -1297,7 +1406,10 @@ class _TransparencyBody extends ConsumerWidget {
 
 /// Ringkasan kas RT, khusus pengurus (ADR26). Dipakai di tab Keuangan → Kas.
 class CashView extends ConsumerWidget {
-  const CashView({super.key, this.onReverse});
+  const CashView({super.key, this.onReverse, this.action});
+
+  /// Pengurus: aksi di atas daftar mutasi (mis. ekspor CSV).
+  final Widget? action;
 
   /// Pengurus: balik kas manual yang `dapat_dibalik` (kas iuran dibatalkan lewat pembayaran).
   final Future<void> Function(Json entry)? onReverse;
@@ -1337,6 +1449,7 @@ class CashView extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              ?action,
               Text('Mutasi terakhir', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               for (final k in (d['mutasi_terakhir'] as List).cast<Map>())

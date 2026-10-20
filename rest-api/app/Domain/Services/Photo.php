@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 /**
  * Foto lampiran warga (FR21, SECURITY.md). Dua tahap:
- * 1. stage() di request: ≤12 MB, magic bytes JPG/PNG/WebP yang cocok dengan header gambar,
+ * 1. stage() di request: ≤5 MB (shared 4 MB), magic bytes JPG/PNG/WebP yang cocok dengan header gambar,
  *    ≤50 MP; berkas mentah disalin ke folder privat masuk/ dengan nama acak tanpa ekstensi.
  * 2. transcode() di worker-media: decode lalu encode ulang ke JPEG ≤1600 px sehingga EXIF/GPS
  *    terbuang. Hasil bernama <id foto>.jpg (deterministik → retry menimpa berkas yang sama).
@@ -22,7 +22,8 @@ final class Photo
 
     public const STAGING = 'pengaduan/masuk';
 
-    private const MAX_BYTES = 12 * 1024 * 1024;
+    // UAT M15: 5 MB per foto (aplikasi sudah memperkecil ke ≤1600 px); shared tetap 4 MB.
+    private const MAX_BYTES = 5 * 1024 * 1024;
 
     private const MAX_PIXELS = 50_000_000;
 

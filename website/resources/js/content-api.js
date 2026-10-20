@@ -77,7 +77,7 @@ export class ApiContentRepository {
         this.versions.set(item.id, item.versi);
         const base = {
             id: item.id, slug: item.slug, versi: item.versi, serverStatus: item.status, pending: !!item.ada_perubahan_belum_terbit,
-            publishedSlug: item.slug_terbit, status: item.status === 'draf' ? 'draft' : 'published', updatedAt: item.updated_at, title: d.title || '',
+            publishedSlug: item.slug_terbit, status: item.status === 'draf' ? 'draft' : item.status === 'arsip' ? 'archived' : 'published', updatedAt: item.updated_at, title: d.title || '',
         };
         if (type === 'articles') {
             return { ...base, category: d.category || 'Lingkungan', art: d.art || 'hands', summary: d.summary || '', intro: d.intro || '',
@@ -101,10 +101,11 @@ export class ApiContentRepository {
             photos: item.photos.map(p => ({ media_id: media(p.mediaId), alt: p.alt.trim(), caption: blank(p.caption) })),
             cover_media_id: cover ? media(cover.mediaId) : null };
     }
-    async list(type) {
+    /** `status: 'arsip'` (UAT M15) menampilkan konten yang diarsipkan; bawaan semua kecuali arsip. */
+    async list(type, { status } = {}) {
         const records = [];
         for (let page = 1; page <= 10; page++) {
-            const res = await request('GET', `/admin/${type}?per_page=100&page=${page}`);
+            const res = await request('GET', `/admin/${type}?per_page=100&page=${page}${status ? '&status=' + status : ''}`);
             records.push(...res.data.map(item => this.fromApi(type, item)));
             if (!res.meta?.last_page || page >= res.meta.last_page) break;
         }

@@ -320,4 +320,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('alert-error')), findsNothing);
   });
+
+  // UAT M15 (19 Okt 2026): dua crash pemilih waktu yang tampil sebagai layar kosong di APK rilis.
+  testWidgets('jam selesai dipilih sebelum jam mulai tidak crash', (tester) async {
+    await _pump(tester, ActivityProposalFormPage(now: () => _now), (o) => jsonBody(200, {'data': {}}));
+    await tester.tap(find.text('Jam selesai'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Ajukan kegiatan'), findsOneWidget);
+  });
+
+  testWidgets('memperbaiki usulan yang tanggalnya sudah lewat membuka pemilih tanggal', (tester) async {
+    final lewat = {...usulanJson(mine: true, status: 'perlu_revisi'), 'mulai_at': '2026-10-10T02:00:00Z', 'selesai_at': '2026-10-10T04:00:00Z'};
+    await _pump(tester, ActivityProposalFormPage(now: () => _now, existing: lewat), (o) => jsonBody(200, {'data': {}}));
+    await tester.tap(find.text('Tanggal dan jam mulai'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('OK'), findsOneWidget);
+  });
 }

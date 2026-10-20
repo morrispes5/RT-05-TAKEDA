@@ -14,9 +14,9 @@ Git root adalah folder `RT-05-TAKEDA/`, bukan folder induk `RT X TAKEDA`. Semua 
 ## Langkah
 
 1. `git status -sb`, `git branch --show-current`, dan `git rev-parse --show-toplevel`. Jangan reset, force-push, atau commit kecuali diminta.
-2. Baca berurutan: `AGENTS.md`, `README.md`, `docs/PRD.md`, `docs/BUSINESS_RULES.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, `docs/PROGRESS.md`, `docs/COORDINATION.md`.
+2. Baca berurutan: `AGENTS.md`, `README.md`, `docs/PRD.md`, `docs/BUSINESS_RULES.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, `docs/PROGRESS.md`, `docs/COORDINATION.md`, `docs/HANDOFF.md`.
 3. Baca dokumen domain milestone yang sedang dikerjakan (tabel di bawah). Jangan membuka milestone berikutnya.
-4. Jika percakapan ini sudah membaca berkas itu dan `docs/PROGRESS.md` tidak berubah, baca ulang hanya `docs/PROGRESS.md`, `docs/COORDINATION.md`, dan dokumen milestone aktif.
+4. Jika percakapan ini sudah membaca berkas itu dan `docs/PROGRESS.md` tidak berubah, baca ulang hanya `docs/PROGRESS.md`, `docs/COORDINATION.md`, `docs/HANDOFF.md`, dan dokumen milestone aktif.
 5. Laporkan briefing di akhir skill, lalu kerjakan satu milestone yang pemilik minta. `/init` sendiri berhenti setelah briefing.
 
 ## Yang tidak berubah
@@ -31,13 +31,13 @@ Git root adalah folder `RT-05-TAKEDA/`, bukan folder induk `RT X TAKEDA`. Semua 
 - Database dan aturan bisnis hanya di `rest-api/`. Website dan mobile tidak menyambung Neon atau Redis.
 - Jangan commit `.env`, credential, token, data warga asli, dump, kunci APK, atau draf browser. Jangan `migrate:fresh`, wipe, atau flush pada production. Jangan pakai Neon production untuk seed atau tes.
 
-## Status tersimpan 13 Oktober 2026
+## Status tersimpan 20 Oktober 2026
 
-Angka ini hanya titik mulai. Baca `docs/PROGRESS.md` untuk status hidup.
+Angka ini hanya titik mulai. Baca `docs/PROGRESS.md` untuk status hidup dan `docs/HANDOFF.md` untuk serah terima sesi terakhir.
 
-M00–M09 **passed** untuk staging sintetis. M09: PR #24, source `617e179`. M10 **tidak dibuka**. Production, data warga nyata, dan penutupan insiden credential menunggu M15–M16.
+M00–M14 **passed** untuk staging sintetis. **M15 in_progress**: staging dan APK uji tim 1007 pada `71dc523`; UAT tim putaran 1–2 sudah diperbaiki (ADR32, ADR33). Sisa gate M15 (hasil UAT tercatat, PR #50 untuk issue #46–#48, uji HP nyata, verifikasi developer Android, privacy notice final, UAT mitra) dan pertanyaan untuk pemilik ada di `docs/HANDOFF.md`. M16 (production) **belum dibuka**.
 
-Keterbatasan yang tetap terbuka: Google Doc native M09 menunggu konfirmasi pemilik (bukan gate roadmap); push FCM baru pada M10; pemulihan draf kamera pada M15; foto pengaduan tidak bisa ditambah setelah laporan dibuat (ADR21); aspirasi terpisah, tiga status, anonim, tanpa kategori dan tanpa foto (ADR22).
+Keterbatasan yang tetap terbuka: aspirasi teks saja, tanpa foto (ADR22, ditegaskan pemilik 19 Okt); foto pengaduan bisa ditambah/dihapus hanya selama status *diajukan* (ADR32); Vercel hanya preview statis dengan CMS demo.
 
 ## Fitur lanjutan
 
@@ -50,7 +50,7 @@ Kerjakan hanya milestone yang pemilik buka, plus prasyarat yang sudah passed. Ja
 | M12 | Pembayaran offline, kas, pembalikan, ekspor | Aturan keuangan, `docs/TESTING.md` skenario 1–18 |
 | M13 | Konten publik di API dan mobile admin | `docs/FRONTEND.md`, `docs/ERD.md`, `docs/API.md` |
 | M14 | CMS website memakai API | `docs/FRONTEND.md`, `docs/ARCHITECTURE.md`, `docs/website/FRONTEND_HANDOFF.md` |
-| M15 | UAT, keamanan, APK kandidat | `docs/TESTING.md`, `docs/SECURITY.md` |
+| M15 | UAT, keamanan, APK kandidat | `docs/TESTING.md`, `docs/SECURITY.md`, `docs/UAT_M15.md`, `docs/HANDOFF.md` |
 | M16 | Production `takeda.morriz.tech`, backup, handover | `docs/DEPLOYMENT.md` |
 
 M10 bergantung pada M07, M03, serta laporan M08/M09. M11 bergantung pada M07. M12 bergantung pada M11 dan M03.
