@@ -1,10 +1,10 @@
 # Progress — RT05 TAKEDA
 
-## M15 — UAT tim putaran 3 (20 Oktober 2026 malam): pulihkan arsip, tombol Kembali, akun tambahan — **kode siap, belum di-merge/di-deploy**
+## M15 — UAT tim putaran 3 (20 Oktober 2026 malam): pulihkan arsip, tombol Kembali, akun tambahan — **merge `9d9cf07`, staging di-deploy, APK 1009 dirilis**
 
 Branch `codex/m15-restore-archive` dari `main` 57964c0. Sumber: laporan UAT tim pemilik pada APK 1008 (arsip tidak bisa dikembalikan di web dan
 mobile; Kembali langsung menutup aplikasi; jam selesai usulan terisi otomatis; validasi akun tambahan). Keputusan dan batasannya ada di
-[DECISIONS.md ADR34](DECISIONS.md). Tidak ada tes live, deploy, atau uji HP pada bagian ini.
+[DECISIONS.md ADR34](DECISIONS.md). PR [#58](https://github.com/morrispes5/RT-05-TAKEDA/pull/58) merge 20 Okt ±19.54 WIB (CI 10/10), staging `9d9cf07` di-deploy ±19.57–19.59 WIB (migrasi aditif ikut), APK **1009** dibangun 20.03 WIB (run 39426206006, sertifikat = kunci tetap; arm64 versionCode 3009, armeabi-v7a 2009) dan disajikan di `/unduh` staging ±20.07 WIB. Belum ada uji HP.
 
 | Temuan UAT | Perbaikan | Bukti |
 | --- | --- | --- |
@@ -22,8 +22,9 @@ mobile; Kembali langsung menutup aplikasi; jam selesai usulan terisi otomatis; v
 | `npm.cmd run build:preview`, `npm.cmd run test:preview`, `php artisan test` (website) | ekspor 21 rute; test:preview lulus; website 16/16 |
 | `node infra/scripts/check-repo.mjs` | lulus |
 
-Belum dikerjakan atau belum dibuktikan: (1) skrip live `website/scripts/cms-ui-live.mjs` sudah diperluas (C16–C20: Pulihkan → draf, tidak langsung tampil
-di website, arsipkan lagi) tetapi **belum dijalankan** ke staging; (2) semua perubahan mobile belum diuji di HP nyata; (3) aturan minimal 10 karakter
+Bukti live: `website/scripts/cms-ui-live.mjs` (diperluas C16–C20: Pulihkan → draf, tidak langsung tampil di website, arsipkan lagi) dijalankan ke staging `9d9cf07`: **21/21 PASS**.
+
+Belum dikerjakan atau belum dibuktikan: (1) Pulihkan rumah/keluarga/akun, akun tambahan tanpa alamat, dan pencocokan rumah dari kepala keluarga hanya diuji lewat tes otomatis, **belum lewat API/aplikasi di staging**; `staging-runtime-smoke.sh` dan cek Vercel pasca-PR belum dijalankan; (2) semua perubahan mobile belum diuji di HP nyata; (3) aturan minimal 10 karakter
 pada ringkasan, pembuka, dan isi bagian artikel (juga deskripsi album) tidak diubah: itu validasi M13 yang tetap berlaku; (4) pemulihan akun/keluarga
 sengaja tidak membuka kembali hunian, tautan akun, atau tagihan; pengurus melakukannya eksplisit.
 
