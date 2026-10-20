@@ -154,6 +154,14 @@ class ContentController extends Controller
         return Api::data(Contents::adminView(Contents::archive($request->user(), $this->find($type, $id), $data['versi'])));
     }
 
+    public function restore(Request $request, string $id): JsonResponse
+    {
+        $type = $this->type($request);
+        $data = $request->validate(['versi' => ['required', 'integer', 'min:1']]);
+
+        return Api::data(Contents::adminView(Contents::restore($request->user(), $this->find($type, $id), $data['versi'])));
+    }
+
     public function profile(): JsonResponse
     {
         return Api::data(Contents::adminView(Konten::where('jenis', 'profil')->firstOrFail()));

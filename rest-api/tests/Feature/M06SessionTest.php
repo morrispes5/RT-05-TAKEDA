@@ -290,7 +290,7 @@ class M06SessionTest extends TestCase
         $this->warga('34');
         $token = $this->postJson('/api/v1/auth/additional-register', [
             'email' => 'tunggu34@contoh.test', 'password' => 'Rahasia123', 'password_confirmation' => 'Rahasia123',
-            'registration_token' => $this->tokenCode, 'device_name' => 'hp', 'nama' => 'Uji Tunggu', 'hubungan_keluarga' => 'Anak',
+            'registration_token' => $this->tokenCode, 'device_name' => 'hp', 'nama' => 'Uji Tunggu', 'hubungan_keluarga' => 'Anak', 'nama_kepala' => 'Uji Kepala 1',
             'blok' => 'Z', 'jalan' => 'Jl. Uji', 'nomor' => '34',
         ])->assertStatus(202)->json('data.token');
 

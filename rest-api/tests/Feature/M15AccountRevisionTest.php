@@ -33,7 +33,7 @@ class M15AccountRevisionTest extends TestCase
             ->assertJsonPath('data.permohonan.nama', 'Nama Salah');
 
         $this->as($pemohon)->patchJson('/api/v1/auth/additional-account-request', [
-            'nama' => 'Nama Benar', 'hubungan_keluarga' => 'Anak', 'blok' => 'Z', 'jalan' => 'Jl. Uji', 'nomor' => '81',
+            'nama' => 'Nama Benar', 'hubungan_keluarga' => 'Anak', 'nama_kepala' => 'Uji Kepala 81', 'blok' => 'Z', 'jalan' => 'Jl. Uji', 'nomor' => '81',
         ])->assertOk()->assertJsonPath('data.status', 'diajukan');
         $p->refresh();
         $this->assertSame('diajukan', $p->status);
@@ -44,7 +44,7 @@ class M15AccountRevisionTest extends TestCase
 
         // Tidak bisa diperbaiki lagi tanpa diminta; pengurus lalu dapat menyetujui.
         $this->as($pemohon)->patchJson('/api/v1/auth/additional-account-request', [
-            'nama' => 'Lagi', 'hubungan_keluarga' => 'Anak', 'jalan' => 'Jl. Uji', 'nomor' => '81',
+            'nama' => 'Lagi', 'hubungan_keluarga' => 'Anak', 'nama_kepala' => 'Uji Kepala 81', 'jalan' => 'Jl. Uji', 'nomor' => '81',
         ])->assertStatus(409)->assertJsonPath('error.code', 'REQUEST_NOT_REVISABLE');
         $this->app['auth']->forgetGuards();
         $this->as($admin)->postJson("/api/v1/admin/additional-account-requests/{$p->id}/approve", [])->assertOk()->assertJsonPath('data.status', 'disetujui');

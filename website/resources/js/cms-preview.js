@@ -100,7 +100,7 @@ async function overview() {
             node('div', { class: 'cms-action-row' }, link('Coba editor artikel', editorUrl('articles', articles[0]?.id)), link('Coba editor album', editorUrl('albums', albums[0]?.id)))));
 }
 async function listing(type) {
-    // UAT M15: pengurus dapat melihat konten yang diarsipkan (hanya baca; arsip tidak dapat diubah atau diterbitkan lagi).
+    // UAT M15: pengurus dapat melihat konten yang diarsipkan dan memulihkannya menjadi draf (arsip tidak diubah langsung).
     const archived = server && params.get('arsip') === '1';
     const records = await repository.list(type, archived ? { status: 'arsip' } : {});
     const base = '/pengurus/' + typePath(type);
@@ -108,7 +108,7 @@ async function listing(type) {
         server ? link(archived ? 'Kembali ke daftar aktif' : 'Lihat arsip', archived ? base : base + '?arsip=1') : '',
         archived ? '' : link(type === 'articles' ? 'Tulis artikel' : 'Buat album', editorUrl(type), true),
     );
-    if (archived) heading(type === 'articles' ? 'Arsip artikel.' : 'Arsip album.', 'Konten di sini tidak tampil di website. Arsip disimpan sebagai riwayat dan tidak dapat diubah.');
+    if (archived) heading(type === 'articles' ? 'Arsip artikel.' : 'Arsip album.', 'Konten di sini tidak tampil di website dan tidak dapat diubah. Tekan Pulihkan untuk mengembalikannya sebagai draf.');
     const list = node('div', { class: 'cms-content-list' });
     const input = field('Cari ' + (type === 'articles' ? 'artikel' : 'album'), '', term => {
         let count = 0;
@@ -126,7 +126,11 @@ async function listing(type) {
         const label = server ? (record.status === 'archived' ? 'Diarsipkan' : record.status === 'draft' ? 'Draf, belum terbit' : record.pending ? 'Terbit, ada perubahan belum terbit — tekan Terbitkan' : 'Terbit di website') : record.status === 'draft' ? 'Draf di perangkat' : 'Contoh dari website';
         row.append(node('div', { class: 'cms-row-copy' }, node('span', { class: 'cms-record-status' }, label),
             node('h2', {}, node('a', { href: archived ? previewUrl(type, record.id) : editorUrl(type, record.id) }, record.title || 'Tanpa judul')), node('p', {}, type === 'articles' ? record.category : record.photos.length + ' foto')),
-            archived ? node('div', { class: 'cms-row-actions' }, link('Lihat', previewUrl(type, record.id))) : node('div', { class: 'cms-row-actions' }, link('Edit', editorUrl(type, record.id)), button(server ? 'Arsipkan' : record.status === 'draft' ? 'Hapus draf' : 'Sembunyikan contoh', async () => {
+            archived ? node('div', { class: 'cms-row-actions' }, link('Lihat', previewUrl(type, record.id)), button('Pulihkan', async () => {
+                if (!await confirm('Pulihkan konten ini?', 'Konten kembali menjadi draf dan belum tampil di website. Periksa isinya di daftar aktif, lalu tekan Terbitkan.', 'Pulihkan')) return;
+                try { await repository.restore(type, record.id); revokeUrls(); await listing(type); notify('"' + (record.title || 'Konten') + '" dipulihkan sebagai draf. Buka daftar aktif untuk memeriksanya, lalu tekan Terbitkan.'); }
+                catch (error) { if (error.status !== 401) notify('Gagal memulihkan. ' + error.message, false); else failure(error); }
+            })) : node('div', { class: 'cms-row-actions' }, link('Edit', editorUrl(type, record.id)), button(server ? 'Arsipkan' : record.status === 'draft' ? 'Hapus draf' : 'Sembunyikan contoh', async () => {
                 const ask = server ? ['Arsipkan konten ini?', record.status === 'draft' ? 'Draf dipindahkan ke arsip dan tidak dapat diterbitkan lagi.' : 'Konten berhenti tampil di website publik dan disimpan sebagai arsip.', 'Arsipkan']
                     : ['Hapus dari pratinjau?', 'Perubahan hanya berlaku di browser ini. Konten publik tidak dihapus.', 'Hapus'];
                 if (await confirm(...ask)) {

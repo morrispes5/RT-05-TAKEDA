@@ -144,6 +144,12 @@ export class ApiContentRepository {
         if (!this.versions.has(sid)) await this.get(type, sid);
         await request('POST', `/admin/${type}/${sid}/archive`, { versi: this.versions.get(sid) });
     }
+    /** Pulihkan arsip menjadi draf (ADR34); belum tampil di website sampai diterbitkan ulang. */
+    async restore(type, id) {
+        const sid = this.serverId(id);
+        if (!this.versions.has(sid)) await this.get(type, sid);
+        await request('POST', `/admin/${type}/${sid}/restore`, { versi: this.versions.get(sid) });
+    }
     async media(id) {
         if (this.blobs.has(id)) return this.blobs.get(id);
         const response = await request('GET', `/admin/content-media/${this.serverId(id)}/file`, null, { raw: true });

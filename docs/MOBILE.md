@@ -97,3 +97,5 @@ VPS menjalankan backend dan menyediakan file distribusi, bukan menjalankan Flutt
 ## Pengujian
 
 flutter analyze; unit DTO/repository/state; widget form/error; integration register→login→report→admin update→notification; finance double-tap/timeout replay; perangkat Android nyata untuk kamera, file, push foreground/background/terminated dan permission denial.
+
+Tombol Kembali (UAT M15, ADR34): dari tab selain yang pertama kembali ke tab pertama; dari tab pertama muncul dialog "Keluar dari aplikasi?" sebelum aplikasi ditutup. Pengurus dapat memulihkan rumah, keluarga, akun, dan konten arsip dari layar detailnya (alasan wajib kecuali konten).

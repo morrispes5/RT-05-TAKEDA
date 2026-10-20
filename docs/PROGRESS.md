@@ -1,5 +1,32 @@
 # Progress — RT05 TAKEDA
 
+## M15 — UAT tim putaran 3 (20 Oktober 2026 malam): pulihkan arsip, tombol Kembali, akun tambahan — **kode siap, belum di-merge/di-deploy**
+
+Branch `codex/m15-restore-archive` dari `main` 57964c0. Sumber: laporan UAT tim pemilik pada APK 1008 (arsip tidak bisa dikembalikan di web dan
+mobile; Kembali langsung menutup aplikasi; jam selesai usulan terisi otomatis; validasi akun tambahan). Keputusan dan batasannya ada di
+[DECISIONS.md ADR34](DECISIONS.md). Tidak ada tes live, deploy, atau uji HP pada bagian ini.
+
+| Temuan UAT | Perbaikan | Bukti |
+| --- | --- | --- |
+| Arsip satu arah: Artikel/Dokumentasi (web dan mobile), Rumah, Keluarga, Akun | `POST .../restore` untuk konten (kembali **draf**), rumah (tagihan tetap nonaktif), akun (kembali **nonaktif**), keluarga (bersama anggota yang ikut diarsipkan). Tombol Pulihkan di aplikasi pengurus dan CMS web. Hunian dan tautan akun tidak dibuka otomatis | `M15RestoreArchiveTest` 6 tes; `m15_restore_archive_test` 7 tes + 1 tes konten di `m13_content_admin_test`; OpenAPI +6 rute |
+| "Diterbitkan lagi tidak bisa" (konten arsip) | Pulihkan lalu Terbitkan; slug tetap milik konten itu | Alur pulihkan → edit → terbit di `M15RestoreArchiveTest` |
+| Kembali tidak meminta konfirmasi keluar; dari tab Kas harus ke dashboard dulu | `PopScope` di `HomeShell`: tab lain → tab pertama; tab pertama → dialog "Keluar dari aplikasi?" → `SystemNavigator.pop` | `m15_back_navigation_test` (warga dan pengurus) |
+| Jam selesai usulan otomatis +2 jam | Jam selesai tidak pernah terisi sendiri; ganti jam mulai mengosongkannya bila tidak lagi valid | 2 tes baru + alur valid di `activity_proposal_flow_test` |
+| Akun tambahan: wajib nama, hubungan, **nama kepala keluarga**; alamat opsional | Kolom `permohonan_akun.nama_kepala_diajukan` (migrasi aditif `2026_10_21_000100`); rumah dicocokkan diam-diam dari alamat lengkap bila ada, selain itu dari nama kepala yang tepat satu rumah aktif; ganda/tidak ada → pengurus memilih rumah saat menyetujui | `M15AdditionalAccountTest` 5 tes; tes form di `auth_access_test` dan `m15_uat_round2_test` |
+
+| Perintah | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17 lokal 54329) | **332/332, 3432 assertion** (termasuk `OpenApiContractTest`) |
+| `flutter analyze lib test` | bersih |
+| `flutter test` | **243 lulus** |
+| `npm.cmd run build:preview`, `npm.cmd run test:preview`, `php artisan test` (website) | ekspor 21 rute; test:preview lulus; website 16/16 |
+| `node infra/scripts/check-repo.mjs` | lulus |
+
+Belum dikerjakan atau belum dibuktikan: (1) skrip live `website/scripts/cms-ui-live.mjs` sudah diperluas (C16–C20: Pulihkan → draf, tidak langsung tampil
+di website, arsipkan lagi) tetapi **belum dijalankan** ke staging; (2) semua perubahan mobile belum diuji di HP nyata; (3) aturan minimal 10 karakter
+pada ringkasan, pembuka, dan isi bagian artikel (juga deskripsi album) tidak diubah: itu validasi M13 yang tetap berlaku; (4) pemulihan akun/keluarga
+sengaja tidak membuka kembali hunian, tautan akun, atau tagihan; pengurus melakukannya eksplisit.
+
 ## M15 — Perbaikan temuan QA #46, #47, #48 — 19 Oktober 2026: **perbaikan lokal, menunggu CI/review**
 
 Branch `codex/m15-qa-fixes` dari `main` 85b2ed6. Ketiga temuan Codex ([#46](https://github.com/morrispes5/RT-05-TAKEDA/issues/46),

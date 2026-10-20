@@ -64,11 +64,13 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', ...PasswordPolicy::rules()],
             'registration_token' => ['required', 'string', 'size:6'],
             'device_name' => ['required', 'string', 'max:100'],
-            'nama' => ['required', 'string', 'max:120'],
+            'nama' => ['required', 'string', 'min:2', 'max:120'],
             'hubungan_keluarga' => ['required', 'string', 'max:40'],
+            // UAT M15 (ADR34): yang wajib hanya nama, hubungan, dan nama kepala keluarga; alamat opsional (rumah dicocokkan otomatis).
+            'nama_kepala' => ['required', 'string', 'min:2', 'max:120'],
             'blok' => ['nullable', 'string', 'max:30'],
-            'jalan' => ['required', 'string', 'max:150'],
-            'nomor' => ['required', 'string', 'max:20'],
+            'jalan' => ['nullable', 'string', 'max:150'],
+            'nomor' => ['nullable', 'string', 'max:20'],
         ]);
 
         $issued = $this->registerWithToken($request, fn () => Registration::additional($data, $data['registration_token']), $data['device_name']);
@@ -255,6 +257,7 @@ class AuthController extends Controller
                 // UAT M15: isian sebelumnya untuk form perbaikan (alamat diketik ulang; rumah tetap tidak dibuka).
                 'nama' => $p->status === 'perlu_revisi' ? $p->nama_pemohon : null,
                 'hubungan_keluarga' => $p->status === 'perlu_revisi' ? $p->hubungan_keluarga : null,
+                'nama_kepala_keluarga' => $p->status === 'perlu_revisi' ? $p->nama_kepala_diajukan : null,
                 'created_at' => Present::ts($p->created_at),
             ] : null,
         ]);
@@ -266,9 +269,10 @@ class AuthController extends Controller
         $data = $request->validate([
             'nama' => ['required', 'string', 'min:2', 'max:120'],
             'hubungan_keluarga' => ['required', 'string', 'max:40'],
+            'nama_kepala' => ['required', 'string', 'min:2', 'max:120'],
             'blok' => ['nullable', 'string', 'max:30'],
-            'jalan' => ['required', 'string', 'max:150'],
-            'nomor' => ['required', 'string', 'max:20'],
+            'jalan' => ['nullable', 'string', 'max:150'],
+            'nomor' => ['nullable', 'string', 'max:20'],
         ]);
         $p = Registration::reviseOwn($request->user(), $data);
 

@@ -96,7 +96,7 @@ class M06RegistrationTest extends TestCase
 
         $this->postJson('/api/v1/auth/additional-register', [
             'email' => 'tambahan@contoh.test', 'password' => 'Rahasia123', 'password_confirmation' => 'Rahasia123',
-            'registration_token' => $this->tokenCode, 'device_name' => 'hp', 'nama' => 'Uji Tambahan', 'hubungan_keluarga' => 'Anak',
+            'registration_token' => $this->tokenCode, 'device_name' => 'hp', 'nama' => 'Uji Tambahan', 'hubungan_keluarga' => 'Anak', 'nama_kepala' => 'Uji Kepala 1',
             'jalan' => 'Jl. Melati', 'nomor' => '6',
         ])->assertStatus(500);
 
@@ -192,7 +192,7 @@ class M06RegistrationTest extends TestCase
             ->assertStatus(429)->assertJsonPath('error.code', 'TOO_MANY_REQUESTS')->assertHeader('Retry-After');
         $this->withServerVariables(['REMOTE_ADDR' => '10.9.0.1'])->postJson('/api/v1/auth/additional-register', [
             'email' => 'tambahan@contoh.test', 'password' => 'Rahasia123', 'password_confirmation' => 'Rahasia123',
-            'registration_token' => $this->tokenCode, 'device_name' => 'hp', 'nama' => 'Uji Tambahan', 'hubungan_keluarga' => 'Anak',
+            'registration_token' => $this->tokenCode, 'device_name' => 'hp', 'nama' => 'Uji Tambahan', 'hubungan_keluarga' => 'Anak', 'nama_kepala' => 'Uji Kepala 1',
             'jalan' => 'Jl. Melati', 'nomor' => '6',
         ])->assertStatus(429);
         $this->assertFalse(Akun::where('email', 'm06@contoh.test')->exists());

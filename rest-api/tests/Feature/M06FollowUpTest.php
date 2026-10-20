@@ -87,7 +87,7 @@ class M06FollowUpTest extends TestCase
             ]);
             $additional = $this->postJson('/api/v1/auth/additional-register', [
                 'email' => "tambah$n@contoh.test", 'password' => $password, 'password_confirmation' => $password,
-                'registration_token' => $this->tokenCode, 'device_name' => 'hp', 'nama' => "Uji Tambah $n", 'hubungan_keluarga' => 'Anak',
+                'registration_token' => $this->tokenCode, 'device_name' => 'hp', 'nama' => "Uji Tambah $n", 'hubungan_keluarga' => 'Anak', 'nama_kepala' => 'Uji Kepala 1',
                 'blok' => 'B', 'jalan' => 'Jl. Batas', 'nomor' => '1',
             ]);
             $label = bin2hex(substr($password, 0, 6)).'/'.strlen($password);
@@ -145,7 +145,7 @@ class M06FollowUpTest extends TestCase
         $admin = $this->pengurus();
         $issued = $this->postJson('/api/v1/auth/additional-register', [
             'email' => 'anak71@contoh.test', 'password' => 'Rahasia123', 'password_confirmation' => 'Rahasia123',
-            'registration_token' => $this->tokenCode, 'device_name' => 'hp lama', 'nama' => 'Uji Anak', 'hubungan_keluarga' => 'Anak',
+            'registration_token' => $this->tokenCode, 'device_name' => 'hp lama', 'nama' => 'Uji Anak', 'hubungan_keluarga' => 'Anak', 'nama_kepala' => 'Uji Kepala 1',
             'blok' => 'Z', 'jalan' => 'Jl. Uji', 'nomor' => '71',
         ])->assertStatus(202)->json('data.token');
         $akun = Akun::where('email', 'anak71@contoh.test')->firstOrFail();

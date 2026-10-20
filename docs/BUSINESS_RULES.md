@@ -23,7 +23,7 @@ Kode BR dipakai pada API, tes, issue, dan kriteria milestone. Bagian A mempertah
 | BR15 | Warga terdaftar melihat iuran rumahnya dan transparansi status iuran per kode rumah (tersembunyi secara bawaan, dibuka atas pilihan warga). Kas RT hanya untuk pengurus (keputusan pemilik 17 Oktober 2026, ADR26) |
 | BR16 | Pemasukan iuran harus berhubungan dengan pembayaran yang dicatat |
 | BR17 | Koreksi keuangan dapat dilakukan admin dan historinya tetap tersedia |
-| BR18 | Hapus dari tampilan menggunakan arsip untuk data penting |
+| BR18 | Hapus dari tampilan menggunakan arsip untuk data penting; arsip dapat dipulihkan pengurus (ADR34) |
 | BR19 | Agenda tersedia di kalender mobile dan dapat ditambahkan ke Google Calendar |
 | BR20 | Pengumuman dan notifikasi layanan tersedia di mobile |
 | BR21 | Notifikasi mencakup status laporan, agenda, iuran, pengumuman, kebijakan privasi, dan update aplikasi |
@@ -44,6 +44,8 @@ Kode BR dipakai pada API, tes, issue, dan kriteria milestone. Bagian A mempertah
 - Hanya akun utama dan admin mengubah data keluarga pada v1. Akun tambahan dapat membaca data keluarga sendiri dan memakai layanan.
 - Persetujuan akun tambahan memberikan role resident, tidak admin. Grant/revoke admin hanya lewat command operator yang diaudit pada v1.
 - Akun inactive/archived ditolak dan token/sesi dicabut. Pengurus masih melihat histori.
+- Arsip dapat dipulihkan pengurus (ADR34): konten kembali draf, rumah kembali tanpa tagihan aktif, akun kembali nonaktif, keluarga kembali bersama anggota yang ikut diarsipkan. Hunian dan tautan akun tidak dibuka otomatis.
+- Permohonan akun tambahan wajib nama pemohon, hubungan, dan nama kepala keluarga; alamat opsional. Rumah dicocokkan otomatis dari kepala keluarga yang unik, selain itu pengurus memilih rumah saat menyetujui (ADR34).
 
 ### Token dan registrasi
 

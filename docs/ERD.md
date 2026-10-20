@@ -43,6 +43,7 @@ Additive `2026_10_13_000100_m07_keanggotaan_tautan_akun`:
 | keanggotaan_keluarga (family_memberships) | keluarga_id, warga_id, hubungan_keluarga, mulai_at/selesai_at timestamptz, alasan_selesai, sumber, dicatat_oleh_id, diakhiri_oleh_id; unique aktif per warga; selesai ≥ mulai; alasan wajib saat selesai |
 | tautan_akun (account_links) | akun_id, warga_id, keluarga_id, is_utama, mulai_at/selesai_at, alasan_selesai, sumber, aktor; unique aktif per akun dan per warga; unique `keluarga_id WHERE is_utama AND selesai_at IS NULL` |
 | rumah | + versi (≥1) |
+| permohonan_akun | + `nama_kepala_diajukan` varchar(120) null (additive `2026_10_21_000100`, ADR34); `alamat_diajukan` boleh null |
 
 Rumah tidak disimpan pada tautan: rumah akun = penghunian aktif keluarga tautannya. Karena
 `penghunian` tetap satu aktif per rumah dan per keluarga, satu akun utama aktif per keluarga

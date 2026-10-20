@@ -232,6 +232,7 @@ void main() {
     await enter(tester, 'field-password2', 'Rahasia1');
     await enter(tester, 'field-nama', 'Anggota Uji');
     await enter(tester, 'field-hubungan', 'Anak');
+    await enter(tester, 'field-kepala', 'Kepala Uji');
     await enter(tester, 'field-jalan', 'Jalan Uji');
     await enter(tester, 'field-nomor', '2');
     await scrollAuth(tester, find.text('Kirim permohonan'));
@@ -241,9 +242,67 @@ void main() {
     expect(sent['registration_token'], '012345');
     expect(sent['nama'], 'Anggota Uji');
     expect(sent['hubungan_keluarga'], 'Anak');
+    expect(sent['nama_kepala'], 'Kepala Uji');
     expect(sent.containsKey('anggota'), isFalse);
     expect(find.byType(PendingPage), findsOneWidget);
     expect(find.text('Iuran bulan ini'), findsNothing);
+  });
+
+  // UAT M15 (20 Okt, ADR34): akun tambahan wajib nama, hubungan, nama kepala keluarga; alamat opsional.
+  testWidgets('daftar tambahan tanpa alamat: nama kepala wajib, alamat dikirim null', (tester) async {
+    Object? body;
+    final base = apiHandler(
+      me: () => akunJson(status: 'menunggu', jenis: 'tambahan'),
+      fixtures: {
+        '/api/v1/auth/additional-account-status': {
+          'data': {
+            'status_akun': 'menunggu',
+            'permohonan': {'status': 'menunggu'},
+          },
+        },
+      },
+    );
+    await pumpApp(
+      tester,
+      storage: MemoryTokenStorage(),
+      handler: (options) {
+        if (options.uri.path == '/api/v1/auth/additional-register') {
+          body = requestBody(options);
+          return jsonBody(202, {
+            'data': {'token': 'tok-tambahan', 'akun': akunJson(status: 'menunggu', jenis: 'tambahan')},
+          });
+        }
+        return base(options);
+      },
+    );
+    await scrollAuth(tester, find.text('Daftar akun tambahan keluarga'));
+    await tester.tap(find.text('Daftar akun tambahan keluarga'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Alamat rumah (opsional)'), findsOneWidget);
+    await enter(tester, 'field-token', '012345');
+    await enter(tester, 'field-email', 'anggota.uji@example.test');
+    await enter(tester, 'field-password', 'Rahasia1');
+    await enter(tester, 'field-password2', 'Rahasia1');
+    await enter(tester, 'field-nama', 'Anggota Uji');
+    await enter(tester, 'field-hubungan', 'Anak');
+
+    // Nama kepala kosong: ditolak di layar, belum ada permintaan.
+    await scrollAuth(tester, find.text('Kirim permohonan'));
+    await tester.tap(find.text('Kirim permohonan'));
+    await tester.pumpAndSettle();
+    expect(body, isNull);
+    expect(find.text('Wajib diisi'), findsOneWidget, reason: 'hanya nama kepala yang kurang; alamat tidak diminta');
+
+    await enter(tester, 'field-kepala', 'Kepala Uji');
+    await scrollAuth(tester, find.text('Kirim permohonan'));
+    await tester.tap(find.text('Kirim permohonan'));
+    await tester.pumpAndSettle();
+    final sent = Map<String, dynamic>.from(body! as Map);
+    expect(sent['nama_kepala'], 'Kepala Uji');
+    expect(sent['jalan'], isNull);
+    expect(sent['nomor'], isNull);
+    expect(sent['blok'], isNull);
+    expect(find.byType(PendingPage), findsOneWidget);
   });
 
   for (final additional in [false, true]) {
@@ -1043,6 +1102,8 @@ Future<void> fillRegister(WidgetTester tester, {required bool additional}) async
   await enter(tester, 'field-password2', 'Rahasia1');
   await enter(tester, 'field-nama', additional ? 'Anggota Uji' : 'Kepala Uji');
   if (additional) await enter(tester, 'field-hubungan', 'Anak');
+  // Akun tambahan: nama kepala keluarga wajib (ADR34); alamat opsional.
+  if (additional) await enter(tester, 'field-kepala', 'Kepala Uji');
   // Blok wajib untuk akun utama sejak UAT M15; akun tambahan tetap opsional.
   if (!additional) await enter(tester, 'field-blok', 'A');
   await enter(tester, 'field-jalan', 'Jalan Uji');

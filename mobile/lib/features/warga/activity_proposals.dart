@@ -260,7 +260,8 @@ class _ActivityProposalFormPageState extends ConsumerState<ActivityProposalFormP
         : _mulai;
     if (day == null || !mounted) return;
     // Jam selesai dipilih sebelum jam mulai: pakai tanggal yang dipilih, bukan _mulai yang masih kosong.
-    final fallback = _mulai?.add(const Duration(hours: 2)) ?? base;
+    // UAT M15 20 Okt: jam selesai tidak pernah terisi otomatis; pemilih hanya mulai dari jam mulai.
+    final fallback = _mulai ?? base;
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(start ? base : (_selesai ?? fallback)),
@@ -270,9 +271,12 @@ class _ActivityProposalFormPageState extends ConsumerState<ActivityProposalFormP
     setState(() {
       final picked = DateTime(day.year, day.month, day.day, time.hour, time.minute);
       if (start) {
-        final keep = _selesai == null || _mulai == null ? const Duration(hours: 2) : _selesai!.difference(_mulai!);
+        // Jam selesai dipilih warga sendiri. Pilihan lama dipertahankan hanya bila masih di hari yang sama
+        // dan setelah jam mulai baru; selain itu dikosongkan agar tidak ada jam yang tertebak sendiri.
+        final end = _selesai;
+        final sameDay = end != null && end.year == picked.year && end.month == picked.month && end.day == picked.day;
         _mulai = picked;
-        _selesai = picked.add(keep.isNegative ? const Duration(hours: 2) : keep);
+        if (!sameDay || !end.isAfter(picked)) _selesai = null;
       } else {
         _selesai = picked;
       }
