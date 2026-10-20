@@ -10,6 +10,7 @@ import 'census_providers.dart';
 import 'family_actions.dart';
 import 'family_page.dart';
 import 'paged_list.dart';
+import 'restore_page.dart';
 
 /// Daftar keluarga untuk pengurus. Hunian diubah dari halaman rumah.
 class FamiliesAdminPage extends ConsumerStatefulWidget {
@@ -267,6 +268,29 @@ class _FamilyBody extends ConsumerWidget {
               if (changed == true && context.mounted) Navigator.pop(context);
             },
             child: const Text('Arsipkan keluarga', textAlign: TextAlign.center),
+          ),
+        ] else ...[
+          const SizedBox(height: 8),
+          OutlinedButton(
+            key: const ValueKey('pulihkan-keluarga'),
+            onPressed: () async {
+              final changed = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RestoreArchivedPage(
+                    title: 'Pulihkan keluarga',
+                    path: '/admin/families/${family['id']}/restore',
+                    name: kepala ?? 'keluarga ini',
+                    note:
+                        'Keluarga kembali aktif bersama anggota yang ikut diarsipkan. Hunian rumah dan tautan akun tidak dibuka otomatis; catat ulang bila perlu.',
+                    doneTitle: 'Keluarga dipulihkan',
+                    doneMessage: 'Anggota kembali tercatat. Catat hunian dan tautan akun lagi bila perlu.',
+                  ),
+                ),
+              );
+              if (changed == true) onChanged();
+            },
+            child: const Text('Pulihkan keluarga', textAlign: TextAlign.center),
           ),
         ],
         const SizedBox(height: 16),

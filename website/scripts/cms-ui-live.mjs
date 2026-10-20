@@ -98,7 +98,23 @@ try {
     let gone = -1;
     for (let w = 0; w <= 60; w += 5) { const r = await fetch(ORIGIN + '/artikel?_=' + Date.now()).catch(() => null); if (r && !(await r.text()).includes(title)) { gone = w; break; } await new Promise(res => setTimeout(res, 5000)); }
     rec('C15 arsip hilang dari website', gone >= 0, { detik: gone });
-    rec('C16 tanpa error JavaScript', errors.length === 0, { errors });
+    // Pulihkan (ADR34, UAT M15 20 Okt): kembali sebagai draf, belum tampil di website; lalu diarsipkan lagi agar staging bersih.
+    await page.goto(ORIGIN + '/pengurus/artikel?arsip=1'); await ready();
+    const pulih = page.locator('.cms-row, li, article').filter({ hasText: title }).first();
+    rec('C16 arsip punya tombol Pulihkan', (await pulih.getByRole('button', { name: 'Pulihkan' }).count()) === 1);
+    await pulih.getByRole('button', { name: 'Pulihkan' }).click();
+    await confirmDialog('Pulihkan');
+    await page.waitForTimeout(2000);
+    rec('C17 setelah dipulihkan hilang dari arsip', (await page.locator('.cms-row, li, article').filter({ hasText: title }).count()) === 0);
+    await page.goto(ORIGIN + '/pengurus/artikel'); await ready();
+    const aktif = page.locator('.cms-row, li, article').filter({ hasText: title }).first();
+    rec('C18 muncul di daftar aktif sebagai draf, belum terbit', (await aktif.textContent()).includes('Draf, belum terbit'));
+    await shot('dipulihkan');
+    rec('C19 dipulihkan tidak langsung tampil di website', (await publicHas(title, 20)) === -1);
+    await aktif.getByRole('button', { name: 'Arsipkan' }).click();
+    await confirmDialog('Arsipkan');
+    await page.waitForTimeout(2000);
+    rec('C20 tanpa error JavaScript', errors.length === 0, { errors });
 } catch (e) {
     rec('ERROR', false, { message: e.message.split('\n')[0] });
 } finally {

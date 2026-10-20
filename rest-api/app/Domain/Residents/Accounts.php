@@ -67,6 +67,25 @@ final class Accounts
         });
     }
 
+    /**
+     * Pulihkan akun arsip (ADR34). Akun kembali **nonaktif**: belum bisa masuk sampai pengurus mengaktifkannya.
+     * Tautan keluarga yang ditutup saat arsip tidak dibuka otomatis; pengurus menautkan ulang secara eksplisit.
+     */
+    public static function restore(Akun $actor, string $akunId, string $alasan): void
+    {
+        Links::transaction(function () use ($actor, $akunId, $alasan) {
+            $akun = Akun::whereKey($akunId)->lockForUpdate()->first() ?? throw new DomainConflict('NOT_FOUND', 'Data tidak ditemukan.', 404);
+            if ($akun->id === $actor->id) {
+                throw new DomainConflict('SELF_STATUS_CHANGE', 'Tidak dapat mengubah status akun sendiri.', 422);
+            }
+            if ($akun->status !== 'diarsipkan') {
+                throw new DomainConflict('NOT_ARCHIVED', 'Akun tidak sedang diarsipkan.');
+            }
+            $akun->forceFill(['status' => 'nonaktif', 'archived_at' => null])->save();
+            Audit::record($actor, 'akun.dipulihkan', 'akun', $akun->id, ['status' => 'nonaktif', 'alasan' => $alasan]);
+        });
+    }
+
     private static function assertManageable(Akun $actor, Akun $akun): void
     {
         if ($akun->id === $actor->id) {

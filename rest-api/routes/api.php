@@ -125,6 +125,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::get('houses/{id}', [ResidentsController::class, 'showHouse'])->whereUuid('id');
     Route::patch('houses/{id}', [ResidentsController::class, 'updateHouse'])->whereUuid('id');
     Route::post('houses/{id}/archive', [ResidentsController::class, 'archiveHouse'])->whereUuid('id');
+    Route::post('houses/{id}/restore', [ResidentsController::class, 'restoreHouse'])->whereUuid('id');
     Route::get('houses/{id}/dues', [FinanceController::class, 'houseDues'])->whereUuid('id');
     Route::get('families', [ResidentsController::class, 'families']);
     Route::post('families', [ResidentsController::class, 'storeFamily']);
@@ -132,6 +133,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::patch('families/{id}', [ResidentsController::class, 'updateFamily'])->whereUuid('id');
     Route::post('families/{id}/verify', [ResidentsController::class, 'verifyFamily'])->whereUuid('id');
     Route::post('families/{id}/archive', [ResidentsController::class, 'archiveFamily'])->whereUuid('id');
+    Route::post('families/{id}/restore', [ResidentsController::class, 'restoreFamily'])->whereUuid('id');
     Route::post('families/{id}/members', [ResidentsController::class, 'addFamilyMember'])->whereUuid('id');
     Route::post('families/{id}/primary-account', [ResidentsController::class, 'transferPrimary'])->whereUuid('id');
     Route::get('residents/{id}', [ResidentsController::class, 'showResident'])->whereUuid('id');
@@ -145,6 +147,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::get('accounts/{id}', [ResidentsController::class, 'showAccount'])->whereUuid('id');
     Route::patch('accounts/{id}', [ResidentsController::class, 'updateAccount'])->whereUuid('id');
     Route::post('accounts/{id}/archive', [ResidentsController::class, 'archiveAccount'])->whereUuid('id');
+    Route::post('accounts/{id}/restore', [ResidentsController::class, 'restoreAccount'])->whereUuid('id');
     Route::get('additional-account-requests', [ResidentsController::class, 'requests']);
     Route::post('additional-account-requests/{id}/approve', [ResidentsController::class, 'approve'])->whereUuid('id');
     Route::post('additional-account-requests/{id}/reject', [ResidentsController::class, 'reject'])->whereUuid('id');
@@ -175,6 +178,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
         Route::put("$type/{id}", [ContentController::class, 'update'])->defaults('type', $type)->whereUuid('id');
         Route::post("$type/{id}/publish", [ContentController::class, 'publish'])->defaults('type', $type)->whereUuid('id');
         Route::post("$type/{id}/archive", [ContentController::class, 'archive'])->defaults('type', $type)->whereUuid('id');
+        Route::post("$type/{id}/restore", [ContentController::class, 'restore'])->defaults('type', $type)->whereUuid('id');
     }
     Route::get('site-profile', [ContentController::class, 'profile']);
     Route::put('site-profile', [ContentController::class, 'updateProfile']);

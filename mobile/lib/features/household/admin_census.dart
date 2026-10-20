@@ -14,6 +14,7 @@ import 'census_providers.dart';
 import 'family_actions.dart';
 import 'family_page.dart';
 import 'paged_list.dart';
+import 'restore_page.dart';
 
 class HouseAdminPage extends ConsumerWidget {
   const HouseAdminPage({super.key, required this.summary, required this.onRecordPayment});
@@ -257,6 +258,29 @@ class _HouseBody extends ConsumerWidget {
               if (changed == true && context.mounted) Navigator.pop(context);
             },
             child: const Text('Arsipkan rumah'),
+          ),
+        ] else ...[
+          const SizedBox(height: 16),
+          OutlinedButton(
+            key: const ValueKey('pulihkan-rumah'),
+            onPressed: () async {
+              final changed = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RestoreArchivedPage(
+                    title: 'Pulihkan rumah',
+                    path: '/admin/houses/${house['id']}/restore',
+                    name: '${house['kode_rumah'] ?? ''}',
+                    note:
+                        'Rumah kembali aktif dan bisa diubah lagi. Hunian tidak dibuka otomatis dan tagihan tetap nonaktif sampai kamu menyalakannya lewat Ubah tagihan.',
+                    doneTitle: 'Rumah dipulihkan',
+                    doneMessage: 'Catat hunian lagi bila rumah dihuni, lalu nyalakan tagihan bila perlu.',
+                  ),
+                ),
+              );
+              if (changed == true) onChanged();
+            },
+            child: const Text('Pulihkan rumah'),
           ),
         ],
       ],
@@ -682,7 +706,7 @@ class _ArchiveAccountPageState extends ConsumerState<ArchiveAccountPage> {
         Text('${widget.akun['nama']}', style: Theme.of(context).textTheme.titleMedium),
         Text('${widget.akun['email']}', style: const TextStyle(color: Brand.muted)),
         const SizedBox(height: 12),
-        const Text('Arsip bersifat final. Peran tidak diubah dari aplikasi.', style: TextStyle(height: 1.35)),
+        const Text('Akun arsip tidak dihapus dan bisa dipulihkan pengurus (kembali nonaktif). Peran tidak diubah dari aplikasi.', style: TextStyle(height: 1.35)),
         const SizedBox(height: 12),
         TextField(
           controller: _alasan,
@@ -840,7 +864,34 @@ class _AccountTile extends StatelessWidget {
             else if (pending)
               const Text('Akun menunggu diproses melalui permohonan.', style: TextStyle(color: Brand.muted, height: 1.35))
             else if (archived)
-              const Text('Akun ini sudah diarsipkan.', style: TextStyle(color: Brand.muted, height: 1.35))
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text('Akun ini sudah diarsipkan.', style: TextStyle(color: Brand.muted, height: 1.35)),
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    key: const ValueKey('pulihkan-akun'),
+                    onPressed: () async {
+                      final changed = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => RestoreArchivedPage(
+                            title: 'Pulihkan akun',
+                            path: '/admin/accounts/${akun['id']}/restore',
+                            name: '${akun['nama']}',
+                            note:
+                                'Akun kembali Nonaktif dan belum bisa masuk. Tautan ke keluarga tidak dibuka otomatis: aktifkan akun, lalu tautkan ulang bila perlu.',
+                            doneTitle: 'Akun dipulihkan',
+                            doneMessage: 'Akun berstatus Nonaktif. Tekan Aktifkan kembali agar warga bisa masuk.',
+                          ),
+                        ),
+                      );
+                      if (changed == true) onChanged();
+                    },
+                    child: const Text('Pulihkan akun', textAlign: TextAlign.center),
+                  ),
+                ],
+              )
             else
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
