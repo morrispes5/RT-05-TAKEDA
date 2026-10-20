@@ -74,6 +74,11 @@ dan 360 px: **0 pelanggaran**. Keyboard: Tab pertama = "Lewati ke konten", isian
 Slideshow hero (interval, tanpa tombol jeda, reduced motion, tab tersembunyi) diuji `npm.cmd run test:preview` (PASS).
 Ini bukan pengganti uji pembaca layar/TalkBack manual di HP.
 
+## Lanjutan 19–20 Oktober
+
+UAT tim putaran 1–2 (ADR32, ADR33), staging dan APK 1007 pada `71dc523`, serta uji web Vercel + CMS staging:
+[web-20okt/README.md](web-20okt/README.md). Sisa gate dan pertanyaan untuk pemilik: [HANDOFF.md](../../HANDOFF.md).
+
 ## Belum (bukan PASS)
 
 UAT mitra (peserta nyata, `docs/UAT_M15.md`), pemasangan APK rilis + uji HP nyata (kamera ditutup paksa, koneksi lambat,
