@@ -160,18 +160,17 @@ void main() {
     expect(find.textContaining('Nomor rumah salah.'), findsOneWidget);
     await tester.tap(find.text('Kirim perbaikan'));
     await tester.pumpAndSettle();
-    expect(find.text('Jalan wajib diisi.'), findsOneWidget);
+    expect(find.text('Nama kepala keluarga wajib diisi.'), findsOneWidget);
+    expect(find.text('Jalan wajib diisi.'), findsNothing, reason: 'alamat opsional (ADR34)');
     expect(sent, isNull);
 
-    await tester.enterText(find.byKey(const ValueKey('revisi-blok')), 'D5');
-    await tester.enterText(find.byKey(const ValueKey('revisi-jalan')), 'Jl. Melati');
-    await tester.enterText(find.byKey(const ValueKey('revisi-nomor')), '23');
+    await tester.enterText(find.byKey(const ValueKey('revisi-nama_kepala')), 'Budi Santoso');
     await tester.tap(find.text('Kirim perbaikan'));
     // BusyButton berputar selama dialog hasil terbuka: pump bertahap, bukan pumpAndSettle.
     for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
-    expect(sent, {'nama': 'Sri Uji', 'hubungan_keluarga': 'Anak', 'blok': 'D5', 'jalan': 'Jl. Melati', 'nomor': '23'});
+    expect(sent, {'nama': 'Sri Uji', 'hubungan_keluarga': 'Anak', 'nama_kepala': 'Budi Santoso', 'blok': null, 'jalan': null, 'nomor': null});
     expect(find.text('Perbaikan terkirim'), findsOneWidget);
   });
 }

@@ -574,12 +574,7 @@ class _ContentEditorPageState extends ConsumerState<ContentEditorPage> {
         ] else ...[
           const Text('Konten diarsipkan: tidak tampil di website dan tidak dapat diubah sampai dipulihkan.', style: TextStyle(color: Brand.muted)),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
-            key: const ValueKey('pulihkan'),
-            onPressed: _restore,
-            icon: const Icon(Icons.unarchive_outlined),
-            label: const Text('Pulihkan'),
-          ),
+          OutlinedButton.icon(key: const ValueKey('pulihkan'), onPressed: _restore, icon: const Icon(Icons.unarchive_outlined), label: const Text('Pulihkan')),
         ],
       ],
     ),

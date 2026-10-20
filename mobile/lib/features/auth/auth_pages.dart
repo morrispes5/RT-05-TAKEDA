@@ -241,7 +241,8 @@ class RegisterPage extends ConsumerStatefulWidget {
 class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _form = GlobalKey<FormState>();
   final c = {
-    for (final key in ['email', 'password', 'password2', 'token', 'nama', 'hubungan', 'whatsapp', 'blok', 'jalan', 'nomor']) key: TextEditingController(),
+    for (final key in ['email', 'password', 'password2', 'token', 'nama', 'hubungan', 'kepala', 'whatsapp', 'blok', 'jalan', 'nomor'])
+      key: TextEditingController(),
   };
   final List<(TextEditingController, TextEditingController)> _anggota = [];
   String _hunian = 'pemilik';
@@ -290,13 +291,15 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       'password_confirmation': c['password2']!.text,
       'registration_token': c['token']!.text.trim(),
       'device_name': 'Android RT05',
+      // Akun tambahan: alamat opsional (ADR34), dikirim null bila kosong. Akun utama tetap wajib.
       'blok': c['blok']!.text.trim().isEmpty ? null : c['blok']!.text.trim(),
-      'jalan': c['jalan']!.text.trim(),
-      'nomor': c['nomor']!.text.trim(),
+      'jalan': c['jalan']!.text.trim().isEmpty && widget.additional ? null : c['jalan']!.text.trim(),
+      'nomor': c['nomor']!.text.trim().isEmpty && widget.additional ? null : c['nomor']!.text.trim(),
     };
     if (widget.additional) {
       body['nama'] = c['nama']!.text.trim();
       body['hubungan_keluarga'] = c['hubungan']!.text.trim();
+      body['nama_kepala'] = c['kepala']!.text.trim();
     } else {
       body['nama_kepala'] = c['nama']!.text.trim();
       body['whatsapp'] = c['whatsapp']!.text.trim().isEmpty ? null : c['whatsapp']!.text.trim();
@@ -366,7 +369,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     allowBack: !_busy,
     title: widget.additional ? 'Daftar akun tambahan' : 'Daftar akun utama',
     subtitle: widget.additional
-        ? 'Untuk anggota keluarga lain di rumah yang sudah terdaftar. Akun menunggu persetujuan pengurus dan belum mendapat akses layanan.'
+        ? 'Untuk anggota keluarga lain di rumah yang sudah terdaftar. Cukup isi nama, hubungan, dan nama kepala keluarga. Akun menunggu persetujuan pengurus dan belum mendapat akses layanan.'
         : 'Akun utama langsung aktif dengan kata sandi aplikasi. Keluarga berstatus belum diverifikasi sampai pengurus meninjau.',
     child: Form(
       key: _form,
@@ -397,15 +400,20 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           const SizedBox(height: 10),
           _field('nama', widget.additional ? 'Nama lengkap' : 'Nama kepala keluarga', apiKey: widget.additional ? 'nama' : 'nama_kepala', maxLength: 120),
           if (widget.additional) _field('hubungan', 'Hubungan dengan kepala keluarga', apiKey: 'hubungan_keluarga', hint: 'mis. Anak, Istri', maxLength: 40),
+          if (widget.additional) _field('kepala', 'Nama kepala keluarga', apiKey: 'nama_kepala', hint: 'Sesuai yang terdaftar di rumah ini', maxLength: 120),
           if (!widget.additional) _field('whatsapp', 'Nomor WhatsApp', type: TextInputType.phone, optional: true, maxLength: 25, validate: validateWhatsapp),
-          Text('Alamat rumah', style: Theme.of(context).textTheme.titleMedium),
+          Text(widget.additional ? 'Alamat rumah (opsional)' : 'Alamat rumah', style: Theme.of(context).textTheme.titleMedium),
+          if (widget.additional) ...[
+            const SizedBox(height: 4),
+            const Text('Boleh dikosongkan. Rumah dicocokkan otomatis dari nama kepala keluarga.', style: TextStyle(color: Brand.muted, height: 1.35)),
+          ],
           const SizedBox(height: 10),
           LayoutBuilder(
             builder: (context, constraints) {
               final stacked = constraints.maxWidth < 280;
               // UAT M15: blok wajib untuk rumah baru (akun utama) agar akun anggota keluarga cocok ke rumah yang sama.
               final blok = _field('blok', 'Blok', optional: widget.additional, hint: 'mis. A atau D5', maxLength: 30);
-              final nomor = _field('nomor', 'Nomor', maxLength: 20);
+              final nomor = _field('nomor', 'Nomor', optional: widget.additional, maxLength: 20);
               if (stacked) {
                 return Column(children: [blok, nomor]);
               }
@@ -419,7 +427,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               );
             },
           ),
-          _field('jalan', 'Jalan', maxLength: 150),
+          _field('jalan', 'Jalan', optional: widget.additional, maxLength: 150),
           if (!widget.additional) ...[
             DropdownButtonFormField<String>(
               key: const ValueKey('field-hunian'),
@@ -636,6 +644,7 @@ class RevisionRequestPage extends ConsumerStatefulWidget {
 class _RevisionRequestPageState extends ConsumerState<RevisionRequestPage> {
   late final _nama = TextEditingController(text: '${widget.permohonan['nama'] ?? ''}');
   late final _hubungan = TextEditingController(text: '${widget.permohonan['hubungan_keluarga'] ?? ''}');
+  late final _kepala = TextEditingController(text: '${widget.permohonan['nama_kepala_keluarga'] ?? ''}');
   final _blok = TextEditingController();
   final _jalan = TextEditingController();
   final _nomor = TextEditingController();
@@ -643,7 +652,7 @@ class _RevisionRequestPageState extends ConsumerState<RevisionRequestPage> {
 
   @override
   void dispose() {
-    for (final c in [_nama, _hubungan, _blok, _jalan, _nomor]) {
+    for (final c in [_nama, _hubungan, _kepala, _blok, _jalan, _nomor]) {
       c.dispose();
     }
     super.dispose();
@@ -653,8 +662,7 @@ class _RevisionRequestPageState extends ConsumerState<RevisionRequestPage> {
     final errors = <String, String>{
       if (_nama.text.trim().length < 2) 'nama': 'Nama wajib diisi.',
       if (_hubungan.text.trim().isEmpty) 'hubungan_keluarga': 'Hubungan keluarga wajib diisi.',
-      if (_jalan.text.trim().isEmpty) 'jalan': 'Jalan wajib diisi.',
-      if (_nomor.text.trim().isEmpty) 'nomor': 'Nomor wajib diisi.',
+      if (_kepala.text.trim().length < 2) 'nama_kepala': 'Nama kepala keluarga wajib diisi.',
     };
     setState(() => _errors = errors);
     if (errors.isNotEmpty) return;
@@ -666,9 +674,10 @@ class _RevisionRequestPageState extends ConsumerState<RevisionRequestPage> {
             data: {
               'nama': _nama.text.trim(),
               'hubungan_keluarga': _hubungan.text.trim(),
+              'nama_kepala': _kepala.text.trim(),
               'blok': _blok.text.trim().isEmpty ? null : _blok.text.trim(),
-              'jalan': _jalan.text.trim(),
-              'nomor': _nomor.text.trim(),
+              'jalan': _jalan.text.trim().isEmpty ? null : _jalan.text.trim(),
+              'nomor': _nomor.text.trim().isEmpty ? null : _nomor.text.trim(),
             },
           );
       if (!mounted) return;
@@ -705,7 +714,8 @@ class _RevisionRequestPageState extends ConsumerState<RevisionRequestPage> {
         const SizedBox(height: 16),
         _input('nama', 'Nama lengkap', _nama, max: 120),
         _input('hubungan_keluarga', 'Hubungan dengan kepala keluarga', _hubungan, hint: 'mis. Anak, Istri', max: 40),
-        Text('Alamat rumah (tulis ulang)', style: Theme.of(context).textTheme.titleMedium),
+        _input('nama_kepala', 'Nama kepala keluarga', _kepala, hint: 'Sesuai yang terdaftar di rumah ini', max: 120),
+        Text('Alamat rumah (opsional)', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 10),
         _input('blok', 'Blok', _blok, hint: 'mis. A atau D5', max: 30),
         _input('jalan', 'Jalan', _jalan),

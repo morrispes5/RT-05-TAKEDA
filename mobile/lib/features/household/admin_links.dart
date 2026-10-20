@@ -281,8 +281,7 @@ class _FamilyBody extends ConsumerWidget {
                     title: 'Pulihkan keluarga',
                     path: '/admin/families/${family['id']}/restore',
                     name: kepala ?? 'keluarga ini',
-                    note:
-                        'Keluarga kembali aktif bersama anggota yang ikut diarsipkan. Hunian rumah dan tautan akun tidak dibuka otomatis; catat ulang bila perlu.',
+                    note: 'Keluarga kembali aktif bersama anggota yang ikut diarsipkan. Hunian rumah dan tautan akun tidak dibuka otomatis; catat ulang bila perlu.',
                     doneTitle: 'Keluarga dipulihkan',
                     doneMessage: 'Anggota kembali tercatat. Catat hunian dan tautan akun lagi bila perlu.',
                   ),

@@ -1090,6 +1090,7 @@ class AccountDetailPage extends ConsumerWidget {
                   [
                     '${request['status'] ?? ''}',
                     if (request['hubungan_keluarga'] != null) '${request['hubungan_keluarga']}',
+                    if ('${request['nama_kepala_diajukan'] ?? ''}'.isNotEmpty) 'Kepala: ${request['nama_kepala_diajukan']}',
                     if ('${request['alamat_diajukan'] ?? ''}'.isNotEmpty) '${request['alamat_diajukan']}',
                   ].join(' • '),
                   style: const TextStyle(height: 1.35),

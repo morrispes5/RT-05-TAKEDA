@@ -259,7 +259,9 @@ void main() {
       (o) {
         posts.add(o.uri.path);
         sent = _body(o.data);
-        return jsonBody(200, {'data': _admin(status: 'draf', jenis: 'fasilitas', versi: 3, draf: {'title': 'Lapangan'})});
+        return jsonBody(200, {
+          'data': _admin(status: 'draf', jenis: 'fasilitas', versi: 3, draf: {'title': 'Lapangan'}),
+        });
       },
     );
     expect(find.byKey(const ValueKey('arsipkan')), findsNothing);
