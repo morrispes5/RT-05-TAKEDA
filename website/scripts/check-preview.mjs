@@ -6,9 +6,11 @@ import { previewServer } from './serve-preview.mjs';
 import { checkContentPreview } from './check-content-preview.mjs';
 import { checkHeroSlideshow } from './check-hero-slideshow.mjs';
 
-const server = previewServer();
-await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-const base = 'http://127.0.0.1:' + server.address().port;
+// Tanpa argumen: preview lokal. Dengan URL (mis. https://rt05takeda.vercel.app): uji yang sama terhadap situs live.
+const live = process.argv[2]?.replace(/\/$/, '');
+const server = live ? null : previewServer();
+if (server) await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+const base = live || 'http://127.0.0.1:' + server.address().port;
 const htmlFiles = (await readdir('preview', { recursive: true })).filter(f => f.endsWith('.html') && f !== '404.html');
 const routes = htmlFiles.map(f => f === 'index.html' ? '/' : '/' + f.replaceAll('\\', '/').replace(/\.html$/, ''));
 await mkdir('artifacts/screenshots', { recursive: true });
@@ -109,5 +111,5 @@ try {
     console.log(JSON.stringify({ ...report, results: undefined }, null, 2));
 } finally {
     await browser.close();
-    server.close();
+    server?.close();
 }
