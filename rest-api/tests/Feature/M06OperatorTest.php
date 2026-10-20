@@ -137,7 +137,7 @@ class M06OperatorTest extends TestCase
         foreach (['anak65a@contoh.test', 'anak65b@contoh.test'] as $email) {
             $this->postJson('/api/v1/auth/additional-register', [
                 'email' => $email, 'password' => 'Rahasia123', 'password_confirmation' => 'Rahasia123',
-                'registration_token' => $this->tokenCode, 'device_name' => 'hp', 'nama' => 'Uji Anak', 'hubungan_keluarga' => 'Anak',
+                'registration_token' => $this->tokenCode, 'device_name' => 'hp', 'nama' => 'Uji Anak', 'hubungan_keluarga' => 'Anak', 'nama_kepala' => 'Uji Kepala 1',
                 'blok' => 'Z', 'jalan' => 'Jl. Uji', 'nomor' => '65',
             ])->assertStatus(202);
         }

@@ -38,7 +38,7 @@ trait Fixtures
     protected function pemohon(string $nomor, string $email, string $nama = 'Uji Tambahan'): Akun
     {
         return Registration::additional([
-            'email' => $email, 'password' => 'Rahasia123', 'nama' => $nama, 'hubungan_keluarga' => 'Anak',
+            'email' => $email, 'password' => 'Rahasia123', 'nama' => $nama, 'hubungan_keluarga' => 'Anak', 'nama_kepala' => "Uji Kepala $nomor",
             'blok' => 'Z', 'jalan' => 'Jl. Uji', 'nomor' => $nomor,
         ], $this->tokenCode ?? $this->freshToken());
     }

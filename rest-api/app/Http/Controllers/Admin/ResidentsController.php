@@ -178,6 +178,24 @@ class ResidentsController extends Controller
     }
 
     /** Arsip rumah: hunian aktif diakhiri lewat layanan hunian; tagihan/pembayaran/kas tidak dihapus. */
+    public function restoreHouse(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['alasan' => ['required', 'string', 'max:300']]);
+        $actor = $request->user();
+        Links::transaction(function () use ($actor, $id, $data) {
+            Links::lockHouses([$id]);
+            $rumah = Rumah::findOrFail($id);
+            if (! $rumah->archived_at) {
+                throw new DomainConflict('NOT_ARCHIVED', 'Rumah tidak sedang diarsipkan.');
+            }
+            // Tagihan tetap nonaktif (arsip mematikannya): pengurus menyalakan lewat Ubah rumah agar tagihan tidak muncul tanpa sengaja.
+            $rumah->forceFill(['archived_at' => null, 'versi' => $rumah->versi + 1])->save();
+            Audit::record($actor, 'rumah.dipulihkan', 'rumah', $rumah->id, ['alasan' => $data['alasan']]);
+        });
+
+        return Api::noContent();
+    }
+
     public function archiveHouse(Request $request, string $id): JsonResponse
     {
         $data = $request->validate(['alasan' => ['required', 'string', 'max:300']]);
@@ -260,6 +278,14 @@ class ResidentsController extends Controller
     {
         $data = $request->validate(['alasan' => ['required', 'string', 'max:300']]);
         Households::archive($request->user(), $id, $data['alasan']);
+
+        return Api::noContent();
+    }
+
+    public function restoreFamily(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['alasan' => ['required', 'string', 'max:300']]);
+        Households::restore($request->user(), $id, $data['alasan']);
 
         return Api::noContent();
     }
@@ -408,6 +434,14 @@ class ResidentsController extends Controller
     {
         $data = $request->validate(['alasan' => ['required', 'string', 'max:300']]);
         Accounts::archive($request->user(), $id, $data['alasan']);
+
+        return $this->showAccount($id);
+    }
+
+    public function restoreAccount(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate(['alasan' => ['required', 'string', 'max:300']]);
+        Accounts::restore($request->user(), $id, $data['alasan']);
 
         return $this->showAccount($id);
     }

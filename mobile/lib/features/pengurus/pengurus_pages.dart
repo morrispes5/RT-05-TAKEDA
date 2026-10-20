@@ -457,10 +457,11 @@ class _RequestsViewState extends ConsumerState<_RequestsView> {
                       Text('${p['nama_pemohon']} (${p['hubungan_keluarga'] ?? '-'})', style: Theme.of(context).textTheme.titleMedium),
                       Text('${p['email']}', style: const TextStyle(color: Brand.muted)),
                       const SizedBox(height: 6),
-                      Text('Alamat diajukan: ${p['alamat_diajukan']}'),
+                      if ('${p['nama_kepala_diajukan'] ?? ''}'.isNotEmpty) Text('Kepala keluarga: ${p['nama_kepala_diajukan']}'),
+                      if ('${p['alamat_diajukan'] ?? ''}'.isNotEmpty) Text('Alamat diajukan: ${p['alamat_diajukan']}'),
                       Text(
                         p['rumah_cocok'] == null
-                            ? 'Rumah tidak cocok dengan data — minta pemohon memperbaiki, atau tolak.'
+                            ? 'Rumah belum cocok otomatis — pilih rumah saat menyetujui, minta pemohon memperbaiki, atau tolak.'
                             : 'Cocok dengan rumah ${(p['rumah_cocok'] as Map)['kode_rumah']}',
                         style: TextStyle(color: p['rumah_cocok'] == null ? Brand.danger : Brand.success),
                       ),

@@ -229,6 +229,7 @@ final class Present
             'nama_pemohon' => $p->nama_pemohon ?? $p->akun?->nama,
             'email' => $p->akun?->email,
             'hubungan_keluarga' => $p->hubungan_keluarga,
+            'nama_kepala_diajukan' => $p->nama_kepala_diajukan,
             'alamat_diajukan' => $p->alamat_diajukan,
             'rumah_cocok' => $p->rumah ? ['id' => $p->rumah->id, 'kode_rumah' => $p->rumah->kode_rumah, 'alamat' => $p->rumah->alamat()] : null,
             'catatan' => $p->catatan,
