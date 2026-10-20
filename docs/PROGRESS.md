@@ -59,6 +59,17 @@ Selesai di sesi ini (lokal; staging/APK menyusul):
   rest-api 320 tes / 3255; mobile 229; website 15 + `test:preview` exit 0. Insiden: `artisan migrate --env=testing`
   tanpa `.env.testing` memakai `rest-api/.env` → migrasi aditif `2026_10_20_000100` ikut diterapkan ke Neon branch
   **dev** (bukan production/staging; tanpa ubah data); dicatat agar tidak terulang.
+  PR #52 merge `71dc523`; staging `71dc523` Selesai 0 GAGAL (migrasi `perlu_revisi` jalan); APK rilis 1007
+  (run 39361652243, versionCode 3007, sertifikat kunci rilis, SHA-256 `8186ac54…db4d`) diunggah sebagai versi baru di
+  link Drive tim yang sama.
+
+- Uji web 20 Okt (permintaan pemilik; [bukti](evidence/m15/web-20okt/README.md)): Vercel sama persis dengan `preview/`
+  (21/21) dan `check-preview.mjs` terhadap Vercel PASS (105 kasus responsif, 45 a11y, editor demo, hero); staging API CMS
+  21/21; UI CMS staging `website/scripts/cms-ui-live.mjs` 16/16 (edit artikel terbit → Terbitkan → tampil ±15 dtk;
+  Arsipkan → *Lihat arsip*). Temuan E menunggu konfirmasi maksud pemilik.
+
+- **Serah terima sesi: [HANDOFF.md](HANDOFF.md)** — sisa gate M15, bug terbuka (#46–#48, PR #50 belum merge), pertanyaan
+  untuk pemilik, runbook deploy/APK/Drive, dan jebakan lingkungan.
 
 Belum: pemasangan APK rilis di HP pemilik (perlu uninstall APK debug sekali), uji Android nyata (kamera ditutup paksa, koneksi lambat, push), ulang uji beban setelah deploy + ukur Neon
 dingin, UAT mitra (peserta nyata, tidak dikarang), privacy notice final (kontak/retensi dari pemilik/mitra), verifikasi
@@ -690,7 +701,7 @@ ditentukan hanya oleh tersedianya kode.
 | M12 | passed | 17 Oktober: FIN critical + konkurensi antarproses + timeout replay + rekonsiliasi harian + konfirmasi saldo negatif + aksi pembalikan mobile; lokal 296/2917, Flutter 207. Bagian "M12" teratas |
 | M13 | passed | 17–18 Oktober, staging `88c7302` live 14/14: API konten publik (draf/terbit/arsip, snapshot, slug redirect, media, impor katalog) + Konten website di mobile pengurus; lokal 303, Flutter 216. Bagian "M13" teratas |
 | M14 | passed | Website membaca API + CMS web nyata (ADR30); staging `08f2a1e` 21/21 + drill API mati |
-| M15 | in_progress | APK rilis kunci tetap, pemulihan draf kamera, keamanan & beban staging; UAT/HP nyata belum (ADR31) |
+| M15 | in_progress | Staging/APK 1007 `71dc523`; UAT tim putaran 1–2 diperbaiki (ADR32/33); sisa gate di HANDOFF.md (UAT tercatat, PR #50, HP nyata, verifikasi developer, privacy final) |
 | M16 | planned | Production baru belum dirilis |
 
 M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. M01–M16 menggunakan planned/in_progress/passed/blocked.

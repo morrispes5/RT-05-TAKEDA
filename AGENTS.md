@@ -2,7 +2,7 @@
 
 ## Tujuan dan urutan baca
 
-Bangun sistem informasi dan layanan RT 05 Taman Kedaung dari frontend yang telah diterima menjadi monorepo operasional. Untuk orientasi sesi, ikuti skill `init` di `.cursor/skills/init/SKILL.md` (perintah `/init`). Jika skill dan docs/PROGRESS.md berbeda, docs/PROGRESS.md yang berlaku. Lalu baca README.md, docs/PRD.md, docs/BUSINESS_RULES.md, docs/ARCHITECTURE.md, docs/ROADMAP.md, dan docs/PROGRESS.md sebelum implementasi, serta dokumen domain milestone aktif.
+Bangun sistem informasi dan layanan RT 05 Taman Kedaung dari frontend yang telah diterima menjadi monorepo operasional. Untuk orientasi sesi, ikuti skill `init` di `.cursor/skills/init/SKILL.md` (perintah `/init`). Jika skill dan docs/PROGRESS.md berbeda, docs/PROGRESS.md yang berlaku. Lalu baca README.md, docs/PRD.md, docs/BUSINESS_RULES.md, docs/ARCHITECTURE.md, docs/ROADMAP.md, dan docs/PROGRESS.md sebelum implementasi, serta dokumen domain milestone aktif. Untuk melanjutkan sesi sebelumnya, baca docs/HANDOFF.md (status terkini, sisa gate, bug terbuka, pertanyaan untuk pemilik, runbook) dan perbarui dokumen itu sebelum mengakhiri sesi.
 
 Dokumen frontend dari repository asal tetap menjadi bukti baseline. Sejak M01 dokumentasi frontend berada di docs/website/ (mulai dari docs/website/FRONTEND_HANDOFF.md, lalu CONTENT_PREVIEW.md dan QA_STITCH_PREVIEW.md). Dokumen refactor awal dan catatan Kimi bersifat historis.
 

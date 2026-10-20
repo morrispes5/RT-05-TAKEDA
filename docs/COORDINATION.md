@@ -1,5 +1,12 @@
 # Koordinasi RT05 TAKEDA
 
+## Tahap M15 (berjalan sejak 19 Oktober 2026)
+
+Claude mengerjakan M15 sendirian (tanpa fleet): APK rilis kunci tetap, keamanan, performa, kuota Neon, UAT tim pemilik
+putaran 1–2 (PR #51, #52), uji web 20 Okt. Codex membuka review QA (issue #46–#48); perbaikannya PR #50 **belum di-merge**.
+Sesi paralel lain (diagnosis jaringan MyRepublic) meninggalkan perubahan belum di-commit di checkout bersama. Pemilik akan
+memulai sesi baru dan mungkin bekerja dengan agent lain: titik masuk serah terima adalah [HANDOFF.md](HANDOFF.md).
+
 ## Tahap M09 (ditutup 13 Oktober 2026)
 
 Pemilik meminta lanjut ke M09 setelah M08 ditutup, selaras dengan PRD, semua dokumen `.md`, dan capstone.
