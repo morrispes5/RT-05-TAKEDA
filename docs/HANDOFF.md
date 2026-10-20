@@ -26,7 +26,7 @@ Terakhir diperbarui: **20 Oktober 2026 siang WIB** oleh Claude (sesi M15 panjang
 | APK uji tim | build **1007** (`rt05-takeda-staging-1007-arm64-v8a.apk`, versionCode 3007, run [39361652243](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/39361652243)), SHA-256 `8186ac54e471c2ccb190f1286de15ed1b75b068ca72b18fc3df95c822d70db4d` |
 | Link APK untuk tim (Drive pemilik, "siapa saja yang punya link") | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view — **link tetap**; build baru diunggah sebagai *versi baru* file yang sama |
 | PR terbuka | **#50** (perbaikan QA #46/#48, sebagian #47) — belum di-merge, lihat bagian 4 |
-| Issue terbuka | #46, #47, #48 (QA M15, medium) |
+| Issue terbuka | **#54** (pelacak sisa gate M15, checklist), #46, #47, #48 (QA M15, medium) |
 
 ## 3. Yang sudah selesai di M15 (ringkas; rincian di PROGRESS dan [evidence/m15/REPORT.md](evidence/m15/REPORT.md))
 
