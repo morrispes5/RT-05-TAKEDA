@@ -85,4 +85,32 @@ class SiteContentApiTest extends TestCase
         $this->get('/artikel')->assertOk()->assertSee('Tangan bersih', false);
         $this->assertSame('baked', SiteContent::source());
     }
+
+    /** UAT M15: foto sampul asli yang diunggah lewat CMS tampil menggantikan SVG; artikel tanpa sampul tetap SVG. */
+    public function test_article_cover_photo_replaces_svg_illustration(): void
+    {
+        config(['services.rt05_content.api' => 'http://api.internal']);
+        $article = fn (string $slug, ?array $cover) => [
+            'slug' => $slug, 'title' => 'Judul '.$slug, 'category' => 'Lingkungan', 'art' => 'hands', 'summary' => 'Ringkasan '.$slug.'.',
+            'intro' => 'Pembuka artikel.', 'sections' => [['title' => 'Bagian', 'body' => 'Isi bagian.']], 'note' => null, 'source' => null,
+            'cover' => $cover, 'cover_alt' => $cover ? 'Warga bergotong royong di taman' : null, 'published_at' => '2026-10-19T15:43:00Z',
+        ];
+        Http::fake([
+            'api.internal/api/v1/public/articles*' => Http::response(['data' => [
+                $article('dengan-sampul', ['id' => 'm-9', 'url' => '/api/v1/public/media/m-9', 'srcset' => null, 'lebar' => 1600, 'tinggi' => 1000]),
+                $article('tanpa-sampul', null),
+            ], 'meta' => []]),
+            'api.internal/api/v1/public/albums*' => Http::response(['data' => [], 'meta' => []]),
+        ]);
+
+        $page = $this->get('/artikel/dengan-sampul')->assertOk()->getContent();
+        $this->assertStringContainsString('<div class="reading-art article-art art-hands"><img class="article-cover" src="/api/v1/public/media/m-9" alt="Warga bergotong royong di taman" width="1600" height="1000" loading="eager" decoding="async"></div>', $page);
+        $this->assertStringNotContainsString('<div class="reading-art article-art art-hands"><svg', $page);
+
+        $list = $this->get('/artikel')->assertOk()->getContent();
+        $this->assertStringContainsString('<a href="/artikel/dengan-sampul" class="article-art art-hands" aria-label="Baca Judul dengan-sampul"><img class="article-cover" src="/api/v1/public/media/m-9"', $list);
+        $this->assertStringContainsString('aria-label="Baca Judul tanpa-sampul"><svg', $list);
+
+        $this->assertStringContainsString('<div class="reading-art article-art art-hands"><svg', $this->get('/artikel/tanpa-sampul')->assertOk()->getContent());
+    }
 }
