@@ -107,7 +107,7 @@ class IdentityTest extends TestCase
         $res = $this->postJson('/api/v1/auth/additional-register', [
             'email' => 'anak8@contoh.test', 'password' => 'Rahasia123', 'password_confirmation' => 'Rahasia123',
             'registration_token' => $this->tokenCode, 'device_name' => 'tes', 'nama' => 'Uji Anak Akun',
-            'hubungan_keluarga' => 'Anak', 'blok' => 'Z', 'jalan' => 'Jl. Uji', 'nomor' => '8',
+            'hubungan_keluarga' => 'Anak', 'nama_kepala' => 'Uji Kepala 1', 'blok' => 'Z', 'jalan' => 'Jl. Uji', 'nomor' => '8',
         ])->assertStatus(202);
         $token = $res->json('data.token');
 

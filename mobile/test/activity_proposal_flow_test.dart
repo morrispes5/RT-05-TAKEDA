@@ -77,6 +77,18 @@ Future<void> _settle(WidgetTester tester) async {
   }
 }
 
+/// Jam selesai dipilih warga sendiri (UAT M15 20 Okt): buka pemilih jam, pakai mode ketik, isi [hour] (format 12 jam, AM).
+Future<void> _pickEndHour(WidgetTester tester, int hour) async {
+  await tester.tap(find.text('Jam selesai'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byIcon(Icons.keyboard_outlined));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.descendant(of: find.byType(Dialog), matching: find.byType(TextField)).first, '$hour');
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('OK'));
+  await tester.pumpAndSettle();
+}
+
 Future<void> _fillValidForm(WidgetTester tester) async {
   await tester.tap(find.text('Jenis kegiatan'));
   await tester.pumpAndSettle();
@@ -89,6 +101,7 @@ Future<void> _fillValidForm(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.tap(find.text('OK'));
   await tester.pumpAndSettle();
+  await _pickEndHour(tester, 11);
   await tester.enterText(find.widgetWithText(TextField, 'Lokasi'), 'Lapangan RT 05');
   await tester.enterText(find.widgetWithText(TextField, 'Deskripsi dan susunan acara'), 'Badminton warga, terbuka untuk semua umur.');
   await tester.enterText(find.widgetWithText(TextField, 'Perkiraan peserta (opsional)'), '20');
@@ -142,7 +155,7 @@ void main() {
     expect(fields['jenis'], 'olahraga');
     expect(fields['pernyataan'], '1');
     expect(fields['perkiraan_peserta'], '20');
-    expect(DateTime.parse(fields['selesai_at']!).difference(DateTime.parse(fields['mulai_at']!)), const Duration(hours: 2));
+    expect(DateTime.parse(fields['selesai_at']!).difference(DateTime.parse(fields['mulai_at']!)), const Duration(hours: 1));
     expect(find.text('Usulan terkirim'), findsOneWidget);
     expect(find.textContaining('semua warga diberi tahu'), findsOneWidget);
     await tester.tap(find.text('Mengerti'));
@@ -319,6 +332,50 @@ void main() {
     await tester.tap(find.byTooltip('Tutup'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('alert-error')), findsNothing);
+  });
+
+  // UAT M15 (20 Okt 2026): jam selesai tidak boleh terisi sendiri (+2 jam) saat warga memilih jam mulai.
+  testWidgets('memilih jam mulai tidak mengisi jam selesai otomatis', (tester) async {
+    await _pump(tester, ActivityProposalFormPage(now: () => _now), (o) => jsonBody(200, {'data': {}}));
+    await tester.tap(find.text('Tanggal dan jam mulai'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('10.00 WIB'), findsOneWidget, reason: 'jam mulai terisi');
+    expect(find.text('Pilih'), findsOneWidget, reason: 'jam selesai tetap kosong sampai dipilih');
+    expect(find.textContaining('11.00 WIB'), findsNothing);
+
+    await _pickEndHour(tester, 11);
+    expect(find.text('Pilih'), findsNothing);
+    expect(find.textContaining('11.00 WIB'), findsOneWidget);
+  });
+
+  testWidgets('mengganti jam mulai mengosongkan jam selesai yang tidak lagi valid', (tester) async {
+    await _pump(tester, ActivityProposalFormPage(now: () => _now), (o) => jsonBody(200, {'data': {}}));
+    await tester.tap(find.text('Tanggal dan jam mulai'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await _pickEndHour(tester, 11);
+    expect(find.textContaining('11.00 WIB'), findsOneWidget);
+
+    // Jam mulai dimajukan sampai tidak lagi mendahului jam selesai: jam selesai dikosongkan, bukan digeser sendiri.
+    await tester.tap(find.text('Tanggal dan jam mulai'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.keyboard_outlined));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.descendant(of: find.byType(Dialog), matching: find.byType(TextField)).first, '11');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('11.00 WIB'), findsOneWidget, reason: 'jam mulai kini 11.00');
+    expect(find.text('Pilih'), findsOneWidget);
   });
 
   // UAT M15 (19 Okt 2026): dua crash pemilih waktu yang tampil sebagai layar kosong di APK rilis.

@@ -271,8 +271,7 @@ class _HouseBody extends ConsumerWidget {
                     title: 'Pulihkan rumah',
                     path: '/admin/houses/${house['id']}/restore',
                     name: '${house['kode_rumah'] ?? ''}',
-                    note:
-                        'Rumah kembali aktif dan bisa diubah lagi. Hunian tidak dibuka otomatis dan tagihan tetap nonaktif sampai kamu menyalakannya lewat Ubah tagihan.',
+                    note: 'Rumah kembali aktif dan bisa diubah lagi. Hunian tidak dibuka otomatis dan tagihan tetap nonaktif sampai kamu menyalakannya lewat Ubah tagihan.',
                     doneTitle: 'Rumah dipulihkan',
                     doneMessage: 'Catat hunian lagi bila rumah dihuni, lalu nyalakan tagihan bila perlu.',
                   ),
@@ -706,7 +705,10 @@ class _ArchiveAccountPageState extends ConsumerState<ArchiveAccountPage> {
         Text('${widget.akun['nama']}', style: Theme.of(context).textTheme.titleMedium),
         Text('${widget.akun['email']}', style: const TextStyle(color: Brand.muted)),
         const SizedBox(height: 12),
-        const Text('Akun arsip tidak dihapus dan bisa dipulihkan pengurus (kembali nonaktif). Peran tidak diubah dari aplikasi.', style: TextStyle(height: 1.35)),
+        const Text(
+          'Akun arsip tidak dihapus dan bisa dipulihkan pengurus (kembali nonaktif). Peran tidak diubah dari aplikasi.',
+          style: TextStyle(height: 1.35),
+        ),
         const SizedBox(height: 12),
         TextField(
           controller: _alasan,
@@ -879,8 +881,7 @@ class _AccountTile extends StatelessWidget {
                             title: 'Pulihkan akun',
                             path: '/admin/accounts/${akun['id']}/restore',
                             name: '${akun['nama']}',
-                            note:
-                                'Akun kembali Nonaktif dan belum bisa masuk. Tautan ke keluarga tidak dibuka otomatis: aktifkan akun, lalu tautkan ulang bila perlu.',
+                            note: 'Akun kembali Nonaktif dan belum bisa masuk. Tautan ke keluarga tidak dibuka otomatis: aktifkan akun, lalu tautkan ulang bila perlu.',
                             doneTitle: 'Akun dipulihkan',
                             doneMessage: 'Akun berstatus Nonaktif. Tekan Aktifkan kembali agar warga bisa masuk.',
                           ),

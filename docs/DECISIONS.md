@@ -432,3 +432,35 @@ Tanggal: 20 Oktober 2026 (laporan UAT tim pemilik). Status: **diterapkan di bran
    website tetap menggambar SVG): bila artikel punya sampul, website menampilkan foto asli itu di kartu, artikel
    pilihan, dan halaman baca (`partials/article-visual`); tanpa sampul tetap ilustrasi SVG yang diterima. Tidak ada
    gambar AI. Katalog baked/Vercel tanpa sampul, sehingga tampilannya tidak berubah.
+
+### ADR34 — UAT M15 putaran 3: pulihkan arsip, tombol Kembali, jam selesai manual, validasi akun tambahan
+
+Tanggal: 20 Oktober 2026 (laporan UAT tim pemilik pada APK 1008). Status: **diterapkan di branch `codex/m15-restore-archive`**.
+Instruksi pemilik: arsip harus bisa dikembalikan; jam selesai usulan tidak boleh terisi sendiri; tombol Kembali meminta
+konfirmasi; akun tambahan divalidasi dari nama, hubungan, dan nama kepala keluarga dengan alamat opsional.
+
+1. **Pulihkan arsip** mengubah ADR33 butir 6 (arsip hanya baca) dan teks "Arsip bersifat final" pada akun. Endpoint admin
+   `POST {articles|albums|facilities}/{id}/restore` (versi wajib), `POST houses|families|accounts/{id}/restore` (alasan
+   wajib, teraudit `*.dipulihkan`). Bukan arsip → 409 `NOT_ARCHIVED`.
+   - **Konten** kembali **draf**, bukan terbit: pengurus meninjau lalu menekan Terbitkan. Slug arsip tidak pernah dilepas,
+     jadi tidak bisa bentrok. Tanpa event outbox karena draf tidak tampil publik.
+   - **Rumah**: `archived_at` dikosongkan. `tagihan_aktif` tetap false (arsip mematikannya); pengurus menyalakan lewat Ubah
+     tagihan supaya tagihan tidak muncul tanpa sengaja. Hunian yang ditutup saat arsip tidak dibuka lagi.
+   - **Akun**: kembali **nonaktif** (belum bisa masuk) sampai pengurus mengaktifkan. Tautan keluarga tidak dibuka otomatis;
+     pengurus menautkan ulang. Tidak ada pemulihan akun sendiri.
+   - **Keluarga**: aktif lagi bersama anggota yang ikut diarsipkan olehnya (keanggotaan berakhir `diarsipkan` dalam jendela
+     satu menit sebelum `archived_at` keluarga; status `pindah` yang dipasang arsip kembali `aktif`). Anggota yang sudah pindah
+     atau meninggal lebih dulu tidak ikut. Hunian rumah dan tautan akun tidak dibuka otomatis. Versi keluarga naik.
+   - Pengaduan, aspirasi, agenda, dan pengumuman belum punya layar arsip di aplikasi, jadi belum diberi Pulihkan.
+2. **Tombol Kembali (mobile)**: `HomeShell` memakai `PopScope`. Dari tab selain yang pertama kembali ke tab pertama
+   (dashboard); dari tab pertama muncul dialog "Keluar dari aplikasi?" lalu `SystemNavigator.pop` (sesi tidak dikeluarkan).
+   Halaman yang di-push tetap menutup lebih dulu.
+3. **Jam selesai usulan** tidak pernah terisi otomatis. Mengganti jam mulai mempertahankan jam selesai hanya bila masih di
+   hari yang sama dan setelah jam mulai; selain itu dikosongkan. Pemilih jam selesai mulai dari jam mulai (bukan +2 jam).
+4. **Akun tambahan**: wajib `nama`, `hubungan_keluarga`, `nama_kepala`; `blok`/`jalan`/`nomor` opsional (kolom aditif
+   `permohonan_akun.nama_kepala_diajukan`; `alamat_diajukan` boleh null). Rumah dicocokkan diam-diam: alamat lengkap bila
+   diisi dan cocok; selain itu nama kepala (tanpa beda huruf besar/kecil dan spasi ganda) hanya bila tepat satu rumah aktif
+   berpenghuni; ganda atau tidak ada → `rumah_cocok` null dan pengurus memilih rumah saat menyetujui. Pemohon tidak diberi
+   tahu hasil pencocokan. Berlaku juga untuk perbaikan permohonan (`PATCH /auth/additional-account-request`).
+5. **Tidak diubah**: aturan minimal 10 karakter untuk ringkasan, pembuka, dan isi bagian artikel serta deskripsi album
+   (validasi M13). Bila pemilik ingin melonggarkannya, itu keputusan terpisah.

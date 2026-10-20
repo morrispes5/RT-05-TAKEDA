@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -60,34 +61,53 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           ];
     final unread = ref.watch(notificationsProvider).value?['meta']?['belum_dibaca'] as int? ?? 0;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            const GapuraMark(size: 28, light: true),
-            const SizedBox(width: 10),
-            Flexible(child: Text(tabs[_index].$1, overflow: TextOverflow.ellipsis)),
+    // Tombol Kembali (UAT M15 20 Okt): dari tab mana pun kembali ke tab pertama (dashboard); dari dashboard
+    // minta konfirmasi sebelum menutup aplikasi. Halaman yang di-push berada di atas shell dan tetap menutup lebih dulu.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        if (_index != 0) {
+          setState(() => _index = 0);
+          return;
+        }
+        final leave = await confirm(
+          context,
+          title: 'Keluar dari aplikasi?',
+          message: 'Aplikasi ditutup. Akunmu tetap masuk dan bisa dibuka lagi kapan saja.',
+          yes: 'Keluar aplikasi',
+        );
+        if (leave) await SystemNavigator.pop();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Row(
+            children: [
+              const GapuraMark(size: 28, light: true),
+              const SizedBox(width: 10),
+              Flexible(child: Text(tabs[_index].$1, overflow: TextOverflow.ellipsis)),
+            ],
+          ),
+          actions: [
+            IconButton(
+              tooltip: 'Notifikasi',
+              onPressed: () async {
+                await context.push('/notifications');
+                ref.invalidate(notificationsProvider);
+              },
+              icon: Badge(isLabelVisible: unread > 0, label: Text('$unread'), child: const Icon(Icons.notifications_outlined)),
+            ),
           ],
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Notifikasi',
-            onPressed: () async {
-              await context.push('/notifications');
-              ref.invalidate(notificationsProvider);
-            },
-            icon: Badge(isLabelVisible: unread > 0, label: Text('$unread'), child: const Icon(Icons.notifications_outlined)),
+        body: IndexedStack(index: _index, children: [for (final t in tabs) t.$3]),
+        // Label navigasi dibatasi 1,3× agar lima tab tetap muat di layar sempit; isi halaman tetap mengikuti skala sistem.
+        bottomNavigationBar: MediaQuery.withClampedTextScaling(
+          maxScaleFactor: 1.3,
+          child: NavigationBar(
+            selectedIndex: _index,
+            onDestinationSelected: go,
+            destinations: [for (final t in tabs) NavigationDestination(icon: Icon(t.$2), label: t.$1)],
           ),
-        ],
-      ),
-      body: IndexedStack(index: _index, children: [for (final t in tabs) t.$3]),
-      // Label navigasi dibatasi 1,3× agar lima tab tetap muat di layar sempit; isi halaman tetap mengikuti skala sistem.
-      bottomNavigationBar: MediaQuery.withClampedTextScaling(
-        maxScaleFactor: 1.3,
-        child: NavigationBar(
-          selectedIndex: _index,
-          onDestinationSelected: go,
-          destinations: [for (final t in tabs) NavigationDestination(icon: Icon(t.$2), label: t.$1)],
         ),
       ),
     );

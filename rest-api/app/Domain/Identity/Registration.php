@@ -136,7 +136,7 @@ final class Registration
                 throw new DomainConflict('REGISTRATION_REJECTED', self::REJECTED, 422);
             }
 
-            $rumah = Rumah::where('alamat_key', Address::key($data['blok'] ?? null, $data['jalan'], $data['nomor']))->first();
+            $rumah = self::matchHouse($data);
 
             $akun = Akun::create([
                 'nama' => trim($data['nama']),
@@ -153,7 +153,8 @@ final class Registration
                 'rumah_id' => $rumah?->id,
                 'nama_pemohon' => trim($data['nama']),
                 'hubungan_keluarga' => trim($data['hubungan_keluarga']),
-                'alamat_diajukan' => trim(($data['blok'] ?? '').' '.$data['jalan'].' '.$data['nomor']),
+                'nama_kepala_diajukan' => trim($data['nama_kepala']),
+                'alamat_diajukan' => self::submittedAddress($data),
             ]);
             PreferensiNotifikasi::create(['akun_id' => $akun->id]);
 
@@ -268,12 +269,13 @@ final class Registration
             if (! $permohonan || $permohonan->status !== 'perlu_revisi') {
                 throw new DomainConflict('REQUEST_NOT_REVISABLE', 'Permohonan tidak sedang menunggu perbaikan.', 409);
             }
-            $rumah = Rumah::where('alamat_key', Address::key($data['blok'] ?? null, $data['jalan'], $data['nomor']))->first();
+            $rumah = self::matchHouse($data);
             $permohonan->forceFill([
                 'status' => 'diajukan',
                 'nama_pemohon' => trim($data['nama']),
                 'hubungan_keluarga' => trim($data['hubungan_keluarga']),
-                'alamat_diajukan' => trim(($data['blok'] ?? '').' '.$data['jalan'].' '.$data['nomor']),
+                'nama_kepala_diajukan' => trim($data['nama_kepala']),
+                'alamat_diajukan' => self::submittedAddress($data),
                 'rumah_id' => $rumah?->id,
                 'diproses_oleh_id' => null,
                 'diproses_at' => null,
@@ -285,6 +287,44 @@ final class Registration
 
             return $permohonan;
         });
+    }
+
+    /**
+     * Rumah untuk permohonan akun tambahan (ADR34), dicocokkan diam-diam (pemohon tidak diberi tahu hasilnya):
+     * alamat lengkap bila diisi, selain itu (atau bila alamat tidak cocok) dari nama kepala keluarga. Nama kepala
+     * hanya cocok bila tepat satu rumah aktif berpenghuni dengan kepala bernama itu; bila ganda atau tidak ada,
+     * hasilnya null dan pengurus memilih rumah saat menyetujui.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private static function matchHouse(array $data): ?Rumah
+    {
+        if (filled($data['jalan'] ?? null) && filled($data['nomor'] ?? null)) {
+            $byAddress = Rumah::where('alamat_key', Address::key($data['blok'] ?? null, $data['jalan'], $data['nomor']))->first();
+            if ($byAddress) {
+                return $byAddress;
+            }
+        }
+        $nama = mb_strtolower(trim((string) preg_replace('/\s+/u', ' ', (string) ($data['nama_kepala'] ?? ''))));
+        if ($nama === '') {
+            return null;
+        }
+        $keluargaIds = Warga::where('is_kepala', true)->whereNull('archived_at')
+            ->whereRaw("lower(regexp_replace(btrim(nama), '\\s+', ' ', 'g')) = ?", [$nama])
+            ->pluck('keluarga_id');
+        $rumah = Rumah::whereNull('archived_at')
+            ->whereHas('penghunianAktif', fn ($q) => $q->whereIn('keluarga_id', $keluargaIds))
+            ->limit(2)->get();
+
+        return $rumah->count() === 1 ? $rumah->first() : null;
+    }
+
+    /** Alamat yang diketik pemohon; null bila tidak diisi (alamat opsional). */
+    private static function submittedAddress(array $data): ?string
+    {
+        $text = trim(trim((string) ($data['blok'] ?? '')).' '.trim((string) ($data['jalan'] ?? '')).' '.trim((string) ($data['nomor'] ?? '')));
+
+        return $text === '' ? null : $text;
     }
 
     /** Email dinormalisasi sama seperti constraint akun_email_lowercase dan login. */
