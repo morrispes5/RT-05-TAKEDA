@@ -54,6 +54,7 @@ Route::middleware(['auth:sanctum', 'akun:menunggu'])->group(function () {
     Route::get('auth/me', [AuthController::class, 'me']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/additional-account-status', [AuthController::class, 'additionalAccountStatus']);
+    Route::patch('auth/additional-account-request', [AuthController::class, 'reviseAdditionalRequest'])->middleware('throttle:registrasi');
     // Push perangkat (M10): akun menunggu boleh mendaftar agar menerima kabar persetujuan.
     Route::put('devices/{device_identifier}', [DeviceController::class, 'upsert'])->middleware('throttle:30,1');
     Route::delete('devices/{device_identifier}', [DeviceController::class, 'destroy']);
@@ -114,7 +115,7 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
 Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(function () {
     Route::get('dashboard', [OperationsController::class, 'dashboard']);
     Route::get('audit-logs', [OperationsController::class, 'auditLogs']);
-    Route::get('exports/{jenis}', [OperationsController::class, 'export'])->whereIn('jenis', ['iuran', 'kas', 'rumah']);
+    Route::get('exports/{jenis}', [OperationsController::class, 'export'])->whereIn('jenis', ['iuran', 'kas', 'rumah', 'pembayaran']);
 
     Route::get('registration-token', [ResidentsController::class, 'token']);
     Route::post('registration-token/rotate', [ResidentsController::class, 'rotateToken']);
@@ -147,6 +148,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::get('additional-account-requests', [ResidentsController::class, 'requests']);
     Route::post('additional-account-requests/{id}/approve', [ResidentsController::class, 'approve'])->whereUuid('id');
     Route::post('additional-account-requests/{id}/reject', [ResidentsController::class, 'reject'])->whereUuid('id');
+    Route::post('additional-account-requests/{id}/revision', [ResidentsController::class, 'requestRevision'])->whereUuid('id');
 
     Route::post('complaints/{id}/status', [ReportsController::class, 'changeComplaintStatus'])->whereUuid('id');
     Route::post('complaints/{id}/archive', [ReportsController::class, 'archiveComplaint'])->whereUuid('id');

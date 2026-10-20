@@ -40,7 +40,7 @@ Lokasi menu: tab **Agenda** → tombol utama **Ajukan kegiatan** dan daftar **Us
 | Deskripsi dan susunan acara | ya | 20–5000 karakter | Tujuan, peserta, susunan acara |
 | Perkiraan peserta | tidak | 1–1000 | — |
 | Kebutuhan dari RT | tidak | ≤1000 karakter | Mis. izin pakai lapangan, pengumuman, peminjaman meja |
-| Dokumen pendukung | tidak | Maks. 3 berkas: PDF, JPG/PNG/WebP, atau TXT; maks. 8 MB per berkas, TXT maks. 1 MB | Tombol **Pilih file** (PDF/TXT/gambar) dan **Foto** (kamera/galeri) |
+| Dokumen pendukung | tidak | Maks. 3 berkas: PDF, JPG/PNG/WebP, atau TXT; PDF dan TXT maks. 1 MB (UAT M15), foto maks. 8 MB (diperkecil ulang) | Tombol **Pilih file** (PDF/TXT/gambar) dan **Foto** (kamera/galeri) |
 | Pernyataan | ya | Harus dicentang | "Saya penanggung jawab kegiatan ini dan akan menjaga kebersihan, ketertiban, serta keamanan lingkungan." |
 
 Validasi tampil di dekat field yang salah sebelum request dikirim. Server memvalidasi ulang semua aturan.

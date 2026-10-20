@@ -403,7 +403,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           LayoutBuilder(
             builder: (context, constraints) {
               final stacked = constraints.maxWidth < 280;
-              final blok = _field('blok', 'Blok', optional: true, maxLength: 30);
+              // UAT M15: blok wajib untuk rumah baru (akun utama) agar akun anggota keluarga cocok ke rumah yang sama.
+              final blok = _field('blok', 'Blok', optional: widget.additional, hint: 'mis. A atau D5', maxLength: 30);
               final nomor = _field('nomor', 'Nomor', maxLength: 20);
               if (stacked) {
                 return Column(children: [blok, nomor]);
@@ -552,11 +553,18 @@ class _PendingPageState extends ConsumerState<PendingPage> {
     final payload = status.asData?.value;
     final permohonan = payload is Map ? payload['permohonan'] as Map? : null;
     final rejected = permohonan?['status'] == 'ditolak';
+    final revision = permohonan?['status'] == 'perlu_revisi';
     final alasan = '${permohonan?['catatan'] ?? '-'}';
     return _AuthScaffold(
-      title: rejected ? 'Permohonan ditolak' : 'Menunggu persetujuan',
+      title: rejected
+          ? 'Permohonan ditolak'
+          : revision
+          ? 'Perlu perbaikan'
+          : 'Menunggu persetujuan',
       subtitle: rejected
           ? 'Permohonan akun tambahan ditolak. Alasan: $alasan'
+          : revision
+          ? 'Pengurus RT meminta Anda memperbaiki data permohonan.'
           : 'Permohonan akun tambahan sedang ditinjau pengurus RT. Akses layanan terbuka setelah disetujui.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -566,14 +574,44 @@ class _PendingPageState extends ConsumerState<PendingPage> {
             onRetry: () => ref.invalidate(_pendingStatus),
             builder: (_) => SectionCard(
               title: 'Status permohonan',
-              trailing: StatusChip(rejected ? 'ditolak' : 'menunggu', label: rejected ? 'Ditolak' : 'Ditinjau'),
+              trailing: StatusChip(
+                rejected
+                    ? 'ditolak'
+                    : revision
+                    ? 'perlu_revisi'
+                    : 'menunggu',
+                label: rejected
+                    ? 'Ditolak'
+                    : revision
+                    ? 'Perlu perbaikan'
+                    : 'Ditinjau',
+              ),
               child: Text(
                 rejected
                     ? 'Alasan: $alasan\nAkun yang ditolak tidak mendapat akses layanan. Hubungi pengurus bila perlu mengajukan kembali.'
+                    : revision
+                    ? 'Catatan pengurus: $alasan\nPerbaiki data lalu kirim ulang. Pengurus akan meninjau kembali.'
                     : 'Hubungi pengurus bila permohonan belum diproses.',
               ),
             ),
           ),
+          if (revision) ...[
+            const SizedBox(height: 16),
+            BusyButton(
+              key: const ValueKey('perbaiki-permohonan'),
+              label: 'Perbaiki permohonan',
+              icon: Icons.edit_outlined,
+              onPressed: _busy
+                  ? null
+                  : () async {
+                      final sent = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(builder: (_) => RevisionRequestPage(permohonan: Map<String, dynamic>.from(permohonan!))),
+                      );
+                      if (sent == true) ref.invalidate(_pendingStatus);
+                    },
+            ),
+          ],
           const SizedBox(height: 16),
           BusyButton(label: 'Periksa lagi', icon: Icons.refresh, outlined: true, onPressed: _busy ? null : _refresh),
           const SizedBox(height: 10),
@@ -585,6 +623,99 @@ class _PendingPageState extends ConsumerState<PendingPage> {
 }
 
 final _pendingStatus = FutureProvider.autoDispose((ref) => ref.read(apiProvider).get('/auth/additional-account-status'));
+
+/// UAT M15: pemohon akun tambahan memperbaiki data yang diminta pengurus, lalu mengajukan ulang.
+class RevisionRequestPage extends ConsumerStatefulWidget {
+  const RevisionRequestPage({super.key, required this.permohonan});
+  final Map<String, dynamic> permohonan;
+
+  @override
+  ConsumerState<RevisionRequestPage> createState() => _RevisionRequestPageState();
+}
+
+class _RevisionRequestPageState extends ConsumerState<RevisionRequestPage> {
+  late final _nama = TextEditingController(text: '${widget.permohonan['nama'] ?? ''}');
+  late final _hubungan = TextEditingController(text: '${widget.permohonan['hubungan_keluarga'] ?? ''}');
+  final _blok = TextEditingController();
+  final _jalan = TextEditingController();
+  final _nomor = TextEditingController();
+  Map<String, String> _errors = const {};
+
+  @override
+  void dispose() {
+    for (final c in [_nama, _hubungan, _blok, _jalan, _nomor]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final errors = <String, String>{
+      if (_nama.text.trim().length < 2) 'nama': 'Nama wajib diisi.',
+      if (_hubungan.text.trim().isEmpty) 'hubungan_keluarga': 'Hubungan keluarga wajib diisi.',
+      if (_jalan.text.trim().isEmpty) 'jalan': 'Jalan wajib diisi.',
+      if (_nomor.text.trim().isEmpty) 'nomor': 'Nomor wajib diisi.',
+    };
+    setState(() => _errors = errors);
+    if (errors.isNotEmpty) return;
+    try {
+      await ref
+          .read(apiProvider)
+          .patch(
+            '/auth/additional-account-request',
+            data: {
+              'nama': _nama.text.trim(),
+              'hubungan_keluarga': _hubungan.text.trim(),
+              'blok': _blok.text.trim().isEmpty ? null : _blok.text.trim(),
+              'jalan': _jalan.text.trim(),
+              'nomor': _nomor.text.trim(),
+            },
+          );
+      if (!mounted) return;
+      await showResultDialog(context, title: 'Perbaikan terkirim', message: 'Permohonan Anda kembali ditinjau pengurus RT.');
+      if (mounted) Navigator.pop(context, true);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _errors = {for (final f in e.fields.entries) f.key: f.value.first});
+      showApiError(context, e);
+    }
+  }
+
+  Widget _input(String key, String label, TextEditingController c, {String? hint, int max = 150}) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: TextField(
+      key: ValueKey('revisi-$key'),
+      controller: c,
+      maxLength: max,
+      decoration: InputDecoration(labelText: label, hintText: hint, errorText: _errors[key], errorMaxLines: 3),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Perbaiki permohonan')),
+    body: ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: Brand.warningBg, borderRadius: BorderRadius.circular(12)),
+          child: Text('Catatan pengurus: ${widget.permohonan['catatan'] ?? '-'}', style: const TextStyle(height: 1.35)),
+        ),
+        const SizedBox(height: 16),
+        _input('nama', 'Nama lengkap', _nama, max: 120),
+        _input('hubungan_keluarga', 'Hubungan dengan kepala keluarga', _hubungan, hint: 'mis. Anak, Istri', max: 40),
+        Text('Alamat rumah (tulis ulang)', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 10),
+        _input('blok', 'Blok', _blok, hint: 'mis. A atau D5', max: 30),
+        _input('jalan', 'Jalan', _jalan),
+        _input('nomor', 'Nomor', _nomor, max: 20),
+        const SizedBox(height: 8),
+        BusyButton(label: 'Kirim perbaikan', icon: Icons.send, onPressed: _submit),
+      ],
+    ),
+  );
+}
 
 class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});

@@ -407,3 +407,24 @@ Instruksi pemilik: banyak keluhan foto pengaduan tidak bisa diedit; batasi ukura
 3. Keluhan "halaman kas admin putih" berasal dari APK M10: memanggil `/api/v1/cash/summary` yang dipindah ke
    `/api/v1/admin/cash/summary` (ADR26). APK M15+ memakai endpoint baru; tes `m15_finance_uat_test` memakai bentuk
    respons staging pada lebar 320–360 dp dan teks 2×.
+
+### ADR33 — UAT M15 putaran 2: ekspor CSV di aplikasi, tagihan langsung, blok wajib, revisi permohonan akun
+
+Tanggal: 20 Oktober 2026 (laporan UAT tim pemilik). Status: **diterapkan di branch `codex/m15-uat-fixes-2`**.
+
+1. **Ekspor CSV di aplikasi pengurus** (permintaan klien): tombol *Ekspor CSV* di tab Pembayaran, Kas, dan Rekap
+   (rekap = `exports/iuran?periode=YYYY-MM`). Ekspor baru `pembayaran` (nomor bukti, rumah, tanggal, periode, total,
+   status, catatan, alasan pembatalan). CSV UTF-8 ber-BOM agar langsung terbuka di Excel/Google Sheets; disimpan
+   lewat dialog "Simpan sebagai" Android (`file_picker`). Sel formula tetap diberi prefiks (ADR27).
+2. **Tagihan langsung**: rumah baru (pengurus), perubahan tagihan rumah, dan registrasi akun utama menjalankan
+   `Dues::catchUp` setelah commit (idempotent, gagal hanya dicatat log), sehingga warga baru langsung melihat tagihan
+   bulan berjalan tanpa menunggu generator harian/Rekap. *Mulai tagih* dipilih lewat dialog bulan, bukan diketik.
+3. **Blok wajib** untuk rumah baru (pengurus) dan registrasi akun utama; akun tambahan tetap opsional karena
+   dicocokkan ke rumah lama yang mungkin tanpa blok.
+4. **Revisi permohonan akun tambahan**: status baru `perlu_revisi` (migrasi aditif). Pengurus *Minta perbaikan*
+   dengan catatan wajib; pemohon melihat catatan di layar status dan mengirim ulang nama/hubungan/alamat
+   (`PATCH /auth/additional-account-request`), rumah dicocokkan ulang diam-diam, pengurus diberi tahu. Tolak tetap
+   tersedia dari `diajukan` maupun `perlu_revisi`.
+5. **Dokumen usulan**: PDF dan TXT maks. 1 MB (disimpan apa adanya); foto maks. 8 MB karena diperkecil ulang.
+6. **CMS web**: tampilan *Lihat arsip* (hanya baca), pesan jelas bahwa draf konten terbit belum tampil sampai
+   *Terbitkan*, dan cache konten website 15 detik (sebelumnya 60).

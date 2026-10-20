@@ -15,6 +15,7 @@ use App\Support\Audit;
 use App\Support\Outbox;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -82,6 +83,19 @@ final class Dues
         }
 
         return $created;
+    }
+
+    /**
+     * UAT M15: dipanggil setelah rumah dibuat/diubah atau registrasi rumah baru agar tagihan bulan berjalan
+     * langsung terlihat warga (tidak menunggu generator harian). Idempotent; gagal tidak membatalkan aksi.
+     */
+    public static function catchUpQuietly(?Akun $actor = null): void
+    {
+        try {
+            self::catchUp($actor);
+        } catch (\Throwable $e) {
+            Log::warning('dues.catch_up_failed', ['exception' => $e::class]);
+        }
     }
 
     /** Catch-up dari tarif pertama sampai bulan berjalan (aman setelah downtime). */

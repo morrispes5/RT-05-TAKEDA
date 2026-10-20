@@ -423,7 +423,7 @@ class _RequestsViewState extends ConsumerState<_RequestsView> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            for (final choice in const [('Menunggu', 'diajukan'), ('Disetujui', 'disetujui'), ('Ditolak', 'ditolak')])
+            for (final choice in const [('Menunggu', 'diajukan'), ('Perlu perbaikan', 'perlu_revisi'), ('Disetujui', 'disetujui'), ('Ditolak', 'ditolak')])
               ChoiceChip(label: Text(choice.$1), selected: _status == choice.$2, onSelected: (_) => setState(() => _status = choice.$2)),
           ],
         );
@@ -460,11 +460,44 @@ class _RequestsViewState extends ConsumerState<_RequestsView> {
                       Text('Alamat diajukan: ${p['alamat_diajukan']}'),
                       Text(
                         p['rumah_cocok'] == null
-                            ? 'Rumah tidak cocok dengan data — tolak atau minta pemohon mendaftar ulang.'
+                            ? 'Rumah tidak cocok dengan data — minta pemohon memperbaiki, atau tolak.'
                             : 'Cocok dengan rumah ${(p['rumah_cocok'] as Map)['kode_rumah']}',
                         style: TextStyle(color: p['rumah_cocok'] == null ? Brand.danger : Brand.success),
                       ),
+                      if (_status == 'perlu_revisi' && p['catatan'] != null) ...[
+                        const SizedBox(height: 6),
+                        Text('Catatan perbaikan: ${p['catatan']}', style: const TextStyle(color: Brand.muted, height: 1.35)),
+                      ],
                       if (_status == 'diajukan') ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: BusyButton(
+                            key: ValueKey('revisi-${p['id']}'),
+                            label: 'Minta perbaikan',
+                            outlined: true,
+                            onPressed: () async {
+                              final note = await askText(
+                                context,
+                                title: 'Minta pemohon memperbaiki data',
+                                label: 'Yang perlu diperbaiki (wajib)',
+                                hint: 'mis. nomor rumah salah, harusnya D5-23',
+                              );
+                              if (!context.mounted || note == null) return;
+                              if (note.trim().length < 5) {
+                                showMessage(context, 'Catatan minimal 5 karakter agar pemohon paham apa yang diperbaiki.', error: true);
+                                return;
+                              }
+                              try {
+                                await ref.read(apiProvider).post('/admin/additional-account-requests/${p['id']}/revision', data: {'catatan': note.trim()});
+                                ref.invalidate(requestsProvider(_status));
+                                if (context.mounted) showMessage(context, 'Permintaan perbaikan terkirim. Pemohon melihat catatan Anda di aplikasinya.');
+                              } on ApiException catch (error) {
+                                if (context.mounted) showMessage(context, error.display, error: true);
+                              }
+                            },
+                          ),
+                        ),
                         const SizedBox(height: 12),
                         Row(
                           children: [
@@ -573,6 +606,8 @@ class _PaymentsView extends ConsumerWidget {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
                 children: [
+                  const ExportButton(jenis: 'pembayaran', label: 'Daftar pembayaran'),
+                  const SizedBox(height: 8),
                   for (final p in list)
                     Card(
                       key: ValueKey('bayar-${p['id']}'),
@@ -648,6 +683,7 @@ class _AdminCashView extends ConsumerWidget {
       },
     ),
     body: CashView(
+      action: const ExportButton(jenis: 'kas', label: 'Mutasi kas'),
       onReverse: (k) async {
         final done = await reverseEntry(
           context,

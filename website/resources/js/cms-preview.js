@@ -100,8 +100,15 @@ async function overview() {
             node('div', { class: 'cms-action-row' }, link('Coba editor artikel', editorUrl('articles', articles[0]?.id)), link('Coba editor album', editorUrl('albums', albums[0]?.id)))));
 }
 async function listing(type) {
-    const records = await repository.list(type);
-    actions.replaceChildren(link(type === 'articles' ? 'Tulis artikel' : 'Buat album', editorUrl(type), true));
+    // UAT M15: pengurus dapat melihat konten yang diarsipkan (hanya baca; arsip tidak dapat diubah atau diterbitkan lagi).
+    const archived = server && params.get('arsip') === '1';
+    const records = await repository.list(type, archived ? { status: 'arsip' } : {});
+    const base = '/pengurus/' + typePath(type);
+    actions.replaceChildren(
+        server ? link(archived ? 'Kembali ke daftar aktif' : 'Lihat arsip', archived ? base : base + '?arsip=1') : '',
+        archived ? '' : link(type === 'articles' ? 'Tulis artikel' : 'Buat album', editorUrl(type), true),
+    );
+    if (archived) heading(type === 'articles' ? 'Arsip artikel.' : 'Arsip album.', 'Konten di sini tidak tampil di website. Arsip disimpan sebagai riwayat dan tidak dapat diubah.');
     const list = node('div', { class: 'cms-content-list' });
     const input = field('Cari ' + (type === 'articles' ? 'artikel' : 'album'), '', term => {
         let count = 0;
@@ -116,10 +123,10 @@ async function listing(type) {
             const photo = record.photos.find(p => p.id === record.coverId) || record.photos[0];
             row.append(node('img', { class: 'cms-list-cover', src: await photoUrl(photo), alt: photo.alt || 'Sampul album', width: 160, height: 112 }));
         }
-        const label = server ? (record.status === 'draft' ? 'Draf, belum terbit' : record.pending ? 'Terbit, ada perubahan belum terbit' : 'Terbit di website') : record.status === 'draft' ? 'Draf di perangkat' : 'Contoh dari website';
+        const label = server ? (record.status === 'archived' ? 'Diarsipkan' : record.status === 'draft' ? 'Draf, belum terbit' : record.pending ? 'Terbit, ada perubahan belum terbit — tekan Terbitkan' : 'Terbit di website') : record.status === 'draft' ? 'Draf di perangkat' : 'Contoh dari website';
         row.append(node('div', { class: 'cms-row-copy' }, node('span', { class: 'cms-record-status' }, label),
-            node('h2', {}, node('a', { href: editorUrl(type, record.id) }, record.title || 'Tanpa judul')), node('p', {}, type === 'articles' ? record.category : record.photos.length + ' foto')),
-            node('div', { class: 'cms-row-actions' }, link('Edit', editorUrl(type, record.id)), button(server ? 'Arsipkan' : record.status === 'draft' ? 'Hapus draf' : 'Sembunyikan contoh', async () => {
+            node('h2', {}, node('a', { href: archived ? previewUrl(type, record.id) : editorUrl(type, record.id) }, record.title || 'Tanpa judul')), node('p', {}, type === 'articles' ? record.category : record.photos.length + ' foto')),
+            archived ? node('div', { class: 'cms-row-actions' }, link('Lihat', previewUrl(type, record.id))) : node('div', { class: 'cms-row-actions' }, link('Edit', editorUrl(type, record.id)), button(server ? 'Arsipkan' : record.status === 'draft' ? 'Hapus draf' : 'Sembunyikan contoh', async () => {
                 const ask = server ? ['Arsipkan konten ini?', record.status === 'draft' ? 'Draf dipindahkan ke arsip dan tidak dapat diterbitkan lagi.' : 'Konten berhenti tampil di website publik dan disimpan sebagai arsip.', 'Arsipkan']
                     : ['Hapus dari pratinjau?', 'Perubahan hanya berlaku di browser ini. Konten publik tidak dihapus.', 'Hapus'];
                 if (await confirm(...ask)) {
@@ -129,6 +136,7 @@ async function listing(type) {
             })));
         list.append(row);
     }
+    if (archived) empty.textContent = 'Belum ada konten yang diarsipkan.';
     root.replaceChildren(panel(input, status, list, empty));
 }
 async function editor(type) {
@@ -160,7 +168,8 @@ async function editor(type) {
                 media = media.filter(file => !files.some(done => done.id === file.id));
                 savedRevision = version; unsaved = savedRevision < revision;
                 if (server && saved) { record.versi = saved.versi; record.slug = saved.slug; record.status = saved.status; record.pending = saved.pending; history.replaceState(null, '', editorUrl(type, saved.id)); }
-                status.textContent = unsaved ? (repository.autosave ? 'Ada perubahan baru. Menyimpan…' : 'Ada perubahan baru yang belum disimpan.') : savedText;
+                status.textContent = unsaved ? (repository.autosave ? 'Ada perubahan baru. Menyimpan…' : 'Ada perubahan baru yang belum disimpan.')
+                    : server && saved?.status === 'published' ? 'Draf tersimpan. Website masih menampilkan versi lama sampai Anda menekan Terbitkan.' : savedText;
                 errors.hidden = true; return true;
             } catch (error) {
                 unsaved = true; status.textContent = 'Draf belum tersimpan.'; errors.hidden = false;
@@ -186,7 +195,7 @@ async function editor(type) {
         try {
             const done = await repository.publish(type, record.id);
             record.versi = done.versi; record.status = done.status; record.pending = false; unsaved = false;
-            status.textContent = 'Terbit di website. Halaman publik diperbarui dalam ±1 menit.';
+            status.textContent = 'Terbit di website. Halaman publik diperbarui dalam ±15 detik.';
             notify('"' + record.title + '" berhasil diterbitkan.');
         } catch (error) {
             if (error.status === 401) { failure(error); return; }

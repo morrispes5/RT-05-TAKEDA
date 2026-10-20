@@ -28,7 +28,7 @@ Occupancy dan account link aktif mempunyai ended_at null. Primary aktif per ruma
 | occupancies | id, house_id, family_id, is_primary, occupancy_type owner/tenant, started_at, ended_at |
 | account_links | id, user_id, resident_id, family_id, house_id, is_primary, started_at, ended_at |
 | registration_invites | id, token_digest, token_ciphertext, activated_at, expires_at, revoked_at, rotated_by |
-| additional_account_requests | id, user_id, target_house_id/target_family_id resolved privately, state, reviewed_by, reviewed_at, reason |
+| additional_account_requests | id, user_id, target_house_id/target_family_id resolved privately, state, reviewed_by, reviewed_at, reason | (UAT M15: state `perlu_revisi`, ADR33)
 | password_reset_tokens | Framework Laravel; email, token hash, created_at |
 | personal_access_tokens | Sanctum; token hash, owner, abilities, expires_at, last_used_at |
 

@@ -35,6 +35,7 @@ final class ActivityProposals
 
     public const MAX_BYTES = 8 * 1024 * 1024;
 
+    /** PDF dan TXT disimpan apa adanya, jadi dibatasi 1 MB (UAT M15); gambar boleh 8 MB karena diperkecil ulang. */
     public const MAX_TEXT_BYTES = 1024 * 1024;
 
     public const JENIS = ['olahraga', 'kerja_bakti', 'keagamaan', 'sosial', 'rapat', 'lainnya'];
@@ -233,6 +234,9 @@ final class ActivityProposals
         }
         if ($type === 'pdf') {
             $bytes = (string) file_get_contents($path);
+            if (strlen($bytes) > self::MAX_TEXT_BYTES) {
+                throw new DomainConflict('PAYLOAD_TOO_LARGE', 'Dokumen PDF maksimal 1 MB. Perkecil atau pisahkan berkasnya.', 413);
+            }
             Storage::disk(self::DISK)->put($key, $bytes);
 
             return ['storage_key' => $key, 'mime' => 'application/pdf', 'bytes' => strlen($bytes), 'urutan' => $order];

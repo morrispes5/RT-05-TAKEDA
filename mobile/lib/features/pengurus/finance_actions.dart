@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -49,4 +52,45 @@ Future<bool> reverseEntry(
     if (context.mounted) showApiError(context, e);
     return false;
   }
+}
+
+/// UAT M15: ekspor CSV pengurus (iuran/rekap, kas, pembayaran, rumah). CSV ber-BOM UTF-8 dari server
+/// langsung terbuka di Excel/Google Sheets. Disimpan lewat dialog "Simpan sebagai" Android.
+typedef SaveBytes = Future<bool> Function(String fileName, Uint8List bytes);
+
+Future<bool> _saveWithPicker(String fileName, Uint8List bytes) async =>
+    await FilePicker.saveFile(fileName: fileName, bytes: bytes, mimeType: 'text/csv', dialogTitle: 'Simpan ekspor CSV') != null;
+
+final saveBytesProvider = Provider<SaveBytes>((ref) => _saveWithPicker);
+
+Future<void> exportCsv(BuildContext context, WidgetRef ref, {required String jenis, required String label, String? periode}) async {
+  final fileName = 'rt05-$jenis${periode == null ? '' : '-$periode'}.csv';
+  try {
+    final bytes = await ref.read(apiProvider).download('/admin/exports/$jenis', query: {'periode': ?periode});
+    final saved = await ref.read(saveBytesProvider)(fileName, bytes);
+    if (!context.mounted || !saved) return;
+    showMessage(context, '$label tersimpan sebagai $fileName. Buka dengan Excel atau Google Sheets.', title: 'Ekspor berhasil');
+  } on ApiException catch (e) {
+    if (context.mounted) showApiError(context, e);
+  } catch (_) {
+    if (context.mounted) showMessage(context, 'Berkas ekspor tidak dapat disimpan. Coba pilih folder lain.', error: true);
+  }
+}
+
+class ExportButton extends ConsumerWidget {
+  const ExportButton({super.key, required this.jenis, required this.label, this.periode});
+  final String jenis;
+  final String label;
+  final String? periode;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => Align(
+    alignment: Alignment.centerRight,
+    child: OutlinedButton.icon(
+      key: ValueKey('ekspor-$jenis'),
+      onPressed: () => exportCsv(context, ref, jenis: jenis, label: label, periode: periode),
+      icon: const Icon(Icons.download_outlined),
+      label: const Text('Ekspor CSV'),
+    ),
+  );
 }

@@ -52,6 +52,14 @@ Selesai di sesi ini (lokal; staging/APK menyusul):
   hari, 5 MB); (d) form usulan: crash jam selesai sebelum jam mulai dan usulan bertanggal lewat (regresi gagal pada kode
   lama, lulus setelah perbaikan). Branch `codex/m15-uat-fixes`, PR #51. rest-api 314 tes / 3211; mobile 226 tes.
 
+- UAT putaran 2 (20 Okt, laporan tim poin B–F lulus; temuan → ADR33): ekspor CSV pembayaran/kas/rekap di aplikasi;
+  tagihan rumah/warga baru langsung dibuat; *Mulai tagih* pakai pemilih bulan; blok wajib (rumah baru, akun utama);
+  revisi permohonan akun tambahan (`perlu_revisi`); PDF/TXT usulan maks. 1 MB; CMS *Lihat arsip* + cache 15 dtk.
+  Probe tanpa mutasi: seluruh payload editor CMS (8 konten) valid (409, bukan 422). Branch `codex/m15-uat-fixes-2`.
+  rest-api 320 tes / 3255; mobile 229; website 15 + `test:preview` exit 0. Insiden: `artisan migrate --env=testing`
+  tanpa `.env.testing` memakai `rest-api/.env` → migrasi aditif `2026_10_20_000100` ikut diterapkan ke Neon branch
+  **dev** (bukan production/staging; tanpa ubah data); dicatat agar tidak terulang.
+
 Belum: pemasangan APK rilis di HP pemilik (perlu uninstall APK debug sekali), uji Android nyata (kamera ditutup paksa, koneksi lambat, push), ulang uji beban setelah deploy + ukur Neon
 dingin, UAT mitra (peserta nyata, tidak dikarang), privacy notice final (kontak/retensi dari pemilik/mitra), verifikasi
 developer Android (identitas pemilik), aksesibilitas manual, latihan pindah PostgreSQL cadangan (ADR29, belum
