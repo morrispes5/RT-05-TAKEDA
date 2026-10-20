@@ -133,6 +133,7 @@ void main() {
     await enter(tester, 'field-password', 'rahasia');
     await enter(tester, 'field-password2', 'lain1234');
     await enter(tester, 'field-nama', 'Kepala Uji');
+    await enter(tester, 'field-blok', 'A');
     await enter(tester, 'field-jalan', 'Jalan Uji');
     await enter(tester, 'field-nomor', '1');
     await scrollAuth(tester, find.text('Daftar'));
@@ -1042,6 +1043,8 @@ Future<void> fillRegister(WidgetTester tester, {required bool additional}) async
   await enter(tester, 'field-password2', 'Rahasia1');
   await enter(tester, 'field-nama', additional ? 'Anggota Uji' : 'Kepala Uji');
   if (additional) await enter(tester, 'field-hubungan', 'Anak');
+  // Blok wajib untuk akun utama sejak UAT M15; akun tambahan tetap opsional.
+  if (!additional) await enter(tester, 'field-blok', 'A');
   await enter(tester, 'field-jalan', 'Jalan Uji');
   await enter(tester, 'field-nomor', '1');
 }

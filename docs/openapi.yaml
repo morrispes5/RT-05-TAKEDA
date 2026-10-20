@@ -187,6 +187,34 @@ paths:
           $ref: "#/components/responses/Data"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/admin/additional-account-requests/{id}/revision:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminAdditionalRequestsRevision
+      tags:
+        - Residents
+      summary: Minta pemohon akun tambahan memperbaiki data (UAT M15)
+      x-status: implemented
+      x-milestone: M15
+      description: Hanya permohonan tambahan berstatus diajukan; catatan wajib 5–300 karakter. Status menjadi perlu_revisi, akun tetap menunggu; catatan tampil di status pemohon. Selain diajukan 409 REQUEST_ALREADY_PROCESSED.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [catatan]
+              properties:
+                catatan:
+                  type: string
+                  minLength: 5
+                  maxLength: 300
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/agendas:
     get:
       operationId: adminAgendasIndex
@@ -676,11 +704,19 @@ paths:
             - iuran
             - kas
             - rumah
+            - pembayaran
+      - name: periode
+        in: query
+        required: false
+        description: Khusus iuran (rekap satu bulan), format YYYY-MM.
+        schema:
+          type: string
+          pattern: '^[0-9]{4}-[0-9]{2}$'
     get:
       operationId: getExportAdminExports
       tags:
         - Operations
-      summary: Unduh CSV iuran/kas/rumah (sinkron, aman formula injection)
+      summary: Unduh CSV iuran/kas/rumah/pembayaran (sinkron, UTF-8 BOM untuk Excel, aman formula injection)
       x-status: implemented
       x-milestone: M12
       responses:
@@ -1516,6 +1552,43 @@ paths:
       summary: Status permohonan akun tambahan sendiri
       x-status: implemented
       x-milestone: M06
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/auth/additional-account-request:
+    patch:
+      operationId: authReviseAdditionalRequest
+      tags:
+        - Identity
+      summary: Pemohon memperbaiki permohonan akun tambahan yang diminta revisi (UAT M15)
+      x-status: implemented
+      x-milestone: M15
+      description: Hanya saat status perlu_revisi (selain itu 409 REQUEST_NOT_REVISABLE). Status kembali diajukan, rumah dicocokkan ulang diam-diam dari alamat, pengurus diberi tahu. Throttle registrasi.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nama, hubungan_keluarga, jalan, nomor]
+              properties:
+                nama:
+                  type: string
+                  maxLength: 120
+                hubungan_keluarga:
+                  type: string
+                  maxLength: 40
+                blok:
+                  type: [string, "null"]
+                  maxLength: 30
+                jalan:
+                  type: string
+                  maxLength: 150
+                nomor:
+                  type: string
+                  maxLength: 20
       responses:
         "200":
           $ref: "#/components/responses/Data"

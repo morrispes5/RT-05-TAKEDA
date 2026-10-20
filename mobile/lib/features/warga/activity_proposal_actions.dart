@@ -103,7 +103,7 @@ String? documentProblem(String filename, int bytes, int alreadyAttached) {
   if (alreadyAttached >= proposalMaxDocuments) return 'Maksimal $proposalMaxDocuments dokumen pendukung.';
   final kind = documentKind(filename);
   if (kind == null) return 'Hanya PDF, TXT, JPG, PNG, atau WebP. Simpan dokumen Word sebagai PDF terlebih dahulu.';
-  if (kind == 'txt' && bytes > proposalMaxTextBytes) return 'Berkas TXT maksimal 1 MB.';
+  if ((kind == 'txt' || kind == 'pdf') && bytes > proposalMaxTextBytes) return 'Berkas ${kind == 'pdf' ? 'PDF' : 'TXT'} maksimal 1 MB.';
   if (bytes > proposalMaxBytes) return 'Berkas maksimal 8 MB.';
   return null;
 }
