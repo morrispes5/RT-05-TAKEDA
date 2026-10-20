@@ -27,6 +27,8 @@ class FinanceTest extends TestCase
     {
         $warga = $this->warga($nomor);
         $rumah = $warga->rumah();
+        // Registrasi kini langsung membuat tagihan bulan berjalan (UAT M15); tes generator mulai dari kosong.
+        DB::table('tagihan_iuran')->where('rumah_id', $rumah->id)->delete();
         DB::table('rumah')->where('id', $rumah->id)->update(['mulai_tagih' => '2026-10-01']);
 
         return [$warga, $rumah];

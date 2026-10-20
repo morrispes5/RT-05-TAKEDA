@@ -796,6 +796,7 @@ class _HouseAddressPageState extends ConsumerState<HouseAddressPage> {
     if (jalan.length > 150) jalanError = 'Jalan paling panjang 150 karakter.';
     if (nomor.isEmpty) nomorError = 'Nomor wajib diisi.';
     if (nomor.length > 20) nomorError = 'Nomor paling panjang 20 karakter.';
+    if (blok.isEmpty) blokError = 'Blok wajib diisi.';
     if (blok.length > 30) blokError = 'Blok paling panjang 30 karakter.';
     if (jalanError != null || nomorError != null || blokError != null || reason != null || _versi == null) {
       setState(() {

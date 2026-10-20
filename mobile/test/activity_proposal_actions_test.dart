@@ -53,7 +53,10 @@ void main() {
     expect(documentProblem('poster.jpeg', 1000, 0), isNull);
     expect(documentProblem('proposal.docx', 1000, 0), contains('PDF'));
     expect(documentProblem('catatan.txt', proposalMaxTextBytes + 1, 0), contains('1 MB'));
-    expect(documentProblem('besar.pdf', proposalMaxBytes + 1, 0), contains('8 MB'));
+    // UAT M15: PDF disimpan apa adanya, maks. 1 MB; foto boleh 8 MB karena diperkecil ulang.
+    expect(documentProblem('besar.pdf', proposalMaxTextBytes + 1, 0), contains('PDF maksimal 1 MB'));
+    expect(documentProblem('foto.jpg', proposalMaxBytes + 1, 0), contains('8 MB'));
+    expect(documentProblem('foto.jpg', proposalMaxTextBytes + 1, 0), isNull);
     expect(documentProblem('keempat.pdf', 10, 3), contains('Maksimal 3'));
   });
 

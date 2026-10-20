@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/widgets.dart';
+import 'finance_actions.dart';
 
 /// M11 pengurus: rekap iuran bulanan dan tarif per periode. Angka selalu dari server;
 /// fungsi murni di bawah hanya untuk navigasi bulan dan validasi form sebelum dikirim.
@@ -102,6 +103,7 @@ class _DuesRecapViewState extends ConsumerState<DuesRecapView> {
               ),
             ],
           ),
+          ExportButton(jenis: 'iuran', label: 'Rekap ${periode(_period)}', periode: _period),
           const SizedBox(height: 8),
           AsyncView(
             value: data,

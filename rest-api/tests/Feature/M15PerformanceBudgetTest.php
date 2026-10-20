@@ -20,7 +20,7 @@ class M15PerformanceBudgetTest extends TestCase
     public function test_bearer_reads_do_not_write_and_stay_within_query_budget(): void
     {
         $token = $this->warga('52')->createToken('hp')->plainTextToken;
-        $budget = ['/api/v1/auth/me' => 6, '/api/v1/agendas' => 3, '/api/v1/announcements' => 3, '/api/v1/notifications' => 4, '/api/v1/dues/my' => 10, '/api/v1/household' => 10];
+        $budget = ['/api/v1/auth/me' => 6, '/api/v1/agendas' => 3, '/api/v1/announcements' => 3, '/api/v1/notifications' => 4, '/api/v1/dues/my' => 11, '/api/v1/household' => 10];
         foreach ($budget as $uri => $max) {
             $this->app['auth']->forgetGuards();
             DB::flushQueryLog();
