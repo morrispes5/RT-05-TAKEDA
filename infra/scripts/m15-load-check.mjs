@@ -3,7 +3,11 @@
 // akun sintetis: campuran layar aplikasi warga (beranda, iuran, agenda, layanan, inbox) dan halaman website
 // publik. Mengukur juga permintaan pertama setelah Neon idle ("dingin") bila dijalankan dengan --cold.
 // Tidak boleh diarahkan ke production.
+// Gate (m15-evidence-lib.mjs): setiap respons harus sesuai status yang diharapkan (bawaan 200) dan P95 sukses per
+// endpoint ≤1 dtk; pelanggaran membuat proses exit 1. Status yang diharapkan selain 200 harus ditulis eksplisit
+// di EXPECT dengan penjelasan setelah penyebabnya diperiksa; jangan menormalkan 404 tanpa alasan.
 import fs from 'node:fs';
+import { GATE, loadFailures, summarize } from './m15-evidence-lib.mjs';
 const ORIGIN = 'https://takeda-staging.morriz.tech';
 const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const seconds = Number(args[0] || 60), users = Number(args[1] || 20), cold = process.argv.includes('--cold');
@@ -12,14 +16,17 @@ const actors = { ...JSON.parse(fs.readFileSync(p + 'm07-stage-check/m07-state.pr
 const h = { Accept: 'application/json', 'Content-Type': 'application/json' };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function timed(label, url, headers) {
+// Diisi hanya untuk skenario negatif yang sudah dijelaskan, mis. { 'admin GET /household': [404] }.
+const EXPECT = {};
+
+async function timed(label, url, headers, role) {
     const t = performance.now();
     try {
         const r = await fetch(url, { headers });
         await r.arrayBuffer();
-        return { label, ms: performance.now() - t, status: r.status };
+        return { label, role, ms: performance.now() - t, status: r.status };
     } catch (e) {
-        return { label, ms: performance.now() - t, status: 0 };
+        return { label, role, ms: performance.now() - t, status: 0 };
     }
 }
 
@@ -29,13 +36,14 @@ if (cold) {
     out.cold = [await timed('health/ready (dingin)', ORIGIN + '/health/ready', h), await timed('health/ready (hangat)', ORIGIN + '/health/ready', h)];
 }
 
-const tokens = [];
+const tokens = [], roles = [];
 for (const key of ['a1', 'a3', 'admin']) {
     const a = actors[key];
     const r = await fetch(ORIGIN + '/api/v1/auth/mobile-login', { method: 'POST', headers: h, body: JSON.stringify({ email: a.email, password: a.password, device_name: 'M15 load check' }) });
     const token = (await r.json()).data?.token;
     if (!token) throw new Error('login sintetis gagal: ' + key + ' ' + r.status);
     tokens.push(token);
+    roles.push(key);
 }
 
 const screens = [
@@ -53,29 +61,28 @@ const results = [];
 const end = Date.now() + seconds * 1000;
 await Promise.all(Array.from({ length: users }, async (_, i) => {
     const auth = { ...h, Authorization: 'Bearer ' + tokens[i % tokens.length] };
+    const role = roles[i % roles.length];
     await sleep(Math.random() * 1000);
     while (Date.now() < end) {
         // 1 dari 4 iterasi pengunjung website publik, sisanya layar aplikasi warga.
         if (Math.random() < 0.25) {
             const [label, path] = pages[Math.floor(Math.random() * pages.length)];
-            results.push(await timed(label, ORIGIN + path, { Accept: 'text/html' }));
+            results.push(await timed(label, ORIGIN + path, { Accept: 'text/html' }, 'web'));
         } else {
             const [label, path] = screens[Math.floor(Math.random() * screens.length)];
-            results.push(await timed(label, ORIGIN + path, auth));
+            results.push(await timed(label, ORIGIN + path, auth, role));
         }
         await sleep(500 + Math.random() * 1000); // jeda baca pengguna
     }
 }));
 for (const t of tokens) await fetch(ORIGIN + '/api/v1/auth/logout', { method: 'POST', headers: { ...h, Authorization: 'Bearer ' + t } });
 
-const pct = (xs, q) => { const s = [...xs].sort((a, b) => a - b); return s.length ? Math.round(s[Math.min(s.length - 1, Math.ceil(q * s.length) - 1)]) : null; };
-const group = {};
-for (const r of results) (group[r.label] ||= []).push(r);
-out.endpoints = Object.entries(group).sort().map(([label, rs]) => ({
-    label, n: rs.length, errors: rs.filter(r => r.status === 0 || r.status >= 500 || r.status === 429).length,
-    p50: pct(rs.map(r => r.ms), 0.5), p95: pct(rs.map(r => r.ms), 0.95), max: Math.round(Math.max(...rs.map(r => r.ms))),
-}));
-const ok = results.filter(r => r.status > 0 && r.status < 500 && r.status !== 429);
-out.total = { requests: results.length, errors: results.length - ok.length, rps: +(results.length / seconds).toFixed(1), p50: pct(ok.map(r => r.ms), 0.5), p95: pct(ok.map(r => r.ms), 0.95) };
-out.statuses = results.reduce((m, r) => ({ ...m, [r.status]: (m[r.status] || 0) + 1 }), {});
+const summary = summarize(results, seconds, EXPECT);
+Object.assign(out, summary);
+const failures = loadFailures(summary, GATE);
+out.gate = { p95Ms: GATE.p95Ms, passed: failures.length === 0, failures };
 console.log(JSON.stringify(out, null, 1));
+if (failures.length) {
+    console.error('GATE BEBAN GAGAL:\n- ' + failures.join('\n- '));
+    process.exitCode = 1;
+}

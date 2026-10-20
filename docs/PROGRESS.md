@@ -1,5 +1,32 @@
 # Progress — RT05 TAKEDA
 
+## M15 — Perbaikan temuan QA #46, #47, #48 — 19 Oktober 2026: **perbaikan lokal, menunggu CI/review**
+
+Branch `codex/m15-qa-fixes` dari `main` 85b2ed6. Ketiga temuan Codex ([#46](https://github.com/morrispes5/RT-05-TAKEDA/issues/46),
+[#47](https://github.com/morrispes5/RT-05-TAKEDA/issues/47), [#48](https://github.com/morrispes5/RT-05-TAKEDA/issues/48))
+dikonfirmasi dari kode, direproduksi lewat tes yang gagal pada kode lama, lalu diperbaiki. Belum di-deploy, belum diuji di HP
+nyata atau staging.
+
+| Issue | Status | Perbaikan | Bukti |
+| --- | --- | --- | --- |
+| #46 IdleGuard menunda pemulihan outbox | terkonfirmasi, diperbaiki | `rt05:outbox-dispatch` memperpanjang guard selama masih ada event belum selesai (`completed_at`/`failed_at` kosong), bukan hanya bila ada yang diklaim. Query hanya jalan saat guard aktif atau sweep per jam, jadi idle tetap tanpa database. | `M15IdleGuardTest::test_pending_outbox_work_keeps_dispatcher_awake...` gagal pada kode lama (menit 10: dispatcher tidak dipantau padahal backoff 15 menit), lulus setelah perbaikan |
+| #47 Bukti performa | terkonfirmasi, diperbaiki skripnya | Status yang diharapkan eksplisit per peran/endpoint (bawaan 200); P95 hanya dari respons sukses; exit 1 bila ada respons di luar harapan, P95 endpoint >1 dtk, atau notifikasi gagal dibuat/tidak sampai/>60 dtk. Logika di `m15-evidence-lib.mjs`, diuji `m15-evidence-lib.test.mjs` dan masuk CI infra. | 7 tes offline untuk 200/401/403/404/429/500/jaringan, P95, dan skenario notifikasi |
+| #48 Draf pengaduan terhapus | terkonfirmasi, diperbaiki | Draf dihapus setelah berhasil dipasang ke formulir. Bila halaman ditutup saat menunggu, foto kamera yang sudah terbaca (API sekali konsumsi) disimpan kembali ke draf. | `m15_report_draft_test` kasus baru gagal pada kode lama, lulus setelah perbaikan |
+
+| Perintah | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17 lokal, DB terpisah `rt05_qa_test`) | **311/311, 3203 assertion** |
+| `php vendor/bin/pint --test` | lulus |
+| `node --test infra/scripts/m15-evidence-lib.test.mjs` | 7/7 |
+| `flutter analyze`, `dart format --set-exit-if-changed lib test`, `flutter test` | bersih, 0 changed, **220 lulus** |
+
+Batasan jujur: (1) **404 di bukti performa belum dijelaskan.** Berkas JSON lama tidak menyimpan status per endpoint; skrip kini
+mencatatnya, dan ulang uji beban di staging akan GAGAL sampai penyebab 404 (dugaan: akun `admin` tanpa rumah di fixture)
+diperiksa lalu dicatat di `EXPECT` atau fixture diperbaiki. Bukti `load-20u-*.json` lama tidak diubah. (2) Wiring exit code skrip
+beban/latensi hanya diuji lewat fungsi penilai dan `node --check`, belum lewat run live terhadap staging. (3) `rt05:media-recover`
+dan `rt05:push-recover` memakai guard yang sama dan masih menunggu sweep per jam bila job foto/push hilang saat idle; di luar
+lingkup #46 (outbox), tercatat sebagai tindak lanjut.
+
 ## M15 — Integrasi, UAT, keamanan, kandidat rilis — 19 Oktober 2026: **in_progress**
 
 Branch `codex/m15-uat-release`. Keputusan: ADR31.
