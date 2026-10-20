@@ -95,6 +95,13 @@ Selesai di sesi ini (lokal; staging/APK menyusul):
   21/21; UI CMS staging `website/scripts/cms-ui-live.mjs` 16/16 (edit artikel terbit → Terbitkan → tampil ±15 dtk;
   Arsipkan → *Lihat arsip*). Temuan E menunggu konfirmasi maksud pemilik.
 
+- Rilis staging 1008 (20 Okt, [bukti](evidence/m15/release-1008/README.md)): temuan E dikonfirmasi dari data staging
+  (foto sampul asli tersimpan dan terbit, website tetap SVG) → PR #55 merge 14.22 WIB (ADR33 butir 7); PR #50 (#46, #48,
+  sebagian #47) digabung dengan `main`, lokal rest-api 321/321 + Flutter 230, merge `4376b44` 14.30; deploy staging
+  14.30–14.32 0 GAGAL; APK 1008 (versionCode 3008) selesai 14.38, diunggah ke link Drive tim yang sama 14.42.
+  Live: UI CMS 17/17 (termasuk foto sampul tampil), API CMS 21/21, Vercel 21/21, notifikasi 55,3 dtk. APK 1007 tidak
+  sempat diuji tim (aktivitas terakhir 20 Okt 00.45 memakai 1006); uji tim berikutnya memakai 1008.
+
 - **Serah terima sesi: [HANDOFF.md](HANDOFF.md)** — sisa gate M15, bug terbuka (#46–#48, PR #50 belum merge), pertanyaan
   untuk pemilik, runbook deploy/APK/Drive, dan jebakan lingkungan.
 
