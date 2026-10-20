@@ -9,6 +9,7 @@ use App\Http\Responses\Present;
 use App\Models\Akun;
 use App\Models\Aspirasi;
 use App\Models\AuditLog;
+use App\Models\PembayaranIuran;
 use App\Models\Pengaduan;
 use App\Models\PermohonanAkun;
 use App\Models\Rumah;
@@ -59,11 +60,14 @@ class OperationsController extends Controller
     /** GET /admin/exports/{jenis}.csv — CSV kecil sinkron; nilai diawali = + - @ tab CR diberi apostrof. */
     public function export(Request $request, string $jenis): StreamedResponse
     {
-        abort_unless(in_array($jenis, ['iuran', 'kas', 'rumah'], true), 404);
-        Audit::record($request->user(), 'ekspor.csv', $jenis, null);
+        abort_unless(in_array($jenis, ['iuran', 'kas', 'rumah', 'pembayaran'], true), 404);
+        // UAT M15: rekap bulan tertentu dari aplikasi (?periode=YYYY-MM). Kosong = semua periode.
+        $periode = $request->validate(['periode' => ['nullable', 'date_format:Y-m']])['periode'] ?? null;
+        Audit::record($request->user(), 'ekspor.csv', $jenis, null, $periode ? ['periode' => $periode] : []);
 
         [$header, $rows] = match ($jenis) {
             'iuran' => [['kode_rumah', 'periode', 'nominal', 'status'], TagihanIuran::join('rumah', 'rumah.id', '=', 'tagihan_iuran.rumah_id')
+                ->when($periode, fn ($q) => $q->where('tagihan_iuran.periode', $periode.'-01'))
                 ->orderBy('periode')->orderBy('rumah.kode_rumah')
                 ->get(['rumah.kode_rumah', 'tagihan_iuran.periode', 'tagihan_iuran.nominal_tagihan', 'tagihan_iuran.status'])
                 ->map(fn ($r) => [$r->kode_rumah, substr($r->periode, 0, 7), $r->nominal_tagihan, $r->status])],
@@ -71,6 +75,12 @@ class OperationsController extends Controller
                 ->map(fn ($k) => [$k->tanggal->toDateString(), $k->jenis, $k->sumber, $k->kategori, $k->nominal, $k->keterangan])],
             'rumah' => [['kode_rumah', 'blok', 'jalan', 'nomor', 'tagihan_aktif'], Rumah::whereNull('archived_at')->orderBy('kode_rumah')->get()
                 ->map(fn ($r) => [$r->kode_rumah, $r->blok, $r->jalan, $r->nomor, $r->tagihan_aktif ? 'ya' : 'tidak'])],
+            // UAT M15: daftar pembayaran offline (termasuk yang dibatalkan beserta alasannya).
+            'pembayaran' => [['nomor_bukti', 'kode_rumah', 'tanggal_bayar', 'periode', 'total_bayar', 'status', 'catatan', 'alasan_pembatalan'],
+                PembayaranIuran::with(['rumah', 'alokasi.tagihan'])->orderBy('tanggal_bayar')->orderBy('nomor_bukti')->get()
+                    ->map(fn ($p) => [$p->nomor_bukti, $p->rumah?->kode_rumah, $p->tanggal_bayar?->toDateString(), $p->alokasi
+                        ->map(fn ($a) => substr((string) $a->tagihan?->periode, 0, 7))->filter()->unique()->sort()->implode(' '),
+                        $p->total_bayar, $p->status, $p->catatan, $p->alasan_pembatalan])],
         };
 
         return response()->streamDownload(function () use ($header, $rows) {

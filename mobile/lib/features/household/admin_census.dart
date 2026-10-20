@@ -5,6 +5,7 @@ import '../../app/theme.dart';
 import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../core/month_field.dart';
 import '../../core/session.dart';
 import '../../core/widgets.dart';
 import 'admin_edits.dart';
@@ -341,6 +342,7 @@ class _HouseCreatePageState extends ConsumerState<HouseCreatePage> {
     if (_jalan.text.trim().length > 150) errors['jalan'] = 'Jalan paling panjang 150 karakter.';
     if (_nomor.text.trim().isEmpty) errors['nomor'] = 'Nomor wajib diisi.';
     if (_nomor.text.trim().length > 20) errors['nomor'] = 'Nomor paling panjang 20 karakter.';
+    if (_blok.text.trim().isEmpty) errors['blok'] = 'Blok wajib diisi.';
     if (_blok.text.trim().length > 30) errors['blok'] = 'Blok paling panjang 30 karakter.';
     final code = houseCodeError(_kode.text);
     final month = billingMonthError(_mulai.text);
@@ -400,7 +402,7 @@ class _HouseCreatePageState extends ConsumerState<HouseCreatePage> {
         TextField(
           controller: _blok,
           maxLength: 30,
-          decoration: InputDecoration(labelText: 'Blok', errorText: _errors['blok'], errorMaxLines: 3),
+          decoration: InputDecoration(labelText: 'Blok', hintText: 'mis. A atau D5', errorText: _errors['blok'], errorMaxLines: 3),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -422,10 +424,12 @@ class _HouseCreatePageState extends ConsumerState<HouseCreatePage> {
           value: _tagihan,
           onChanged: _busy ? null : (value) => setState(() => _tagihan = value),
         ),
-        TextField(
+        MonthField(
           controller: _mulai,
-          maxLength: 7,
-          decoration: InputDecoration(labelText: 'Mulai tagih', hintText: '2026-10', errorText: _errors['mulai_tagih'] ?? _errors['mulai'], errorMaxLines: 3),
+          label: 'Mulai tagih',
+          enabled: !_busy,
+          helperText: 'Tagihan bulan ini dan sesudahnya langsung dibuat setelah disimpan.',
+          errorText: _errors['mulai_tagih'] ?? _errors['mulai'],
         ),
         if (_formError != null) ...[const SizedBox(height: 8), Text(_formError!, style: const TextStyle(color: Brand.danger, height: 1.35))],
         const SizedBox(height: 16),
@@ -535,11 +539,7 @@ class _HouseBillingPageState extends ConsumerState<HouseBillingPage> {
           value: _aktif,
           onChanged: _busy ? null : (value) => setState(() => _aktif = value),
         ),
-        TextField(
-          controller: _mulai,
-          maxLength: 7,
-          decoration: InputDecoration(labelText: 'Mulai tagih', hintText: '2026-10', errorText: _monthError, errorMaxLines: 3),
-        ),
+        MonthField(controller: _mulai, label: 'Mulai tagih', enabled: !_busy, errorText: _monthError),
         const SizedBox(height: 8),
         TextField(
           controller: _alasan,

@@ -1387,7 +1387,10 @@ class _TransparencyBody extends ConsumerWidget {
 
 /// Ringkasan kas RT, khusus pengurus (ADR26). Dipakai di tab Keuangan → Kas.
 class CashView extends ConsumerWidget {
-  const CashView({super.key, this.onReverse});
+  const CashView({super.key, this.onReverse, this.action});
+
+  /// Pengurus: aksi di atas daftar mutasi (mis. ekspor CSV).
+  final Widget? action;
 
   /// Pengurus: balik kas manual yang `dapat_dibalik` (kas iuran dibatalkan lewat pembayaran).
   final Future<void> Function(Json entry)? onReverse;
@@ -1427,6 +1430,7 @@ class CashView extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              ?action,
               Text('Mutasi terakhir', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               for (final k in (d['mutasi_terakhir'] as List).cast<Map>())

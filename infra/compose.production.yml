@@ -157,6 +157,8 @@ services:
       TRUSTED_PROXIES: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
       # M14: artikel/album terbit dibaca dari API lewat jaringan internal; API mati → last-good → JSON baked.
       RT05_CONTENT_API: ${RT05_CONTENT_API:-http://api}
+      # UAT M15: perubahan terbit tampil ≤15 dtk (sebelumnya 60). API hanya dibaca saat ada pengunjung.
+      RT05_CONTENT_FRESH_SECONDS: ${RT05_CONTENT_FRESH_SECONDS:-15}
     expose: ["80"]
 
   redis:
