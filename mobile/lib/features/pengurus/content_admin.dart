@@ -295,6 +295,24 @@ class _ContentEditorPageState extends ConsumerState<ContentEditorPage> {
     }
   }
 
+  Future<void> _restore() async {
+    final ok = await confirm(
+      context,
+      title: 'Pulihkan $_label?',
+      message: 'Kembali menjadi draf dan belum tampil di website. Periksa isinya lalu tekan Terbitkan.',
+      yes: 'Pulihkan',
+      icon: Icons.unarchive_outlined,
+    );
+    if (!ok || !mounted) return;
+    try {
+      final res = await ref.read(apiProvider).post('/admin/${widget.type}/${_item!['id']}/restore', data: {'versi': _item!['versi']});
+      setState(() => _item = Json.from(res as Map));
+      if (mounted) await showResultDialog(context, title: '$_label dipulihkan', message: 'Sekarang berstatus draf. Tekan Terbitkan agar tampil di website.');
+    } on ApiException catch (e) {
+      if (mounted) showApiError(context, e);
+    }
+  }
+
   Future<void> _addPhoto() async {
     final picked = await (widget.picker ?? ImagePicker()).pickImage(source: ImageSource.gallery, maxWidth: 2400, maxHeight: 2400, imageQuality: 85);
     if (picked == null || !mounted) return;
@@ -553,8 +571,16 @@ class _ContentEditorPageState extends ConsumerState<ContentEditorPage> {
               label: const Text('Arsipkan', style: TextStyle(color: Brand.danger)),
             ),
           ],
-        ] else
-          const Text('Konten diarsipkan: tidak tampil di website dan tidak dapat diubah.', style: TextStyle(color: Brand.muted)),
+        ] else ...[
+          const Text('Konten diarsipkan: tidak tampil di website dan tidak dapat diubah sampai dipulihkan.', style: TextStyle(color: Brand.muted)),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            key: const ValueKey('pulihkan'),
+            onPressed: _restore,
+            icon: const Icon(Icons.unarchive_outlined),
+            label: const Text('Pulihkan'),
+          ),
+        ],
       ],
     ),
   );

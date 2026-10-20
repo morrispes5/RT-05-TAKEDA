@@ -246,6 +246,39 @@ void main() {
     expect(find.text('Fasilitas diarsipkan'), findsOneWidget);
   });
 
+  testWidgets('konten arsip bisa dipulihkan menjadi draf dan editor terbuka lagi (UAT M15)', (tester) async {
+    useCompactScreen(tester, height: 2600);
+    final posts = <String>[];
+    Map<String, dynamic>? sent;
+    await _pump(
+      tester,
+      ContentEditorPage(
+        type: 'facilities',
+        initial: _admin(status: 'arsip', jenis: 'fasilitas', versi: 2, draf: {'title': 'Lapangan'}),
+      ),
+      (o) {
+        posts.add(o.uri.path);
+        sent = _body(o.data);
+        return jsonBody(200, {'data': _admin(status: 'draf', jenis: 'fasilitas', versi: 3, draf: {'title': 'Lapangan'})});
+      },
+    );
+    expect(find.byKey(const ValueKey('arsipkan')), findsNothing);
+    expect(find.text('Simpan draf'), findsNothing);
+    await tester.ensureVisible(find.byKey(const ValueKey('pulihkan')));
+    await tester.tap(find.byKey(const ValueKey('pulihkan')));
+    await _settle(tester);
+    expect(find.text('Pulihkan Fasilitas?'), findsOneWidget);
+    await _tapText(tester, 'Pulihkan');
+    expect(posts.single, endsWith('/admin/facilities/$_id/restore'));
+    expect(sent, {'versi': 2});
+    expect(find.text('Fasilitas dipulihkan'), findsOneWidget);
+    await _tapText(tester, 'Mengerti');
+    // Kembali draf: bisa disimpan dan diterbitkan lagi, tombol Pulihkan hilang.
+    expect(find.text('Simpan draf'), findsOneWidget);
+    expect(find.text('Terbitkan'), findsOneWidget);
+    expect(find.byKey(const ValueKey('pulihkan')), findsNothing);
+  });
+
   testWidgets('profil: simpan dan terbitkan dengan versi, nama belum dipublikasikan tetap', (tester) async {
     useCompactScreen(tester, height: 2600);
     final puts = <Map<String, dynamic>>[];

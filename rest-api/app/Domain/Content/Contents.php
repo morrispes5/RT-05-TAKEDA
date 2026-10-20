@@ -180,6 +180,24 @@ final class Contents
         });
     }
 
+    /**
+     * Pulihkan konten arsip menjadi draf (BUSINESS_RULES BR18, ADR34). Tidak langsung tampil di website:
+     * pengurus meninjau lalu menekan Terbitkan. Slug tetap miliknya karena slug arsip tidak pernah dilepas.
+     */
+    public static function restore(Akun $actor, Konten $konten, int $versi): Konten
+    {
+        return DB::transaction(function () use ($actor, $konten, $versi) {
+            $k = self::lock($konten->id, $versi);
+            if ($k->status !== 'arsip') {
+                throw new DomainConflict('NOT_ARCHIVED', 'Konten tidak sedang diarsipkan.');
+            }
+            $k->forceFill(['status' => 'draf', 'archived_at' => null, 'versi' => $k->versi + 1, 'diubah_oleh_id' => $actor->id])->save();
+            Audit::record($actor, 'konten.dipulihkan', 'konten', $k->id, ['jenis' => $k->jenis]);
+
+            return $k;
+        });
+    }
+
     private static function lock(string $id, int $versi): Konten
     {
         $k = Konten::whereKey($id)->lockForUpdate()->firstOrFail();

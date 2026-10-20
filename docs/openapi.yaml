@@ -137,6 +137,28 @@ paths:
           $ref: "#/components/responses/Data"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/admin/accounts/{id}/restore:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminAccountsRestore
+      tags:
+        - Residents
+      summary: Pulihkan akun arsip
+      description: Akun kembali nonaktif (pengurus mengaktifkan lagi); tautan keluarga tidak dibuka otomatis. Bukan arsip → 409 NOT_ARCHIVED.
+      x-status: implemented
+      x-milestone: M15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReasonInput"
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/additional-account-requests:
     get:
       operationId: adminAdditionalRequestsIndex
@@ -822,6 +844,28 @@ paths:
           description: Berhasil tanpa body.
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/admin/families/{id}/restore:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminFamiliesRestore
+      tags:
+        - Residents
+      summary: Pulihkan keluarga arsip bersama anggota yang ikut diarsipkan
+      description: Hunian rumah dan tautan akun tidak dibuka otomatis. Bukan arsip → 409 NOT_ARCHIVED.
+      x-status: implemented
+      x-milestone: M15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReasonInput"
+      responses:
+        "204":
+          description: Berhasil tanpa body.
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/families/{id}/members:
     parameters:
       - $ref: "#/components/parameters/Id"
@@ -959,6 +1003,28 @@ paths:
       summary: Arsip rumah; hunian aktif diakhiri, histori keuangan tetap
       x-status: implemented
       x-milestone: M07
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReasonInput"
+      responses:
+        "204":
+          description: Berhasil tanpa body.
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/houses/{id}/restore:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminHousesRestore
+      tags:
+        - Residents
+      summary: Pulihkan rumah arsip
+      description: Tagihan tetap nonaktif sampai pengurus menyalakannya lewat PATCH rumah. Bukan arsip → 409 NOT_ARCHIVED.
+      x-status: implemented
+      x-milestone: M15
       requestBody:
         required: true
         content:
@@ -2524,6 +2590,30 @@ paths:
               schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/admin/articles/{id}/restore:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminArticlesRestore
+      tags:
+        - Content
+      summary: Pulihkan artikel arsip menjadi draf
+      description: Kembali sebagai draf; tidak tampil di website sampai diterbitkan ulang. Bukan arsip → 409 NOT_ARCHIVED.
+      x-status: implemented
+      x-milestone: M15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentVersionInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/public/articles:
     get:
       operationId: publicArticles
@@ -2691,6 +2781,30 @@ paths:
               schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/admin/albums/{id}/restore:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminAlbumsRestore
+      tags:
+        - Content
+      summary: Pulihkan album arsip menjadi draf
+      description: Kembali sebagai draf; tidak tampil di website sampai diterbitkan ulang. Bukan arsip → 409 NOT_ARCHIVED.
+      x-status: implemented
+      x-milestone: M15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentVersionInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/public/albums:
     get:
       operationId: publicAlbums
@@ -2845,6 +2959,30 @@ paths:
       description: Hilang dari publik (404); riwayat tetap.
       x-status: implemented
       x-milestone: M13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ContentVersionInput'}
+      responses:
+        "200":
+          description: Berhasil.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ContentAdminEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/facilities/{id}/restore:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      operationId: adminFacilitiesRestore
+      tags:
+        - Content
+      summary: Pulihkan fasilitas arsip menjadi draf
+      description: Kembali sebagai draf; tidak tampil di website sampai diterbitkan ulang. Bukan arsip → 409 NOT_ARCHIVED.
+      x-status: implemented
+      x-milestone: M15
       requestBody:
         required: true
         content:

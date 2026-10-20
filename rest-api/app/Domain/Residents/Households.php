@@ -264,6 +264,41 @@ final class Households
     }
 
     /**
+     * Pulihkan keluarga arsip (ADR34): keluarga aktif lagi bersama anggota yang ikut diarsipkan olehnya
+     * (keanggotaan berakhir `diarsipkan` dalam transaksi arsip yang sama). Anggota yang sudah berakhir karena
+     * pindah/meninggal tidak ikut. Hunian rumah dan tautan akun tidak dibuka otomatis; pengurus mencatatnya ulang.
+     */
+    public static function restore(Akun $actor, string $keluargaId, string $alasan): void
+    {
+        Links::transaction(function () use ($actor, $keluargaId, $alasan) {
+            $k = Links::lockFamilies([$keluargaId])[$keluargaId] ?? throw new DomainConflict('NOT_FOUND', 'Data tidak ditemukan.', 404);
+            Links::assertEditor($actor, $k, true);
+            if (! $k->archived_at) {
+                throw new DomainConflict('NOT_ARCHIVED', 'Keluarga tidak sedang diarsipkan.');
+            }
+            // Arsip keluarga menutup seluruh keanggotaan lalu menyetel archived_at keluarga, dalam satu transaksi.
+            $lama = KeanggotaanKeluarga::where('keluarga_id', $k->id)
+                ->where('alasan_selesai', 'diarsipkan')
+                ->where('selesai_at', '>=', $k->archived_at->copy()->subMinute())
+                ->where('selesai_at', '<=', $k->archived_at)
+                ->get();
+            $dipulihkan = 0;
+            foreach ($lama as $m) {
+                $w = Warga::whereKey($m->warga_id)->lockForUpdate()->first();
+                if (! $w || KeanggotaanKeluarga::where('warga_id', $w->id)->whereNull('selesai_at')->exists()) {
+                    continue;
+                }
+                Links::startMembership($w, $k, $m->hubungan_keluarga, 'pengurus', $actor);
+                $w->forceFill(['archived_at' => null, 'status' => $w->status === 'pindah' ? 'aktif' : $w->status])->save();
+                $dipulihkan++;
+            }
+            $k->forceFill(['archived_at' => null])->save();
+            Links::bump($k);
+            Audit::record($actor, 'keluarga.dipulihkan', 'keluarga', $k->id, ['anggota' => $dipulihkan, 'alasan' => $alasan]);
+        });
+    }
+
+    /**
      * Pindahkan status akun utama ke akun aktif lain yang tertaut pada keluarga yang sama.
      * Tautan lama ditutup (pergantian_utama) dan dibuka ulang dengan peran baru; histori tetap.
      */
