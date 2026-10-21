@@ -12,11 +12,15 @@ import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/session.dart';
+import '../../core/whatsapp.dart';
 import '../../core/widgets.dart';
 import '../auth/account_access.dart';
+import '../auth/privacy_policy.dart';
 import '../household/family_actions.dart' show conflictKeptMessage, staleConflict;
+import '../household/complete_data_card.dart';
 import '../household/family_page.dart';
 import 'activity_proposals.dart';
+import 'dues_proof.dart';
 import 'notification_center.dart';
 import 'providers.dart';
 import 'report_actions.dart';
@@ -121,6 +125,8 @@ class WargaHomePage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
+          // ADR35: ajakan opsional melengkapi WhatsApp, NIK, dan nomor KK (hanya akun utama, hilang bila lengkap).
+          const CompleteDataCard(),
           SectionCard(
             title: 'Agenda terdekat',
             trailing: TextButton(onPressed: () => goTab(2), child: const Text('Semua')),
@@ -1192,64 +1198,19 @@ class AnnouncementPage extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────── Iuran & kas
-/// Tab Iuran warga (keputusan pemilik 17 Oktober 2026, ADR26): iuran rumah sendiri sebagai prioritas;
-/// transparansi rumah lain disembunyikan secara bawaan dan baru dimuat setelah warga memilih melihatnya;
+/// Tab Iuran warga: tagihan rumah sendiri, lalu jalur bukti pembayaran offline. Iuran dibayar langsung
+/// ke pengurus dan status tagihan hanya berubah setelah pengurus mencatat. Transparansi rumah lain dan
 /// kas RT tidak tampil untuk warga (server menolak dengan 403).
-class DuesPage extends ConsumerStatefulWidget {
+class DuesPage extends ConsumerWidget {
   const DuesPage({super.key});
-  @override
-  ConsumerState<DuesPage> createState() => _DuesPageState();
-}
-
-class _DuesPageState extends ConsumerState<DuesPage> {
-  bool _showTransparency = false;
-
-  Future<void> _reveal() async {
-    final ok = await confirm(
-      context,
-      title: 'Lihat status iuran rumah lain?',
-      message:
-          'Yang tampil hanya kode rumah, nominal, dan status bulan ini, tanpa nama atau kontak. '
-          'Mohon tidak disebarkan atau dipakai untuk menagih tetangga.',
-      yes: 'Tampilkan',
-      icon: Icons.visibility_outlined,
-    );
-    if (ok && mounted) setState(() => _showTransparency = true);
-  }
 
   @override
-  Widget build(BuildContext context) => _MyDues(
-    footer: SectionCard(
-      key: const ValueKey('transparansi-warga'),
-      title: 'Transparansi iuran warga',
-      trailing: _showTransparency
-          ? TextButton.icon(
-              key: const ValueKey('sembunyikan-transparansi'),
-              onPressed: () => setState(() => _showTransparency = false),
-              icon: const Icon(Icons.visibility_off_outlined, size: 18),
-              label: const Text('Sembunyikan'),
-            )
-          : null,
-      child: _showTransparency
-          ? const _TransparencyBody()
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Status iuran rumah lain per kode rumah. Disembunyikan secara bawaan untuk menjaga privasi tetangga.',
-                  style: TextStyle(color: Brand.muted, height: 1.4),
-                ),
-                const SizedBox(height: 12),
-                BusyButton(label: 'Lihat transparansi iuran', icon: Icons.visibility_outlined, outlined: true, onPressed: _reveal),
-              ],
-            ),
-    ),
-  );
+  Widget build(BuildContext context, WidgetRef ref) => _MyDues(footer: (d) => _PaymentProofCard(kodeRumah: '${(d['rumah'] as Map)['kode_rumah']}'));
 }
 
 class _MyDues extends ConsumerWidget {
   const _MyDues({this.footer});
-  final Widget? footer;
+  final Widget Function(Json d)? footer;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1257,7 +1218,8 @@ class _MyDues extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(duesMyProvider);
-        ref.invalidate(transparencyProvider(null));
+        ref.invalidate(myDuesConfirmationsProvider);
+        ref.invalidate(contactsProvider);
       },
       child: AsyncView(
         value: dues,
@@ -1326,7 +1288,7 @@ class _MyDues extends ConsumerWidget {
                     ),
                   ),
                 ),
-              if (footer != null) ...[const SizedBox(height: 16), footer!],
+              if (footer != null) ...[const SizedBox(height: 16), footer!(d)],
             ],
           );
         },
@@ -1353,55 +1315,108 @@ class _Stat extends StatelessWidget {
   );
 }
 
-/// Status iuran per kode rumah tanpa nama/kontak (BR15). Data baru diminta saat widget ini tampil.
-class _TransparencyBody extends ConsumerWidget {
-  const _TransparencyBody();
+/// Kartu "Sudah bayar iuran?": jalur bukti transfer dan chat bendahara. Tidak mengubah status tagihan.
+class _PaymentProofCard extends ConsumerWidget {
+  const _PaymentProofCard({required this.kodeRumah});
+  final String kodeRumah;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) => AsyncView(
-    value: ref.watch(transparencyProvider(null)),
-    onRetry: () => ref.invalidate(transparencyProvider(null)),
-    builder: (d) => Column(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final kontak = ref.watch(contactsProvider);
+    final nomor = kontak.asData?.value['bendahara_whatsapp'] as String?;
+    final daftar = ref.watch(myDuesConfirmationsProvider).asData?.value ?? const <Json>[];
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Status iuran ${periode('${d['periode']}')}', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 8),
-        Row(
+        SectionCard(
+          key: const ValueKey('sudah-bayar-iuran'),
+          title: 'Sudah bayar iuran?',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Iuran dibayar langsung ke pengurus, tunai atau transfer. Kirim bukti transfer atau chat bendahara agar pengurus bisa mencatatnya. '
+                'Status tagihan berubah setelah pengurus mencatat.',
+                style: TextStyle(color: Brand.muted, height: 1.4),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                key: const ValueKey('kirim-bukti-transfer'),
+                onPressed: () async {
+                  final terkirim = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => const DuesProofPage()));
+                  if (terkirim == true) {
+                    ref.invalidate(myDuesConfirmationsProvider);
+                    ref.invalidate(duesMyProvider);
+                  }
+                },
+                icon: const Icon(Icons.upload_file_outlined),
+                label: const Text('Kirim bukti transfer'),
+              ),
+              const SizedBox(height: 8),
+              WhatsAppWideButton(
+                label: 'Chat bendahara lewat WhatsApp',
+                phone: nomor,
+                text: 'Assalamualaikum, saya warga rumah $kodeRumah. Saya ingin konfirmasi pembayaran iuran.',
+              ),
+              if (kontak.hasValue && waNumber(nomor) == null) ...[
+                const SizedBox(height: 8),
+                const Text('Nomor WhatsApp bendahara belum diatur pengurus.', style: TextStyle(color: Brand.muted, fontSize: 13)),
+              ],
+            ],
+          ),
+        ),
+        if (daftar.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text('Bukti yang sudah dikirim', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          for (final k in daftar) _BuktiTile(k),
+        ],
+      ],
+    );
+  }
+}
+
+/// Satu bukti transfer milik warga: tanggal, bulan, nominal, status, dan catatan pengurus bila ada.
+class _BuktiTile extends StatelessWidget {
+  const _BuktiTile(this.k);
+  final Json k;
+
+  @override
+  Widget build(BuildContext context) {
+    final bulan = (k['periode'] as List? ?? const []).map((x) => periode('$x')).join(', ');
+    final nominal = k['nominal'];
+    final catatanPengurus = k['catatan_pengurus'];
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: _Stat('Lunas', '${d['lunas']} rumah')),
-            Expanded(child: _Stat('Belum dibayar', '${d['belum_bayar']} rumah', danger: (d['belum_bayar'] as num) > 0)),
+            // Wrap, bukan Row: label status turun ke baris berikutnya pada skala teks besar.
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                Text(tanggal(parseTime(k['created_at'])), style: const TextStyle(fontWeight: FontWeight.w700)),
+                StatusChip(duesProofChipStatus('${k['status']}'), label: '${k['status_label']}'),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(bulan.isEmpty ? 'Tanpa bulan' : bulan),
+            Text(nominal is num ? rupiah(nominal) : 'Nominal belum diisi', style: const TextStyle(color: Brand.muted)),
+            if (catatanPengurus is String && catatanPengurus.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text('Catatan pengurus: $catatanPengurus', style: const TextStyle(fontSize: 13)),
+              ),
           ],
         ),
-        const SizedBox(height: 8),
-        const Text('Ditampilkan per kode rumah tanpa nama atau kontak warga.', style: TextStyle(color: Brand.muted, fontSize: 13)),
-        const SizedBox(height: 8),
-        for (final r in (d['rumah'] as List).cast<Map>())
-          Card(
-            margin: const EdgeInsets.only(bottom: 6),
-            // Wrap, bukan ListTile: pada skala teks besar label status turun ke baris berikutnya.
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              child: Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 8,
-                runSpacing: 6,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('${r['kode_rumah']}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                      Text(rupiah(r['nominal'] as num), style: const TextStyle(color: Brand.muted)),
-                    ],
-                  ),
-                  StatusChip('${r['status']}', label: '${r['status_label']}'),
-                ],
-              ),
-            ),
-          ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 /// Ringkasan kas RT, khusus pengurus (ADR26). Dipakai di tab Keuangan → Kas.
@@ -1660,6 +1675,15 @@ class AccountPage extends ConsumerWidget {
         const SizedBox(height: 16),
         const Center(
           child: Text('RT05 TAKEDA • data warga hanya untuk administrasi RT', style: TextStyle(color: Brand.muted, fontSize: 12)),
+        ),
+        // ADR35: Kebijakan Privasi dapat dibaca ulang kapan saja.
+        Center(
+          child: TextButton.icon(
+            key: const ValueKey('buka-kebijakan-privasi'),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrivacyPolicyPage())),
+            icon: const Icon(Icons.privacy_tip_outlined, size: 18),
+            label: const Text('Kebijakan Privasi'),
+          ),
         ),
       ],
     );

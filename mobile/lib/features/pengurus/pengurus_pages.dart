@@ -11,6 +11,7 @@ import '../../core/models.dart';
 import '../../core/widgets.dart';
 import 'content_admin.dart';
 import 'dues_admin.dart';
+import 'dues_confirmations.dart';
 import 'finance_actions.dart';
 import '../household/admin_census.dart';
 import '../household/admin_links.dart';
@@ -562,6 +563,7 @@ class FinanceAdminPage extends ConsumerWidget {
     length: 3,
     child: Column(
       children: [
+        const DuesConfirmationsEntry(),
         const Material(
           color: Colors.white,
           child: TabBar(
@@ -1027,6 +1029,17 @@ class MoreAdminPage extends ConsumerWidget {
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TokenPage())),
             ),
           ],
+        ),
+      ),
+      const SizedBox(height: 16),
+      SectionCard(
+        title: 'Iuran',
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.chat_outlined, color: Brand.navy),
+          title: const Text('Nomor WhatsApp bendahara'),
+          subtitle: const Text('Dipakai tombol chat di menu Iuran warga'),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TreasurerContactPage())),
         ),
       ),
     ],

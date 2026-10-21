@@ -10,7 +10,7 @@ foreach (['profil', 'fasilitas', 'dokumentasi', 'artikel', 'kontak'] as $page) {
 Route::get('/artikel/{slug}', [PublicPageController::class, 'article'])->name('article');
 Route::get('/dokumentasi/{slug}', [PublicPageController::class, 'album'])->name('album');
 Route::get('/pengurus', [PublicPageController::class, 'management'])->name('pengurus');
-foreach (['masuk', 'artikel', 'artikel/editor', 'dokumentasi', 'dokumentasi/editor', 'pratinjau'] as $screen) {
+foreach (['masuk', 'artikel', 'artikel/editor', 'dokumentasi', 'dokumentasi/editor', 'profil', 'pratinjau'] as $screen) {
     Route::get('/pengurus/'.$screen, [PublicPageController::class, 'management'])->defaults('screen', $screen);
 }
 Route::redirect('/pengurus/konten', '/pengurus');

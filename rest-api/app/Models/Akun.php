@@ -40,6 +40,7 @@ class Akun extends Authenticatable implements CanResetPasswordContract
             'email_verified_at' => 'datetime',
             'archived_at' => 'datetime',
             'versi_sesi' => 'integer',
+            'privasi_disetujui_at' => 'datetime',
         ];
     }
 

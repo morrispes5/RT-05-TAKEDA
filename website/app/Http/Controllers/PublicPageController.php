@@ -9,7 +9,7 @@ class PublicPageController extends Controller
 {
     public function page(string $page = 'home'): View
     {
-        return view($page, ['foto' => SiteContent::photos(), 'articles' => SiteContent::articles(), 'albums' => SiteContent::albums()]);
+        return view($page, ['foto' => SiteContent::photos(), 'articles' => SiteContent::articles(), 'albums' => SiteContent::albums(), 'profil' => SiteContent::profile()]);
     }
 
     public function article(string $slug): View

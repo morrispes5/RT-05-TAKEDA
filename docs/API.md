@@ -212,7 +212,11 @@ M10 (implementasi 17 Oktober 2026):
 | Endpoint | Perilaku |
 | --- | --- |
 | GET /dues/my | Tagihan/histori rumah akun |
-| GET /dues/transparency | Kode rumah, period, amount/status; warga aktif |
+| GET /dues/transparency | Kode rumah, period, amount/status; **khusus pengurus** (ADR35, warga 403) |
+| GET/POST /dues/confirmations, GET /dues/confirmations/{id}/photo | Bukti transfer milik warga (ADR35); foto hanya pemilik/pengurus |
+| GET /admin/dues-confirmations, POST /admin/dues-confirmations/{id}/process | Pengurus memeriksa bukti: selesai/ditolak (catatan wajib saat tolak) |
+| GET /settings/contacts, PUT /admin/settings/contacts | Nomor WhatsApp bendahara (format wa.me) |
+| POST /auth/privacy-consent | Setujui Kebijakan Privasi versi terbaru |
 | GET /admin/cash/summary | Khusus pengurus (ADR26): saldo, pemasukan/pengeluaran bulan ini, 30 mutasi terakhir. Warga 403 |
 | GET/POST /admin/dues-rates | Tarif efektif; alasan wajib. Periode yang sudah punya tagihan 422 `RATE_PERIOD_HAS_CHARGES`; periode yang sudah punya tarif 409 `RATE_PERIOD_EXISTS` (termasuk simpan bersamaan) |
 | POST /admin/dues/generate | Generate/catch-up periode idempotent |

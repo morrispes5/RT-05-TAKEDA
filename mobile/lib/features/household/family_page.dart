@@ -8,6 +8,7 @@ import '../../core/session.dart';
 import '../../core/widgets.dart';
 import '../warga/providers.dart';
 import 'family_actions.dart';
+import 'identity_data.dart';
 
 /// Papan rumah: satu elemen tegas, isi halaman tetap tenang.
 class HousePlate extends StatelessWidget {
@@ -127,6 +128,19 @@ class FamilyPanel extends ConsumerWidget {
                   child: OutlinedButton(
                     onPressed: () => Navigator.push<void>(context, MaterialPageRoute(builder: (_) => FamilyEditPage(household: data))),
                     child: const Text('Ubah data keluarga', textAlign: TextAlign.center),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    key: const ValueKey('data-kependudukan'),
+                    onPressed: () async {
+                      await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => const IdentityDataPage()));
+                      ref.invalidate(householdProvider);
+                    },
+                    icon: const Icon(Icons.badge_outlined),
+                    label: const Text('Data kependudukan (NIK & KK)', textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(height: 8),

@@ -12,6 +12,7 @@ use App\Http\Responses\Present;
 use App\Models\Akun;
 use App\Support\Audit;
 use App\Support\BrowserSession;
+use App\Support\Privacy;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -261,6 +262,20 @@ class AuthController extends Controller
                 'created_at' => Present::ts($p->created_at),
             ] : null,
         ]);
+    }
+
+    /** POST /auth/privacy-consent — setujui Kebijakan Privasi versi terbaru (ADR35). Akun menunggu juga boleh. */
+    public function privacyConsent(Request $request): JsonResponse
+    {
+        $data = $request->validate(['versi' => ['required', 'string', 'max:20']]);
+        if ($data['versi'] !== Privacy::VERSION) {
+            throw new DomainConflict('PRIVACY_VERSION_OUTDATED', 'Kebijakan Privasi sudah diperbarui. Muat ulang lalu baca versi terbaru.');
+        }
+        $akun = $request->user();
+        $akun->forceFill(['privasi_versi' => Privacy::VERSION, 'privasi_disetujui_at' => now()])->save();
+        Audit::record($akun, 'akun.privasi_disetujui', 'akun', $akun->id, ['versi' => Privacy::VERSION]);
+
+        return Api::data(Present::akun($akun->refresh()->load(Akun::PROFIL)));
     }
 
     /** PATCH /auth/additional-account-request — pemohon memperbaiki permohonan yang diminta revisi (UAT M15). */

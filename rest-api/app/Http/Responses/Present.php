@@ -8,6 +8,7 @@ use App\Models\Akun;
 use App\Models\Aspirasi;
 use App\Models\KeanggotaanKeluarga;
 use App\Models\Keluarga;
+use App\Models\KonfirmasiIuran;
 use App\Models\Notifikasi;
 use App\Models\PembayaranIuran;
 use App\Models\Pengaduan;
@@ -20,6 +21,7 @@ use App\Models\TautanAkun;
 use App\Models\TransaksiKas;
 use App\Models\UsulanKegiatan;
 use App\Models\Warga;
+use App\Support\Privacy;
 use DateTimeInterface;
 
 /**
@@ -51,6 +53,9 @@ final class Present
             'rumah' => $rumah ? ['id' => $rumah->id, 'kode_rumah' => $rumah->kode_rumah, 'alamat' => $rumah->alamat()] : null,
             'keluarga_id' => $a->keluarga()?->id,
             'dapat_ubah_keluarga' => $a->isAktif() && ($a->isUtama() || $a->isPengurus()),
+            // ADR35: aplikasi menampilkan Kebijakan Privasi sampai versi terbaru disetujui.
+            'privasi_versi' => Privacy::VERSION,
+            'privasi_perlu_setuju' => Privacy::needsConsent($a),
         ];
     }
 
@@ -62,6 +67,8 @@ final class Present
             'hubungan_keluarga' => $w->hubungan_keluarga,
             'is_kepala' => $w->is_kepala,
             'whatsapp' => $w->whatsapp,
+            // ADR35: NIK hanya tersamar (4 digit awal + 4 akhir); nilai utuh tidak pernah keluar dari server.
+            'nik_tersamar' => Privacy::mask($w->nik),
             'status' => $w->status,
             'punya_akun' => match (true) {
                 $w->relationLoaded('tautanAktif') => (bool) $w->tautanAktif,
@@ -86,6 +93,7 @@ final class Present
             'versi' => $k->versi,
             'rumah' => $rumah ? self::rumah($rumah) : null,
             'jenis_hunian' => $k->penghunianAktif?->jenis_hunian,
+            'nomor_kk_tersamar' => Privacy::mask($k->nomor_kk),
             'anggota' => $anggota->map(fn ($w) => self::warga($w))->all(),
         ] + ($dapatUbah === null ? [] : ['dapat_ubah' => $dapatUbah]);
     }
@@ -236,6 +244,30 @@ final class Present
             'diproses_at' => self::ts($p->diproses_at),
             'created_at' => self::ts($p->created_at),
         ];
+    }
+
+    /** Konfirmasi pembayaran iuran (ADR35). $admin menambah rumah dan pengirim untuk pengurus. */
+    public static function konfirmasiIuran(KonfirmasiIuran $k, bool $admin): array
+    {
+        return [
+            'id' => $k->id,
+            'status' => $k->status,
+            'status_label' => match ($k->status) {
+                'selesai' => 'Sudah diperiksa pengurus',
+                'ditolak' => 'Ditolak pengurus',
+                default => 'Menunggu pemeriksaan',
+            },
+            'periode' => $k->periode ?? [],
+            'nominal' => $k->nominal,
+            'catatan' => $k->catatan,
+            'catatan_pengurus' => $k->catatan_pengurus,
+            'foto_url' => '/api/v1/dues/confirmations/'.$k->id.'/photo',
+            'created_at' => self::ts($k->created_at),
+            'diproses_at' => self::ts($k->diproses_at),
+        ] + ($admin ? [
+            'rumah' => $k->rumah ? ['id' => $k->rumah->id, 'kode_rumah' => $k->rumah->kode_rumah, 'alamat' => $k->rumah->alamat()] : null,
+            'pengirim' => $k->akun ? ['id' => $k->akun->id, 'nama' => $k->akun->nama] : null,
+        ] : []);
     }
 
     public static function pengaduan(Pengaduan $p, Akun $viewer): array

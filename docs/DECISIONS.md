@@ -464,3 +464,43 @@ konfirmasi; akun tambahan divalidasi dari nama, hubungan, dan nama kepala keluar
    tahu hasil pencocokan. Berlaku juga untuk perbaikan permohonan (`PATCH /auth/additional-account-request`).
 5. **Tidak diubah**: aturan minimal 10 karakter untuk ringkasan, pembuka, dan isi bagian artikel serta deskripsi album
    (validasi M13). Bila pemilik ingin melonggarkannya, itu keputusan terpisah.
+
+### ADR35 — Permintaan Pak RT (rapat 20 Okt 2026): Profil RT05, iuran tanpa transparansi, bukti transfer, WhatsApp, NIK/KK opsional, Kebijakan Privasi
+
+Tanggal: 21 Oktober 2026 (instruksi pemilik setelah rapat dengan Ketua RT, 20 Okt 20.00 WIB). Status: **diterapkan di branch
+`codex/m15b-permintaan-rt`** (milestone usulan M15b, di antara M15 dan M16). Instruksi pemilik terbaru mengubah keputusan
+lama yang disebut di bawah.
+
+1. **Profil RT05 (website).** Menu dan judul "Profil RT" menjadi "Profil RT05". Halaman `/profil` tidak lagi menulis
+   pengurus secara mati di Blade: website membaca `/api/v1/public/site-profile` (cache dan cadangan sama dengan artikel;
+   belum terbit/404/API mati → `resources/data/profil.json`, salinan byte-identik seeder). Profil mendapat kolom
+   `tentang` (≤3000, paragraf dipisah baris kosong) berisi cerita Taman Kedaung yang ditulis agent dari fakta terverifikasi
+   (Kelurahan Kedaung, Kecamatan Pamulang, Kota Tangerang Selatan; dulu bagian Kecamatan Ciputat) tanpa angka atau tahun
+   karangan. Migrasi data `2026_10_21_000200` mengisi `tentang` hanya bila belum ada. Pengurus mengedit wilayah,
+   ringkasan, cerita, dan daftar pengurus (tambah/hapus, 1–12 orang) di **CMS web `/pengurus/profil`** dan di aplikasi.
+   Ini memperluas batas "login web hanya Artikel dan Dokumentasi" khusus untuk profil RT, atas permintaan pemilik.
+   Aplikasi lama yang tidak mengirim `tentang` tidak menghapus cerita yang ada.
+2. **Transparansi iuran dihapus dari warga.** Mengubah ADR26/BR15/FR16: `GET /dues/transparency` kini khusus pengurus
+   (warga 403) dan kartu transparansi hilang dari aplikasi warga. Warga hanya melihat tagihan rumahnya sendiri.
+3. **Konfirmasi pembayaran.** Warga dapat mengirim foto bukti transfer (`POST /dues/confirmations`, tabel
+   `konfirmasi_iuran`, ditranskode langsung seperti foto pengaduan, maks 5/hari) atau chat bendahara lewat WhatsApp.
+   Ini **bukan** pembayaran: status tagihan tidak berubah sampai pengurus mencatat pembayaran offline; pengurus lalu
+   menandai bukti selesai atau menolaknya dengan catatan. Tetap tanpa pembayaran online, QRIS, atau checkout.
+4. **WhatsApp tanpa API.** Semua tombol memakai tautan `https://wa.me/<nomor>` (nomor dinormalisasi ke 62…). Nomor
+   bendahara disimpan di `system_settings` (`kontak.pengurus`), diubah pengurus lewat aplikasi, dibaca semua akun aktif.
+   Nomor uji dari pemilik **tidak** disimpan di Git; diisi lewat aplikasi di staging. Pengurus juga mendapat tombol
+   WhatsApp di samping setiap anggota keluarga yang nomornya terisi.
+5. **NIK dan nomor KK opsional.** Mengubah BUSINESS_RULES D, SECURITY "Data pribadi", PRD §10, dan ERD "tidak
+   dikoleksi": `warga.nik` dan `keluarga.nomor_kk` (16 digit) boleh diisi akun utama untuk keluarganya atau pengurus
+   untuk keluarga mana pun; tidak pernah wajib dan tidak diminta saat daftar. Disimpan dengan cast `encrypted` (APP_KEY),
+   API hanya mengirim bentuk tersamar (`3674••••••••0001`), audit hanya mencatat nama kolom. Akun tambahan hanya membaca
+   bentuk tersamar. Impor dari Excel RT dan ekspor berisi NIK belum dibuat (perlu keputusan dan dasar hukum terpisah).
+   Konsekuensi: rotasi APP_KEY production wajib menyertakan migrasi ulang enkripsi kolom ini.
+6. **Kebijakan Privasi dan lengkapi data.** Setelah masuk, akun aktif wajib membaca dan menyetujui Kebijakan Privasi
+   versi terbaru (`akun.privasi_versi`, `POST /auth/privacy-consent`, versi di `App\Support\Privacy::VERSION`);
+   akun menunggu tetap ke halaman menunggu. Teks di aplikasi (`privacy_policy.dart`) dan `docs/PRIVACY_NOTICE.md`.
+   Kontak resmi, masa simpan setelah pindah, dan batas waktu tanggapan belum diputuskan pemilik, jadi teks merujuk ke
+   pengurus lewat aplikasi tanpa nomor/email karangan. Beranda akun utama menampilkan kartu opsional "Lengkapi data
+   keluarga" bila WhatsApp, NIK, atau nomor KK kepala keluarga masih kosong ("Nanti saja" berlaku per sesi).
+7. **Tombol Kembali** tetap seperti ADR34; syarat daftar tidak berubah (email, kata sandi, token, alamat; WhatsApp
+   opsional).

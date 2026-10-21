@@ -11,7 +11,8 @@ use Throwable;
  * Sumber konten website. M14: artikel dan album dibaca dari API konten publik RT05 (snapshot terbit,
  * ADR28) bila `RT05_CONTENT_API` diset; hasil disimpan sebentar (fresh) dan sebagai last-good. API mati →
  * last-good → JSON baked di resources/data (sama dengan preview statis). Website tidak pernah membaca
- * draf atau database. Fasilitas dan profil tetap dari halaman yang sudah diterima (dikelola di mobile).
+ * draf atau database. Fasilitas tetap dari halaman yang sudah diterima. ADR35: profil RT05 (cerita Taman Kedaung dan
+ * pengurus) dibaca dari /api/v1/public/site-profile dengan cadangan yang sama; profil belum terbit → resources/data/profil.json.
  */
 class SiteContent
 {
@@ -46,13 +47,27 @@ class SiteContent
         return self::load()['albums'];
     }
 
+    /** Profil RT05 terbit: wilayah, ringkasan, tentang (paragraf), pengurus[]. */
+    public static function profile(): array
+    {
+        $profile = self::load()['profile'] ?? null;
+
+        return is_array($profile) ? $profile : self::bakedProfile();
+    }
+
+    /** Paragraf dari teks yang dipisah baris kosong (cerita Taman Kedaung yang diedit pengurus). */
+    public static function paragraphs(?string $text): array
+    {
+        return array_values(array_filter(array_map('trim', preg_split('/\R\s*\R/u', (string) $text) ?: []), fn ($p) => $p !== ''));
+    }
+
     public static function paths(): array
     {
         return array_merge(
             ['/', '/profil', '/fasilitas', '/dokumentasi', '/artikel', '/kontak', '/pengurus'],
             array_map(fn ($a) => '/artikel/'.$a['slug'], self::articles()),
             array_map(fn ($a) => '/dokumentasi/'.$a['slug'], self::albums()),
-            array_map(fn ($screen) => '/pengurus/'.$screen, ['masuk', 'artikel', 'artikel/editor', 'dokumentasi', 'dokumentasi/editor', 'pratinjau'])
+            array_map(fn ($screen) => '/pengurus/'.$screen, ['masuk', 'artikel', 'artikel/editor', 'dokumentasi', 'dokumentasi/editor', 'profil', 'pratinjau'])
         );
     }
 
@@ -91,6 +106,7 @@ class SiteContent
             $data = [
                 'articles' => array_map([self::class, 'article'], $get('/api/v1/public/articles') ?? []),
                 'albums' => array_map([self::class, 'album'], $get('/api/v1/public/albums') ?? []),
+                'profile' => self::remoteProfile($base),
             ];
             $store->put(self::FRESH, $data, max(1, (int) config('services.rt05_content.fresh_seconds', 60)));
             $store->forever(self::LAST_GOOD, $data);
@@ -115,7 +131,41 @@ class SiteContent
     {
         $read = fn (string $f) => json_decode(file_get_contents(resource_path("data/$f")), true, flags: JSON_THROW_ON_ERROR);
 
-        return ['articles' => $read('artikel.json'), 'albums' => $read('album.json'), 'source' => 'baked'];
+        return ['articles' => $read('artikel.json'), 'albums' => $read('album.json'), 'profile' => self::bakedProfile(), 'source' => 'baked'];
+    }
+
+    private static function bakedProfile(): array
+    {
+        return self::profileShape(json_decode(file_get_contents(resource_path('data/profil.json')), true, flags: JSON_THROW_ON_ERROR));
+    }
+
+    /** Profil belum pernah terbit (404) atau rusak: pakai cadangan tanpa menggagalkan artikel/album. */
+    private static function remoteProfile(string $base): array
+    {
+        try {
+            $data = Http::baseUrl($base)->acceptJson()
+                ->connectTimeout(max(1, (int) config('services.rt05_content.timeout', 3)))
+                ->timeout(max(1, (int) config('services.rt05_content.timeout', 3)))
+                ->get('/api/v1/public/site-profile')->throw()->json('data');
+
+            return is_array($data) && ! empty($data['pengurus']) ? self::profileShape($data) : self::bakedProfile();
+        } catch (Throwable $e) {
+            Log::info('site_content.profile_unavailable', ['exception' => class_basename($e)]);
+
+            return self::bakedProfile();
+        }
+    }
+
+    private static function profileShape(array $p): array
+    {
+        return [
+            'wilayah' => (string) ($p['wilayah'] ?? ''),
+            'ringkasan' => (string) ($p['ringkasan'] ?? ''),
+            'tentang' => self::paragraphs($p['tentang'] ?? null),
+            'pengurus' => array_values(array_map(fn (array $o) => [
+                'jabatan' => (string) ($o['jabatan'] ?? ''), 'nama' => (string) ($o['nama'] ?? ''), 'catatan' => $o['catatan'] ?? null,
+            ], array_filter($p['pengurus'] ?? [], 'is_array'))),
+        ];
     }
 
     /** Snapshot artikel API → bentuk yang dipakai view. */

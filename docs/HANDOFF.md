@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **20 Oktober 2026 ±20.15 WIB** oleh Claude (PR #58: pulihkan arsip, tombol Kembali, akun tambahan; deploy staging; rilis APK 1009).
+Terakhir diperbarui: **21 Oktober 2026 malam** oleh Claude (M15b permintaan Pak RT: kode di branch `codex/m15b-permintaan-rt`, ADR35).
 
 ## 1. Cara mulai sesi baru
 
@@ -13,13 +13,15 @@ Terakhir diperbarui: **20 Oktober 2026 ±20.15 WIB** oleh Claude (PR #58: pulihk
 2. Bandingkan branch lokal dengan `origin/main` sebelum kerja. Pemilik juga memakai agent lain (Codex, Cursor Cloud); branch
    lokal bisa basi dan checkout ini kadang dipakai bersama (lihat bagian 9).
 3. Pemilik berkomunikasi dalam Bahasa Indonesia santai. Jawab dalam Bahasa Indonesia, ringkas, tanpa jargon berlebihan.
-4. Kerjakan satu milestone yang dibuka pemilik. Saat ini **M15 masih `in_progress`**; M16 belum dibuka.
+4. Kerjakan satu milestone yang dibuka pemilik. Saat ini **M15 masih `in_progress`** (menunggu uji 1009 dan catatan UAT), **M15b**
+   (permintaan Pak RT 20 Okt, ADR35) sedang dikerjakan; M16 belum dibuka. Catatan permintaan pemilik juga ada di
+   `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
 
 ## 2. Snapshot status (20 Okt 2026)
 
 | Hal | Nilai |
 | --- | --- |
-| Milestone | M00–M14 **passed**; **M15 in_progress**; M16 planned |
+| Milestone | M00–M14 **passed**; **M15 in_progress**; **M15b in_progress** (ADR35); M16 planned |
 | `main` | `9d9cf07` (PR #58 merge; sebelumnya PR #56 HANDOFF 1008, PR #50, PR #55) |
 | Staging (VPS Hostinger, project Docker `rt05-staging`) | `9d9cf07`, deploy immutable 20 Okt ±19.57–19.59 WIB (termasuk migrasi `2026_10_21_000100`), 0 GAGAL, 8 kontainer healthy + gateway. UI CMS live `cms-ui-live.mjs` **21/21 PASS** (20 Okt ±20.05 WIB). Smoke runtime terpisah (`staging-runtime-smoke.sh`) **belum dijalankan** |
 | Website Vercel (`https://rt05takeda.vercel.app`) | mengikuti `website/preview/` di `main`; ekspor dibangun ulang di PR #58 (tombol Pulihkan hanya di CMS mode server, bukan mode demo). Verifikasi `check-preview.mjs` terhadap Vercel setelah PR #58 **belum dijalankan** |
@@ -85,6 +87,19 @@ APK bertanda tangan terpasang. **Jangan menandai passed tanpa bukti nyata. Janga
 | 11 | Uji pada profil shared hosting (UAT dan beban) | Agent | ROADMAP M15; belum dijalankan di hosting shared sungguhan |
 | 12 | Latihan pindah/kembali ke PostgreSQL cadangan (ADR29, Supabase) | Agent | Belum diimplementasi; sebagian bisa digeser ke M16 dengan persetujuan pemilik |
 
+### 4b. M15b — permintaan Pak RT (ADR35)
+
+Kode lengkap di branch `codex/m15b-permintaan-rt` (rincian di PROGRESS): Profil RT05 + cerita Taman Kedaung editable (CMS web
+`/pengurus/profil` dan aplikasi), transparansi iuran khusus pengurus, bukti transfer + WhatsApp bendahara (nomor diatur
+pengurus, nomor uji pemilik diisi lewat aplikasi di staging, tidak di Git), tombol WhatsApp per warga, NIK/KK opsional
+terenkripsi, Kebijakan Privasi wajib disetujui setelah masuk, kartu Lengkapi data. Tes lokal: rest-api 340/340, Flutter 262,
+website 21/21. Sisa: PR + CI, merge/deploy/APK (butuh persetujuan pemilik), isi nomor bendahara uji di staging, uji HP.
+
+Status 6 item tunda (jawaban pemilik 21 Okt): verifikasi developer Android belum; privacy notice "kayaknya sudah bisa" (teks
+ADR35 sudah ada, kontak/masa simpan belum); latihan DB cadangan, uji shared hosting, TalkBack, dan sweep media/push belum bisa.
+Pemilik minta dituntun untuk keenamnya setelah M15b selesai. Hosting production: Biznet ±Rp399 rb/tahun RAM 1 GB (jenis paket
+belum dikonfirmasi; jalankan preflight `SHARED_HOSTING.md` sebelum membeli).
+
 ## 5. Bug dan temuan terbuka
 
 | Tingkat | Temuan | Status |
@@ -117,6 +132,9 @@ ternyata pulih sendiri (throttle/salah ketik).
 10. Latihan PostgreSQL cadangan (ADR29) tetap di M15 atau digeser ke M16?
 11. Unggah APK **1009** ke Drive sebagai versi baru file yang sama (agent tidak punya akses akun Drive pemilik)? Atau tim cukup memakai tautan `/unduh`?
 12. Aturan minimal 10 karakter pada isi artikel/album: dipertahankan atau dilonggarkan (angka berapa)?
+14. Kebijakan Privasi: kontak resmi (nomor/email), masa simpan data setelah warga pindah, batas waktu tanggapan?
+15. Impor NIK/KK dari Excel RT: perlu? (Belum dibuat; butuh keputusan dan dasar persetujuan warga.)
+16. Setuju penempatan M15b (fitur baru) sebelum M16? Tombol WhatsApp memakai ikon buatan, perlu logo resmi?
 13. Apakah ada kasus dua keluarga dalam satu rumah? Sistem hanya mengenal satu keluarga utama aktif per rumah; subkeluarga/akun tambahan memakai rumah keluarga kepala yang sama.
 
 ## 7. Arsitektur lingkungan (urutan pemilik: lokal → Vercel → VPS)

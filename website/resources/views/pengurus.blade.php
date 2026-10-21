@@ -4,12 +4,12 @@
 @section('management', 'true')
 @section('content')
 @php($server = filled(config('services.rt05_content.api')))
-@php($titles = ['ringkasan' => 'Cerita Takeda, dalam satu tempat.', 'masuk' => 'Ruang untuk pengurus.', 'artikel' => 'Bacaan untuk warga.', 'artikel/editor' => 'Tulis sebuah bacaan.', 'dokumentasi' => 'Momen yang kita simpan.', 'dokumentasi/editor' => 'Susun cerita dalam foto.', 'pratinjau' => 'Pratinjau konten.'])
+@php($titles = ['ringkasan' => 'Cerita Takeda, dalam satu tempat.', 'masuk' => 'Ruang untuk pengurus.', 'artikel' => 'Bacaan untuk warga.', 'artikel/editor' => 'Tulis sebuah bacaan.', 'dokumentasi' => 'Momen yang kita simpan.', 'dokumentasi/editor' => 'Susun cerita dalam foto.', 'profil' => 'Profil RT05.', 'pratinjau' => 'Pratinjau konten.'])
 <div class="cms-layout">
 <aside class="cms-sidebar">
 <div class="cms-brand-row"><a class="brand" href="/pengurus"><img src="/images/logo/rt05-mark.svg" width="44" height="44" alt=""><span>RT 05 Takeda<small>Area Pengurus</small></span></a><button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="pengurus-navigation">Menu <x-ikon nama="menu" /></button></div>
 <nav id="pengurus-navigation" class="cms-nav" aria-label="Navigasi Pengurus" data-menu>
-@foreach(['ringkasan' => ['Ringkasan', 'rumah', '/pengurus'], 'artikel' => ['Artikel', 'buku', '/pengurus/artikel'], 'dokumentasi' => ['Dokumentasi', 'foto', '/pengurus/dokumentasi']] as $key => [$label, $icon, $href])
+@foreach(['ringkasan' => ['Ringkasan', 'rumah', '/pengurus'], 'artikel' => ['Artikel', 'buku', '/pengurus/artikel'], 'dokumentasi' => ['Dokumentasi', 'foto', '/pengurus/dokumentasi'], 'profil' => ['Profil RT05', 'warga', '/pengurus/profil']] as $key => [$label, $icon, $href])
 <a href="{{ $href }}" @if($screen === $key || str_starts_with($screen, $key.'/')) aria-current="page" @endif><x-ikon :nama="$icon" />{{ $label }}</a>
 @endforeach
 <a class="cms-return" href="/"><x-ikon nama="panah" />Lihat website</a>

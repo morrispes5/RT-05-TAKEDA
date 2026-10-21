@@ -71,7 +71,7 @@ Ringkasan; CRUD/arsip data warga/rumah/keluarga; persetujuan akun tambahan; toke
 | FR13 | Pembayaran offline dicatat admin untuk satu atau beberapa periode |
 | FR14 | Belum bayar tetap merah sampai pencatatan berhasil; warna disertai teks |
 | FR15 | Tunggakan, rekap lunas/belum, dan histori minimal 12 bulan tersedia |
-| FR16 | Warga terdaftar melihat transparansi status iuran per kode rumah tanpa data pribadi; tampilan ini tersembunyi secara bawaan dan dibuka atas pilihan warga. Ringkasan kas RT hanya untuk pengurus (revisi pemilik 17 Oktober 2026, ADR26) |
+| FR16 | Warga melihat iuran rumahnya sendiri dan mengirim konfirmasi bayar (foto bukti transfer atau WhatsApp bendahara). Transparansi status iuran per kode rumah dan ringkasan kas RT hanya untuk pengurus (ADR26, diubah ADR35 21 Oktober 2026) |
 | FR17 | Kas memuat iuran yang tercatat, pemasukan lain, pengeluaran, dan pembalikan koreksi |
 | FR18 | Perubahan warga/keuangan/token/konten dan tindakan admin memiliki audit |
 | FR19 | Ekspor CSV sesuai hak akses; ekspor besar via worker dan unduhan privat |
@@ -124,7 +124,7 @@ Android adalah target rilis pertama. Flutter disusun agar perluasan platform tid
 
 ## 10. Data dan privasi
 
-Tidak meminta NIK/KTP/nomor KK sebagai default v1. Nama keluarga, alamat, dan kontak hanya untuk tujuan administrasi. Transparansi iuran menggunakan kode/label rumah, periode, nominal, dan status; email/WhatsApp/daftar anggota keluarga tidak ikut tampil. Pengunjung publik tidak boleh membaca tabel transparansi warga.
+NIK dan nomor KK opsional (ADR35): tidak diminta saat daftar, boleh diisi akun utama atau pengurus, terenkripsi dan tersamar. Nama keluarga, alamat, dan kontak hanya untuk tujuan administrasi. Transparansi iuran menggunakan kode/label rumah, periode, nominal, dan status; email/WhatsApp/daftar anggota keluarga tidak ikut tampil. Pengunjung publik tidak boleh membaca tabel transparansi warga.
 
 Arsip bukan janji menyimpan data pribadi selamanya. Retensi/privacy request dikelola lewat kebijakan SECURITY.md, tanpa menghapus bukti keuangan secara sembarang.
 

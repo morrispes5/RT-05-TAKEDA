@@ -44,6 +44,9 @@ Additive `2026_10_13_000100_m07_keanggotaan_tautan_akun`:
 | tautan_akun (account_links) | akun_id, warga_id, keluarga_id, is_utama, mulai_at/selesai_at, alasan_selesai, sumber, aktor; unique aktif per akun dan per warga; unique `keluarga_id WHERE is_utama AND selesai_at IS NULL` |
 | rumah | + versi (≥1) |
 | permohonan_akun | + `nama_kepala_diajukan` varchar(120) null (additive `2026_10_21_000100`, ADR34); `alamat_diajukan` boleh null |
+| warga, keluarga | + `nik` / `nomor_kk` text null, cast `encrypted` (additive `2026_10_21_000300`, ADR35) |
+| akun | + `privasi_versi` varchar(20) null, `privasi_disetujui_at` timestamptz null (ADR35) |
+| konfirmasi_iuran | id, akun_id, rumah_id, periode jsonb, nominal, catatan, storage_key/mime/bytes/lebar/tinggi, status diajukan/selesai/ditolak, catatan_pengurus, diproses_oleh_id, diproses_at; check status, check diproses_at ⇔ bukan diajukan (ADR35) |
 
 Rumah tidak disimpan pada tautan: rumah akun = penghunian aktif keluarga tautannya. Karena
 `penghunian` tetap satu aktif per rumah dan per keluarga, satu akun utama aktif per keluarga
@@ -157,7 +160,7 @@ Outbox: pending/leased → dispatched → completed; expired lease atau stale di
 
 ## Data yang tidak dikoleksi default
 
-NIK, nomor KK, foto KTP, lokasi GPS presisi, biometrik, nomor rekening, kartu pembayaran. Schema tidak boleh menambahkan kolom tersebut hanya karena template CRUD memilikinya.
+Foto KTP, lokasi GPS presisi, biometrik, nomor rekening, kartu pembayaran. Schema tidak boleh menambahkan kolom tersebut hanya karena template CRUD memilikinya. Pengecualian ADR35: `warga.nik` dan `keluarga.nomor_kk` opsional, terenkripsi.
 
 ## Verifikasi migration
 
