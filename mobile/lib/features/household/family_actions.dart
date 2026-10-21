@@ -114,6 +114,18 @@ Map<String, dynamic> archiveMemberBody(String status, {int? versi}) {
   return {'status': status, 'versi': ?versi};
 }
 
+/// Baris keterangan anggota: hubungan, penanda kepala (tanpa dobel bila hubungan sudah "Kepala keluarga"),
+/// punya akun, dan nomor WhatsApp bila [phone].
+String memberSubtitle(Map member, {bool phone = false}) {
+  final hubungan = '${member['hubungan_keluarga'] ?? 'Anggota'}';
+  return [
+    hubungan,
+    if (member['is_kepala'] == true && !hubungan.toLowerCase().contains('kepala')) 'kepala keluarga',
+    if (member['punya_akun'] == true) 'punya akun',
+    if (phone && '${member['whatsapp'] ?? ''}'.isNotEmpty) '${member['whatsapp']}',
+  ].join(' • ');
+}
+
 int? readVersi(Map<dynamic, dynamic>? data) => (data?['versi'] as num?)?.toInt();
 
 /// Konflik versi keluarga/rumah. 409 lain (rumah sudah ada, hunian masih berjalan) tetap di formulir.

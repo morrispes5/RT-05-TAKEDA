@@ -193,7 +193,12 @@ class _DuesConfirmationDetailPageState extends ConsumerState<DuesConfirmationDet
   bool get _menunggu => _k['status'] == 'diajukan';
 
   Future<void> _catatPembayaran() async {
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => RecordPaymentPage(house: _rumah)));
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RecordPaymentPage(house: _rumah, initialPeriods: [for (final p in (_k['periode'] as List? ?? const [])) '$p']),
+      ),
+    );
     if (!mounted) return;
     ref.invalidate(paymentsProvider);
     await _tandaiSelesai();
@@ -380,7 +385,7 @@ class _TreasurerContactPageState extends ConsumerState<TreasurerContactPage> {
     ref.read(contactsProvider.future).then((d) {
       if (!mounted || _terisi) return;
       _terisi = true;
-      _nomor.text = '${d['bendahara_whatsapp'] ?? ''}';
+      _nomor.text = d['bendahara_whatsapp'] == null ? '' : waDisplay('${d['bendahara_whatsapp']}');
     }, onError: (_) {});
   }
 
@@ -411,7 +416,7 @@ class _TreasurerContactPageState extends ConsumerState<TreasurerContactPage> {
       ref.invalidate(contactsProvider);
       if (!mounted) return;
       final normal = res is Map ? res['bendahara_whatsapp'] : null;
-      _nomor.text = normal == null ? '' : '$normal';
+      _nomor.text = normal == null ? '' : waDisplay('$normal');
       showMessage(context, sukses);
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -443,7 +448,10 @@ class _TreasurerContactPageState extends ConsumerState<TreasurerContactPage> {
             onRetry: () => ref.invalidate(contactsProvider),
             builder: (_) => SectionCard(
               title: 'Nomor tersimpan',
-              child: Text(tersimpan ?? 'Belum diatur. Tombol WhatsApp di menu Iuran warga nonaktif.', style: const TextStyle(fontWeight: FontWeight.w700)),
+              child: Text(
+                tersimpan == null ? 'Belum diatur. Tombol WhatsApp di menu Iuran warga nonaktif.' : waDisplay(tersimpan),
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ),
           ),
           const SizedBox(height: 16),

@@ -7,12 +7,14 @@ import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/month_field.dart';
 import '../../core/session.dart';
+import '../../core/whatsapp.dart';
 import '../../core/widgets.dart';
 import 'admin_edits.dart';
 import 'admin_links.dart';
 import 'census_providers.dart';
 import 'family_actions.dart';
 import 'family_page.dart';
+import 'identity_data.dart';
 import 'paged_list.dart';
 import 'restore_page.dart';
 
@@ -139,21 +141,44 @@ class _HouseBody extends ConsumerWidget {
                       for (final member in members)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 6),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
-                              Text('${member['nama']}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                              Text(
-                                [
-                                  '${member['hubungan_keluarga'] ?? 'Anggota'}',
-                                  if (member['is_kepala'] == true) 'kepala keluarga',
-                                  if (member['punya_akun'] == true) 'punya akun',
-                                ].join(' • '),
-                                style: const TextStyle(color: Brand.muted, height: 1.3),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('${member['nama']}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                                    Text(memberSubtitle(member, phone: true), style: const TextStyle(color: Brand.muted, height: 1.3)),
+                                  ],
+                                ),
                               ),
+                              // ADR35: chat WhatsApp langsung ke warga (wa.me) bila nomornya terisi.
+                              WhatsAppIconButton(phone: member['whatsapp'] as String?, name: '${member['nama']}'),
                             ],
                           ),
                         ),
+                    if (!archived && family['id'] != null) ...[
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        key: const ValueKey('rumah-data-kependudukan'),
+                        onPressed: () async {
+                          final changed = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => IdentityDataPage(familyId: '${family['id']}')));
+                          if (changed == true) onChanged();
+                        },
+                        icon: const Icon(Icons.badge_outlined),
+                        label: const Text('Data kependudukan (NIK & KK)', textAlign: TextAlign.center),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        key: const ValueKey('rumah-kelola-keluarga'),
+                        onPressed: () async {
+                          await Navigator.push<void>(context, MaterialPageRoute(builder: (_) => FamilyAdminPage(id: '${family['id']}')));
+                          onChanged();
+                        },
+                        icon: const Icon(Icons.groups_outlined),
+                        label: const Text('Kelola anggota & WhatsApp', textAlign: TextAlign.center),
+                      ),
+                    ],
                     if (!archived && family['status'] != 'terverifikasi') ...[
                       const SizedBox(height: 8),
                       BusyButton(
