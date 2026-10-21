@@ -54,6 +54,9 @@ class SessionState {
   bool get signedIn => token != null && akun != null;
   bool get pending => akun?.status == 'menunggu';
   bool get pengurus => akun?.peran == 'pengurus';
+
+  /// Akun aktif yang belum menyetujui Kebijakan Privasi terbaru (ADR35).
+  bool get needsPrivacy => akun != null && !pending && akun!.perluSetujuPrivasi;
 }
 
 class SessionController extends Notifier<SessionState> {

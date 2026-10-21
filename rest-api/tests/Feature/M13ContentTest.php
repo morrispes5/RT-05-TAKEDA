@@ -49,7 +49,7 @@ class M13ContentTest extends TestCase
     public function test_catalog_import_is_idempotent_and_keeps_accepted_facts_word_for_word(): void
     {
         $website = base_path('../website/resources/data');
-        foreach (['artikel.json', 'album.json'] as $f) {
+        foreach (['artikel.json', 'album.json', 'profil.json'] as $f) {
             $this->assertSame(file_get_contents("$website/$f"), file_get_contents(Catalog::path()."/$f"), "$f harus salinan byte-identik website");
         }
         $blade = file_get_contents(base_path('../website/resources/views/fasilitas.blade.php')).file_get_contents(base_path('../website/resources/views/profil.blade.php'));

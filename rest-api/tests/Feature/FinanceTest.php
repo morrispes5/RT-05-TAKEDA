@@ -242,7 +242,9 @@ class FinanceTest extends TestCase
         [$warga] = $this->setupHouse();
         Dues::generate(Dues::period('2026-10'));
 
-        $res = $this->as($warga)->getJson('/api/v1/dues/transparency?periode=2026-10')->assertOk();
+        // ADR35: transparansi khusus pengurus; warga ditolak.
+        $this->as($warga)->getJson('/api/v1/dues/transparency?periode=2026-10')->assertForbidden();
+        $res = $this->as($this->pengurus())->getJson('/api/v1/dues/transparency?periode=2026-10')->assertOk();
         $this->assertStringNotContainsString('Uji Kepala', $res->getContent());
         $this->assertStringNotContainsString('@contoh.test', $res->getContent());
         $this->as($warga)->postJson('/api/v1/admin/dues-payments', [], ['Idempotency-Key' => (string) Str::uuid()])->assertForbidden();
@@ -257,7 +259,7 @@ class FinanceTest extends TestCase
         $this->as($warga)->getJson('/api/v1/cash/summary')->assertNotFound();
         $this->as($warga)->getJson('/api/v1/admin/cash-transactions')->assertForbidden();
         $this->as($warga)->getJson('/api/v1/dues/my')->assertOk();
-        $this->as($warga)->getJson('/api/v1/dues/transparency')->assertOk();
+        $this->as($warga)->getJson('/api/v1/dues/transparency')->assertForbidden(); // ADR35
 
         $this->as($this->pengurus())->getJson('/api/v1/admin/cash/summary')->assertOk()
             ->assertJsonStructure(['data' => ['saldo', 'bulan_ini' => ['pemasukan', 'pengeluaran'], 'mutasi_terakhir']]);

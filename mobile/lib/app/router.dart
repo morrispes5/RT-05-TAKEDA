@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../core/health.dart';
 import '../core/session.dart';
 import '../features/auth/auth_pages.dart';
+import '../features/auth/privacy_policy.dart';
 import '../features/warga/warga_pages.dart';
 import 'shell.dart';
 import 'startup.dart';
@@ -19,21 +20,25 @@ abstract final class Routes {
   static const pending = '/pending';
   static const home = '/home';
   static const notifications = '/notifications';
+  static const privacy = '/privacy';
 
   static const guest = {login, register, forgot};
-  static const all = {splash, login, register, forgot, pending, home, notifications};
+  static const all = {splash, login, register, forgot, pending, home, notifications, privacy};
 }
 
 /// Guard sesi murni (diuji langsung):
 /// - server belum terverifikasi / sesi sedang dipulihkan / sesi tidak dapat divalidasi → splash;
 /// - tamu → hanya login/daftar/lupa sandi;
 /// - akun menunggu persetujuan → hanya pending;
+/// - akun aktif yang belum menyetujui Kebijakan Privasi terbaru → hanya halaman privasi (ADR35);
 /// - akun aktif → beranda dan notifikasi, bukan halaman tamu.
 String? sessionRedirect({required HealthState health, required SessionState session, required String location}) {
   final booting = health.ok == null || session.loading || session.unavailable != null;
   if (booting) return location == Routes.splash ? null : Routes.splash;
   if (!session.signedIn) return Routes.guest.contains(location) ? null : Routes.login;
   if (session.pending) return location == Routes.pending ? null : Routes.pending;
+  if (session.needsPrivacy) return location == Routes.privacy ? null : Routes.privacy;
+  if (location == Routes.privacy) return Routes.home;
   if (!Routes.all.contains(location) || Routes.guest.contains(location) || location == Routes.splash || location == Routes.pending) {
     return Routes.home;
   }
@@ -66,6 +71,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => HomeShell(key: ValueKey(ref.read(sessionProvider).akun?.id)),
       ),
       GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsPage()),
+      GoRoute(path: Routes.privacy, builder: (_, _) => const PrivacyPolicyPage(consent: true)),
     ],
   );
   ref.onDispose(() {

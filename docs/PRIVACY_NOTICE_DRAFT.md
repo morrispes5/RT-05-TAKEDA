@@ -1,5 +1,8 @@
 # DRAF Pemberitahuan Privasi — RT05 TAKEDA
 
+> **Digantikan [PRIVACY_NOTICE.md](PRIVACY_NOTICE.md) (ADR35, 21 Okt 2026).** Draf ini disimpan sebagai riwayat; bagian
+> "Tidak diminta: NIK, nomor KK" tidak berlaku lagi (NIK/KK kini opsional dan terenkripsi).
+
 **Status: draf M15, belum berlaku.** Bagian bertanda **[DIISI PEMILIK/MITRA]** wajib diisi dengan fakta nyata dan
 disetujui pengurus sebelum data warga asli dimasukkan (SECURITY.md, gate M15/M16). Agent tidak mengisi kontak, alamat,
 atau jangka retensi yang belum diputuskan.

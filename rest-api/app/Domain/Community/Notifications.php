@@ -7,6 +7,7 @@ use App\Models\Agenda;
 use App\Models\Akun;
 use App\Models\AlokasiPembayaran;
 use App\Models\Aspirasi;
+use App\Models\KonfirmasiIuran;
 use App\Models\OutboxEvent;
 use App\Models\Pengaduan;
 use App\Models\Pengumuman;
@@ -45,6 +46,12 @@ final class Notifications
             'akun.permohonan_tambahan' => self::toPengurus($event, 'sistem', [], 'Permohonan akun tambahan', 'Ada permohonan akun tambahan yang menunggu persetujuan.'),
             'akun.permohonan_disetujui' => self::send($event, [$id], 'sistem', [], 'Akun disetujui', 'Akun Anda telah disetujui pengurus. Selamat datang di RT05 TAKEDA.'),
             'iuran.pembayaran_dicatat' => self::paymentRecorded($event),
+            // ADR35: bukti transfer warga → pengurus; hasil pemeriksaan → pengirim. Tanpa nominal/rumah di teks.
+            'iuran.konfirmasi_dikirim' => self::toPengurus($event, 'iuran', [], 'Bukti pembayaran iuran', 'Warga mengirim bukti pembayaran iuran. Periksa lalu catat pembayarannya.'),
+            'iuran.konfirmasi_diproses' => ($k = KonfirmasiIuran::find($id)) && self::send($event, [$k->akun_id], 'iuran', [],
+                'Bukti pembayaran diperiksa', ($event->safe_payload['status'] ?? $k->status) === 'ditolak'
+                    ? 'Bukti pembayaran iuran Anda belum dapat diterima. Lihat catatan pengurus di menu Iuran.'
+                    : 'Pengurus sudah memeriksa bukti pembayaran iuran Anda.'),
             // Siaran operator (rt05:siaran-sistem): kebijakan layanan atau pembaruan aplikasi.
             'sistem.siaran' => self::send($event, self::activeResidents(), 'sistem', [],
                 Str::limit((string) ($event->safe_payload['judul'] ?? 'Informasi RT05 TAKEDA'), 150), Str::limit((string) ($event->safe_payload['isi'] ?? ''), 500)),

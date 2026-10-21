@@ -62,7 +62,7 @@ class SiteContentApiTest extends TestCase
         $this->get('/artikel/kerja-bakti-oktober')->assertOk()->assertSee('Minggu pagi.');
         $this->get('/dokumentasi/kerja-bakti')->assertOk()->assertSee('/api/v1/public/media/m-1', false);
         $this->get('/artikel/cara-mencuci-tangan')->assertNotFound();
-        Http::assertSentCount(2); // satu kali ambil, sisanya dari cache fresh
+        Http::assertSentCount(3); // artikel, album, profil sekali ambil; sisanya dari cache fresh
     }
 
     public function test_api_outage_falls_back_to_last_good_then_to_baked(): void

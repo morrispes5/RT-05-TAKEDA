@@ -150,6 +150,17 @@ export class ApiContentRepository {
         if (!this.versions.has(sid)) await this.get(type, sid);
         await request('POST', `/admin/${type}/${sid}/restore`, { versi: this.versions.get(sid) });
     }
+    /** Profil RT05 (singleton): versi terakhir diingat untuk PUT berikutnya. */
+    async profile() {
+        const res = await request('GET', '/admin/site-profile');
+        this.profileVersi = res.data.versi;
+        return res.data;
+    }
+    async saveProfile(draf) {
+        const res = await request('PUT', '/admin/site-profile', { versi: this.profileVersi, draf });
+        this.profileVersi = res.data.versi;
+        return res.data;
+    }
     async media(id) {
         if (this.blobs.has(id)) return this.blobs.get(id);
         const response = await request('GET', `/admin/content-media/${this.serverId(id)}/file`, null, { raw: true });

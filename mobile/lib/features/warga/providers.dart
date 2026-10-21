@@ -6,8 +6,12 @@ import '../../core/models.dart';
 /// Provider data warga. Semua angka (tunggakan, saldo, status) berasal dari server.
 final duesMyProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await ref.read(apiProvider).get('/dues/my') as Map));
 
-final transparencyProvider = FutureProvider.autoDispose.family<Json, String?>(
-  (ref, p) async => Json.from(await ref.read(apiProvider).get('/dues/transparency', query: {'periode': ?p}) as Map),
+/// Kontak bendahara untuk tombol WhatsApp (bendahara_whatsapp, null bila belum diatur). Semua akun aktif boleh membaca.
+final contactsProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await ref.read(apiProvider).get('/settings/contacts') as Map));
+
+/// Bukti pembayaran iuran milik warga sendiri, terbaru dulu (server maks 20).
+final myDuesConfirmationsProvider = FutureProvider.autoDispose<List<Json>>(
+  (ref) async => (await ref.read(apiProvider).get('/dues/confirmations') as List).cast<Map>().map(Json.from).toList(),
 );
 
 /// Kas RT khusus pengurus (ADR26); warga mendapat 403 dari server.
