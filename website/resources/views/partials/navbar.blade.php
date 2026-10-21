@@ -1,4 +1,4 @@
-@php($menu = ['/' => 'Beranda', '/profil' => 'Profil RT', '/fasilitas' => 'Fasilitas', '/dokumentasi' => 'Dokumentasi', '/artikel' => 'Artikel'])
+@php($menu = ['/' => 'Beranda', '/profil' => 'Profil RT05', '/fasilitas' => 'Fasilitas', '/dokumentasi' => 'Dokumentasi', '/artikel' => 'Artikel'])
 <header class="site-header">
     <div class="wrap nav-row">
         <a href="/" class="brand" aria-label="RT 05 Takeda — Beranda"><img src="/images/logo/rt05-mark.svg" width="44" height="44" alt=""><span>RT 05 Takeda<small>Taman Kedaung · RW 07</small></span></a>

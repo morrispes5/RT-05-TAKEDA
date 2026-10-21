@@ -11,11 +11,15 @@ class Keluarga extends Model
 
     public const UPDATED_AT = null;
 
+    /** Nomor KK terenkripsi (ADR35); tidak pernah ikut serialisasi model. */
+    protected $hidden = ['nomor_kk'];
+
     protected function casts(): array
     {
         return [
             'versi' => 'integer',
             'archived_at' => 'datetime',
+            'nomor_kk' => 'encrypted',
         ];
     }
 

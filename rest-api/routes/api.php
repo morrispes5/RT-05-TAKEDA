@@ -8,10 +8,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\DuesConfirmationController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\HouseholdController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ServiceInfoController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,6 +56,7 @@ Route::middleware(['auth:sanctum', 'akun:menunggu'])->group(function () {
     Route::get('auth/me', [AuthController::class, 'me']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
     Route::get('auth/additional-account-status', [AuthController::class, 'additionalAccountStatus']);
+    Route::post('auth/privacy-consent', [AuthController::class, 'privacyConsent']);
     Route::patch('auth/additional-account-request', [AuthController::class, 'reviseAdditionalRequest'])->middleware('throttle:registrasi');
     // Push perangkat (M10): akun menunggu boleh mendaftar agar menerima kabar persetujuan.
     Route::put('devices/{device_identifier}', [DeviceController::class, 'upsert'])->middleware('throttle:30,1');
@@ -109,6 +112,11 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
 
     Route::get('dues/my', [FinanceController::class, 'my']);
     Route::get('dues/transparency', [FinanceController::class, 'transparency']);
+    // ADR35: bukti transfer iuran dan kontak bendahara untuk tombol WhatsApp.
+    Route::get('dues/confirmations', [DuesConfirmationController::class, 'mine']);
+    Route::post('dues/confirmations', [DuesConfirmationController::class, 'store'])->middleware('throttle:laporan');
+    Route::get('dues/confirmations/{id}/photo', [DuesConfirmationController::class, 'photo'])->whereUuid('id');
+    Route::get('settings/contacts', [SettingsController::class, 'contacts']);
 });
 
 // Pengurus.
@@ -166,6 +174,10 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::post('announcements', [CommunityController::class, 'storeAnnouncement']);
     Route::put('announcements/{id}', [CommunityController::class, 'updateAnnouncement'])->whereUuid('id');
     Route::post('announcements/{id}/archive', [CommunityController::class, 'archiveAnnouncement'])->whereUuid('id');
+
+    Route::get('dues-confirmations', [DuesConfirmationController::class, 'index']);
+    Route::post('dues-confirmations/{id}/process', [DuesConfirmationController::class, 'process'])->whereUuid('id');
+    Route::put('settings/contacts', [SettingsController::class, 'updateContacts']);
 
     Route::get('dues-rates', [FinanceController::class, 'rates']);
     Route::post('dues-rates', [FinanceController::class, 'storeRate']);

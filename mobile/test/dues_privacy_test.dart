@@ -10,10 +10,10 @@ import 'package:rt05_takeda/features/warga/warga_pages.dart';
 import 'support/app_harness.dart';
 import 'support/fakes.dart';
 
-/// Keputusan pemilik 17 Oktober 2026 (ADR26): tab Iuran warga menampilkan iuran sendiri lebih dulu,
-/// transparansi rumah lain tersembunyi secara bawaan, dan kas RT tidak tampil untuk warga.
-Future<FakeAdapter> _pumpDues(WidgetTester tester) async {
-  final adapter = FakeAdapter(apiHandler(me: akunJson));
+/// Keputusan pemilik (ADR26, diperbarui): tab Iuran warga hanya menampilkan iuran sendiri dan jalur
+/// bukti pembayaran. Transparansi rumah lain dihapus dari warga, dan kas RT tidak tampil untuk warga.
+Future<FakeAdapter> _pumpDues(WidgetTester tester, {Map<String, Object?>? fixtures}) async {
+  final adapter = FakeAdapter(apiHandler(me: akunJson, fixtures: fixtures));
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -39,8 +39,19 @@ Future<void> _settle(WidgetTester tester) async {
 
 int _hits(FakeAdapter a, String path) => a.requests.where((r) => r.uri.path == path).length;
 
+Finder _tombolWa() => find.ancestor(of: find.text('Chat bendahara lewat WhatsApp'), matching: find.byWidgetPredicate((w) => w is OutlinedButton));
+
+bool _waAktif(WidgetTester tester) => tester.widget<OutlinedButton>(_tombolWa().first).onPressed != null;
+
+Map<String, Object?> _kontak(String? nomor) => {
+  ...shellFixtures(),
+  '/api/v1/settings/contacts': {
+    'data': {'bendahara_whatsapp': nomor},
+  },
+};
+
 void main() {
-  testWidgets('warga: iuran sendiri dulu, tanpa kas RT, transparansi tidak dimuat sebelum diminta', (tester) async {
+  testWidgets('warga: iuran sendiri dulu, tanpa kas RT dan tanpa transparansi rumah lain', (tester) async {
     useCompactScreen(tester, height: 1600);
     final adapter = await _pumpDues(tester);
 
@@ -49,38 +60,29 @@ void main() {
     expect(find.text('Kas RT'), findsNothing);
     expect(find.text('Saldo kas RT'), findsNothing);
     expect(_hits(adapter, '/api/v1/admin/cash/summary'), 0);
-    expect(_hits(adapter, '/api/v1/dues/transparency'), 0, reason: 'privasi: data rumah lain tidak diminta sebelum warga memilih');
-    expect(find.text('Lihat transparansi iuran'), findsOneWidget);
-    expect(find.text('A-01', skipOffstage: false), findsNothing);
-    expect(tester.getTopLeft(find.text('Riwayat tagihan')).dy, lessThan(tester.getTopLeft(find.text('Transparansi iuran warga')).dy));
+    expect(_hits(adapter, '/api/v1/dues/transparency'), 0, reason: 'privasi: status rumah lain tidak boleh diminta warga');
+    expect(find.text('Transparansi iuran warga', skipOffstage: false), findsNothing);
+    expect(find.text('Lihat transparansi iuran', skipOffstage: false), findsNothing);
+    expect(find.text('Sudah bayar iuran?'), findsOneWidget);
+    expect(find.text('Kirim bukti transfer'), findsOneWidget);
+    expect(tester.getTopLeft(find.text('Riwayat tagihan')).dy, lessThan(tester.getTopLeft(find.text('Sudah bayar iuran?')).dy));
   });
 
-  testWidgets('warga: membuka transparansi butuh konfirmasi, bisa batal dan disembunyikan lagi', (tester) async {
+  testWidgets('warga: tombol WhatsApp bendahara aktif bila nomor sudah diatur', (tester) async {
     useCompactScreen(tester, height: 1600);
-    final adapter = await _pumpDues(tester);
+    await _pumpDues(tester);
 
-    await tester.tap(find.text('Lihat transparansi iuran'));
-    await _settle(tester);
-    expect(find.text('Lihat status iuran rumah lain?'), findsOneWidget);
-    await tester.tap(find.text('Batal'));
-    await _settle(tester);
-    expect(_hits(adapter, '/api/v1/dues/transparency'), 0);
-    expect(find.text('Lihat transparansi iuran'), findsOneWidget);
+    expect(find.text('Chat bendahara lewat WhatsApp'), findsOneWidget);
+    expect(_waAktif(tester), isTrue);
+    expect(find.text('Nomor WhatsApp bendahara belum diatur pengurus.'), findsNothing);
+  });
 
-    await tester.tap(find.text('Lihat transparansi iuran'));
-    await _settle(tester);
-    await tester.tap(find.text('Tampilkan'));
-    await _settle(tester);
-    expect(_hits(adapter, '/api/v1/dues/transparency'), 1);
-    expect(find.text('A-01'), findsOneWidget);
-    expect(find.text('1 rumah'), findsOneWidget);
-    expect(find.text('Ditampilkan per kode rumah tanpa nama atau kontak warga.'), findsOneWidget);
+  testWidgets('warga: nomor bendahara kosong membuat tombol nonaktif dengan petunjuk', (tester) async {
+    useCompactScreen(tester, height: 1600);
+    await _pumpDues(tester, fixtures: _kontak(null));
 
-    await tester.tap(find.byKey(const ValueKey('sembunyikan-transparansi')));
-    await _settle(tester);
-    expect(find.text('A-01'), findsNothing);
-    expect(find.text('Lihat transparansi iuran'), findsOneWidget);
-    expect(_hits(adapter, '/api/v1/admin/cash/summary'), 0);
+    expect(_waAktif(tester), isFalse);
+    expect(find.text('Nomor WhatsApp bendahara belum diatur pengurus.'), findsOneWidget);
   });
 
   for (final width in [360.0, 320.0]) {
@@ -88,12 +90,9 @@ void main() {
       useCompactScreen(tester, width: width, height: 3200, textScale: 2.0);
       await _pumpDues(tester);
       expect(tester.takeException(), isNull);
-      await tester.tap(find.text('Lihat transparansi iuran'));
-      await _settle(tester);
-      await tester.tap(find.text('Tampilkan'));
-      await _settle(tester);
+      expect(find.text('Sudah bayar iuran?'), findsOneWidget);
+      expect(find.text('Chat bendahara lewat WhatsApp'), findsOneWidget);
       expect(tester.takeException(), isNull);
-      expect(find.text('A-01'), findsOneWidget);
     });
   }
 }

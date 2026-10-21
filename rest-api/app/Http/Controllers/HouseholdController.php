@@ -71,6 +71,8 @@ class HouseholdController extends Controller
             'versi' => ['required', 'integer'],
             'whatsapp' => self::WHATSAPP,
             'nama_kepala' => ['sometimes', 'string', 'max:120'],
+            // ADR35: nomor KK opsional, 16 digit; null mengosongkan.
+            'nomor_kk' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
         ]);
         Households::updateHead($akun, $k->id, $data);
 
@@ -85,6 +87,7 @@ class HouseholdController extends Controller
             'nama' => ['required', 'string', 'max:120'],
             'hubungan_keluarga' => ['required', 'string', 'max:40'],
             'whatsapp' => self::WHATSAPP,
+            'nik' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
             'versi' => ['required', 'integer'],
         ]);
         $warga = Households::addMember($akun, $k->id, $data, $data['versi'], 'akun_utama');
@@ -100,6 +103,7 @@ class HouseholdController extends Controller
             'nama' => ['sometimes', 'string', 'max:120'],
             'hubungan_keluarga' => ['sometimes', 'string', 'max:40'],
             'whatsapp' => self::WHATSAPP,
+            'nik' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
             'versi' => ['required', 'integer'],
         ]);
         $versi = $data['versi'];

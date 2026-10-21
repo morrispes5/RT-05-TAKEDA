@@ -367,6 +367,95 @@ async function signedIn() {
         throw error;
     }
 }
+// Profil RT05: hanya server (pengurus masuk). Mode demo hanya menjelaskan batasannya.
+async function profileScreen() {
+    actions.replaceChildren();
+    if (!server) {
+        root.replaceChildren(panel(node('h2', {}, 'Profil RT05 hanya bisa diubah oleh pengurus yang sudah masuk.'),
+            node('p', {}, 'Buka versi website yang terhubung ke server untuk mengubah profil. Di pratinjau ini, profil hanya bisa dilihat di halaman Profil.'), link('Kembali ke pengurus', '/pengurus', true)));
+        return;
+    }
+    heading('Profil RT05.', 'Isi profil yang dibaca warga dan pengunjung. Perubahan tampil setelah diterbitkan.');
+    drawProfile(await repository.profile());
+}
+function drawProfile(record) {
+    const draf = structuredClone(record.draf || {});
+    if (!draf.pengurus?.length) draf.pengurus = [{ jabatan: '', nama: '', catatan: null }];
+    const text = value => (value || '').trim();
+    const touch = () => { unsaved = true; };
+    unsaved = false;
+    const notes = new Map(); // kunci galat API (mis. draf.pengurus.0.nama) → teks galat di samping isian
+    const errors = node('div', { class: 'cms-error', role: 'alert', hidden: true });
+    const status = node('p', { class: 'cms-save-status', role: 'status' }, 'Website menampilkan profil versi ' + record.versi + '. Perubahan di sini baru tampil setelah diterbitkan.');
+    const withError = (key, label, value, change, options) => {
+        const note = node('small', { class: 'cms-error', role: 'alert', hidden: true });
+        notes.set(key, note);
+        const input = field(label, value, change, options); input.append(note); return input;
+    };
+    const rows = node('div', { class: 'cms-sections' });
+    const addButton = button('Tambah pengurus', () => {
+        draf.pengurus.push({ jabatan: '', nama: '', catatan: null }); touch(); drawPengurus(draf.pengurus.length - 1);
+    }, false, { disabled: draf.pengurus.length >= 12 });
+    function drawPengurus(focusIndex) {
+        for (const key of [...notes.keys()]) if (key.startsWith('draf.pengurus.')) notes.delete(key);
+        addButton.disabled = draf.pengurus.length >= 12;
+        rows.replaceChildren(...draf.pengurus.map((row, index) => panel(
+            node('div', { class: 'cms-section-title' }, node('h2', {}, 'Pengurus ' + (index + 1)),
+                node('div', { class: 'cms-action-row' }, button('Hapus', () => { draf.pengurus.splice(index, 1); touch(); drawPengurus(Math.max(0, index - 1)); }, false,
+                    { disabled: draf.pengurus.length === 1, 'aria-label': 'Hapus pengurus ' + (index + 1) }))),
+            withError('draf.pengurus.' + index + '.jabatan', 'Jabatan ' + (index + 1), row.jabatan, value => { row.jabatan = value; touch(); },
+                { required: true, minlength: 2, maxlength: 60, placeholder: 'Contoh: Ketua RT' }),
+            withError('draf.pengurus.' + index + '.nama', 'Nama ' + (index + 1), row.nama, value => { row.nama = value; touch(); },
+                { required: true, minlength: 2, maxlength: 80 }),
+            withError('draf.pengurus.' + index + '.catatan', 'Catatan ' + (index + 1) + ' (opsional)', row.catatan, value => { row.catatan = value; touch(); },
+                { maxlength: 200 }))));
+        if (focusIndex !== undefined) rows.children[focusIndex]?.querySelector('input')?.focus();
+    }
+    const form = node('form', { class: 'cms-editor-grid', onsubmit: event => event.preventDefault() });
+    const editPanel = panel(
+        withError('draf.wilayah', 'Wilayah', draf.wilayah, value => { draf.wilayah = value; touch(); }, { required: true, minlength: 5, maxlength: 200 }),
+        withError('draf.ringkasan', 'Ringkasan singkat', draf.ringkasan, value => { draf.ringkasan = value; touch(); }, { tag: 'textarea', required: true, rows: 3, minlength: 5, maxlength: 500 }),
+        withError('draf.tentang', 'Tentang Taman Kedaung', draf.tentang, value => { draf.tentang = value; touch(); }, { tag: 'textarea', rows: 8, maxlength: 3000, hint: 'Ceritakan lingkungan ini dengan bahasa sehari-hari. Pisahkan paragraf dengan baris kosong.' }),
+        node('h2', { class: 'cms-editor-label' }, 'Pengurus RT'), rows, addButton);
+    const side = node('aside', { class: 'cms-editor-side' }, panel(node('h2', {}, 'Dibaca warga, dicek pengurus.'),
+        node('p', {}, 'Isian ini tampil di halaman Profil RT05. Nama dan singkatan RT tidak diubah dari sini.'), status, errors));
+    // Nama dan singkatan dari draf tetap dikirim kembali apa adanya.
+    const payload = () => ({
+        ...draf, wilayah: text(draf.wilayah), ringkasan: text(draf.ringkasan), tentang: text(draf.tentang) || null,
+        pengurus: draf.pengurus.map(row => ({ jabatan: text(row.jabatan), nama: text(row.nama), catatan: text(row.catatan) || null })),
+    });
+    async function publish() {
+        if (!form.reportValidity()) return;
+        if (!await confirm('Terbitkan profil?', 'Perubahan langsung tampil di halaman Profil RT05 website.', 'Terbitkan')) return;
+        errors.hidden = true; errors.replaceChildren();
+        for (const note of notes.values()) { note.hidden = true; note.textContent = ''; }
+        try {
+            const saved = await repository.saveProfile(payload());
+            notify('Profil RT05 diterbitkan. Website menampilkan versi baru dalam beberapa detik.');
+            drawProfile(saved);
+        } catch (error) {
+            if (error.status === 401) { failure(error); return; }
+            if (error.status === 422) {
+                const general = [];
+                for (const [key, messages] of Object.entries(error.fields || {})) {
+                    const note = notes.get(key);
+                    if (note) { note.textContent = [].concat(messages).join(' '); note.hidden = false; } else general.push(...[].concat(messages));
+                }
+                errors.hidden = false; errors.textContent = ['Profil belum diterbitkan. Periksa isian yang ditandai.', ...general].join(' ');
+                notify('Profil belum diterbitkan. Periksa isian yang ditandai.', false);
+            } else if (error.status === 409) {
+                errors.hidden = false; errors.replaceChildren('Profil ini baru saja diubah di perangkat lain. Salin isianmu bila perlu, lalu muat ulang halaman untuk melihat versi terbaru.', button('Muat ulang halaman', () => location.reload()));
+                notify('Profil belum diterbitkan karena ada perubahan lain.', false);
+            } else {
+                errors.hidden = false; errors.textContent = error.message;
+                notify('Gagal menerbitkan profil. Isianmu masih ada.', false);
+            }
+        }
+    }
+    actions.replaceChildren(button('Simpan dan terbitkan', publish, true));
+    drawPengurus();
+    form.append(editPanel, side); root.replaceChildren(form);
+}
 async function render() {
     try {
         if (server && screen === 'masuk') loginScreen();
@@ -375,6 +464,7 @@ async function render() {
             root.replaceChildren(node('div', { class: 'cms-access' }, panel(node('img', { src: '/images/logo/rt05-mark.svg', width: 100, height: 100, alt: '' }), node('h2', {}, 'Artikel dan dokumentasi, dikelola bersama.'), node('p', {}, 'Akses pengurus akan diaktifkan ketika website memiliki layanan penyimpanan online. Sekarang kamu dapat mencoba editor tanpa memasukkan email atau kata sandi.'), link('Masuk ke pratinjau', '/pengurus', true), link('Kembali ke website', '/'))));
         } else if (screen === 'ringkasan') await overview();
         else if (screen === 'pratinjau') await preview();
+        else if (screen === 'profil') await profileScreen();
         else if (screen.endsWith('/editor')) await editor(screen.startsWith('artikel') ? 'articles' : 'albums');
         else await listing(screen === 'artikel' ? 'articles' : 'albums');
     } catch (error) { failure(error); }

@@ -20,7 +20,7 @@ Kode BR dipakai pada API, tes, issue, dan kriteria milestone. Bagian A mempertah
 | BR12 | Status belum bayar berubah setelah transaksi pencatatan berhasil |
 | BR13 | Menunggak dan membayar beberapa bulan sekaligus diperbolehkan |
 | BR14 | Tarif dapat diubah untuk periode yang ditentukan; riwayat minimal 12 bulan |
-| BR15 | Warga terdaftar melihat iuran rumahnya dan transparansi status iuran per kode rumah (tersembunyi secara bawaan, dibuka atas pilihan warga). Kas RT hanya untuk pengurus (keputusan pemilik 17 Oktober 2026, ADR26) |
+| BR15 | Warga terdaftar melihat iuran rumahnya sendiri dan dapat mengirim bukti transfer atau chat bendahara lewat WhatsApp. Transparansi status iuran per kode rumah dan kas RT hanya untuk pengurus (ADR26, diubah ADR35 21 Oktober 2026) |
 | BR16 | Pemasukan iuran harus berhubungan dengan pembayaran yang dicatat |
 | BR17 | Koreksi keuangan dapat dilakukan admin dan historinya tetap tersedia |
 | BR18 | Hapus dari tampilan menggunakan arsip untuk data penting; arsip dapat dipulihkan pengurus (ADR34) |
@@ -125,6 +125,6 @@ Jika anonymous_to_residents=true, resource warga tidak memuat user_id, nama, kon
 
 ## D. Larangan pengembangan
 
-Jangan menambah fitur pembayaran online, role bendahara khusus yang mengurangi kesetaraan admin, NIK/KTP wajib, penghapusan permanen finansial, anonymization yang juga menyembunyikan pelapor dari admin, akses database di client, atau perhitungan saldo terpisah dalam Flutter.
+Jangan menambah fitur pembayaran online, role bendahara khusus yang mengurangi kesetaraan admin, NIK/KTP wajib (NIK dan nomor KK opsional terenkripsi diizinkan ADR35), penghapusan permanen finansial, anonymization yang juga menyembunyikan pelapor dari admin, akses database di client, atau perhitungan saldo terpisah dalam Flutter.
 
 Detail B adalah keputusan rekayasa eksplisit v1 dan boleh direvisi pemilik lewat ADR. Tidak boleh dipresentasikan sebagai kutipan persetujuan mitra yang belum ada.

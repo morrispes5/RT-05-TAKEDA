@@ -31,7 +31,7 @@ Foto mungkin memperlihatkan rumah/wajah; UI memberi pengingat singkat sebelum pu
 
 ## Data pribadi
 
-V1 tidak meminta NIK, KTP, nomor KK, rekening, atau GPS. Warga hanya membaca keluarga sendiri. Transparansi keuangan memakai kode rumah/status, bukan data anggota keluarga.
+V1 tidak meminta foto KTP, rekening, atau GPS. NIK dan nomor KK **opsional** (ADR35): tidak diminta saat daftar, disimpan dengan cast `encrypted`, API hanya mengirim bentuk tersamar, dan audit/log tidak memuat nilainya. Warga hanya membaca keluarga sendiri. Transparansi iuran per kode rumah hanya untuk pengurus (ADR35).
 
 Setiap environment nonproduction memakai data sintetis atau anonymized yang disetujui. Dilarang clone branch Neon berisi PII production ke dev public tanpa sanitasi dan otorisasi.
 
