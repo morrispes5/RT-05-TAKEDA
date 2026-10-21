@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **21 Oktober 2026 malam** oleh Claude (M15b permintaan Pak RT: kode di branch `codex/m15b-permintaan-rt`, ADR35).
+Terakhir diperbarui: **22 Oktober 2026 ±06.30 WIB** oleh Claude (M15b: PR #60 dan #61 merge, APK 1011 dirilis dan diuji di emulator).
 
 ## 1. Cara mulai sesi baru
 
@@ -22,10 +22,10 @@ Terakhir diperbarui: **21 Oktober 2026 malam** oleh Claude (M15b permintaan Pak 
 | Hal | Nilai |
 | --- | --- |
 | Milestone | M00–M14 **passed**; **M15 in_progress**; **M15b in_progress** (ADR35); M16 planned |
-| `main` | `9d9cf07` (PR #58 merge; sebelumnya PR #56 HANDOFF 1008, PR #50, PR #55) |
-| Staging (VPS Hostinger, project Docker `rt05-staging`) | `9d9cf07`, deploy immutable 20 Okt ±19.57–19.59 WIB (termasuk migrasi `2026_10_21_000100`), 0 GAGAL, 8 kontainer healthy + gateway. UI CMS live `cms-ui-live.mjs` **21/21 PASS** (20 Okt ±20.05 WIB). Smoke runtime terpisah (`staging-runtime-smoke.sh`) **belum dijalankan** |
+| `main` | `f392612` (PR #61 perbaikan uji emulator; PR #60 M15b; PR #58/#59 putaran 3) |
+| Staging (VPS Hostinger, project Docker `rt05-staging`) | `f392612`, deploy immutable 22 Okt ±06.02–06.06 WIB, 0 GAGAL. Editor Profil RT05 CMS web `cms-profile-live.mjs` 9/9 PASS (22 Okt) |
 | Website Vercel (`https://rt05takeda.vercel.app`) | mengikuti `website/preview/` di `main`; ekspor dibangun ulang di PR #58 (tombol Pulihkan hanya di CMS mode server, bukan mode demo). Verifikasi `check-preview.mjs` terhadap Vercel setelah PR #58 **belum dijalankan** |
-| APK uji tim | build **1009** (commit `9d9cf07`, run [39426206006](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/39426206006)). arm64-v8a versionCode 3009, SHA-256 `854f28e39c5aa1058ac58df160374d11db8effc7215cddc907d0e0ea897dd88d`; armeabi-v7a (HP 32-bit) versionCode 2009, SHA-256 `5779ae37eef4261dad75e0faba7af7a342a1697b942f7b7df939d488b57ac17a`. Sertifikat = kunci rilis tetap. Unduh: `https://takeda-staging.morriz.tech/unduh/rt05-takeda-staging-1009-arm64-v8a.apk` dan `...-armeabi-v7a.apk`. Riwayat rilis: bagian 2a |
+| APK uji tim | build **1011** (commit `f392612`, run [39690611853](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/39690611853)). arm64-v8a versionCode 3011, SHA-256 `af171e007670ec4bb782c9e2…` (lengkap di berkas `.sha256` artifact); armeabi-v7a 2011, SHA-256 `0301005d77053118ea2e4a06…`. Unduh: `https://takeda-staging.morriz.tech/unduh/rt05-takeda-staging-1011-arm64-v8a.apk` dan `...-armeabi-v7a.apk`. Riwayat: bagian 2a |
 | Link APK untuk tim (Drive pemilik, "siapa saja yang punya link") | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view — **link tetap**; build baru diunggah sebagai *versi baru* file yang sama. **Isinya masih 1008** sampai pemilik mengunggah 1009 (Chrome sesi agent login sebagai akun lain tanpa akses folder Drive; agent tidak meminta akses). Sementara tim memakai tautan `/unduh` di atas |
 | PR terbuka | tidak ada (PR #50, #53, #55, #56, #58 sudah merge 20 Okt) |
 | Issue terbuka | **#54** (pelacak sisa gate M15, checklist), #47 (bukti performa, medium). #46 dan #48 ditutup oleh PR #50 |
@@ -39,7 +39,9 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | 1006 | 3006 | `adee683` | 19 Okt ±21.37 | 19 Okt 21.40 | UAT putaran 1 (ADR32): edit foto pengaduan, batas unggah, crash pemilih jam usulan | Diuji tim 19 Okt 21.40–20 Okt 00.45 (19.59–21.40 masih build 1005) |
 | 1007 | 3007 | `71dc523` | 20 Okt ±10.03 | 20 Okt 10.11 | UAT putaran 2 (ADR33): ekspor CSV, tagihan langsung, pemilih bulan, Blok wajib, revisi permohonan, PDF ≤1 MB | **Tidak sempat diuji** (digantikan 1008) |
 | 1008 | 3008 | `4376b44` | 20 Okt 14.38 | 20 Okt 14.42 | 1007 + draf pengaduan tidak hilang (#48) + outbox tetap dipantau (#46, server) | Diuji sebagian oleh tim (checklist putaran 2 belum lengkap); temuan putaran 3 membuatnya digantikan 1009 |
-| **1009** | 3009 (arm64), 2009 (armeabi-v7a) | `9d9cf07` | **20 Okt 20.03** | **20 Okt ±20.07 ke `/unduh` staging** (Drive: belum, menunggu pemilik) | UAT putaran 3 (ADR34): pulihkan arsip (konten, rumah, akun, keluarga), tombol Kembali, jam selesai usulan manual, akun tambahan wajib nama kepala keluarga (alamat opsional) | Menunggu uji tim |
+| 1009 | 3009 (arm64), 2009 (armeabi-v7a) | `9d9cf07` | **20 Okt 20.03** | **20 Okt ±20.07 ke `/unduh` staging** (Drive: belum, menunggu pemilik) | UAT putaran 3 (ADR34): pulihkan arsip (konten, rumah, akun, keluarga), tombol Kembali, jam selesai usulan manual, akun tambahan wajib nama kepala keluarga (alamat opsional) | Menunggu uji tim |
+| 1010 | 3010 / 2010 | `2f781d7` | 21 Okt 20.40 | 21 Okt 20.45 ke `/unduh` | M15b (ADR35): Profil RT05, bukti transfer, WhatsApp, NIK/KK, Kebijakan Privasi | Diuji agent di emulator; 6 temuan → 1011 |
+| **1011** | 3011 / 2011 | `f392612` | **22 Okt 06.08** | **22 Okt 06.09 ke `/unduh`** (Drive: menunggu pemilik) | 1010 + perbaikan temuan uji emulator | Diuji ulang agent di emulator (lulus); menunggu uji tim |
 
 Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
 
