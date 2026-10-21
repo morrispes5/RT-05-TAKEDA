@@ -353,6 +353,10 @@ Status awal seluruh M01–M16 planned. Akses server/credential dapat memblokir b
 
 **Output:** sistem live, APK warga, runbook, backup yang terbukti, handover.
 
+**Dipindah dari M15 (ADR36, 22 Okt 2026):** verifikasi developer Android, kontak dan masa simpan Kebijakan Privasi, latihan
+PostgreSQL cadangan (ADR29), uji hosting production Biznet (profil shared, preflight SHARED_HOSTING), TalkBack manual,
+pemulihan otomatis foto/push, issue #47.
+
 **Gate:** DNS/TLS dari luar, real env service health, auth/resource policy, safe smoke, worker/scheduler/outbox, reconciliation, restore target, rollback, privacy/support contact nyata, credentials tidak di source.
 
 **Otorisasi:** perubahan server/DNS/production harus berada dalam instruksi pemilik yang berlaku. Tanpa akses, seluruh artifact/runbook/build tetap dibuat dan status live blocked; jangan mengklaim deploy.

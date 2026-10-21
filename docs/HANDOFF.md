@@ -13,15 +13,14 @@ Terakhir diperbarui: **22 Oktober 2026 ±06.30 WIB** oleh Claude (M15b: PR #60 d
 2. Bandingkan branch lokal dengan `origin/main` sebelum kerja. Pemilik juga memakai agent lain (Codex, Cursor Cloud); branch
    lokal bisa basi dan checkout ini kadang dipakai bersama (lihat bagian 9).
 3. Pemilik berkomunikasi dalam Bahasa Indonesia santai. Jawab dalam Bahasa Indonesia, ringkas, tanpa jargon berlebihan.
-4. Kerjakan satu milestone yang dibuka pemilik. Saat ini **M15 masih `in_progress`** (menunggu uji 1009 dan catatan UAT), **M15b**
-   (permintaan Pak RT 20 Okt, ADR35) sedang dikerjakan; M16 belum dibuka. Catatan permintaan pemilik juga ada di
-   `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
+4. Kerjakan satu milestone yang dibuka pemilik. **M15 dan M15b passed (22 Okt, ADR36)**; **M16 berikutnya** (production + sisa gate
+   M15 yang dipindah). Catatan permintaan pemilik juga ada di `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
 
 ## 2. Snapshot status (20 Okt 2026)
 
 | Hal | Nilai |
 | --- | --- |
-| Milestone | M00–M14 **passed**; **M15 in_progress**; **M15b in_progress** (ADR35); M16 planned |
+| Milestone | M00–M15 **passed**, M15b **passed** (ADR35/36, 22 Okt); **M16 berikutnya** |
 | `main` | `f392612` (PR #61 perbaikan uji emulator; PR #60 M15b; PR #58/#59 putaran 3) |
 | Staging (VPS Hostinger, project Docker `rt05-staging`) | `f392612`, deploy immutable 22 Okt ±06.02–06.06 WIB, 0 GAGAL. Editor Profil RT05 CMS web `cms-profile-live.mjs` 9/9 PASS (22 Okt) |
 | Website Vercel (`https://rt05takeda.vercel.app`) | mengikuti `website/preview/` di `main`; ekspor dibangun ulang di PR #58 (tombol Pulihkan hanya di CMS mode server, bukan mode demo). Verifikasi `check-preview.mjs` terhadap Vercel setelah PR #58 **belum dijalankan** |
@@ -69,7 +68,7 @@ APK 32-bit (`armeabi-v7a`) sudah dibangun sejak 1006 tetapi sebelum 20 Okt malam
     tetap versi lama → Terbitkan → versi baru ±15 dtk → Arsipkan → hilang dari website → muncul di *Lihat arsip*). Setelah PR #58 skrip
     diperluas (C16–C20: Pulihkan → draf, tidak langsung tampil di website, arsipkan lagi) dan dijalankan ke staging `9d9cf07`: **21/21 PASS**.
 
-## 4. Sisa M15 (gate belum terpenuhi)
+## 4. Sisa gate M15 — dipindah ke M16 (ADR36, 22 Okt 2026)
 
 Gate ROADMAP M15: semua alur kritis lulus, tidak ada blocker high/critical, target UAT tercatat, provider nyata bekerja,
 APK bertanda tangan terpasang. **Jangan menandai passed tanpa bukti nyata. Jangan mengarang hasil UAT/survei.**

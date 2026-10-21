@@ -504,3 +504,20 @@ lama yang disebut di bawah.
    keluarga" bila WhatsApp, NIK, atau nomor KK kepala keluarga masih kosong ("Nanti saja" berlaku per sesi).
 7. **Tombol Kembali** tetap seperti ADR34; syarat daftar tidak berubah (email, kata sandi, token, alamat; WhatsApp
    opsional).
+
+### ADR36 — Penutupan M15 atas keputusan pemilik; sisa gate dipindah ke M16
+
+Tanggal: 22 Oktober 2026 (jawaban pemilik di sesi Claude). Status: **diputuskan**.
+
+1. **M15 passed** dengan bukti UAT berupa: uji tim pemilik putaran 1–3 (19–21 Okt; temuan diperbaiki ADR32–ADR35), demo aplikasi
+   ke Ketua RT pada 20 Okt 2026 pukul 20.00 WIB (pemilik melaporkan "bagus"; menghasilkan permintaan M15b), dan uji agent di emulator
+   pada APK 1010 dan 1011 dengan akun sintetis staging. **Tidak ada nilai kemudahan 1–5 per peserta** yang dicatat; angka tidak
+   dikarang. Target TESTING.md "≥80% nilai 4–5" tidak diukur dan diterima pemilik sebagai risiko.
+2. Gate lain M15 terpenuhi: alur kritis lulus (tes otomatis rest-api 340, Flutter 267, website 21; live CMS 21/21 dan 9/9), tidak ada
+   bug high/critical terbuka, provider nyata bekerja di staging (Neon, FCM, email), APK bertanda tangan kunci tetap terpasang (1011).
+3. **Dipindah ke M16** (bukan dibatalkan): verifikasi developer Android (identitas pemilik), kontak resmi dan masa simpan di Kebijakan
+   Privasi, latihan pindah/kembali ke PostgreSQL cadangan (ADR29), uji pada hosting production Biznet (profil shared; preflight
+   SHARED_HOSTING sebelum membeli), uji aksesibilitas manual TalkBack, dan pemulihan otomatis foto/push yang masih menunggu sweep per
+   jam. Issue #47 (bukti performa 404) ikut ke M16.
+4. Permintaan pemilik untuk rilis berikutnya: setiap versi APK baru langsung diberitahukan (nomor, tanggal, jam, tautan), dan bug yang
+   ditemukan di versi sebelumnya wajib sudah diperbaiki serta dikunci tes regresi sebelum rilis.
