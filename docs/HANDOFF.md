@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **20 Oktober 2026 ±15.00 WIB** oleh Claude (rilis APK 1008, perbaikan foto sampul artikel, PR #50 merge).
+Terakhir diperbarui: **20 Oktober 2026 ±20.15 WIB** oleh Claude (PR #58: pulihkan arsip, tombol Kembali, akun tambahan; deploy staging; rilis APK 1009).
 
 ## 1. Cara mulai sesi baru
 
@@ -20,12 +20,12 @@ Terakhir diperbarui: **20 Oktober 2026 ±15.00 WIB** oleh Claude (rilis APK 1008
 | Hal | Nilai |
 | --- | --- |
 | Milestone | M00–M14 **passed**; **M15 in_progress**; M16 planned |
-| `main` | `4376b44` (PR #50 merge; sebelumnya PR #55 foto sampul artikel, PR #53 HANDOFF) |
-| Staging (VPS Hostinger, project Docker `rt05-staging`) | `4376b44`, deploy immutable 20 Okt 14.30–14.32 WIB, 0 GAGAL, 8 kontainer healthy + gateway |
-| Website Vercel (`https://rt05takeda.vercel.app`) | sama persis dengan `website/preview/` di `main` (cek 20 Okt 14.50 WIB: 21/21 halaman, 32 aset) |
-| APK uji tim | build **1008** (`rt05-takeda-staging-1008-arm64-v8a.apk`, versionCode 3008, commit `4376b44`, run [39386989406](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/39386989406)), SHA-256 `ca7054f51327e44ded7759af7b0710147173b5993ab60dc972d1589952ecc416`. Riwayat rilis: bagian 2a |
-| Link APK untuk tim (Drive pemilik, "siapa saja yang punya link") | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view — **link tetap**; build baru diunggah sebagai *versi baru* file yang sama |
-| PR terbuka | tidak ada (PR #50, #53, #55 sudah merge 20 Okt) |
+| `main` | `9d9cf07` (PR #58 merge; sebelumnya PR #56 HANDOFF 1008, PR #50, PR #55) |
+| Staging (VPS Hostinger, project Docker `rt05-staging`) | `9d9cf07`, deploy immutable 20 Okt ±19.57–19.59 WIB (termasuk migrasi `2026_10_21_000100`), 0 GAGAL, 8 kontainer healthy + gateway. UI CMS live `cms-ui-live.mjs` **21/21 PASS** (20 Okt ±20.05 WIB). Smoke runtime terpisah (`staging-runtime-smoke.sh`) **belum dijalankan** |
+| Website Vercel (`https://rt05takeda.vercel.app`) | mengikuti `website/preview/` di `main`; ekspor dibangun ulang di PR #58 (tombol Pulihkan hanya di CMS mode server, bukan mode demo). Verifikasi `check-preview.mjs` terhadap Vercel setelah PR #58 **belum dijalankan** |
+| APK uji tim | build **1009** (commit `9d9cf07`, run [39426206006](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/39426206006)). arm64-v8a versionCode 3009, SHA-256 `854f28e39c5aa1058ac58df160374d11db8effc7215cddc907d0e0ea897dd88d`; armeabi-v7a (HP 32-bit) versionCode 2009, SHA-256 `5779ae37eef4261dad75e0faba7af7a342a1697b942f7b7df939d488b57ac17a`. Sertifikat = kunci rilis tetap. Unduh: `https://takeda-staging.morriz.tech/unduh/rt05-takeda-staging-1009-arm64-v8a.apk` dan `...-armeabi-v7a.apk`. Riwayat rilis: bagian 2a |
+| Link APK untuk tim (Drive pemilik, "siapa saja yang punya link") | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view — **link tetap**; build baru diunggah sebagai *versi baru* file yang sama. **Isinya masih 1008** sampai pemilik mengunggah 1009 (Chrome sesi agent login sebagai akun lain tanpa akses folder Drive; agent tidak meminta akses). Sementara tim memakai tautan `/unduh` di atas |
+| PR terbuka | tidak ada (PR #50, #53, #55, #56, #58 sudah merge 20 Okt) |
 | Issue terbuka | **#54** (pelacak sisa gate M15, checklist), #47 (bukti performa, medium). #46 dan #48 ditutup oleh PR #50 |
 
 ## 2a. Riwayat rilis APK uji tim (link Drive tetap sama, tiap build = versi baru file yang sama)
@@ -36,9 +36,12 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | --- | --- | --- | --- | --- | --- | --- |
 | 1006 | 3006 | `adee683` | 19 Okt ±21.37 | 19 Okt 21.40 | UAT putaran 1 (ADR32): edit foto pengaduan, batas unggah, crash pemilih jam usulan | Diuji tim 19 Okt 21.40–20 Okt 00.45 (19.59–21.40 masih build 1005) |
 | 1007 | 3007 | `71dc523` | 20 Okt ±10.03 | 20 Okt 10.11 | UAT putaran 2 (ADR33): ekspor CSV, tagihan langsung, pemilih bulan, Blok wajib, revisi permohonan, PDF ≤1 MB | **Tidak sempat diuji** (digantikan 1008) |
-| **1008** | 3008 | `4376b44` | **20 Okt 14.38** | **20 Okt 14.42** | 1007 + draf pengaduan tidak hilang (#48) + outbox tetap dipantau (#46, server) | Menunggu uji tim |
+| 1008 | 3008 | `4376b44` | 20 Okt 14.38 | 20 Okt 14.42 | 1007 + draf pengaduan tidak hilang (#48) + outbox tetap dipantau (#46, server) | Diuji sebagian oleh tim (checklist putaran 2 belum lengkap); temuan putaran 3 membuatnya digantikan 1009 |
+| **1009** | 3009 (arm64), 2009 (armeabi-v7a) | `9d9cf07` | **20 Okt 20.03** | **20 Okt ±20.07 ke `/unduh` staging** (Drive: belum, menunggu pemilik) | UAT putaran 3 (ADR34): pulihkan arsip (konten, rumah, akun, keluarga), tombol Kembali, jam selesai usulan manual, akun tambahan wajib nama kepala keluarga (alamat opsional) | Menunggu uji tim |
 
-Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB.
+Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
+
+APK 32-bit (`armeabi-v7a`) sudah dibangun sejak 1006 tetapi sebelum 20 Okt malam hanya arm64 yang dibagikan; HP 32-bit milik anggota tim gagal memasang arm64 ("Aplikasi tidak terinstal"). Varian 32-bit 1008 dan 1009 disajikan di `/unduh`; hasil pasang di HP 32-bit baru dilaporkan berhasil mengunduh, bukan hasil uji fitur.
 
 ## 3. Yang sudah selesai di M15 (ringkas; rincian di PROGRESS dan [evidence/m15/REPORT.md](evidence/m15/REPORT.md))
 
@@ -53,12 +56,14 @@ Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di 
 - **UAT tim putaran 2** (20 Okt pagi; poin B, C, D, F lulus) → PR #52 (ADR33): ekspor CSV Pembayaran/Kas/Rekap di aplikasi,
   tagihan langsung untuk rumah/warga baru, *Mulai tagih* pakai pemilih bulan, Blok wajib, *Minta perbaikan* permohonan akun
   tambahan (`perlu_revisi`), PDF/TXT usulan ≤1 MB, CMS *Lihat arsip* + cache konten 15 dtk.
+- **UAT tim putaran 3** (20 Okt malam, APK 1008) → PR #58 (ADR34): arsip tidak lagi satu arah (konten→draf, rumah, akun→nonaktif, keluarga), tombol Kembali (tab lain → dashboard, dashboard → konfirmasi keluar), jam selesai usulan tidak terisi otomatis, akun tambahan wajib nama/hubungan/nama kepala keluarga dengan alamat opsional (rumah dicocokkan otomatis dari kepala yang unik). Tes lokal: rest-api 332/332, Flutter 243, website 16/16; CI PR #58 10/10.
 - **Uji web 20 Okt** (bukti [evidence/m15/web-20okt/](evidence/m15/web-20okt/)):
   - Vercel: `node scripts/check-preview.mjs https://rt05takeda.vercel.app` → 21 rute × 5 lebar, 45 cek a11y, 37 tautan,
     editor demo, hero 3 dtk: semua PASS, 0 error browser, 0 request tulis.
   - Staging API CMS: `infra/scripts/m14-stage-check.mjs` 21/21 PASS.
   - Staging UI CMS: `website/scripts/cms-ui-live.mjs` 16/16 PASS (edit artikel terbit → pesan "tekan Terbitkan" → website
-    tetap versi lama → Terbitkan → versi baru ±15 dtk → Arsipkan → hilang dari website → muncul di *Lihat arsip* hanya baca).
+    tetap versi lama → Terbitkan → versi baru ±15 dtk → Arsipkan → hilang dari website → muncul di *Lihat arsip*). Setelah PR #58 skrip
+    diperluas (C16–C20: Pulihkan → draf, tidak langsung tampil di website, arsipkan lagi) dan dijalankan ke staging `9d9cf07`: **21/21 PASS**.
 
 ## 4. Sisa M15 (gate belum terpenuhi)
 
@@ -67,7 +72,7 @@ APK bertanda tangan terpasang. **Jangan menandai passed tanpa bukti nyata. Janga
 
 | # | Item | Pemilik kerja | Status / langkah |
 | --- | --- | --- | --- |
-| 1 | Uji tim dengan APK **1008**: poin putaran 2 (PDF >1 MB ditolak, tagihan rumah baru, pemilih bulan, Ekspor CSV Pembayaran/Kas/Rekap, *Minta perbaikan* permohonan, Blok wajib) + foto sampul artikel di CMS web | Pemilik + tim | Menunggu. APK 1007 tidak sempat diuji (aktivitas tim terakhir 20 Okt 00.45 WIB memakai 1006) |
+| 1 | Uji tim dengan APK **1009**: putaran 2 (PDF >1 MB ditolak, tagihan rumah baru, pemilih bulan, Ekspor CSV Pembayaran/Kas/Rekap, *Minta perbaikan*, Blok wajib) + putaran 3 (Pulihkan rumah/keluarga/akun/konten di mobile dan CMS web, tombol Kembali, jam selesai usulan manual, daftar akun tambahan tanpa alamat dan persetujuan oleh pengurus, subkeluarga tampil dengan rumah yang sama dengan kepala) | Pemilik + tim | Menunggu. Hasil uji 1008 belum diterima agent kecuali temuan putaran 3 |
 | 2 | Catat hasil UAT putaran 1 dan 2 sebagai bukti | Agent (data dari pemilik) | Belum. Format di [UAT_M15.md](UAT_M15.md): CSV tanpa nama di `docs/evidence/m15/uat/` + `UAT_RESULTS.md`. Sejauh ini hanya ringkasan di PROGRESS |
 | 3 | PR #50 (issue #46, #48) | Agent | **Selesai 20 Okt**: main digabung ke branch (merge, bukan rebase), lokal rest-api 321/321, Flutter 230, CI hijau, merge `4376b44`, deploy staging, APK 1008. Notifikasi pasca-deploy 55,3 dtk |
 | 4 | Issue #47: bukti performa menghitung 4xx sebagai sukses; ada 404 yang **belum dijelaskan** | Agent | Selidiki 404 di `m15-load-check.mjs`, perbaiki `EXPECT`/fixture, ulang uji beban 20 pengguna |
@@ -85,6 +90,7 @@ APK bertanda tangan terpasang. **Jangan menandai passed tanpa bukti nyata. Janga
 | Tingkat | Temuan | Status |
 | --- | --- | --- |
 | Medium | #47 skrip bukti performa: 4xx dihitung sukses, 404 tak dijelaskan | Skrip sudah menegakkan gate (PR #50); 404 belum diselidiki, uji beban belum diulang |
+| Info | Aturan minimal 10 karakter (ringkasan, pembuka, isi bagian artikel; deskripsi album) | Validasi M13, **tidak diubah** di PR #58. Pemilik menyebutnya saat melaporkan arsip; belum jelas apakah ingin dilonggarkan |
 | Selesai, perlu uji tim | UAT E: "gambar artikel tidak bisa diganti, tetap SVG" | Penyebab dikonfirmasi dari data staging: artikel tim (terbit 19 Okt 22.43 WIB) punya foto sampul asli, tetapi website selalu menggambar SVG. Diperbaiki PR #55 (ADR33 butir 7): sampul asli tampil di kartu, artikel pilihan, halaman baca; tanpa sampul tetap SVG. Live staging `cms-ui-live.mjs` 17/17 termasuk C05b |
 | Operasional | Staging tidak terjangkau lewat IPv4 dari sebagian ISP (MyRepublic rumah pemilik) | Solusi sementara: WARP + record AAAA. Proxy Cloudflare perlu izin pemilik (M16). Bukti: `docs/evidence/m14/NETWORK_MYREPUBLIC.md` (dari sesi paralel, belum di-commit) |
 | Operasional | Kuota Neon Free 100 CU-jam/bulan per project (staging + production + dev satu project) | Diperbaiki IdleGuard; pantau `active_time_seconds` lewat Neon MCP `list_branches` |
@@ -100,7 +106,7 @@ ternyata pulih sendiri (throttle/salah ketik).
 ## 6. Pertanyaan terbuka untuk pemilik
 
 1. ~~Temuan E~~ — dijawab 20 Okt: foto asli tidak menggantikan SVG; sudah diperbaiki (PR #55).
-2. Hasil uji tim dengan APK **1008**: poin mana berhasil/gagal? (Untuk dicatat sebagai bukti, bukan dikarang.)
+2. Hasil uji tim dengan APK **1009** (dan sisa 1008): poin mana berhasil/gagal? (Untuk dicatat sebagai bukti, bukan dikarang.)
 3. Privacy notice: nomor/email kontak dan masa simpan data yang dipakai?
 4. Kapan verifikasi developer Android dengan identitas pemilik?
 5. UAT mitra: siapa/berapa peserta dan kapan? (Atau pemilik memutuskan uji tim cukup — catat sebagai keputusan.)
@@ -109,6 +115,9 @@ ternyata pulih sendiri (throttle/salah ketik).
 8. Vercel perlu ekspor konten berkala dari API agar artikel baru ikut tampil saat VPS mati?
 9. Boleh menghapus APK lama di `/unduh` staging? Aktifkan Dependabot?
 10. Latihan PostgreSQL cadangan (ADR29) tetap di M15 atau digeser ke M16?
+11. Unggah APK **1009** ke Drive sebagai versi baru file yang sama (agent tidak punya akses akun Drive pemilik)? Atau tim cukup memakai tautan `/unduh`?
+12. Aturan minimal 10 karakter pada isi artikel/album: dipertahankan atau dilonggarkan (angka berapa)?
+13. Apakah ada kasus dua keluarga dalam satu rumah? Sistem hanya mengenal satu keluarga utama aktif per rumah; subkeluarga/akun tambahan memakai rumah keluarga kepala yang sama.
 
 ## 7. Arsitektur lingkungan (urutan pemilik: lokal → Vercel → VPS)
 
@@ -184,7 +193,7 @@ judul dengan `update_file`. Connector Drive tidak bisa mengunggah isi file atau 
 
 ## 10. Langkah berikutnya yang disarankan
 
-1. Minta hasil uji tim dengan APK 1008 (bagian 6 no. 2); catat sesuai UAT_M15.md.
+1. Minta hasil uji tim dengan APK 1009 (bagian 6 no. 2); catat sesuai UAT_M15.md. Jalankan `infra/scripts/staging-runtime-smoke.sh` dan `check-preview.mjs` ke Vercel yang belum dijalankan setelah PR #58.
 2. Selidiki 404 issue #47, ulang uji beban.
 3. Tanyakan pertanyaan bagian 6 yang tersisa (3, 4, 5, 7–10).
 4. Rekam hasil UAT tim (putaran 1 dan 2) dalam format UAT_M15.md bila pemilik memberi data.
