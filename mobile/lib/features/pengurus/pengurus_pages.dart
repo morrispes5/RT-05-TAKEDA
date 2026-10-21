@@ -705,8 +705,11 @@ class _AdminCashView extends ConsumerWidget {
 /// Pencatatan pembayaran iuran offline: pilih rumah → centang bulan belum bayar →
 /// pratinjau total dari snapshot server → konfirmasi. Idempotency-Key tetap selama layar terbuka.
 class RecordPaymentPage extends ConsumerStatefulWidget {
-  const RecordPaymentPage({super.key, this.house});
+  const RecordPaymentPage({super.key, this.house, this.initialPeriods = const []});
   final Json? house;
+
+  /// Bulan 'YYYY-MM' yang langsung dicentang (mis. dari bukti transfer warga); hanya yang belum lunas.
+  final List<String> initialPeriods;
   @override
   ConsumerState<RecordPaymentPage> createState() => _RecordPaymentPageState();
 }
@@ -717,6 +720,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
   final _note = TextEditingController();
   DateTime _paidOn = toJakarta(DateTime.now().toUtc());
   final String _key = newKey();
+  var _prefilled = false;
 
   @override
   void initState() {
@@ -775,6 +779,10 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
               builder: (d) {
                 final unpaid = (d['tagihan'] as List).cast<Map>().map((m) => Tagihan(Json.from(m))).where((t) => !t.lunas).toList()
                   ..sort((a, b) => a.periode.compareTo(b.periode));
+                if (!_prefilled) {
+                  _prefilled = true;
+                  _selected.addAll(widget.initialPeriods.where((p) => unpaid.any((t) => t.periode == p)));
+                }
                 final total = unpaid.where((t) => _selected.contains(t.periode)).fold<int>(0, (s, t) => s + t.nominal);
                 if (unpaid.isEmpty) return const Padding(padding: EdgeInsets.all(16), child: Text('Semua tagihan rumah ini sudah lunas.'));
                 return Column(
