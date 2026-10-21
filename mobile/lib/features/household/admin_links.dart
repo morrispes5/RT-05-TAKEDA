@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme.dart';
 import '../../core/api.dart';
 import '../../core/models.dart';
+import '../../core/whatsapp.dart';
 import '../../core/widgets.dart';
 import 'admin_edits.dart';
 import 'census_providers.dart';
 import 'family_actions.dart';
 import 'family_page.dart';
+import 'identity_data.dart';
 import 'paged_list.dart';
 import 'restore_page.dart';
 
@@ -188,18 +190,27 @@ class _FamilyBody extends ConsumerWidget {
                               },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
-                              Text('${member['nama']}', style: const TextStyle(fontWeight: FontWeight.w700, height: 1.25)),
-                              Text(
-                                [
-                                  '${member['hubungan_keluarga'] ?? 'Anggota'}',
-                                  if (member['is_kepala'] == true) 'kepala keluarga',
-                                  if (member['punya_akun'] == true) 'punya akun',
-                                ].join(' • '),
-                                style: const TextStyle(color: Brand.muted, height: 1.3),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('${member['nama']}', style: const TextStyle(fontWeight: FontWeight.w700, height: 1.25)),
+                                    Text(
+                                      [
+                                        '${member['hubungan_keluarga'] ?? 'Anggota'}',
+                                        if (member['is_kepala'] == true) 'kepala keluarga',
+                                        if (member['punya_akun'] == true) 'punya akun',
+                                        if ('${member['whatsapp'] ?? ''}'.isNotEmpty) '${member['whatsapp']}',
+                                      ].join(' • '),
+                                      style: const TextStyle(color: Brand.muted, height: 1.3),
+                                    ),
+                                  ],
+                                ),
                               ),
+                              // ADR35: chat langsung ke warga lewat wa.me bila nomornya terisi.
+                              WhatsAppIconButton(phone: member['whatsapp'] as String?, name: '${member['nama']}'),
                             ],
                           ),
                         ),
@@ -230,6 +241,16 @@ class _FamilyBody extends ConsumerWidget {
           ),
         ],
         if (!archived) ...[
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            key: const ValueKey('admin-data-kependudukan'),
+            onPressed: () async {
+              final changed = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => IdentityDataPage(familyId: '${family['id']}')));
+              if (changed == true) onChanged();
+            },
+            icon: const Icon(Icons.badge_outlined),
+            label: const Text('Data kependudukan (NIK & KK)', textAlign: TextAlign.center),
+          ),
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: () async {

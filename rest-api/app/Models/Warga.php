@@ -12,11 +12,15 @@ class Warga extends Model
 
     public const UPDATED_AT = null;
 
+    /** NIK terenkripsi (ADR35); tidak pernah ikut serialisasi model. */
+    protected $hidden = ['nik'];
+
     protected function casts(): array
     {
         return [
             'is_kepala' => 'boolean',
             'archived_at' => 'datetime',
+            'nik' => 'encrypted',
         ];
     }
 

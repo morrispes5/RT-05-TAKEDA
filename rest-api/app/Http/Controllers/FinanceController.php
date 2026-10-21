@@ -14,6 +14,7 @@ use App\Models\TransaksiKas;
 use App\Support\Audit;
 use App\Support\Idempotency;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -60,9 +61,15 @@ class FinanceController extends Controller
         ];
     }
 
-    /** GET /dues/transparency — kode rumah + status per periode, tanpa nama/kontak/anggota (BR15). */
+    /**
+     * GET /dues/transparency — kode rumah + status per periode, tanpa nama/kontak/anggota (BR15).
+     * ADR35 (permintaan Pak RT): khusus pengurus; warga hanya melihat tagihan rumahnya sendiri (/dues/my).
+     */
     public function transparency(Request $request): JsonResponse
     {
+        if (! $request->user()->isPengurus()) {
+            throw new AuthorizationException('Transparansi iuran hanya untuk pengurus.');
+        }
         $period = Dues::period($request->query('periode', CarbonImmutable::now('Asia/Jakarta')->format('Y-m')));
         $rows = TagihanIuran::join('rumah', 'rumah.id', '=', 'tagihan_iuran.rumah_id')
             ->where('tagihan_iuran.periode', $period->toDateString())

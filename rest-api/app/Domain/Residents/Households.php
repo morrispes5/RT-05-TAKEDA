@@ -39,6 +39,10 @@ final class Households
                 }
                 $kepala->save();
             }
+            if (array_key_exists('nomor_kk', $data)) {
+                $k->nomor_kk = $data['nomor_kk'];
+                $k->save();
+            }
             Links::bump($k);
             Audit::record($actor, 'keluarga.diubah', 'keluarga', $k->id, ['field' => array_keys(array_diff_key($data, ['versi' => 1]))]);
         });
@@ -56,6 +60,7 @@ final class Households
                 'nama' => trim($data['nama']),
                 'hubungan_keluarga' => trim($data['hubungan_keluarga']),
                 'whatsapp' => $data['whatsapp'] ?? null,
+                'nik' => $data['nik'] ?? null,
                 'is_kepala' => false,
             ]);
             Links::startMembership($warga, $k, $warga->hubungan_keluarga, $sumber, $actor);
@@ -74,7 +79,7 @@ final class Households
             Links::assertEditor($actor, $k);
             Links::assertVersion($k, $versi);
             $warga = self::member($k, $wargaId, $viaPengurus);
-            $warga->fill(array_intersect_key($data, array_flip(['nama', 'hubungan_keluarga', 'whatsapp'])))->save();
+            $warga->fill(array_intersect_key($data, array_flip(['nama', 'hubungan_keluarga', 'whatsapp', 'nik'])))->save();
             if (array_key_exists('hubungan_keluarga', $data)) {
                 KeanggotaanKeluarga::where('warga_id', $warga->id)->whereNull('selesai_at')->update(['hubungan_keluarga' => $data['hubungan_keluarga']]);
             }
@@ -260,6 +265,20 @@ final class Households
             $k->forceFill(['archived_at' => now()])->save();
             Links::bump($k);
             Audit::record($actor, 'keluarga.diarsipkan', 'keluarga', $k->id, ['anggota' => $anggota->count(), 'alasan' => $alasan]);
+        });
+    }
+
+    /** Nomor KK keluarga oleh pengurus (ADR35), versi wajib; audit tanpa nilai. */
+    public static function setFamilyCard(Akun $actor, string $keluargaId, ?string $nomorKk, mixed $versi): void
+    {
+        Links::transaction(function () use ($actor, $keluargaId, $nomorKk, $versi) {
+            $k = self::lockActive($keluargaId);
+            Links::assertEditor($actor, $k, true);
+            Links::assertVersion($k, $versi);
+            $k->nomor_kk = $nomorKk;
+            $k->save();
+            Links::bump($k);
+            Audit::record($actor, 'keluarga.diubah', 'keluarga', $k->id, ['field' => ['nomor_kk']]);
         });
     }
 

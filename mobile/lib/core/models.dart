@@ -15,6 +15,9 @@ class Akun {
   String get jenis => '${raw['jenis']}';
   String get status => '${raw['status']}';
   bool get dapatUbahKeluarga => raw['dapat_ubah_keluarga'] == true;
+
+  /// ADR35: true bila Kebijakan Privasi versi terbaru belum disetujui (field lama tidak ada = tidak perlu).
+  bool get perluSetujuPrivasi => raw['privasi_perlu_setuju'] == true;
   Json? get rumah => raw['rumah'] as Json?;
   String? get kodeRumah => rumah?['kode_rumah'] as String?;
   String? get alamat => rumah?['alamat'] as String?;

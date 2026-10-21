@@ -773,7 +773,8 @@ void main() {
       expect(container.read(sessionProvider).akun!.nama, contains('Warga Uji'));
       expect(find.byType(LoginPage), findsNothing);
       expect(find.byType(NavigationBar), findsOneWidget);
-      expect(find.textContaining('Kepala Keluarga Uji'), findsOneWidget);
+      // Data keluarga sesi baru dirender di tab Akun (bisa di luar layar setelah menggulir ke tombol Keluar).
+      expect(find.textContaining('Kepala Keluarga Uji', skipOffstage: false), findsOneWidget);
     });
   }
 

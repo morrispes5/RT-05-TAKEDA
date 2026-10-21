@@ -1,5 +1,35 @@
 # Progress — RT05 TAKEDA
 
+## M15b — Permintaan Pak RT (rapat 20 Oktober 2026) — 21 Oktober 2026: **kode siap di branch, belum di-merge/di-deploy**
+
+Branch `codex/m15b-permintaan-rt` dari `main` 8b14ac2. Milestone usulan M15b (fitur baru setelah UAT, di antara M15 dan M16;
+penempatan disampaikan ke pemilik). Keputusan dan perubahan aturan lama: [DECISIONS.md ADR35](DECISIONS.md). Kerja bantu
+memakai subagent Haiku atas izin pemilik (pemetaan kode, riset lokasi, editor profil CMS web, UI iuran); rancangan, review,
+dan pengujian oleh agent utama.
+
+| Permintaan | Perubahan | Bukti |
+| --- | --- | --- |
+| Website "Profil RT" → "Profil RT05" + cerita Taman Kedaung yang bisa diedit | Menu/judul Profil RT05; `/profil` membaca `/api/v1/public/site-profile` (cadangan `resources/data/profil.json`); kolom `tentang` + migrasi data `2026_10_21_000200`; editor `/pengurus/profil` di CMS web (subagent, direview) dan aplikasi | `website/tests/Feature/ProfileRt05Test.php` 5 tes; `M15bRequestsTest` (profil, migrasi); M13 cek salinan `profil.json` |
+| Pengurus RT bisa diedit dan ditambah | Daftar pengurus dari API, 1–12 orang, tambah/hapus di CMS web | idem |
+| Transparansi iuran disembunyikan | Kartu dihapus dari aplikasi warga; `GET /dues/transparency` khusus pengurus (403 warga) | `FinanceTest` diperbarui; `dues_privacy_test` |
+| Bukti transfer atau WhatsApp bendahara | `konfirmasi_iuran` + `POST /dues/confirmations`; pengurus memeriksa (selesai/tolak) tanpa mengubah status tagihan; nomor bendahara di `system_settings`, editable pengurus | `M15bRequestsTest` (bukti, kuota 5/hari, foto hanya pemilik/pengurus); `m15b_dues_confirmation_test` 9 tes |
+| Tombol WhatsApp per warga (wa.me) | `core/whatsapp.dart`; ikon di anggota keluarga layar pengurus bila nomor terisi; manifest `queries` https | `m15b_privacy_identity_test` |
+| Form NIK dan KK opsional | `warga.nik`, `keluarga.nomor_kk` terenkripsi, API tersamar; layar "Data kependudukan" untuk akun utama dan pengurus | `M15bRequestsTest` (enkripsi, tersamar, akses); `m15b_privacy_identity_test` |
+| Kebijakan Privasi setelah masuk + lengkapi data | `akun.privasi_versi`, `POST /auth/privacy-consent`, gerbang router; teks di aplikasi dan `docs/PRIVACY_NOTICE.md`; kartu "Lengkapi data keluarga" di beranda | `M15bRequestsTest`; `m15b_privacy_identity_test` |
+
+| Perintah | Hasil |
+| --- | --- |
+| `php artisan test` (Postgres 17 lokal 54329, cluster dibuat ulang 21 Okt karena data lama rusak) | **340/340, 3555 assertion** |
+| `php vendor/bin/pint --dirty` | lulus |
+| `flutter analyze lib test` | bersih |
+| `flutter test` | **262 lulus** |
+| website: `php artisan test`, `npm.cmd run build:preview`, `npm.cmd run test:preview` | 21/21; 22 rute diekspor; lulus |
+
+Belum dibuktikan: deploy staging, uji live CMS profil, uji HP nyata (kamera bukti transfer, membuka WhatsApp), dan isi nomor
+bendahara uji di staging (diisi lewat aplikasi setelah deploy, tidak di Git). Belum diputuskan pemilik: kontak resmi dan masa
+simpan di Kebijakan Privasi; impor NIK/KK dari Excel RT (tidak dibuat). Tombol WhatsApp memakai ikon buatan (lingkaran hijau +
+telepon), bukan logo resmi WhatsApp.
+
 ## M15 — UAT tim putaran 3 (20 Oktober 2026 malam): pulihkan arsip, tombol Kembali, akun tambahan — **merge `9d9cf07`, staging di-deploy, APK 1009 dirilis**
 
 Branch `codex/m15-restore-archive` dari `main` 57964c0. Sumber: laporan UAT tim pemilik pada APK 1008 (arsip tidak bisa dikembalikan di web dan

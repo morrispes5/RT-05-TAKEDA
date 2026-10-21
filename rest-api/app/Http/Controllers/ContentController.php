@@ -172,6 +172,10 @@ class ContentController extends Controller
     {
         $data = $request->validate(['versi' => ['required', 'integer', 'min:1'], 'draf' => ['required', 'array']]);
         $k = Konten::where('jenis', 'profil')->firstOrFail();
+        // ADR35: aplikasi lama (≤1009) tidak mengenal `tentang`; tanpa kunci itu teks yang ada dipertahankan, bukan dihapus.
+        if (! array_key_exists('tentang', $data['draf']) && array_key_exists('tentang', $k->draf ?? [])) {
+            $data['draf']['tentang'] = $k->draf['tentang'];
+        }
         $k = DB::transaction(function () use ($request, $k, $data) {
             $saved = Contents::update($request->user(), $k, $data['versi'], 'profil', $data['draf']);
 

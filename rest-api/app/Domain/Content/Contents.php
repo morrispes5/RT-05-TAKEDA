@@ -72,6 +72,8 @@ final class Contents
                 'singkatan' => ['required', 'string', 'min:3', 'max:80'],
                 'wilayah' => ['required', 'string', 'min:5', 'max:200'],
                 'ringkasan' => ['required', 'string', 'min:5', 'max:500'],
+                // ADR35: cerita singkat Taman Kedaung di halaman Profil RT05, dapat diedit pengurus (paragraf dipisah baris kosong).
+                'tentang' => ['nullable', 'string', 'max:3000'],
                 'pengurus' => ['required', 'array', 'min:1', 'max:12'],
                 'pengurus.*.jabatan' => ['required', 'string', 'min:2', 'max:60'],
                 'pengurus.*.nama' => ['required', 'string', 'min:2', 'max:80'],

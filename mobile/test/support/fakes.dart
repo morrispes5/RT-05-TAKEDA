@@ -167,6 +167,11 @@ Map<String, Object?> shellFixtures() {
         ],
       },
     },
+    '/api/v1/settings/contacts': {
+      'data': {'bendahara_whatsapp': '6281234567890'},
+    },
+    '/api/v1/dues/confirmations': {'data': <Object?>[]},
+    '/api/v1/admin/dues-confirmations': {'data': <Object?>[], 'meta': page},
     '/api/v1/admin/cash/summary': {
       'data': {
         'saldo': 1250000,

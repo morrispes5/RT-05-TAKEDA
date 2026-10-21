@@ -24,6 +24,7 @@ use App\Models\Warga;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * Pendataan oleh pengurus (FR06, FR22, M07): rumah, keluarga, anggota, hunian, akun, permohonan,
@@ -259,9 +260,16 @@ class ResidentsController extends Controller
     {
         $data = $request->validate([
             'versi' => ['required', 'integer'],
-            'kepala_warga_id' => ['required', 'uuid'],
+            // Tanpa nomor_kk, kepala_warga_id wajib (perilaku lama). nomor_kk: null mengosongkan.
+            'kepala_warga_id' => [Rule::requiredIf(fn () => ! $request->exists('nomor_kk')), 'uuid'],
+            // ADR35: pengurus dapat mengisi nomor KK (opsional, 16 digit; null mengosongkan).
+            'nomor_kk' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
         ]);
-        Households::changeHead($request->user(), $id, $data['kepala_warga_id'], $data['versi']);
+        if (isset($data['kepala_warga_id'])) {
+            Households::changeHead($request->user(), $id, $data['kepala_warga_id'], $data['versi']);
+        } else {
+            Households::setFamilyCard($request->user(), $id, $data['nomor_kk'] ?? null, $data['versi']);
+        }
 
         return $this->showFamily($id);
     }
@@ -296,6 +304,7 @@ class ResidentsController extends Controller
             'nama' => ['required', 'string', 'max:120'],
             'hubungan_keluarga' => ['required', 'string', 'max:40'],
             'whatsapp' => self::WHATSAPP,
+            'nik' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
             'versi' => ['required', 'integer'],
         ]);
         $warga = Households::addMember($request->user(), $id, $data, $data['versi'], 'pengurus');
@@ -328,6 +337,7 @@ class ResidentsController extends Controller
             'nama' => ['sometimes', 'string', 'max:120'],
             'hubungan_keluarga' => ['sometimes', 'string', 'max:40'],
             'whatsapp' => self::WHATSAPP,
+            'nik' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
             'versi' => ['required', 'integer'],
         ]);
         $versi = $data['versi'];
