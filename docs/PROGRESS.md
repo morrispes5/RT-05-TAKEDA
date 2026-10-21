@@ -45,6 +45,16 @@ baru diminta setelah Kebijakan Privasi disetujui; (3) tombol cepat warga "Kas RT
 bukti langsung mencentang bulan yang diklaim (hanya yang belum lunas); (5) nomor bendahara tampil `0877-7228-3010`; (6) label
 anggota tidak lagi "kepala keluarga" dobel. Tes: `m15b_fixes_1011_test` 5 tes; `flutter test` **267 lulus**, analyze bersih.
 
+**Rilis dan uji ulang APK 1011 (22 Okt).** PR #61 merge `f392612` 06.01 WIB (CI 9/9 setelah perbaikan `dart format` dan ulang job
+website yang gagal karena sertifikat CDN Playwright), staging di-deploy (0 GAGAL), APK **1011** dibangun 06.08 WIB (run 39690611853;
+arm64 3011, armeabi-v7a 2011, sertifikat kunci tetap) dan disajikan di `/unduh` 06.09 WIB. Uji ulang di emulator dengan akun
+sintetis, semua lulus: nomor bendahara tampil `0877-7228-3010`; detail rumah pengurus punya Data kependudukan dan Kelola anggota,
+label tidak dobel; pengurus mengisi WhatsApp warga lalu ikon WhatsApp muncul dan membuka `wa.me` ke nomor itu; setelah data
+aplikasi direset, Kebijakan Privasi tampil tanpa dialog izin dan izin notifikasi baru muncul setelah setuju; tombol cepat warga
+"Iuran"; bukti dari akun tambahan, lalu Catat pembayaran langsung mencentang Oktober. Untuk uji ulang, pembayaran uji
+IUR-2026-000013 (rumah sintetis UJIM06-1) dibalik lewat fitur koreksi resmi lalu dicatat ulang; WhatsApp kepala sintetis diisi
+nomor sintetis 0812 0000 1111.
+
 ## M15 — UAT tim putaran 3 (20 Oktober 2026 malam): pulihkan arsip, tombol Kembali, akun tambahan — **merge `9d9cf07`, staging di-deploy, APK 1009 dirilis**
 
 Branch `codex/m15-restore-archive` dari `main` 57964c0. Sumber: laporan UAT tim pemilik pada APK 1008 (arsip tidak bisa dikembalikan di web dan
