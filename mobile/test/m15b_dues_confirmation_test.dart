@@ -235,7 +235,10 @@ void main() {
 
     expect(puts, hasLength(1));
     expect(_bodyOf(puts.single), {'bendahara_whatsapp': '0812 3456 7890'});
-    expect(tester.widget<TextField>(find.byKey(const ValueKey('nomor-bendahara'))).controller!.text, '0812-3456-7890'); // ditampilkan format lokal (perbaikan uji emulator 1010)
+    expect(
+      tester.widget<TextField>(find.byKey(const ValueKey('nomor-bendahara'))).controller!.text,
+      '0812-3456-7890',
+    ); // ditampilkan format lokal (perbaikan uji emulator 1010)
     expect(find.text('Nomor WhatsApp bendahara tersimpan.'), findsOneWidget);
   });
 
