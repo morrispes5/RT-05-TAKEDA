@@ -30,6 +30,21 @@ bendahara uji di staging (diisi lewat aplikasi setelah deploy, tidak di Git). Be
 simpan di Kebijakan Privasi; impor NIK/KK dari Excel RT (tidak dibuat). Tombol WhatsApp memakai ikon buatan (lingkaran hijau +
 telepon), bukan logo resmi WhatsApp.
 
+**Uji emulator APK 1010 (21–22 Okt, agent mengendalikan emulator Pixel_8a lewat adb, akun sintetis staging).** PR #60 merge
+`2f781d7` 21 Okt 20.32 WIB, staging di-deploy (0 GAGAL), APK 1010 dibangun 20.40 WIB (run 39608984801; arm64 3010, armeabi-v7a
+2010, sertifikat kunci tetap) dan disajikan di `/unduh` 20.45 WIB. Nomor bendahara uji pemilik diisi lewat API staging (tidak di
+Git). Lulus: gerbang Kebijakan Privasi (tombol aktif setelah dicentang), kartu Lengkapi data menyesuaikan, NIK/KK tersimpan dan
+tersamar, transparansi hilang dari warga, tombol WhatsApp bendahara membuka `wa.me` ke nomor uji, kirim bukti dari galeri
+(nominal terisi otomatis, tagihan tetap "Belum dibayar"), pengurus melihat bukti dan fotonya, Catat pembayaran lalu Tandai
+selesai, pengaturan nomor bendahara. Website `/profil` staging memakai Profil RT05. Editor Profil RT05 CMS web staging
+`website/scripts/cms-profile-live.mjs`: **9/9 PASS** (pengurus uji tampil di `/profil` 10 dtk, dihapus lagi 15 dtk).
+
+Temuan dari uji itu, diperbaiki di branch `codex/m15b-perbaikan-uji` (APK 1011): (1) detail rumah pengurus kini punya tombol
+WhatsApp per anggota, Data kependudukan, dan Kelola anggota (sebelumnya hanya di Daftar keluarga); (2) izin notifikasi Android
+baru diminta setelah Kebijakan Privasi disetujui; (3) tombol cepat warga "Kas RT" menjadi "Iuran"; (4) Catat pembayaran dari
+bukti langsung mencentang bulan yang diklaim (hanya yang belum lunas); (5) nomor bendahara tampil `0877-7228-3010`; (6) label
+anggota tidak lagi "kepala keluarga" dobel. Tes: `m15b_fixes_1011_test` 5 tes; `flutter test` **267 lulus**, analyze bersih.
+
 ## M15 — UAT tim putaran 3 (20 Oktober 2026 malam): pulihkan arsip, tombol Kembali, akun tambahan — **merge `9d9cf07`, staging di-deploy, APK 1009 dirilis**
 
 Branch `codex/m15-restore-archive` dari `main` 57964c0. Sumber: laporan UAT tim pemilik pada APK 1008 (arsip tidak bisa dikembalikan di web dan

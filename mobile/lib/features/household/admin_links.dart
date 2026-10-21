@@ -197,15 +197,7 @@ class _FamilyBody extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text('${member['nama']}', style: const TextStyle(fontWeight: FontWeight.w700, height: 1.25)),
-                                    Text(
-                                      [
-                                        '${member['hubungan_keluarga'] ?? 'Anggota'}',
-                                        if (member['is_kepala'] == true) 'kepala keluarga',
-                                        if (member['punya_akun'] == true) 'punya akun',
-                                        if ('${member['whatsapp'] ?? ''}'.isNotEmpty) '${member['whatsapp']}',
-                                      ].join(' • '),
-                                      style: const TextStyle(color: Brand.muted, height: 1.3),
-                                    ),
+                                    Text(memberSubtitle(member, phone: true), style: const TextStyle(color: Brand.muted, height: 1.3)),
                                   ],
                                 ),
                               ),
