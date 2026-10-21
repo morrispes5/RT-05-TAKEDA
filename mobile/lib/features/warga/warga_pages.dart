@@ -121,7 +121,7 @@ class WargaHomePage extends ConsumerWidget {
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportFormPage(aspirasi: true))),
               ),
               const SizedBox(width: 10),
-              _QuickAction(icon: Icons.account_balance_wallet_outlined, label: 'Kas RT', onTap: () => goTab(3)),
+              _QuickAction(icon: Icons.payments_outlined, label: 'Iuran', onTap: () => goTab(3)),
             ],
           ),
           const SizedBox(height: 16),

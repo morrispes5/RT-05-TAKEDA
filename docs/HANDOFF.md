@@ -89,7 +89,8 @@ APK bertanda tangan terpasang. **Jangan menandai passed tanpa bukti nyata. Janga
 
 ### 4b. M15b — permintaan Pak RT (ADR35)
 
-Kode lengkap di branch `codex/m15b-permintaan-rt` (rincian di PROGRESS): Profil RT05 + cerita Taman Kedaung editable (CMS web
+PR #60 merge `2f781d7` 21 Okt 20.32 WIB, staging di-deploy, APK 1010 dirilis 20.40 WIB dan diuji agent di emulator (lulus, 6 temuan
+kecil diperbaiki di `codex/m15b-perbaikan-uji` untuk APK 1011; rincian di PROGRESS). Isi: Profil RT05 + cerita Taman Kedaung editable (CMS web
 `/pengurus/profil` dan aplikasi), transparansi iuran khusus pengurus, bukti transfer + WhatsApp bendahara (nomor diatur
 pengurus, nomor uji pemilik diisi lewat aplikasi di staging, tidak di Git), tombol WhatsApp per warga, NIK/KK opsional
 terenkripsi, Kebijakan Privasi wajib disetujui setelah masuk, kartu Lengkapi data. Tes lokal: rest-api 340/340, Flutter 262,

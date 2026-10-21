@@ -18,6 +18,19 @@ String? waNumber(String? phone) {
   return digits.length < 9 ? null : digits;
 }
 
+/// Tampilan nomor untuk manusia: 6287772283010 → 0877-7228-3010. Nomor non-Indonesia ditampilkan apa adanya.
+String waDisplay(String? phone) {
+  final number = waNumber(phone);
+  if (number == null) return phone ?? '';
+  if (!number.startsWith('62')) return '+$number';
+  final local = '0${number.substring(2)}';
+  final parts = <String>[local.substring(0, 4)];
+  for (var i = 4; i < local.length; i += 4) {
+    parts.add(local.substring(i, i + 4 > local.length ? local.length : i + 4));
+  }
+  return parts.join('-');
+}
+
 Uri waUri(String number, {String? text}) =>
     Uri(scheme: 'https', host: 'wa.me', path: '/$number', queryParameters: text == null || text.isEmpty ? null : {'text': text});
 

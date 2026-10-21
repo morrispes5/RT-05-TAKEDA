@@ -74,7 +74,10 @@ class _Rt05AppState extends ConsumerState<Rt05App> {
     });
     ref.listenManual(sessionProvider, (prev, next) {
       if (!next.signedIn) return;
-      if (prev?.token != next.token || prev?.akun?.id != next.akun?.id) ref.read(pushServiceProvider).register();
+      // ADR35: izin notifikasi baru diminta setelah Kebijakan Privasi disetujui, tidak menimpa halaman kebijakan.
+      if (next.needsPrivacy) return;
+      final consented = prev?.needsPrivacy == true;
+      if (consented || prev?.token != next.token || prev?.akun?.id != next.akun?.id) ref.read(pushServiceProvider).register();
       final waiting = _waitingTap;
       if (!next.pending && waiting != null) {
         _waitingTap = null;
