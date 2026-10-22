@@ -67,7 +67,10 @@ Salin teks ini ke live chat atau tiket sales Biznet Gio:
 4. Sitemap → kirim `https://<domain>/sitemap.xml`. Inspeksi URL beranda → Minta pengindeksan.
 5. Uji data terstruktur beranda dengan Rich Results Test. Catat tanggal pertama "RT05 Takeda" muncul di pencarian.
 
-## 5. Backup dan restore drill (blocked: tujuan offsite belum dipilih pemilik)
+## 5. Backup dan restore drill (tujuan: Google Drive pemilik, ADR38; latihan staging lulus 22 Okt — [bukti](evidence/m16/BACKUP_DRILL.md))
+
+Skrip: `bash infra/scripts/backup-drill.sh <env> <dir-keluaran> <berkas-kunci>` (dump → restore ke container sementara →
+bandingkan → enkripsi), lalu `rclone copy <dir>/*.dump.gpg "gdrive:RT05 TAKEDA - Backup/production/"`.
 
 - **Database:** dump harian dari mesin operator dengan URL direct (role pemilik schema, bukan runtime):
   `pg_dump --format=custom --no-owner "$DATABASE_URL_UNPOOLED" > rt05-YYYYMMDD.dump`, lalu enkripsi sebelum keluar mesin
