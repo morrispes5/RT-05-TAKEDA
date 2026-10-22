@@ -1,0 +1,179 @@
+{
+ "run": "2026-10-22T03:58:58.361Z",
+ "origin": "https://takeda-staging.morriz.tech",
+ "seconds": 60,
+ "users": 20,
+ "endpoints": [
+  {
+   "label": "GET /agendas",
+   "n": 84,
+   "ok": 84,
+   "unexpected": 0,
+   "statuses": {
+    "admin 200": 16,
+    "a3 200": 34,
+    "a1 200": 34
+   },
+   "p50": 316,
+   "p95": 736,
+   "max": 2757
+  },
+  {
+   "label": "GET /announcements",
+   "n": 81,
+   "ok": 81,
+   "unexpected": 0,
+   "statuses": {
+    "a3 200": 28,
+    "admin 200": 25,
+    "a1 200": 28
+   },
+   "p50": 312,
+   "p95": 520,
+   "max": 3355
+  },
+  {
+   "label": "GET /auth/me",
+   "n": 75,
+   "ok": 75,
+   "unexpected": 0,
+   "statuses": {
+    "a3 200": 18,
+    "admin 200": 24,
+    "a1 200": 33
+   },
+   "p50": 353,
+   "p95": 1171,
+   "max": 3850
+  },
+  {
+   "label": "GET /complaints",
+   "n": 80,
+   "ok": 80,
+   "unexpected": 0,
+   "statuses": {
+    "a1 200": 29,
+    "admin 200": 23,
+    "a3 200": 28
+   },
+   "p50": 385,
+   "p95": 1213,
+   "max": 3395
+  },
+  {
+   "label": "GET /dues/my",
+   "n": 84,
+   "ok": 84,
+   "unexpected": 0,
+   "statuses": {
+    "a1 200": 35,
+    "a3 200": 28,
+    "admin 404": 21
+   },
+   "p50": 447,
+   "p95": 559,
+   "max": 3480
+  },
+  {
+   "label": "GET /household",
+   "n": 88,
+   "ok": 88,
+   "unexpected": 0,
+   "statuses": {
+    "a1 200": 26,
+    "a3 200": 31,
+    "admin 404": 31
+   },
+   "p50": 424,
+   "p95": 1173,
+   "max": 3942
+  },
+  {
+   "label": "GET /notifications",
+   "n": 80,
+   "ok": 80,
+   "unexpected": 0,
+   "statuses": {
+    "admin 200": 33,
+    "a1 200": 19,
+    "a3 200": 28
+   },
+   "p50": 343,
+   "p95": 1416,
+   "max": 3326
+  },
+  {
+   "label": "GET /public/articles",
+   "n": 83,
+   "ok": 83,
+   "unexpected": 0,
+   "statuses": {
+    "admin 200": 26,
+    "a3 200": 28,
+    "a1 200": 29
+   },
+   "p50": 359,
+   "p95": 1160,
+   "max": 3765
+  },
+  {
+   "label": "WEB /",
+   "n": 74,
+   "ok": 74,
+   "unexpected": 0,
+   "statuses": {
+    "web 200": 74
+   },
+   "p50": 66,
+   "p95": 156,
+   "max": 831
+  },
+  {
+   "label": "WEB /artikel",
+   "n": 66,
+   "ok": 66,
+   "unexpected": 0,
+   "statuses": {
+    "web 200": 66
+   },
+   "p50": 56,
+   "p95": 215,
+   "max": 1231
+  },
+  {
+   "label": "WEB /dokumentasi",
+   "n": 67,
+   "ok": 67,
+   "unexpected": 0,
+   "statuses": {
+    "web 200": 67
+   },
+   "p50": 61,
+   "p95": 816,
+   "max": 926
+  }
+ ],
+ "total": {
+  "requests": 862,
+  "ok": 862,
+  "unexpected": 0,
+  "rps": 14.4,
+  "p50": 332,
+  "p95": 884
+ },
+ "statuses": {
+  "200": 810,
+  "404": 52
+ },
+ "gate": {
+  "p95Ms": 1000,
+  "passed": false,
+  "failures": [
+   "GET /auth/me: P95 1171 ms > 1000 ms",
+   "GET /complaints: P95 1213 ms > 1000 ms",
+   "GET /household: P95 1173 ms > 1000 ms",
+   "GET /notifications: P95 1416 ms > 1000 ms",
+   "GET /public/articles: P95 1160 ms > 1000 ms"
+  ]
+ }
+}
