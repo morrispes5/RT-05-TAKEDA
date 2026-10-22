@@ -827,7 +827,7 @@ ditentukan hanya oleh tersedianya kode.
 | M14 | passed | Website membaca API + CMS web nyata (ADR30); staging `08f2a1e` 21/21 + drill API mati |
 | M15 | **passed** (22 Okt, ADR36) | UAT tim putaran 1–3 + demo Ketua RT + uji emulator agent; APK 1011 `f392612`; sisa gate dipindah ke M16 |
 | M15b | **passed** (22 Okt) | Permintaan Pak RT (ADR35): APK 1011, staging `f392612`, uji emulator + live CMS |
-| M16 | planned | Production baru belum dirilis |
+| M16 | planned | Rencana [M16_PLAN.md](M16_PLAN.md) (22 Okt): gate G1–G13, keputusan pemilik K1–K8; production belum dirilis |
 
 M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. M01–M16 menggunakan planned/in_progress/passed/blocked.
 
