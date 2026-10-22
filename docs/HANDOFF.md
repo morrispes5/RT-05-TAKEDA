@@ -24,7 +24,7 @@ Terakhir diperbarui: **22 Oktober 2026 ±06.30 WIB** oleh Claude (M15b: PR #60 d
 | `main` | `f392612` (PR #61 perbaikan uji emulator; PR #60 M15b; PR #58/#59 putaran 3) |
 | Staging (VPS Hostinger, project Docker `rt05-staging`) | `f392612`, deploy immutable 22 Okt ±06.02–06.06 WIB, 0 GAGAL. Editor Profil RT05 CMS web `cms-profile-live.mjs` 9/9 PASS (22 Okt) |
 | Website Vercel (`https://rt05takeda.vercel.app`) | mengikuti `website/preview/` di `main`; ekspor dibangun ulang di PR #58 (tombol Pulihkan hanya di CMS mode server, bukan mode demo). Verifikasi `check-preview.mjs` terhadap Vercel setelah PR #58 **belum dijalankan** |
-| APK uji tim | build **1012** = versi **1.0.0** (commit `42fadc9`, run [39713154722](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/39713154722)). arm64-v8a SHA-256 `1b0766725d4d9ded…`, armeabi-v7a `aa7876a5684d68c8…`. Halaman unduh: `https://takeda-staging.morriz.tech/aplikasi` (membaca `/unduh/versi.json`). Riwayat: bagian 2a |
+| APK uji tim | build **1013** = versi **1.0.0** (commit `b1d080d`, run [39718995077](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/39718995077)). Halaman unduh: `https://takeda-staging.morriz.tech/aplikasi`. Riwayat: bagian 2a |
 | Link APK untuk tim (Drive pemilik, "siapa saja yang punya link") | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view — **link tetap**; build baru diunggah sebagai *versi baru* file yang sama. **Isinya masih 1008** sampai pemilik mengunggah 1009 (Chrome sesi agent login sebagai akun lain tanpa akses folder Drive; agent tidak meminta akses). Sementara tim memakai tautan `/unduh` di atas |
 | PR terbuka | tidak ada (PR #50, #53, #55, #56, #58 sudah merge 20 Okt) |
 | Issue terbuka | **#54** (pelacak sisa gate M15, checklist), #47 (bukti performa, medium). #46 dan #48 ditutup oleh PR #50 |
@@ -41,7 +41,8 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | 1009 | 3009 (arm64), 2009 (armeabi-v7a) | `9d9cf07` | **20 Okt 20.03** | **20 Okt ±20.07 ke `/unduh` staging** (Drive: belum, menunggu pemilik) | UAT putaran 3 (ADR34): pulihkan arsip (konten, rumah, akun, keluarga), tombol Kembali, jam selesai usulan manual, akun tambahan wajib nama kepala keluarga (alamat opsional) | Menunggu uji tim |
 | 1010 | 3010 / 2010 | `2f781d7` | 21 Okt 20.40 | 21 Okt 20.45 ke `/unduh` | M15b (ADR35): Profil RT05, bukti transfer, WhatsApp, NIK/KK, Kebijakan Privasi | Diuji agent di emulator; 6 temuan → 1011 |
 | 1011 | 3011 / 2011 | `f392612` | **22 Okt 06.08** | **22 Okt 06.09 ke `/unduh`** (Drive: menunggu pemilik) | 1010 + perbaikan temuan uji emulator | Diuji ulang agent di emulator (lulus); menunggu uji tim |
-| **1012** (1.0.0) | 3012 / 2012 | `42fadc9` | **22 Okt 09.51** | **22 Okt 09.54 ke `/unduh` + `versi.json`** | M16 Fase A: halaman unduh resmi, kartu Tentang aplikasi, pemberitahuan versi baru | Menunggu uji pemilik |
+| 1012 (1.0.0) | 3012 / 2012 | `42fadc9` | **22 Okt 09.51** | **22 Okt 09.54 ke `/unduh` + `versi.json`** | M16 Fase A: halaman unduh resmi, kartu Tentang aplikasi, pemberitahuan versi baru | Menunggu uji pemilik |
+| **1013** (1.0.0) | 3013 / 2013 | `b1d080d` | **22 Okt 10.57** | **22 Okt 10.58 ke `/unduh` + `versi.json`** | Foto pengaduan/bukti tidak tertinggal di cache HP; server: kunci tagihan/pembayaran, CSP CMS, performa | Menunggu uji pemilik |
 
 Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
 
