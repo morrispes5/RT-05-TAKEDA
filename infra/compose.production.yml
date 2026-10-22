@@ -24,6 +24,9 @@ services:
     environment: &api-env
       APP_NAME: "RT05 TAKEDA API"
       APP_ENV: ${APP_ENV:-production}
+      # M16: bawaan FrankenPHP 2 thread per CPU (4 di VPS 2 CPU). Request API menunggu jaringan ke Neon (±0,2–0,3 dtk),
+      # jadi 20 pengguna bersamaan mengantre. Worker/scheduler tidak memakai nilai ini.
+      FRANKENPHP_CONFIG: ${RT05_API_FRANKENPHP_CONFIG:-num_threads 16}
       APP_KEY: ${API_APP_KEY}
       APP_URL: ${APP_URL}
       APP_TIMEZONE: UTC
@@ -151,6 +154,7 @@ services:
     environment:
       APP_NAME: "RT 05 Takeda"
       APP_ENV: ${APP_ENV:-production}
+      FRANKENPHP_CONFIG: ${RT05_WEB_FRANKENPHP_CONFIG:-num_threads 8}
       APP_KEY: ${WEB_APP_KEY}
       APP_URL: ${APP_URL}
       APP_LOCALE: id

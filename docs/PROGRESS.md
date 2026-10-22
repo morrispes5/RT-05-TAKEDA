@@ -38,6 +38,22 @@ test` 272 lulus (5 baru); `check-mobile-build-config.mjs --self-test` OK; `m15-e
 Blocked pada pemilik: K1 domain, K4 kontak/masa simpan privasi, K5 admin pertama, K6 jawaban Biznet + pembelian, tujuan
 backup offsite, akun pemantau uptime.
 
+### M16 — backup Drive + sisa audit (22 Okt 2026, branch `codex/m16-performa`)
+
+- **Latihan backup + restore lulus** ([BACKUP_DRILL.md](evidence/m16/BACKUP_DRILL.md)): `infra/scripts/backup-drill.sh` di VPS,
+  12 tabel utama cocok (baris + total rupiah), total 9 dtk, berkas terenkripsi AES256 di Drive pemilik
+  `RT05 TAKEDA - Backup/staging/`. Kunci enkripsi di berkas catatan lokal pemilik.
+- **Sisa audit (ADR38 butir 8):** trigger kunci tagihan/pembayaran/alokasi, CSP CMS, hapus salinan foto cache di aplikasi.
+- Tes: rest-api `M16AuditFixesTest` +1 (kunci database + pembalikan resmi tetap jalan), website `SecurityHeadersTest` +1
+  (30/30), Flutter `m16_picked_files_test` (273 lulus).
+
+### M16 — performa staging (22 Okt 2026, branch `codex/m16-performa`)
+
+Diagnosis dari VPS (tanpa jalur WARP): halaman web 30–40 ms saat cache segar; `/` pertama setelah cache habis 780 ms;
+`/api/v1/public/articles` 250–390 ms; koneksi baru ke Neon `ap-southeast-1` 184 ms, query 18 ms. FrankenPHP bawaan 4 thread.
+Perbaikan dan keputusan: ADR38 butir 7. Tes website 29/29 (+1 `test_expired_cache_serves_last_good_and_refreshes_after_the_response`),
+preview tidak berubah. Uji beban ulang setelah deploy dicatat di bawah.
+
 ### M16 — perbaikan audit keamanan + keputusan pemilik (22 Okt 2026, branch `codex/m16-perbaikan-audit`)
 
 ADR38. Kode: token registrasi diganti otomatis setelah 30 salah tebak lintas IP (migrasi aditif
