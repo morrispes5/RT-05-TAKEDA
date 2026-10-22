@@ -38,6 +38,20 @@ test` 272 lulus (5 baru); `check-mobile-build-config.mjs --self-test` OK; `m15-e
 Blocked pada pemilik: K1 domain, K4 kontak/masa simpan privasi, K5 admin pertama, K6 jawaban Biznet + pembelian, tujuan
 backup offsite, akun pemantau uptime.
 
+### M16 — database cadangan Neon project kedua (22 Okt 2026, ADR39)
+
+Supabase penuh (2 project aktif) → pemilik memilih Neon project kedua `rt05-takeda-cadangan`. Sinkron staging → cadangan dan uji
+aplikasi di cadangan lulus ([bukti](evidence/m16/STANDBY_NEON.md)). Belum: latihan pindah + kembali di staging, jadwal sinkron.
+
+### M16 — rilis 1013 dan uji beban ulang (22 Okt 2026)
+
+PR #66 merge `b1d080d` 10.4x WIB, staging deploy (0 GAGAL), APK **1013** (1.0.0) dibangun 10.57 WIB, tersaji 10.58 WIB
+bersama `versi.json`. Uji beban 20 pengguna 60 dtk dari PC pemilik lewat WARP setelah perbaikan performa
+([bukti](evidence/m16/load-20u-staging-2026-10-22-setelah-perbaikan.json)): 862 request, **0 tak terduga**, P50 332 ms,
+**P95 total 884 ms** (sebelumnya 1677 ms); web `/` 156 ms, `/artikel` 215 ms, `/dokumentasi` 816 ms. Gate per endpoint masih
+gagal untuk 5 endpoint API (P95 1160–1416 ms): sisa biaya membuka koneksi baru ke Neon (±184 ms) + jalur WARP. Ukur ulang
+dari jaringan luar di host production; opsi berikutnya bila perlu: kurangi query per layar atau koneksi pooled lebih dekat.
+
 ### M16 — backup Drive + sisa audit (22 Okt 2026, branch `codex/m16-performa`)
 
 - **Latihan backup + restore lulus** ([BACKUP_DRILL.md](evidence/m16/BACKUP_DRILL.md)): `infra/scripts/backup-drill.sh` di VPS,
