@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Support\Database\TlsPolicy;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -17,6 +18,8 @@ use Throwable;
 class HealthController extends Controller
 {
     private const NO_STORE = ['Cache-Control' => 'no-store'];
+
+    private const DATABASE_CACHE_SECONDS = 10;
 
     public function live(): JsonResponse
     {
@@ -43,6 +46,17 @@ class HealthController extends Controller
             return 'misconfigured';
         }
 
+        // Audit M16: hasil disimpan sebentar agar banjir permintaan publik ke /health/ready tidak membangunkan Neon dan
+        // menghabiskan kuota CU-jam. Cache gagal → periksa langsung.
+        try {
+            return Cache::remember('rt05:health:database', self::DATABASE_CACHE_SECONDS, fn () => $this->ping());
+        } catch (Throwable) {
+            return $this->ping();
+        }
+    }
+
+    private function ping(): string
+    {
         try {
             DB::connection('pgsql')->select('select 1');
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domain\Identity\PasswordPolicy;
 use App\Domain\Identity\PasswordReset;
 use App\Domain\Identity\Registration;
+use App\Domain\Identity\RegistrationToken;
 use App\Domain\Identity\TokenAttempts;
 use App\Exceptions\DomainConflict;
 use App\Http\Responses\Api;
@@ -18,9 +19,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -310,6 +313,13 @@ class AuthController extends Controller
         } finally {
             if (! $tokenRejected) {
                 TokenAttempts::release($request);
+            } else {
+                try {
+                    RegistrationToken::recordFailure();
+                } catch (Throwable $e) {
+                    // Penghitung lintas IP tidak boleh mengubah jawaban 422 generik.
+                    Log::warning('token_registrasi.hitung_gagal_error', ['exception' => class_basename($e)]);
+                }
             }
         }
     }

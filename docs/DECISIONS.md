@@ -538,3 +538,20 @@ Tanggal: 22 Oktober 2026 (jawaban pemilik di sesi Claude). Status: **diputuskan*
    `tech.morriz.takeda` dan kunci rilis yang sama (ADR31), jadi warga tidak perlu memasang ulang.
 4. Sebelum pendaftaran (bila nanti dilakukan): amankan Gmail dan GitHub dengan 2FA dan kode cadangan, pisahkan kata sandi kunci
    rilis dari Drive yang sama, dan siapkan Pengelola Akun Tidak Aktif Google. Dicatat di [M16_PLAN.md](M16_PLAN.md) bagian 3.
+
+### ADR38 — Keputusan pemilik M16 (22 Okt 2026) dan perbaikan audit keamanan bagian kode
+
+Tanggal: 22 Oktober 2026 (jawaban pemilik di sesi Claude). Status: **diputuskan**.
+
+1. **Admin pertama (K5):** sementara memakai staging dengan email RT `takedatamankedaung@gmail.com` (akun pengurus dibuat
+   agent lewat `rt05:pengurus buat`, kata sandi diberikan ke pemilik lewat berkas catatan lokal, tidak di Git/chat). Production
+   dibuat ulang saat live.
+2. **Backup offsite:** Google Drive pemilik (penyimpanan masih lega). Dump tetap terenkripsi sebelum keluar mesin operator.
+3. **Lokasi (K7):** tetap "Ciputat" di judul, deskripsi, footer, dan kontak; teks profil boleh menjelaskan Kecamatan Pamulang.
+4. **Belum diputuskan:** domain production (K1) dan kontak resmi + masa simpan privasi (K4) belum didiskusikan dengan pengurus.
+5. **Audit keamanan (sesi "Menjalankan aplikasi Android tanpa RAM", 22 Okt), bagian kode yang dikerjakan:** token
+   registrasi diganti otomatis setelah `RegistrationToken::MAX_FAILURES` (30) salah tebak lintas IP (kolom
+   `token_registrasi.percobaan_gagal`, event `token.dirotasi_otomatis` ke inbox pengurus); event `akun.registrasi_utama` kini
+   memberi tahu pengurus; ekspor CSV Kas dan Pembayaran menghormati `?periode` (tanggal transaksi/bayar); `/health/ready`
+   menyimpan hasil cek database 10 detik; `mask_bindings_in_exception_messages` aktif. Butir VPS (SSH tanpa password),
+   setelan GitHub (reviewer environment `release`, proteksi `main`), dan rotasi kredensial lama menunggu izin eksplisit pemilik.
