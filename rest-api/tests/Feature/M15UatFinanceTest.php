@@ -6,6 +6,7 @@ use App\Models\TagihanIuran;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\Support\Fixtures;
 use Tests\TestCase;
 
@@ -69,5 +70,36 @@ class M15UatFinanceTest extends TestCase
         $this->assertStringContainsString($w->rumah()->kode_rumah.','.$bulan.',', $rekap);
         $this->as($admin)->getJson('/api/v1/admin/exports/iuran?periode=bulan-ini')->assertStatus(422);
         $this->as($w)->get('/api/v1/admin/exports/pembayaran', ['Accept' => 'application/json'])->assertForbidden();
+    }
+
+    /** Audit M16: ekspor Kas dan Pembayaran per bulan hanya memuat transaksi pada bulan itu. */
+    public function test_cash_and_payment_exports_respect_the_selected_month(): void
+    {
+        $w = $this->warga('74');
+        $rumah = $w->rumah();
+        $admin = $this->pengurus('m16-ekspor@contoh.test');
+        $ini = now('Asia/Jakarta');
+        $lalu = $ini->copy()->startOfMonth()->subMonth();
+        $this->as($admin);
+        $cash = fn (string $tanggal, string $ket) => $this->postJson('/api/v1/admin/cash-transactions', [
+            'jenis' => 'pemasukan', 'nominal' => 10000, 'tanggal' => $tanggal, 'kategori' => 'Operasional', 'keterangan' => $ket,
+        ], ['Idempotency-Key' => (string) Str::uuid()])->assertCreated();
+        $cash($lalu->toDateString(), 'Kas bulan lalu sintetis');
+        $cash($ini->toDateString(), 'Kas bulan ini sintetis');
+        $bayar = fn (string $tanggal) => $this->postJson('/api/v1/admin/dues-payments', [
+            'rumah_id' => $rumah->id, 'periode' => [$ini->format('Y-m')], 'nominal' => 75000, 'tanggal_bayar' => $tanggal,
+        ], ['Idempotency-Key' => (string) Str::uuid()])->assertCreated()->json('data.nomor_bukti');
+        // Dibayar di bulan lalu (tanggal bayar), untuk tagihan bulan ini: ekspor pembayaran mengikuti tanggal bayar.
+        $nomor = $bayar($lalu->toDateString());
+
+        $kasLalu = $this->get('/api/v1/admin/exports/kas?periode='.$lalu->format('Y-m'))->assertOk()->streamedContent();
+        $this->assertStringContainsString('Kas bulan lalu sintetis', $kasLalu);
+        $this->assertStringNotContainsString('Kas bulan ini sintetis', $kasLalu);
+        $kasSemua = $this->get('/api/v1/admin/exports/kas')->assertOk()->streamedContent();
+        $this->assertStringContainsString('Kas bulan ini sintetis', $kasSemua);
+
+        $this->assertStringContainsString($nomor, $this->get('/api/v1/admin/exports/pembayaran?periode='.$lalu->format('Y-m'))->streamedContent());
+        $this->assertStringNotContainsString($nomor, $this->get('/api/v1/admin/exports/pembayaran?periode='.$ini->format('Y-m'))->streamedContent());
+        $this->getJson('/api/v1/admin/exports/kas?periode=2026-13')->assertStatus(422);
     }
 }

@@ -43,6 +43,9 @@ final class Notifications
             'pengumuman.terbit' => ($p = Pengumuman::find($id)) && self::send($event, self::activeResidents(), 'pengumuman', ['pengumuman_id' => $id],
                 Str::limit($p->judul, 150), Str::limit(strip_tags($p->isi), 180)),
             'agenda.dibuat', 'agenda.diubah', 'agenda.pengingat' => self::agenda($event),
+            // Audit M16: pengurus tahu setiap akun utama baru agar akun asing bisa segera dinonaktifkan.
+            'akun.registrasi_utama' => self::toPengurus($event, 'sistem', [], 'Akun utama baru', 'Warga baru mendaftar sebagai akun utama. Cocokkan dengan data RT; nonaktifkan bila tidak dikenal.'),
+            'token.dirotasi_otomatis' => self::toPengurus($event, 'sistem', [], 'Token registrasi diganti', 'Terlalu banyak percobaan token salah, jadi token registrasi diganti otomatis. Bagikan token baru dari menu Token registrasi.'),
             'akun.permohonan_tambahan' => self::toPengurus($event, 'sistem', [], 'Permohonan akun tambahan', 'Ada permohonan akun tambahan yang menunggu persetujuan.'),
             'akun.permohonan_disetujui' => self::send($event, [$id], 'sistem', [], 'Akun disetujui', 'Akun Anda telah disetujui pengurus. Selamat datang di RT05 TAKEDA.'),
             'iuran.pembayaran_dicatat' => self::paymentRecorded($event),
@@ -61,7 +64,7 @@ final class Notifications
             'iuran.pengingat' => self::send($event, $event->safe_payload['penerima'] ?? [], 'iuran', ['tagihan_id' => $event->safe_payload['tagihan_id'] ?? null],
                 'Pengingat iuran', 'Iuran RT bulan ini belum tercatat. Abaikan bila sudah membayar kepada pengurus.'),
             // Dicatat untuk audit/integrasi berikutnya; v1 sengaja tanpa notifikasi inbox.
-            'akun.registrasi_utama', 'iuran.tagihan_dibuat', 'iuran.pembayaran_dibalik' => null,
+            'iuran.tagihan_dibuat', 'iuran.pembayaran_dibalik' => null,
             // M13: invalidasi cache konten publik dibaca website (M14); tanpa notifikasi inbox.
             'konten.diterbitkan', 'konten.diarsipkan' => null,
             default => throw new UnknownOutboxEvent($event->type),

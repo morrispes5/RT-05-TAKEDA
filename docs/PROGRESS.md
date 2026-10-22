@@ -38,6 +38,14 @@ test` 272 lulus (5 baru); `check-mobile-build-config.mjs --self-test` OK; `m15-e
 Blocked pada pemilik: K1 domain, K4 kontak/masa simpan privasi, K5 admin pertama, K6 jawaban Biznet + pembelian, tujuan
 backup offsite, akun pemantau uptime.
 
+### M16 — perbaikan audit keamanan + keputusan pemilik (22 Okt 2026, branch `codex/m16-perbaikan-audit`)
+
+ADR38. Kode: token registrasi diganti otomatis setelah 30 salah tebak lintas IP (migrasi aditif
+`2026_10_22_000100_token_registrasi_percobaan_gagal`), pengurus diberi tahu (`token.dirotasi_otomatis`, `akun.registrasi_utama`);
+ekspor CSV Kas/Pembayaran per bulan (`OperationsController::export`); `/health/ready` cache 10 dtk; binding SQL disamarkan di
+pesan error. Tes baru: `M16AuditFixesTest` (2), `HealthTest` (+2), `M15UatFinanceTest` (+1). Admin staging email RT dibuat
+(kata sandi di berkas catatan lokal pemilik). Belum: SSH VPS, setelan GitHub, rotasi kredensial (menunggu izin pemilik).
+
 ## M15 ditutup — 22 Oktober 2026: **passed** atas keputusan pemilik (ADR36)
 
 Bukti UAT: uji tim putaran 1–3, demo ke Ketua RT 20 Okt 20.00 WIB, uji agent di emulator (APK 1010/1011). Nilai kemudahan per

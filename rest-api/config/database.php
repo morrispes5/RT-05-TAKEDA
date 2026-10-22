@@ -29,6 +29,8 @@ $pgsql = fn (?string $url, string $appName) => [
     'sslrootcert' => env('DB_SSLROOTCERT'),
     'application_name' => $appName,
     'timezone' => 'UTC',
+    // Audit M16: nilai binding (hash kata sandi, email, nomor WA) tidak ikut pesan QueryException di log.
+    'mask_bindings_in_exception_messages' => true,
     'options' => [
         // pdo_pgsql memetakan ATTR_TIMEOUT ke libpq connect_timeout (detik).
         PDO::ATTR_TIMEOUT => (int) env('DB_CONNECT_TIMEOUT', 5),
