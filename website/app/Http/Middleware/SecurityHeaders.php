@@ -14,6 +14,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class SecurityHeaders
 {
+    private const CMS_CSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
+        ."font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
@@ -25,6 +28,11 @@ class SecurityHeaders
         // M16: hanya production yang boleh diindeks; area pengurus tidak pernah diindeks.
         if (! SiteContent::indexing() || $request->is('pengurus', 'pengurus/*')) {
             $headers->set('X-Robots-Tag', 'noindex, nofollow', false);
+        }
+        // Audit M16: CMS memegang sesi pengurus; batasi skrip/koneksi ke origin sendiri. Tidak dipasang di lingkungan local
+        // karena aset Vite dev disajikan dari port lain.
+        if ($request->is('pengurus', 'pengurus/*') && ! app()->environment('local')) {
+            $headers->set('Content-Security-Policy', self::CMS_CSP, false);
         }
         if ($request->isSecure()) {
             $headers->set('Strict-Transport-Security', 'max-age=31536000', false);

@@ -10,6 +10,7 @@ import '../../app/theme.dart';
 import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../core/picked_files.dart';
 import '../../core/widgets.dart';
 import 'providers.dart';
 import 'report_actions.dart';
@@ -71,6 +72,7 @@ class _DuesProofPageState extends ConsumerState<DuesProofPage> {
       final file = await _picker.pickImage(source: source, maxWidth: 1600, maxHeight: 1600, imageQuality: 80);
       if (file == null || !mounted) return;
       final bytes = await file.readAsBytes();
+      await deletePickedCopies([file]);
       if (!mounted) return;
       if (bytes.length > _maxFotoBytes) {
         showMessage(context, 'Foto lebih dari 5 MB. Pilih foto lain.', kind: AlertKind.warning, title: 'Foto terlalu besar');
