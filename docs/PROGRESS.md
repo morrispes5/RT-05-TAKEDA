@@ -1,5 +1,43 @@
 # Progress — RT05 TAKEDA
 
+## M16 — Rilis ke warga (milestone terakhir) — 22 Oktober 2026: **in_progress (Fase A)**
+
+Rencana [M16_PLAN.md](M16_PLAN.md) (gate G1–G13). ADR37: verifikasi developer Android ditunda (opsi terakhir), bukan gate.
+Branch `codex/m16-fase-a` (di atas `codex/m16-rencana`). Fase A dikerjakan agent tanpa production:
+
+- **Website siap Google:** `RT05_SEARCH_INDEXING` (hanya production) mengatur `X-Robots-Tag`/meta robots, `robots.txt` dinamis
+  (staging/preview `Disallow: /`; production menutup `/pengurus` + `Sitemap:`), `sitemap.xml` (halaman publik, artikel,
+  album), canonical/`og:url`/`og:image` dari `APP_URL` (bukan header Host), `og:site_name`, JSON-LD `WebSite` + `Organization`
+  (nama "RT05 TAKEDA" + nama lain) dan `Article`. `public/robots.txt` statis dihapus; ekspor preview menulis robots.txt noindex.
+- **Halaman `/aplikasi`:** membaca `versi.json` (path atau URL, `RT05_APK_META`), memvalidasi ABI, tautan `/unduh/…apk` atau
+  HTTPS, ukuran, dan SHA-256. Tanpa rilis → "Aplikasi sedang disiapkan". Panduan pasang, izin aplikasi, cara memastikan berkas
+  asli. **`/kebijakan-privasi`** publik dari `resources/data/privasi.json`, dites identik dengan teks aplikasi dan versi server.
+  Tautan di footer dan halaman Kontak.
+- **Mobile:** versi `1.0.0` (pubspec, dites sama dengan `AppConfig.appVersion`), `APP_BUILD` dari CI rilis, kartu *Tentang
+  aplikasi* di menu Akun (warga dan pengurus): versi, pengelola, tautan halaman unduh resmi, dan pemberitahuan versi baru dari
+  `/unduh/versi.json` tanpa token.
+- **Workflow rilis:** `versi.json` dibuat dari APK yang sama (input `catatan`), domain prod dari variable `RT05_PROD_BASE_URL`.
+  Compose staging: web membaca `versi.json` dari volume unduhan (read-only), `RT05_SEARCH_INDEXING=false`.
+- **Sisa M15 #5:** `rt05:media-recover`/`rt05:push-recover` memperpanjang IdleGuard selama masih ada foto diproses atau push
+  belum terproses (≤1 jam), sehingga pemulihan tidak menunggu pengaman per jam.
+- **Issue #47:** sumber 404 terjelaskan: akun pengurus sintetis tanpa rumah → `GET /household` dan `GET /dues/my` 404
+  `HOUSEHOLD_NOT_LINKED` (≈6,3% teoretis; 49/848 = 5,8% teramati), ditulis eksplisit di `EXPECT`. Ulang uji beban 20 pengguna
+  60 dtk ke staging `51fced8` dari PC pemilik lewat WARP (22 Okt ±09.30 WIB): **0 respons tak terduga**, tetapi **gate P95
+  gagal** (P95 total 1677 ms; per endpoint 967–2252 ms; TTFB `/health/live` ±0,2 dtk lewat WARP). Bukti
+  [load-20u-staging-2026-10-22.json](evidence/m16/load-20u-staging-2026-10-22.json). Lebih lambat dari M15 (781 ms, 19 Okt);
+  penyebab belum diselidiki. Gate performa diukur ulang di host production dari jaringan luar.
+- **Dokumen:** [RUNBOOK_PRODUCTION.md](RUNBOOK_PRODUCTION.md) (pertanyaan Biznet siap kirim, setup shared, rilis APK, Search
+  Console, backup/restore, rollback), draf [SOP_PENGURUS.md](SOP_PENGURUS.md), `infra/shared/web.env.example`, catatan MIME APK
+  di `public-htaccess.example`.
+
+Validasi lokal: website `php artisan test` 28/28 (7 tes baru M16), `npm.cmd run build:preview` 24 rute, `test:preview` 24 rute
+tanpa error browser; rest-api `php artisan test` 342/342 (Postgres lokal 54329); Flutter `flutter analyze` bersih, `flutter
+test` 272 lulus (5 baru); `check-mobile-build-config.mjs --self-test` OK; `m15-evidence-lib.test.mjs` OK;
+`check-m03-compose.mjs` OK; `check-repo.mjs` OK. Belum: deploy staging, APK baru, uji di HP.
+
+Blocked pada pemilik: K1 domain, K4 kontak/masa simpan privasi, K5 admin pertama, K6 jawaban Biznet + pembelian, tujuan
+backup offsite, akun pemantau uptime.
+
 ## M15 ditutup — 22 Oktober 2026: **passed** atas keputusan pemilik (ADR36)
 
 Bukti UAT: uji tim putaran 1–3, demo ke Ketua RT 20 Okt 20.00 WIB, uji agent di emulator (APK 1010/1011). Nilai kemudahan per
@@ -827,7 +865,7 @@ ditentukan hanya oleh tersedianya kode.
 | M14 | passed | Website membaca API + CMS web nyata (ADR30); staging `08f2a1e` 21/21 + drill API mati |
 | M15 | **passed** (22 Okt, ADR36) | UAT tim putaran 1–3 + demo Ketua RT + uji emulator agent; APK 1011 `f392612`; sisa gate dipindah ke M16 |
 | M15b | **passed** (22 Okt) | Permintaan Pak RT (ADR35): APK 1011, staging `f392612`, uji emulator + live CMS |
-| M16 | planned | Production baru belum dirilis |
+| M16 | in_progress | Fase A (22 Okt): SEO + `/aplikasi` + `/kebijakan-privasi`, versi 1.0.0, #47 dijelaskan; ADR37 tanpa verifikasi developer; production belum |
 
 M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. M01–M16 menggunakan planned/in_progress/passed/blocked.
 
