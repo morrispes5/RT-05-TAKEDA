@@ -565,4 +565,10 @@ Tanggal: 22 Oktober 2026 (jawaban pemilik di sesi Claude). Status: **diputuskan*
    menyajikan last-good lalu memperbarui setelah response (satu proses, kunci file); `FRANKENPHP_CONFIG` api `num_threads 16`,
    web `num_threads 8` (bisa diganti `RT05_API_FRANKENPHP_CONFIG`/`RT05_WEB_FRANKENPHP_CONFIG`). Koneksi persisten ke Neon
    sengaja tidak dipakai (dapat menahan compute tetap bangun, ADR31).
+8. **Sisa audit bagian kode (22 Okt siang):** tagihan, pembayaran, dan alokasi dikunci trigger database (migrasi
+   `2026_10_22_000200_kunci_tagihan_pembayaran`): tagihan hanya boleh berubah status; pembayaran hanya tercatat → dibatalkan
+   sekali dan tidak boleh dihapus; alokasi hanya dibatalkan sekali dan tidak boleh dihapus. Tagihan tanpa alokasi masih boleh
+   dihapus (FK alokasi menolak yang pernah dibayar). CMS `/pengurus` memakai CSP ketat (`script-src 'self'`, kecuali env local).
+   Aplikasi menghapus salinan foto di folder cache setelah pengaduan terkirim atau foto bukti/edit sudah dibaca ke memori.
+   Belum: pin versi image + `--pull` saat deploy (mengubah skrip deploy immutable), enumerasi email saat pendaftaran (rendah).
 

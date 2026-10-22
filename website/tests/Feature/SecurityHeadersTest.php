@@ -18,4 +18,16 @@ class SecurityHeadersTest extends TestCase
         }
         $this->get('https://localhost/pengurus')->assertHeader('Strict-Transport-Security', 'max-age=31536000');
     }
+
+    /** Audit M16: area pengurus (CMS) memakai CSP ketat; halaman publik tidak berubah. */
+    public function test_cms_has_strict_content_security_policy(): void
+    {
+        foreach (['/pengurus', '/pengurus/masuk', '/pengurus/artikel/editor'] as $path) {
+            $csp = $this->get($path)->assertOk()->headers->get('Content-Security-Policy');
+            $this->assertStringContainsString("script-src 'self'", $csp);
+            $this->assertStringContainsString("frame-ancestors 'none'", $csp);
+            $this->assertStringNotContainsString('unsafe-eval', $csp);
+        }
+        $this->get('/')->assertOk()->assertHeaderMissing('Content-Security-Policy');
+    }
 }

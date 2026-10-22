@@ -39,9 +39,14 @@ trait CommittedData
             // Buku kas append-only (trigger) hanya dibuka di dalam transaksi pembersihan database *_test.
             $db->statement('ALTER TABLE transaksi_kas DISABLE TRIGGER transaksi_kas_immutable');
             $db->statement('ALTER TABLE riwayat_transaksi_kas DISABLE TRIGGER riwayat_transaksi_kas_immutable');
+            // Audit M16: tagihan/pembayaran/alokasi juga dikunci; dibuka hanya di transaksi pembersihan ini.
+            $db->statement('ALTER TABLE alokasi_pembayaran DISABLE TRIGGER alokasi_pembayaran_terkunci');
+            $db->statement('ALTER TABLE pembayaran_iuran DISABLE TRIGGER pembayaran_iuran_terkunci');
             foreach (self::COMMITTED_TABLES as $table) {
                 $db->table($table)->where('created_at', '>=', $this->committedSince)->delete();
             }
+            $db->statement('ALTER TABLE pembayaran_iuran ENABLE TRIGGER pembayaran_iuran_terkunci');
+            $db->statement('ALTER TABLE alokasi_pembayaran ENABLE TRIGGER alokasi_pembayaran_terkunci');
             $db->statement('ALTER TABLE riwayat_transaksi_kas ENABLE TRIGGER riwayat_transaksi_kas_immutable');
             $db->statement('ALTER TABLE transaksi_kas ENABLE TRIGGER transaksi_kas_immutable');
             $db->statement('ALTER TABLE audit_logs ENABLE TRIGGER audit_logs_no_update_delete');

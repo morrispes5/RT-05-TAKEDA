@@ -38,6 +38,15 @@ test` 272 lulus (5 baru); `check-mobile-build-config.mjs --self-test` OK; `m15-e
 Blocked pada pemilik: K1 domain, K4 kontak/masa simpan privasi, K5 admin pertama, K6 jawaban Biznet + pembelian, tujuan
 backup offsite, akun pemantau uptime.
 
+### M16 — backup Drive + sisa audit (22 Okt 2026, branch `codex/m16-performa`)
+
+- **Latihan backup + restore lulus** ([BACKUP_DRILL.md](evidence/m16/BACKUP_DRILL.md)): `infra/scripts/backup-drill.sh` di VPS,
+  12 tabel utama cocok (baris + total rupiah), total 9 dtk, berkas terenkripsi AES256 di Drive pemilik
+  `RT05 TAKEDA - Backup/staging/`. Kunci enkripsi di berkas catatan lokal pemilik.
+- **Sisa audit (ADR38 butir 8):** trigger kunci tagihan/pembayaran/alokasi, CSP CMS, hapus salinan foto cache di aplikasi.
+- Tes: rest-api `M16AuditFixesTest` +1 (kunci database + pembalikan resmi tetap jalan), website `SecurityHeadersTest` +1
+  (30/30), Flutter `m16_picked_files_test` (273 lulus).
+
 ### M16 — performa staging (22 Okt 2026, branch `codex/m16-performa`)
 
 Diagnosis dari VPS (tanpa jalur WARP): halaman web 30–40 ms saat cache segar; `/` pertama setelah cache habis 780 ms;

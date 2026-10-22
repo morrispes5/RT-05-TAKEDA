@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Domain\Community\Notifications;
 use App\Domain\Identity\RegistrationToken;
 use App\Models\OutboxEvent;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\Fixtures;
 use Tests\TestCase;
 
@@ -72,5 +74,40 @@ class M16AuditFixesTest extends TestCase
         $this->handle('akun.registrasi_utama');
         $this->assertContains('Akun utama baru', $this->inboxTitles($admin->id));
         $this->assertNotContains('Akun utama baru', $this->inboxTitles($warga->id), 'warga lain tidak diberi tahu');
+    }
+
+    /** Audit M16: nominal/rumah/nomor bukti tidak bisa diubah langsung di database; pembalikan resmi tetap jalan. */
+    public function test_billing_rows_are_locked_except_official_reversal(): void
+    {
+        $w = $this->warga('162');
+        $rumah = $w->rumah();
+        $admin = $this->pengurus('m16-kunci@contoh.test');
+        $bulan = now('Asia/Jakarta')->format('Y-m');
+        $id = $this->as($admin)->postJson('/api/v1/admin/dues-payments', [
+            'rumah_id' => $rumah->id, 'periode' => [$bulan], 'nominal' => 75000, 'tanggal_bayar' => now('Asia/Jakarta')->toDateString(),
+        ], ['Idempotency-Key' => (string) Str::uuid()])->assertCreated()->json('data.id');
+        $tagihan = DB::table('tagihan_iuran')->where('rumah_id', $rumah->id)->where('periode', $bulan.'-01')->value('id');
+
+        $blocked = function (callable $write, string $label) {
+            try {
+                DB::transaction($write);
+                $this->fail("$label seharusnya ditolak database");
+            } catch (QueryException $e) {
+                $this->assertStringContainsString('42501', $e->getCode().' '.$e->getMessage(), $label);
+            }
+        };
+        $blocked(fn () => DB::table('tagihan_iuran')->where('id', $tagihan)->update(['nominal_tagihan' => 1]), 'ubah nominal tagihan');
+        $blocked(fn () => DB::table('pembayaran_iuran')->where('id', $id)->update(['total_bayar' => 1]), 'ubah total bayar');
+        $blocked(fn () => DB::table('pembayaran_iuran')->where('id', $id)->delete(), 'hapus pembayaran');
+        $blocked(fn () => DB::table('alokasi_pembayaran')->where('pembayaran_id', $id)->delete(), 'hapus alokasi');
+        $blocked(fn () => DB::table('alokasi_pembayaran')->where('pembayaran_id', $id)->update(['nominal_alokasi' => 1]), 'ubah alokasi');
+
+        // Jalur resmi: pembalikan oleh pengurus tetap bisa (status, pembatal, alasan; alokasi dibatalkan; tagihan belum_bayar).
+        $this->postJson("/api/v1/admin/dues-payments/$id/reverse", ['alasan' => 'Salah catat rumah, dicatat ulang.'],
+            ['Idempotency-Key' => (string) Str::uuid()])->assertOk();
+        $this->assertSame('dibatalkan', DB::table('pembayaran_iuran')->where('id', $id)->value('status'));
+        $this->assertSame('belum_bayar', DB::table('tagihan_iuran')->where('id', $tagihan)->value('status'));
+        // Sudah dibatalkan: tidak bisa "dihidupkan" lagi langsung di database.
+        $blocked(fn () => DB::table('pembayaran_iuran')->where('id', $id)->update(['status' => 'tercatat', 'dibatalkan_at' => null]), 'hidupkan lagi');
     }
 }
