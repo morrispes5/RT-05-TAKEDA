@@ -555,3 +555,14 @@ Tanggal: 22 Oktober 2026 (jawaban pemilik di sesi Claude). Status: **diputuskan*
    memberi tahu pengurus; ekspor CSV Kas dan Pembayaran menghormati `?periode` (tanggal transaksi/bayar); `/health/ready`
    menyimpan hasil cek database 10 detik; `mask_bindings_in_exception_messages` aktif. Butir VPS (SSH tanpa password),
    setelan GitHub (reviewer environment `release`, proteksi `main`), dan rotasi kredensial lama menunggu izin eksplisit pemilik.
+6. **Jawaban lanjutan 22 Okt ±10.15 WIB:** setelan GitHub **dibiarkan seperti sekarang** (tanpa proteksi `main` dan tanpa reviewer
+   environment `release`); akun kolaborator `takeda05` adalah akun pemilik sendiri khusus RT05. SSH VPS lama tidak diubah sampai
+   habis 4 Nov; VPS baru (2 Nov) langsung login kunci saja + firewall/fail2ban setelah konsol browser Hostinger dipastikan bisa
+   masuk, dengan cadangan kunci SSH di Drive pribadi pemilik (PC pemilik hanya satu). Rotasi kredensial lama saat pindah VPS.
+7. **Performa staging (uji beban 22 Okt):** penyebab P95 naik dari 781 ms (M15) ke 1,7 dtk: (a) website menunggu tiga panggilan
+   API setiap jendela fresh 15 dtk habis dan banyak pengunjung melakukannya bersamaan; (b) FrankenPHP bawaan hanya 2 thread per
+   CPU (4 di VPS 2 CPU), padahal tiap request API menunggu koneksi baru ke Neon ±184 ms + ±18 ms per query. Perbaikan: website
+   menyajikan last-good lalu memperbarui setelah response (satu proses, kunci file); `FRANKENPHP_CONFIG` api `num_threads 16`,
+   web `num_threads 8` (bisa diganti `RT05_API_FRANKENPHP_CONFIG`/`RT05_WEB_FRANKENPHP_CONFIG`). Koneksi persisten ke Neon
+   sengaja tidak dipakai (dapat menahan compute tetap bangun, ADR31).
+

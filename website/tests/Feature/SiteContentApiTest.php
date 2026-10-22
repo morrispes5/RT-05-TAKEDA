@@ -86,6 +86,33 @@ class SiteContentApiTest extends TestCase
         $this->assertSame('baked', SiteContent::source());
     }
 
+    /** M16: cache fresh habis → konten terakhir disajikan tanpa menunggu API; pembaruan berjalan setelah response. */
+    public function test_expired_cache_serves_last_good_and_refreshes_after_the_response(): void
+    {
+        $this->api();
+        $this->get('/artikel')->assertOk()->assertSee('Kerja bakti Oktober bersama warga');
+        Cache::store('file')->forget('rt05:site-content:fresh');
+        SiteContent::forget();
+        Http::swap(new Factory);
+        Http::fake([
+            'api.internal/api/v1/public/articles*' => Http::response(['data' => [[
+                'slug' => 'ronda-malam', 'title' => 'Jadwal ronda malam baru', 'category' => 'Keamanan', 'art' => 'home',
+                'summary' => 'Ringkasan ronda.', 'intro' => 'Ronda bergiliran.', 'sections' => [], 'note' => null, 'source' => null,
+            ]], 'meta' => []]),
+            'api.internal/api/v1/public/albums*' => Http::response(['data' => [], 'meta' => []]),
+            'api.internal/api/v1/public/site-profile*' => Http::response(['data' => null], 404),
+        ]);
+
+        // Pengunjung pertama setelah kedaluwarsa: konten terakhir, sumber cache.
+        $this->get('/artikel')->assertOk()->assertSee('Kerja bakti Oktober bersama warga')->assertDontSee('Jadwal ronda malam baru');
+        $this->assertSame('cache', SiteContent::source());
+        // Pembaruan sudah berjalan setelah response (terminating): pengunjung berikutnya melihat konten baru.
+        SiteContent::forget();
+        $this->get('/artikel')->assertOk()->assertSee('Jadwal ronda malam baru');
+        $this->assertSame('api', SiteContent::source());
+        Http::assertSentCount(3);
+    }
+
     /** UAT M15: foto sampul asli yang diunggah lewat CMS tampil menggantikan SVG; artikel tanpa sampul tetap SVG. */
     public function test_article_cover_photo_replaces_svg_illustration(): void
     {
