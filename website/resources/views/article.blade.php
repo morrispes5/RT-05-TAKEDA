@@ -2,6 +2,10 @@
 @section('title', $article['title'].' — RT 05 Takeda')
 @section('description', $article['summary'])
 @section('og_type', 'article')
+@push('jsonld')
+@php $origin = \App\Http\Controllers\PublicPageController::origin(); @endphp
+<script type="application/ld+json">{!! json_encode(array_filter(['@context' => 'https://schema.org', '@type' => 'Article', 'headline' => $article['title'], 'description' => $article['summary'], 'inLanguage' => 'id-ID', 'mainEntityOfPage' => $origin.'/artikel/'.$article['slug'], 'image' => isset($article['cover']['src']) ? (str_starts_with($article['cover']['src'], 'http') ? $article['cover']['src'] : $origin.$article['cover']['src']) : $origin.'/images/og-image.jpg', 'publisher' => ['@type' => 'Organization', 'name' => 'RT05 TAKEDA', 'logo' => ['@type' => 'ImageObject', 'url' => $origin.'/images/logo/rt05-mark.svg']]]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}</script>
+@endpush
 @section('content')
 <article class="reading-page">
 <header class="wrap reading-header"><p class="breadcrumb"><a href="/">Beranda</a> / <a href="/artikel">Artikel</a> / {{ $article['category'] }}</p><p class="section-label">{{ $article['category'] }} · {{ $article['minutes'] }} menit baca</p><h1>{{ $article['title'] }}</h1><p>{{ $article['summary'] }}</p><span class="editorial-label">Bacaan edukasi · Bukan pengumuman resmi RT</span></header>

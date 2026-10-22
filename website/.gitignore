@@ -18,6 +18,8 @@
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
+# M16: APK dan versi.json diunggah saat deploy, tidak di Git.
+/public/unduh
 /storage/*.key
 /storage/pail
 /vendor

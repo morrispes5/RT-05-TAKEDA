@@ -227,6 +227,16 @@ dialog :focus-visible { outline-color:var(--yellow); }
 .source-note h2 { font-size:21px; }
 .source-note a { display:inline-block; margin-top:12px; text-decoration:underline; }
 .source-note a svg { width:16px; }
+/* M16: halaman unduh aplikasi dan Kebijakan Privasi memakai tata letak bacaan yang sama. */
+.prose h3 { font-size:21px; color:var(--ink); margin:28px 0 8px; }
+.prose .bullets { list-style:disc; padding-left:22px; }
+.prose .steps { list-style:decimal; padding-left:22px; }
+.prose .bullets li, .prose .steps li { margin-bottom:8px; }
+.prose strong { color:var(--ink); }
+.download-card { background:var(--sky); border:1px solid #dce9f3; border-radius:12px; padding:22px 25px; margin-top:20px; }
+.download-card .button { margin:12px 0 8px; }
+.download-card .button:not(.primary) { background:#fff; color:var(--navy); border-color:#c9dbe8; }
+.download-card code { font-size:11px; color:var(--ink); word-break:break-all; }
 .related { margin-top:25px; border-top:1px solid var(--line); }
 .contact-layout { display:grid; grid-template-columns:1fr 1fr; gap:70px; align-items:center; }
 .contact-layout figure img { width:100%; height:470px; border-radius:14px; box-shadow:var(--shadow-md); }
