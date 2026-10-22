@@ -101,3 +101,10 @@ bandingkan → enkripsi), lalu `rclone copy <dir>/*.dump.gpg "gdrive:RT05 TAKEDA
 5. Ubah DNS A/AAAA `takeda-staging` ke VPS baru (atas izin pemilik). APK yang terpasang tetap jalan karena memakai nama domain.
 6. Smoke: `/health/ready`, `/aplikasi`, login pengurus, push. Setelah stabil, VPS lama dibiarkan habis.
 
+## 8. Database cadangan (ADR39)
+
+- Sinkron (operator, Docker): `bash infra/scripts/standby-sync.sh <env-utama> <env-cadangan>`; isi cadangan diganti salinan
+  utama lalu dibandingkan. Production: jadwalkan mingguan + sebelum pindah terencana.
+- Pindah terencana (kuota utama ~85% atau gangguan): hentikan penulisan (mode perawatan), sinkron terakhir, ganti
+  `DATABASE_URL`/`DATABASE_URL_UNPOOLED` API ke cadangan (role `rt05_app` / `rt05_owner`), `config:cache`, smoke.
+- Kembali: hentikan penulisan, `standby-sync.sh <env-cadangan> <env-utama>` (arah terbalik, salinan utuh), kembalikan env, smoke.
