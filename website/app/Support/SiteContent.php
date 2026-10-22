@@ -161,36 +161,68 @@ class SiteContent
         if (is_array($fresh = $store->get(self::FRESH))) {
             return self::$loaded = $fresh + ['source' => 'api'];
         }
+        // M16: cache fresh habis tetapi ada last-good → sajikan segera, perbarui setelah response terkirim (satu proses
+        // saja). Pengunjung tidak lagi menunggu tiga panggilan API tiap jendela fresh; uji beban 22 Okt: P95 web 2,1 dtk.
+        $last = $store->get(self::LAST_GOOD);
+        if (is_array($last)) {
+            if (! $store->has(self::DOWN)) {
+                app()->terminating(fn () => self::refreshInBackground($base, $store));
+            }
+
+            return self::$loaded = $last + ['source' => 'cache'];
+        }
         if ($store->has(self::DOWN)) {
-            return self::$loaded = self::fallback($store);
+            return self::$loaded = self::baked();
         }
         try {
-            $get = fn (string $path) => Http::baseUrl($base)->acceptJson()
-                ->connectTimeout(max(1, (int) config('services.rt05_content.timeout', 3)))
-                ->timeout(max(1, (int) config('services.rt05_content.timeout', 3)))
-                ->get($path, ['per_page' => 100])->throw()->json('data');
-            $data = [
-                'articles' => array_map([self::class, 'article'], $get('/api/v1/public/articles') ?? []),
-                'albums' => array_map([self::class, 'album'], $get('/api/v1/public/albums') ?? []),
-                'profile' => self::remoteProfile($base),
-            ];
-            $store->put(self::FRESH, $data, max(1, (int) config('services.rt05_content.fresh_seconds', 60)));
-            $store->forever(self::LAST_GOOD, $data);
-
-            return self::$loaded = $data + ['source' => 'api'];
+            return self::$loaded = self::fetch($base, $store) + ['source' => 'api'];
         } catch (Throwable $e) {
-            Log::warning('site_content.api_unavailable', ['exception' => class_basename($e)]);
-            $store->put(self::DOWN, true, 30);
+            self::markDown($store, $e);
 
-            return self::$loaded = self::fallback($store);
+            return self::$loaded = self::baked();
         }
     }
 
-    private static function fallback($store): array
+    private static function fetch(string $base, $store): array
     {
-        $last = $store->get(self::LAST_GOOD);
+        $get = fn (string $path) => Http::baseUrl($base)->acceptJson()
+            ->connectTimeout(max(1, (int) config('services.rt05_content.timeout', 3)))
+            ->timeout(max(1, (int) config('services.rt05_content.timeout', 3)))
+            ->get($path, ['per_page' => 100])->throw()->json('data');
+        $data = [
+            'articles' => array_map([self::class, 'article'], $get('/api/v1/public/articles') ?? []),
+            'albums' => array_map([self::class, 'album'], $get('/api/v1/public/albums') ?? []),
+            'profile' => self::remoteProfile($base),
+        ];
+        $store->put(self::FRESH, $data, max(1, (int) config('services.rt05_content.fresh_seconds', 60)));
+        $store->forever(self::LAST_GOOD, $data);
 
-        return is_array($last) ? $last + ['source' => 'cache'] : self::baked();
+        return $data;
+    }
+
+    /** Dijalankan setelah response; kunci file mencegah banyak pengunjung memperbarui bersamaan. */
+    private static function refreshInBackground(string $base, $store): void
+    {
+        $lock = $store->lock('rt05:site-content:refresh', 30);
+        if (! $lock->get()) {
+            return;
+        }
+        try {
+            // Diperiksa ulang di bawah kunci: proses lain mungkin sudah memperbarui atau menandai API gagal.
+            if (! is_array($store->get(self::FRESH)) && ! $store->has(self::DOWN)) {
+                self::fetch($base, $store);
+            }
+        } catch (Throwable $e) {
+            self::markDown($store, $e);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    private static function markDown($store, Throwable $e): void
+    {
+        Log::warning('site_content.api_unavailable', ['exception' => class_basename($e)]);
+        $store->put(self::DOWN, true, 30);
     }
 
     private static function baked(): array
