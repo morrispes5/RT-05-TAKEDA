@@ -38,6 +38,11 @@ test` 272 lulus (5 baru); `check-mobile-build-config.mjs --self-test` OK; `m15-e
 Blocked pada pemilik: K1 domain, K4 kontak/masa simpan privasi, K5 admin pertama, K6 jawaban Biznet + pembelian, tujuan
 backup offsite, akun pemantau uptime.
 
+### M16 — database cadangan Neon project kedua (22 Okt 2026, ADR39)
+
+Supabase penuh (2 project aktif) → pemilik memilih Neon project kedua `rt05-takeda-cadangan`. Sinkron staging → cadangan dan uji
+aplikasi di cadangan lulus ([bukti](evidence/m16/STANDBY_NEON.md)). Belum: latihan pindah + kembali di staging, jadwal sinkron.
+
 ### M16 — rilis 1013 dan uji beban ulang (22 Okt 2026)
 
 PR #66 merge `b1d080d` 10.4x WIB, staging deploy (0 GAGAL), APK **1013** (1.0.0) dibangun 10.57 WIB, tersaji 10.58 WIB

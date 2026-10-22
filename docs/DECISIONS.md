@@ -572,3 +572,23 @@ Tanggal: 22 Oktober 2026 (jawaban pemilik di sesi Claude). Status: **diputuskan*
    Aplikasi menghapus salinan foto di folder cache setelah pengaduan terkirim atau foto bukti/edit sudah dibaca ke memori.
    Belum: pin versi image + `--pull` saat deploy (mengubah skrip deploy immutable), enumerasi email saat pendaftaran (rendah).
 
+### ADR39 — PostgreSQL cadangan memakai Neon project kedua (menggantikan pilihan Supabase di ADR29)
+
+Tanggal: 22 Oktober 2026 (jawaban pemilik: "buat neon project kedua aja, biar ga ribet"). Status: **diputuskan**.
+
+1. Supabase Free tidak bisa dipakai: akun pemilik sudah memakai dua project aktif (batas paket gratis). Alternatif gratis lain
+   dinilai: Aiven Free (PostgreSQL asli, tetapi region tidak bisa dipilih dan dapat dimatikan bila tidak dipakai), Prisma Postgres
+   (100 ribu operasi/bulan), CockroachDB (tidak kompatibel penuh: trigger plpgsql, advisory lock), Render (dihapus 30 hari),
+   Railway/Koyeb (berbayar/jam terbatas).
+2. Cadangan = Neon project **`rt05-takeda-cadangan`** (`long-star-75282377`, aws-ap-southeast-1, PostgreSQL 17, 0,25 CU,
+   scale-to-zero). Kuota 100 CU-jam terpisah dari project utama, jadi kuota habis di project utama tidak mematikan cadangan.
+   Risiko yang diterima: gangguan Neon atau akun Neon ikut mengenai cadangan; Aiven bisa ditambahkan nanti sebagai lapis kedua.
+3. Role: `rt05_owner` (pemilik schema, migrasi/sinkron) dan `rt05_app` (runtime, DML saja) dibuat lewat SQL, bukan API Neon,
+   karena role buatan API otomatis anggota `neon_superuser`. Kredensial hanya di berkas privat (PC operator `~/.rt05`, VPS
+   `/root/.rt05/standby`), tidak di Git.
+4. Sinkron satu arah utama → cadangan dengan `infra/scripts/standby-sync.sh` (pg_dump → pg_restore --clean, bandingkan baris +
+   total rupiah). Prinsip ADR29 lain tetap: satu penulis, pindah terencana ~85% kuota, kembali dengan salinan utuh.
+5. Bukti 22 Okt: sinkron staging → cadangan 19 dtk, 13 tabel cocok; API image `b1d080d` dengan role `rt05_app` di cadangan:
+   `rt05:db-smoke` tulis/baca ok + DDL ditolak, `rt05:rekonsiliasi-keuangan` cocok (saldo sama). Belum: latihan pindah + kembali
+   pada staging yang sedang dipakai (perlu jendela waktu yang disepakati pemilik) dan jadwal sinkron otomatis (setelah production).
+6. Kuota project utama per 22 Okt: active_time 822.860 dtk (±229 jam × 0,25 CU ≈ 57 CU-jam dari 100), reset 1 Nov.
