@@ -213,8 +213,6 @@ judul dengan `update_file`. Connector Drive tidak bisa mengunggah isi file atau 
 
 ## 10. Langkah berikutnya yang disarankan
 
-1. Minta hasil uji tim dengan APK 1009 (bagian 6 no. 2); catat sesuai UAT_M15.md. Jalankan `infra/scripts/staging-runtime-smoke.sh` dan `check-preview.mjs` ke Vercel yang belum dijalankan setelah PR #58.
-2. Selidiki 404 issue #47, ulang uji beban.
-3. Tanyakan pertanyaan bagian 6 yang tersisa (3, 4, 5, 7–10).
-4. Rekam hasil UAT tim (putaran 1 dan 2) dalam format UAT_M15.md bila pemilik memberi data.
-5. Setelah item 6–9 bagian 4 dari pemilik masuk, tutup gate M15 di PROGRESS, lalu tunggu pemilik membuka M16.
+M15 dan M15b passed (ADR36). Ikuti **[M16_PLAN.md](M16_PLAN.md)**: Fase A dikerjakan agent tanpa menunggu pemilik
+(SEO, flavor production 1.0.0, halaman unduh resmi, pemulihan foto/push, issue #47, pertanyaan Biznet, skrip backup).
+Keputusan K1–K8 dan pembelian Biznet ditanyakan ke pemilik; jangan membeli, mendaftar, atau mengubah DNS atas nama pemilik.

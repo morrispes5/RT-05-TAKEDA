@@ -339,7 +339,11 @@ Status awal seluruh M01–M16 planned. Akses server/credential dapat memblokir b
 
 ## M16 — Production dan handover
 
-**Baca:** DEPLOYMENT, SECURITY, TESTING, PROGRESS.
+**Baca:** [M16_PLAN.md](M16_PLAN.md) (rencana rilis ke warga, 22 Okt 2026), DEPLOYMENT, SECURITY, TESTING, PROGRESS.
+
+M16 adalah milestone terakhir (keputusan pemilik 22 Okt 2026); setelah passed, perubahan berikutnya dicatat sebagai revisi.
+Tambahan scope: website ditemukan di Google (sitemap, data terstruktur, Search Console) dan kepercayaan APK (halaman unduh
+resmi, versi 1.0.0, verifikasi developer Android).
 
 **Scope:**
 
