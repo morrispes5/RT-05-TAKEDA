@@ -5,6 +5,7 @@ namespace App\Domain\Identity;
 use App\Models\Akun;
 use App\Models\TokenRegistrasi;
 use App\Support\Audit;
+use App\Support\Outbox;
 use Closure;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,9 @@ final class RegistrationToken
     public const ROTATE_AFTER_DAYS = 7;
 
     public const VALID_DAYS = 8;
+
+    /** Audit M16: salah tebak lintas IP pada satu token sebelum token diganti otomatis (warga asli jarang salah). */
+    public const MAX_FAILURES = 30;
 
     /** Seam tes: pembangkit kode (default random_int kriptografis). */
     private static ?Closure $generator = null;
@@ -104,6 +108,34 @@ final class RegistrationToken
         $token = $query->first();
 
         return $token && hash_equals($token->kode_digest, self::digest($code)) ? $token : null;
+    }
+
+    /**
+     * Audit M16: catat satu percobaan token salah pada token aktif (setelah transaksi registrasi dibatalkan). Batas per IP
+     * (TokenAttempts) bisa diakali dengan banyak alamat IPv6; penghitung ini lintas IP. Setelah MAX_FAILURES token
+     * diganti dan pengurus diberi tahu lewat inbox. Mengembalikan true bila token dirotasi.
+     */
+    public static function recordFailure(): bool
+    {
+        return DB::transaction(function () {
+            $row = DB::selectOne(
+                'UPDATE token_registrasi SET percobaan_gagal = percobaan_gagal + 1
+                 WHERE aktif = true AND (berlaku_sampai IS NULL OR berlaku_sampai > now())
+                 RETURNING id, percobaan_gagal'
+            );
+            if (! $row || (int) $row->percobaan_gagal < self::MAX_FAILURES) {
+                return false;
+            }
+            self::lockRotation();
+            // Percobaan bersamaan: hanya satu yang merotasi token yang sama.
+            if (self::active()?->id !== $row->id) {
+                return false;
+            }
+            self::rotateLocked(null, 'otomatis: terlalu banyak percobaan token salah');
+            Outbox::record('token.dirotasi_otomatis', 'token_registrasi', self::active()->id);
+
+            return true;
+        });
     }
 
     public static function reveal(TokenRegistrasi $token): string

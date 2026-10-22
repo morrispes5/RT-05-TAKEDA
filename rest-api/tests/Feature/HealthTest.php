@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -67,5 +68,27 @@ class HealthTest extends TestCase
         $this->getJson('/health/ready')
             ->assertStatus(503)
             ->assertExactJson(['status' => 'not_ready', 'checks' => ['database' => 'misconfigured']]);
+    }
+
+    /** Audit M16: banjir /health/ready tidak menembus ke database tiap permintaan (kuota Neon). */
+    public function test_ready_caches_the_database_check_briefly(): void
+    {
+        $this->getJson('/health/ready')->assertOk();
+        $this->breakDatabase();
+        $this->getJson('/health/ready')->assertOk()->assertJsonPath('checks.database', 'ok');
+
+        $this->travel(11)->seconds();
+        $this->getJson('/health/ready')->assertStatus(503)->assertJsonPath('checks.database', 'unavailable');
+    }
+
+    /** Audit M16: pesan QueryException di log tidak memuat nilai binding (email, hash kata sandi, nomor WA). */
+    public function test_query_exception_messages_mask_bindings(): void
+    {
+        try {
+            DB::select('select * from akun where email = ? and kolom_tidak_ada = 1', ['rahasia-m16@contoh.test']);
+            $this->fail('query seharusnya gagal');
+        } catch (QueryException $e) {
+            $this->assertStringNotContainsString('rahasia-m16@contoh.test', $e->getMessage());
+        }
     }
 }
