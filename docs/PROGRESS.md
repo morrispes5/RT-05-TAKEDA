@@ -1,6 +1,13 @@
 # Progress — RT05 TAKEDA
 
-## M15b — Permintaan Pak RT (rapat 20 Oktober 2026) — 21 Oktober 2026: **kode siap di branch, belum di-merge/di-deploy**
+## M15 ditutup — 22 Oktober 2026: **passed** atas keputusan pemilik (ADR36)
+
+Bukti UAT: uji tim putaran 1–3, demo ke Ketua RT 20 Okt 20.00 WIB, uji agent di emulator (APK 1010/1011). Nilai kemudahan per
+peserta tidak dicatat dan tidak dikarang. Sisa gate (verifikasi developer Android, kontak/masa simpan privasi, latihan DB
+cadangan, uji hosting Biznet, TalkBack, pemulihan otomatis foto/push, issue #47) dipindah ke M16. M16 dibuka saat pemilik
+siap; mulai dari preflight hosting Biznet dan verifikasi developer Android.
+
+## M15b — Permintaan Pak RT (rapat 20 Oktober 2026) — 21 Oktober 2026: **passed 22 Oktober 2026 (APK 1011)**
 
 Branch `codex/m15b-permintaan-rt` dari `main` 8b14ac2. Milestone usulan M15b (fitur baru setelah UAT, di antara M15 dan M16;
 penempatan disampaikan ke pemilik). Keputusan dan perubahan aturan lama: [DECISIONS.md ADR35](DECISIONS.md). Kerja bantu
@@ -44,6 +51,16 @@ WhatsApp per anggota, Data kependudukan, dan Kelola anggota (sebelumnya hanya di
 baru diminta setelah Kebijakan Privasi disetujui; (3) tombol cepat warga "Kas RT" menjadi "Iuran"; (4) Catat pembayaran dari
 bukti langsung mencentang bulan yang diklaim (hanya yang belum lunas); (5) nomor bendahara tampil `0877-7228-3010`; (6) label
 anggota tidak lagi "kepala keluarga" dobel. Tes: `m15b_fixes_1011_test` 5 tes; `flutter test` **267 lulus**, analyze bersih.
+
+**Rilis dan uji ulang APK 1011 (22 Okt).** PR #61 merge `f392612` 06.01 WIB (CI 9/9 setelah perbaikan `dart format` dan ulang job
+website yang gagal karena sertifikat CDN Playwright), staging di-deploy (0 GAGAL), APK **1011** dibangun 06.08 WIB (run 39690611853;
+arm64 3011, armeabi-v7a 2011, sertifikat kunci tetap) dan disajikan di `/unduh` 06.09 WIB. Uji ulang di emulator dengan akun
+sintetis, semua lulus: nomor bendahara tampil `0877-7228-3010`; detail rumah pengurus punya Data kependudukan dan Kelola anggota,
+label tidak dobel; pengurus mengisi WhatsApp warga lalu ikon WhatsApp muncul dan membuka `wa.me` ke nomor itu; setelah data
+aplikasi direset, Kebijakan Privasi tampil tanpa dialog izin dan izin notifikasi baru muncul setelah setuju; tombol cepat warga
+"Iuran"; bukti dari akun tambahan, lalu Catat pembayaran langsung mencentang Oktober. Untuk uji ulang, pembayaran uji
+IUR-2026-000013 (rumah sintetis UJIM06-1) dibalik lewat fitur koreksi resmi lalu dicatat ulang; WhatsApp kepala sintetis diisi
+nomor sintetis 0812 0000 1111.
 
 ## M15 — UAT tim putaran 3 (20 Oktober 2026 malam): pulihkan arsip, tombol Kembali, akun tambahan — **merge `9d9cf07`, staging di-deploy, APK 1009 dirilis**
 
@@ -100,7 +117,7 @@ beban/latensi hanya diuji lewat fungsi penilai dan `node --check`, belum lewat r
 dan `rt05:push-recover` memakai guard yang sama dan masih menunggu sweep per jam bila job foto/push hilang saat idle; di luar
 lingkup #46 (outbox), tercatat sebagai tindak lanjut.
 
-## M15 — Integrasi, UAT, keamanan, kandidat rilis — 19 Oktober 2026: **in_progress**
+## M15 — Integrasi, UAT, keamanan, kandidat rilis — 19 Oktober 2026: **passed 22 Oktober 2026 (ADR36)**
 
 Branch `codex/m15-uat-release`. Keputusan: ADR31.
 
@@ -808,7 +825,8 @@ ditentukan hanya oleh tersedianya kode.
 | M12 | passed | 17 Oktober: FIN critical + konkurensi antarproses + timeout replay + rekonsiliasi harian + konfirmasi saldo negatif + aksi pembalikan mobile; lokal 296/2917, Flutter 207. Bagian "M12" teratas |
 | M13 | passed | 17–18 Oktober, staging `88c7302` live 14/14: API konten publik (draf/terbit/arsip, snapshot, slug redirect, media, impor katalog) + Konten website di mobile pengurus; lokal 303, Flutter 216. Bagian "M13" teratas |
 | M14 | passed | Website membaca API + CMS web nyata (ADR30); staging `08f2a1e` 21/21 + drill API mati |
-| M15 | in_progress | Staging/APK 1007 `71dc523`; UAT tim putaran 1–2 diperbaiki (ADR32/33); sisa gate di HANDOFF.md (UAT tercatat, PR #50, HP nyata, verifikasi developer, privacy final) |
+| M15 | **passed** (22 Okt, ADR36) | UAT tim putaran 1–3 + demo Ketua RT + uji emulator agent; APK 1011 `f392612`; sisa gate dipindah ke M16 |
+| M15b | **passed** (22 Okt) | Permintaan Pak RT (ADR35): APK 1011, staging `f392612`, uji emulator + live CMS |
 | M16 | planned | Production baru belum dirilis |
 
 M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. M01–M16 menggunakan planned/in_progress/passed/blocked.

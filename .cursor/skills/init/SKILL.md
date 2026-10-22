@@ -35,7 +35,7 @@ Git root adalah folder `RT-05-TAKEDA/`, bukan folder induk `RT X TAKEDA`. Semua 
 
 Angka ini hanya titik mulai. Baca `docs/PROGRESS.md` untuk status hidup dan `docs/HANDOFF.md` untuk serah terima sesi terakhir.
 
-M00–M14 **passed** untuk staging sintetis. **M15 in_progress**: staging dan APK uji tim 1007 pada `71dc523`; UAT tim putaran 1–2 sudah diperbaiki (ADR32, ADR33). Sisa gate M15 (hasil UAT tercatat, PR #50 untuk issue #46–#48, uji HP nyata, verifikasi developer Android, privacy notice final, UAT mitra) dan pertanyaan untuk pemilik ada di `docs/HANDOFF.md`. M16 (production) **belum dibuka**.
+M00–M15 **passed** untuk staging sintetis (M15 ditutup 22 Okt 2026 atas keputusan pemilik, ADR36; M15b permintaan Pak RT, ADR35, APK 1011). **M16 berikutnya**: production + sisa gate M15 yang dipindah (verifikasi developer Android, kontak/masa simpan privasi, DB cadangan, uji hosting Biznet, TalkBack, pemulihan foto/push). Status terkini dan pertanyaan untuk pemilik ada di `docs/HANDOFF.md`.
 
 Keterbatasan yang tetap terbuka: aspirasi teks saja, tanpa foto (ADR22, ditegaskan pemilik 19 Okt); foto pengaduan bisa ditambah/dihapus hanya selama status *diajukan* (ADR32); Vercel hanya preview statis dengan CMS demo.
 
