@@ -14,6 +14,8 @@ Neon/Redis/storage hanya diakses backend/worker. Source repo bersifat public seh
 - Session CMS HttpOnly/Secure/SameSite=Lax, expiry idle 120 menit, CSRF wajib. Cookie API dan web shell mempunyai nama berbeda.
 - Email dinormalisasi; respons register/reset tidak mengungkap daftar warga terdaftar.
 - Token registrasi six-digit mempunyai entropy terbatas: rate limit, rotasi, logging aman, dan validasi membership diperlukan. Token valid tidak memberi hak admin.
+  ADR38: selain batas per IP, token diganti otomatis setelah 30 salah tebak lintas IP dan pengurus diberi tahu; setiap akun
+  utama baru juga dikabarkan ke pengurus agar akun asing cepat dinonaktifkan.
 - Nilai invite terenkripsi agar admin dapat melihat/salin; digest untuk validasi. Akses no-store dan audit tanpa token plaintext.
 - Command grant/revoke admin hanya operator berotorisasi, dengan audit. Tidak menerima role dari request registrasi/PATCH user.
 
