@@ -213,6 +213,10 @@ judul dengan `update_file`. Connector Drive tidak bisa mengunggah isi file atau 
 
 ## 10. Langkah berikutnya yang disarankan
 
-M15 dan M15b passed (ADR36). Ikuti **[M16_PLAN.md](M16_PLAN.md)**: Fase A dikerjakan agent tanpa menunggu pemilik
-(SEO, flavor production 1.0.0, halaman unduh resmi, pemulihan foto/push, issue #47, pertanyaan Biznet, skrip backup).
-Keputusan K1–K8 dan pembelian Biznet ditanyakan ke pemilik; jangan membeli, mendaftar, atau mengubah DNS atas nama pemilik.
+M16 in_progress (Fase A di `codex/m16-fase-a`, lihat PROGRESS). ADR37: verifikasi developer Android ditunda.
+1. Merge PR M16 (atas izin pemilik), deploy staging, rilis APK uji 1.0.0 (beri tahu pemilik: build, tanggal, jam, tautan),
+   salin `versi.json` ke volume unduhan, cek `/aplikasi` staging tetap noindex.
+2. Selidiki P95 staging yang naik (bukti `docs/evidence/m16/`), bandingkan dengan M15 781 ms.
+3. Minta pemilik: kirim pertanyaan Biznet (RUNBOOK_PRODUCTION.md bagian 1), pilih domain (K1), kontak + masa simpan (K4),
+   admin pertama (K5), tujuan backup offsite. Jangan membeli, mendaftar, atau mengubah DNS atas nama pemilik.
+4. Setelah hosting ada: ikuti RUNBOOK_PRODUCTION.md bagian 2–5.

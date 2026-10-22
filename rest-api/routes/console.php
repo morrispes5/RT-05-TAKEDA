@@ -90,6 +90,11 @@ Artisan::command('rt05:push-recover {--stale-minutes=10}', function () {
     foreach ($events as $eventId) {
         SendPush::queueFor($eventId);
     }
+    // M16 (sisa M15 #5): push yang belum terproses dan masih baru (≤1 jam) membuat profil VPS tetap aktif, sehingga
+    // pemulihan berikutnya jalan di sweep 10 menit, bukan menunggu pengaman per jam. Setelah itu idle lagi (Neon tidur).
+    if (DB::table('notifikasi')->whereNull('push_status')->where('created_at', '>=', now()->subHour())->exists()) {
+        IdleGuard::touch();
+    }
     $this->info('Event push dikirim ulang: '.$events->count());
 })->purpose('Pulihkan push notifikasi yang belum terproses');
 
@@ -185,6 +190,11 @@ Artisan::command('rt05:media-recover {--stale-minutes=10}', function () {
             $disk->delete($key);
             $orphans++;
         }
+    }
+    // M16 (sisa M15 #5): foto yang masih diproses (termasuk yang baru dikirim ulang) membuat profil VPS tetap aktif sampai
+    // selesai atau ditandai gagal setelah 5 percobaan, sehingga tidak menunggu pengaman per jam.
+    if (FotoPengaduan::where('status', 'diproses')->exists()) {
+        IdleGuard::touch();
     }
     $this->info("Foto dikirim ulang: $requeued, ditandai gagal: $failed, berkas yatim dihapus: $orphans");
 })->purpose('Pulihkan antrean foto pengaduan yang tertahan dan hapus berkas mentah yatim');

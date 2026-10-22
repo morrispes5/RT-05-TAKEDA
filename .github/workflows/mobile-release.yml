@@ -13,6 +13,11 @@ on:
         options:
           - staging
           - prod
+      catatan:
+        description: 'Catatan rilis untuk halaman unduh (pisahkan baris dengan \n; tanpa data warga).'
+        required: false
+        default: ''
+        type: string
 permissions:
   contents: read
 concurrency:
@@ -58,7 +63,9 @@ jobs:
       - name: Build APK rilis
         env:
           RT05_FLAVOR: ${{ inputs.flavor }}
-          RT05_API_BASE_URL: ${{ inputs.flavor == 'prod' && 'https://takeda.morriz.tech' || 'https://takeda-staging.morriz.tech' }}
+          # Domain production dipilih pemilik (M16 K1): repository variable RT05_PROD_BASE_URL; kosong = default skrip.
+          RT05_API_BASE_URL: ${{ inputs.flavor == 'prod' && vars.RT05_PROD_BASE_URL || inputs.flavor == 'staging' && 'https://takeda-staging.morriz.tech' || '' }}
+          RT05_RELEASE_NOTES: ${{ inputs.catatan }}
           RT05_FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
           RT05_FIREBASE_APP_ID: ${{ vars.FIREBASE_APP_ID }}
           RT05_FIREBASE_SENDER_ID: ${{ vars.FIREBASE_SENDER_ID }}
@@ -85,5 +92,6 @@ jobs:
           path: |
             mobile/build/app/outputs/flutter-apk/rt05-takeda-${{ inputs.flavor }}-*.apk
             mobile/build/app/outputs/flutter-apk/rt05-takeda-${{ inputs.flavor }}-*.apk.sha256
+            mobile/build/app/outputs/flutter-apk/rt05-takeda-${{ inputs.flavor }}-*-versi.json
           retention-days: 90
           if-no-files-found: error

@@ -22,6 +22,10 @@ class AppConfig {
 
   static const appName = 'RT05 TAKEDA';
 
+  /// Sama dengan `version:` pubspec.yaml (diuji test/m16_app_about_test.dart); nomor build dari CI rilis.
+  static const appVersion = '1.0.0';
+  static const buildNumber = int.fromEnvironment('APP_BUILD');
+
   static const rawFlavor = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
   static const rawApiBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://10.0.2.2:8077');
 

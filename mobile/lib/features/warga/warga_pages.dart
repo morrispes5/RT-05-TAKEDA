@@ -20,6 +20,7 @@ import '../household/family_actions.dart' show conflictKeptMessage, staleConflic
 import '../household/complete_data_card.dart';
 import '../household/family_page.dart';
 import 'activity_proposals.dart';
+import 'app_about.dart';
 import 'dues_proof.dart';
 import 'notification_center.dart';
 import 'providers.dart';
@@ -1672,6 +1673,8 @@ class AccountPage extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         const _AccountSecurity(),
+        const SizedBox(height: 16),
+        const AppAboutCard(),
         const SizedBox(height: 16),
         const Center(
           child: Text('RT05 TAKEDA • data warga hanya untuk administrasi RT', style: TextStyle(color: Brand.muted, fontSize: 12)),
