@@ -10,3 +10,10 @@
 #
 # Path lain tetap ditangani index.php website.
 # Sertakan GET dan POST /reset-password, /api/v1, /sanctum/csrf-cookie, dan /health.
+#
+# M16: APK dan versi.json disalin ke public/unduh/ (tidak di Git). Tipe MIME APK agar browser HP langsung menawarkan
+# pemasangan, bukan menyimpan sebagai berkas tak dikenal. versi.json jangan di-cache lama.
+# AddType application/vnd.android.package-archive .apk
+# <Files "versi.json">
+#   Header set Cache-Control "no-cache"
+# </Files>

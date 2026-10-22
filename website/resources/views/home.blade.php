@@ -1,4 +1,11 @@
 @extends('layouts.app')
+@push('jsonld')
+@php $origin = \App\Http\Controllers\PublicPageController::origin(); @endphp
+<script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@graph' => [
+    ['@type' => 'WebSite', '@id' => $origin.'/#website', 'url' => $origin.'/', 'name' => 'RT05 TAKEDA', 'alternateName' => ['RT 05 Takeda', 'RT 05 Taman Kedaung', 'RT 05 RW 07 Taman Kedaung'], 'inLanguage' => 'id-ID', 'publisher' => ['@id' => $origin.'/#organisasi']],
+    ['@type' => 'Organization', '@id' => $origin.'/#organisasi', 'name' => 'RT05 TAKEDA', 'alternateName' => 'RT 05 RW 07 Taman Kedaung', 'url' => $origin.'/', 'logo' => $origin.'/images/logo/rt05-mark.svg', 'image' => $origin.'/images/og-image.jpg', 'areaServed' => 'Taman Kedaung'],
+]], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}</script>
+@endpush
 @section('content')
 <section class="home-hero">
     <div class="hero-watermark" aria-hidden="true">

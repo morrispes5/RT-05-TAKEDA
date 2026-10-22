@@ -6,7 +6,7 @@
 // kunci dari key.properties yang ditulis workflow; sidik jari sertifikat diverifikasi langkah terpisah.
 import { spawnSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
-import { appendFileSync, copyFileSync, existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, existsSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -165,10 +165,31 @@ function releaseArgs(checked, firebase = []) {
         '--split-per-abi',
         '--target-platform=android-arm,android-arm64',
         `--build-number=${checked.buildNumber}`,
+        `--dart-define=APP_BUILD=${checked.buildNumber}`,
         `--dart-define=API_BASE_URL=${checked.apiBaseUrl}`,
         `--dart-define=FLAVOR=${checked.flavor}`,
         ...firebase,
     ];
+}
+
+// M16: versi.json untuk halaman unduh resmi (/aplikasi) dan pemberitahuan versi baru di aplikasi.
+// Tautan selalu relatif ke /unduh/ di situs yang sama; catatan rilis maks. 10 baris pendek tanpa HTML.
+function releaseManifest({ versionName, buildNumber, files, notes = '', now = new Date() }) {
+    if (!/^[0-9]+\.[0-9]+\.[0-9]+$/.test(versionName ?? '')) return { ok: false, error: 'manifest-version' };
+    if (!/^[1-9][0-9]{0,8}$/.test(String(buildNumber))) return { ok: false, error: 'manifest-build' };
+    const berkas = [];
+    for (const f of files) {
+        if (!['arm64-v8a', 'armeabi-v7a'].includes(f.abi) || !/^[A-Za-z0-9._-]+\.apk$/.test(f.name) || !/^[0-9a-f]{64}$/.test(f.sha256) || !(f.size > 0)) {
+            return { ok: false, error: 'manifest-file' };
+        }
+        berkas.push({ abi: f.abi, url: `/unduh/${f.name}`, ukuran: f.size, sha256: f.sha256 });
+    }
+    const catatan = String(notes).split(/\r?\n/).map(l => l.replace(/[<>]/g, '').trim()).filter(Boolean).slice(0, 10).map(l => l.slice(0, 200));
+    return { ok: true, manifest: { versi: versionName, build: Number(buildNumber), tanggal: now.toISOString(), catatan, berkas } };
+}
+
+function pubspecVersionName(text) {
+    return /^version:\s*([0-9]+\.[0-9]+\.[0-9]+)\+/m.exec(text)?.[1] ?? null;
 }
 
 // Sidik jari SHA-256 sertifikat penanda tangan (format apksigner/keytool, dengan atau tanpa titik dua).
@@ -309,6 +330,14 @@ function selfTest() {
     const relArgs = rel.ok ? releaseArgs(rel, firebaseDefines(fb).defines) : [];
     expect(failures, relArgs.includes('--release') && !relArgs.includes('--debug') && relArgs.includes('--build-number=42') && relArgs.includes(`--dart-define=API_BASE_URL=${DEFAULTS.prod}`), 'release-args');
     expect(failures, relArgs.includes('--split-per-abi') && relArgs.includes('--target-platform=android-arm,android-arm64'), 'release-split');
+    expect(failures, relArgs.includes('--dart-define=APP_BUILD=42'), 'release-app-build');
+    const apk = { abi: 'arm64-v8a', name: 'rt05-takeda-prod-42-arm64-v8a.apk', sha256: 'ab'.repeat(32), size: 123 };
+    const man = releaseManifest({ versionName: '1.0.0', buildNumber: '42', files: [apk], notes: 'Baru <b>\n\n  Perbaikan  ', now: new Date('2026-10-23T03:00:00Z') });
+    expect(failures, man.ok && man.manifest.build === 42 && man.manifest.berkas[0].url === '/unduh/rt05-takeda-prod-42-arm64-v8a.apk' && man.manifest.tanggal === '2026-10-23T03:00:00.000Z', 'manifest-ok');
+    expect(failures, man.ok && JSON.stringify(man.manifest.catatan) === JSON.stringify(['Baru b', 'Perbaikan']), 'manifest-notes');
+    expect(failures, releaseManifest({ versionName: '1.0', buildNumber: '42', files: [apk] }).error === 'manifest-version', 'manifest-version');
+    expect(failures, releaseManifest({ versionName: '1.0.0', buildNumber: '42', files: [{ ...apk, name: '../x.apk' }] }).error === 'manifest-file', 'manifest-path');
+    expect(failures, pubspecVersionName('name: x\nversion: 1.0.0+1\n') === '1.0.0' && pubspecVersionName('version: 1.0+1') === null, 'pubspec-version');
     const digest = 'AB:'.repeat(31) + 'AB';
     expect(failures, normalizeCertDigest(digest) === 'ab'.repeat(32) && normalizeCertDigest('ab'.repeat(32)) === 'ab'.repeat(32), 'cert-normalize');
     expect(failures, normalizeCertDigest('ab'.repeat(31)) === null && normalizeCertDigest('') === null, 'cert-invalid');
@@ -402,6 +431,7 @@ function buildRelease() {
         process.exit(proc.status || 1);
     }
     const outDir = path.join('build', 'app', 'outputs', 'flutter-apk');
+    const files = [];
     for (const abi of ['arm64-v8a', 'armeabi-v7a']) {
         const apk = path.join(outDir, `app-${abi}-release.apk`);
         if (!existsSync(apk)) {
@@ -413,7 +443,14 @@ function buildRelease() {
         const hash = createHash('sha256').update(readFileSync(named)).digest('hex');
         writeFileSync(`${named}.sha256`, `${hash}  ${path.basename(named)}\n`);
         console.log(`APK rilis: ${path.basename(named)} sha256 ${hash}`);
+        files.push({ abi, name: path.basename(named), sha256: hash, size: statSync(named).size });
     }
+    const manifest = releaseManifest({ versionName: pubspecVersionName(readFileSync('pubspec.yaml', 'utf8')), buildNumber: result.buildNumber, files, notes: process.env.RT05_RELEASE_NOTES ?? '' });
+    if (!manifest.ok) {
+        console.error(`versi.json ditolak: ${manifest.error}`);
+        process.exit(1);
+    }
+    writeFileSync(path.join(outDir, `rt05-takeda-${result.flavor}-${result.buildNumber}-versi.json`), `${JSON.stringify(manifest.manifest, null, 2)}\n`);
 }
 
 // Bandingkan sertifikat APK (keluaran `apksigner verify --print-certs`, via stdin) dengan sidik jari yang

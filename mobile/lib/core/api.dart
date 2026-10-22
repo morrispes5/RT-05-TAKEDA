@@ -71,7 +71,8 @@ class Api {
         onRequest: (options, handler) {
           final token = _ref.read(sessionProvider).token;
           // Nilai yang dipasang pemanggil saat request dibuat tidak ditimpa sesi yang lebih baru.
-          if (token != null) options.headers.putIfAbsent('Authorization', () => 'Bearer $token');
+          // Berkas publik situs (mis. /unduh/versi.json) tidak menerima token.
+          if (token != null && options.extra['public'] != true) options.headers.putIfAbsent('Authorization', () => 'Bearer $token');
           options.extra.putIfAbsent('sessionEpoch', () => _ref.read(sessionProvider.notifier).epoch);
           handler.next(options);
         },
@@ -102,6 +103,15 @@ class Api {
       throw ApiException.from(e);
     }
   }
+
+  /// M16: JSON publik di origin yang sama di luar /api/v1, tanpa token dan tanpa envelope.
+  Future<dynamic> publicJson(String path) => _wrap(
+    () => _dio.get(
+      '$_base$path',
+      options: Options(extra: {'public': true}, responseType: ResponseType.json),
+    ),
+    (b) => b,
+  );
 
   /// Mengembalikan `data` dari envelope.
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) => _wrap(() => _dio.get(path, queryParameters: query), (b) => (b as Map)['data']);

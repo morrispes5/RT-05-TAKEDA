@@ -213,8 +213,10 @@ judul dengan `update_file`. Connector Drive tidak bisa mengunggah isi file atau 
 
 ## 10. Langkah berikutnya yang disarankan
 
-1. Minta hasil uji tim dengan APK 1009 (bagian 6 no. 2); catat sesuai UAT_M15.md. Jalankan `infra/scripts/staging-runtime-smoke.sh` dan `check-preview.mjs` ke Vercel yang belum dijalankan setelah PR #58.
-2. Selidiki 404 issue #47, ulang uji beban.
-3. Tanyakan pertanyaan bagian 6 yang tersisa (3, 4, 5, 7–10).
-4. Rekam hasil UAT tim (putaran 1 dan 2) dalam format UAT_M15.md bila pemilik memberi data.
-5. Setelah item 6–9 bagian 4 dari pemilik masuk, tutup gate M15 di PROGRESS, lalu tunggu pemilik membuka M16.
+M16 in_progress (Fase A di `codex/m16-fase-a`, lihat PROGRESS). ADR37: verifikasi developer Android ditunda.
+1. Merge PR M16 (atas izin pemilik), deploy staging, rilis APK uji 1.0.0 (beri tahu pemilik: build, tanggal, jam, tautan),
+   salin `versi.json` ke volume unduhan, cek `/aplikasi` staging tetap noindex.
+2. Selidiki P95 staging yang naik (bukti `docs/evidence/m16/`), bandingkan dengan M15 781 ms.
+3. Minta pemilik: kirim pertanyaan Biznet (RUNBOOK_PRODUCTION.md bagian 1), pilih domain (K1), kontak + masa simpan (K4),
+   admin pertama (K5), tujuan backup offsite. Jangan membeli, mendaftar, atau mengubah DNS atas nama pemilik.
+4. Setelah hosting ada: ikuti RUNBOOK_PRODUCTION.md bagian 2–5.

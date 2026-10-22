@@ -9,6 +9,12 @@ return [
         'fresh_seconds' => (int) env('RT05_CONTENT_FRESH_SECONDS', 60),
     ],
 
+    // M16: hanya production yang boleh diindeks mesin pencari; staging/preview noindex. APK_META: path/URL versi.json.
+    'rt05_site' => [
+        'indexing' => filter_var(env('RT05_SEARCH_INDEXING', false), FILTER_VALIDATE_BOOL),
+        'apk_meta' => env('RT05_APK_META'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 require __DIR__.'/../vendor/autoload.php';
 $root = realpath(__DIR__.'/..');
-foreach (['APP_ENV' => 'production', 'APP_DEBUG' => 'false', 'SESSION_DRIVER' => 'array', 'CACHE_STORE' => 'array', 'APP_URL' => 'https://rt05takeda.vercel.app', 'APP_KEY' => 'base64:'.base64_encode(random_bytes(32))] as $key => $value) {
+foreach (['RT05_SEARCH_INDEXING' => 'false', 'APP_ENV' => 'production', 'APP_DEBUG' => 'false', 'SESSION_DRIVER' => 'array', 'CACHE_STORE' => 'array', 'APP_URL' => 'https://rt05takeda.vercel.app', 'APP_KEY' => 'base64:'.base64_encode(random_bytes(32))] as $key => $value) {
     putenv("$key=$value");
     $_ENV[$key] = $value;
     $_SERVER[$key] = $value;
@@ -47,6 +47,9 @@ foreach (SiteContent::paths() as $path) {
     echo "Rendered $path\n";
 }
 $fs->put($stage.'/404.html', $normalize(view('errors.404')->render()));
+// M16: preview tidak diindeks; robots.txt dirender dari rute yang sama (RT05_SEARCH_INDEXING kosong = Disallow: /).
+$robots = $kernel->handle(Request::create('https://rt05takeda.vercel.app/robots.txt'));
+$fs->put($stage.'/robots.txt', $robots->getContent());
 $fs->copyDirectory($root.'/public/build', $stage.'/build');
 $fs->copyDirectory($root.'/public/images', $stage.'/images');
 $fs->delete($stage.'/build/manifest.json');
