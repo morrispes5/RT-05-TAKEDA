@@ -12,6 +12,7 @@ import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/session.dart';
+import '../../core/picked_files.dart';
 import '../../core/whatsapp.dart';
 import '../../core/widgets.dart';
 import '../auth/account_access.dart';
@@ -494,6 +495,8 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
       final form = FormData()
         ..fields.add(MapEntry('versi', '$_versi'))
         ..files.add(MapEntry('foto[]', MultipartFile.fromBytes(await file.readAsBytes(), filename: 'foto.jpg')));
+      // Isi sudah di memori: salinan cache tidak diperlukan lagi.
+      await deletePickedCopies([file]);
       final res = Laporan(Json.from(await ref.read(apiProvider).post('/complaints/${widget.existing!.id}/photos', data: form) as Map), aspirasi: false);
       if (!mounted) return;
       setState(() {
@@ -594,6 +597,8 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
         }
         await api.post('/complaints', data: form);
         await ref.read(reportDraftStoreProvider).clear();
+        // Draf sudah dihapus, jadi salinan foto di cache aplikasi tidak dibutuhkan untuk pemulihan.
+        await deletePickedCopies(_photos);
       }
       if (!mounted) return;
       showMessage(

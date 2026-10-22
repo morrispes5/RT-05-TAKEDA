@@ -67,7 +67,10 @@ Salin teks ini ke live chat atau tiket sales Biznet Gio:
 4. Sitemap → kirim `https://<domain>/sitemap.xml`. Inspeksi URL beranda → Minta pengindeksan.
 5. Uji data terstruktur beranda dengan Rich Results Test. Catat tanggal pertama "RT05 Takeda" muncul di pencarian.
 
-## 5. Backup dan restore drill (blocked: tujuan offsite belum dipilih pemilik)
+## 5. Backup dan restore drill (tujuan: Google Drive pemilik, ADR38; latihan staging lulus 22 Okt — [bukti](evidence/m16/BACKUP_DRILL.md))
+
+Skrip: `bash infra/scripts/backup-drill.sh <env> <dir-keluaran> <berkas-kunci>` (dump → restore ke container sementara →
+bandingkan → enkripsi), lalu `rclone copy <dir>/*.dump.gpg "gdrive:RT05 TAKEDA - Backup/production/"`.
 
 - **Database:** dump harian dari mesin operator dengan URL direct (role pemilik schema, bukan runtime):
   `pg_dump --format=custom --no-owner "$DATABASE_URL_UNPOOLED" > rt05-YYYYMMDD.dump`, lalu enkripsi sebelum keluar mesin
@@ -86,3 +89,15 @@ Salin teks ini ke live chat atau tiket sales Biznet Gio:
 - Pantau kuota Neon production (CU-jam) mingguan. Siapkan pindah ke PostgreSQL cadangan sesuai ADR29 bila mendekati batas.
 - Uji performa ulang dari jaringan luar pada host production. Bukti staging 22 Okt (lewat WARP dari PC pemilik) belum
   memenuhi P95 ≤1 dtk: [load-20u-staging-2026-10-22.json](evidence/m16/load-20u-staging-2026-10-22.json).
+
+## 7. Pindah VPS staging (rencana 2 Nov 2026; VPS lama habis 4 Nov)
+
+1. Sebelum mulai: cadangan kunci SSH pemilik di Drive pribadi; pastikan konsol browser Hostinger VPS baru bisa masuk.
+2. Pasang kunci SSH ke VPS baru, login berkunci, lalu `bash infra/scripts/vps-hardening.sh --yes` (update otomatis, ufw
+   22/80/443 IPv4+IPv6, fail2ban, SSH tanpa password). Uji login berkunci dari terminal lain sebelum menutup sesi pertama.
+3. Pasang Docker, salin `/root/.rt05/.env.staging` **dengan kredensial baru** (rotasi password role Neon staging/production dan
+   APP_KEY; APP_KEY lama ke `APP_PREVIOUS_KEYS` agar NIK/KK tetap terbaca), lalu deploy dengan `deploy-staging-immutable.sh`.
+4. Salin isi volume `rt05-staging_apk-downloads` (APK + `versi.json`).
+5. Ubah DNS A/AAAA `takeda-staging` ke VPS baru (atas izin pemilik). APK yang terpasang tetap jalan karena memakai nama domain.
+6. Smoke: `/health/ready`, `/aplikasi`, login pengurus, push. Setelah stabil, VPS lama dibiarkan habis.
+
