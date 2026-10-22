@@ -159,6 +159,12 @@ services:
       RT05_CONTENT_API: ${RT05_CONTENT_API:-http://api}
       # UAT M15: perubahan terbit tampil ≤15 dtk (sebelumnya 60). API hanya dibaca saat ada pengunjung.
       RT05_CONTENT_FRESH_SECONDS: ${RT05_CONTENT_FRESH_SECONDS:-15}
+      # M16: hanya production (RT05_SEARCH_INDEXING=true) yang diindeks Google; staging tetap noindex.
+      RT05_SEARCH_INDEXING: ${RT05_SEARCH_INDEXING:-false}
+      # Halaman /aplikasi membaca versi.json di volume unduhan yang sama dengan gateway (/unduh/*).
+      RT05_APK_META: /srv/unduh/versi.json
+    volumes:
+      - apk-downloads:/srv/unduh:ro
     expose: ["80"]
 
   redis:

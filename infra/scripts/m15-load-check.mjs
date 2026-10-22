@@ -16,8 +16,12 @@ const actors = { ...JSON.parse(fs.readFileSync(p + 'm07-stage-check/m07-state.pr
 const h = { Accept: 'application/json', 'Content-Type': 'application/json' };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// Diisi hanya untuk skenario negatif yang sudah dijelaskan, mis. { 'admin GET /household': [404] }.
-const EXPECT = {};
+// Diisi hanya untuk skenario negatif yang sudah dijelaskan.
+// #47 (M16): akun pengurus sintetis tidak terhubung ke rumah/keluarga, jadi GET /household dan GET /dues/my menjawab
+// 404 HOUSEHOLD_NOT_LINKED (HouseholdController::keluargaOf, FinanceController::my; aplikasi menampilkan "Belum terhubung
+// ke rumah"). Ini sumber 404 di bukti M15: 1/3 pengguna × 2/8 layar × 3/4 iterasi aplikasi ≈ 6,3% permintaan
+// (ulang 22 Okt 2026: 49/848 = 5,8%, seluruhnya admin pada dua endpoint ini).
+const EXPECT = { 'admin GET /household': [404], 'admin GET /dues/my': [404] };
 
 async function timed(label, url, headers, role) {
     const t = performance.now();

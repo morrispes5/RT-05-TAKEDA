@@ -167,6 +167,13 @@ Sumber: [Google — Provide a site name](https://developers.google.com/search/do
 Setelah M16 passed, permintaan baru dicatat sebagai revisi (ADR + PR biasa) tanpa membuka milestone baru, kecuali
 pemilik memutuskan lain.
 
+## 6a. Status Fase A (22 Okt 2026)
+
+Selesai di branch `codex/m16-fase-a`: SEO (bagian 5 butir 1–4, 6), `/aplikasi` + `versi.json`, `/kebijakan-privasi`
+(teks menunggu K4), kartu Tentang aplikasi + versi 1.0.0, pemulihan foto/push, penjelasan 404 issue #47, teks pertanyaan
+Biznet, runbook, draf SOP. Butir 5 (ejaan lokasi, K7) menunggu konfirmasi Pak RT. Gate P95 staging belum lulus
+(lihat PROGRESS).
+
 ## 7. Batas yang tetap berlaku
 
 - Agent tidak membeli, tidak mengisi KTP atau pembayaran, dan tidak membuat akun atas nama pemilik.
