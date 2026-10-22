@@ -8,7 +8,7 @@ sebelum membayar atau mendaftar.
 ## 1. Tujuan dan definisi selesai
 
 Warga awam bisa menemukan website RT05 TAKEDA di Google dan mengunduh aplikasi dari situs resmi. Mereka memasangnya tanpa
-peringatan "aplikasi berbahaya", lalu memakainya dengan data nyata yang aman. Pengurus bisa mengelola semuanya tanpa
+peringatan "aplikasi berbahaya" (selain izin bawaan Android untuk aplikasi di luar toko, dijelaskan di halaman unduh), lalu memakainya dengan data nyata yang aman. Pengurus bisa mengelola semuanya tanpa
 bantuan agent.
 
 M16 **passed** bila semua butir ini terbukti, bukan hanya berupa kode:
@@ -19,7 +19,7 @@ M16 **passed** bila semua butir ini terbukti, bukan hanya berupa kode:
 | G2 | API, website, cron tick, outbox, foto, push, dan email reset bekerja dengan provider nyata | `staging-runtime-smoke.sh` versi production + inbox nyata |
 | G3 | Backup terenkripsi offsite berjalan, restore drill RPO ≤24 jam/RTO ≤4 jam lulus, rollback drill lulus | Log drill di `docs/evidence/m16/` |
 | G4 | PostgreSQL cadangan (ADR29): satu siklus pindah dan kembali tanpa tulisan hilang | Jumlah baris + rekonsiliasi identik |
-| G5 | Developer Android terverifikasi; nama paket dan sertifikat rilis terdaftar; APK production 1.0.0 terpasang di HP nyata tanpa peringatan developer tak dikenal | Tangkapan layar Android Developer Console + HP pemilik |
+| G5 | APK production 1.0.0 bertanda tangan kunci tetap, terpasang dari halaman unduh resmi di HP nyata (64-bit + 32-bit); langkah pemasangan dan tampilan Play Protect terdokumentasi. Verifikasi developer **bukan gate** (ADR37) | Tangkapan layar HP pemilik |
 | G6 | Halaman unduh resmi berisi versi, tanggal, ukuran, SHA-256, panduan pasang, izin aplikasi, dan Kebijakan Privasi | URL live |
 | G7 | Kebijakan Privasi final: kontak resmi dan masa simpan nyata, URL publik | Teks di app + website |
 | G8 | Google Search Console terverifikasi, sitemap diterima, beranda terindeks, dan pencarian "RT05 Takeda" menampilkan situs | Tangkapan layar GSC + hasil pencarian |
@@ -37,7 +37,7 @@ Agent bisa mulai Fase A tanpa jawaban ini. Fase B ke atas tertahan sampai keputu
 | --- | --- | --- | --- |
 | K1 | **Nama domain production** (gratis .COM dari paket Biznet Large) | Nama yang sama dengan merek, mis. `rt05takeda.com` (cek ketersediaan saat checkout; agent tidak menebak dan tidak membeli) | Domain ini yang muncul di Google dan di halaman unduh. Nama yang cocok dengan pencarian "RT05 Takeda" paling membantu. `takeda.morriz.tech` (P13) adalah domain pribadi pemilik dan terlihat kurang resmi bagi warga |
 | K2 | **Nama paket aplikasi** tetap `tech.morriz.takeda` atau diganti sebelum didaftarkan | **Tetap.** Nama paket hampir tidak terlihat warga. Menggantinya berarti mendaftar ulang aplikasi Android di Firebase dan semua penguji memasang ulang | Nama paket yang sudah didaftarkan ke verifikasi developer bersifat permanen |
-| K3 | Jenis akun developer: **perorangan** (identitas pemilik) | Perorangan. RT bukan badan hukum, sedangkan akun organisasi biasanya meminta nomor D-U-N-S | Nama developer terverifikasi tercatat di Google |
+| K3 | ~~Jenis akun developer~~ — **ditunda (ADR37)**. Bila nanti didaftarkan: perorangan (identitas pemilik) | Perorangan. RT bukan badan hukum, sedangkan akun organisasi biasanya meminta nomor D-U-N-S | Nama developer terverifikasi tercatat di Google |
 | K4 | Kontak resmi + masa simpan data (Kebijakan Privasi dan halaman Kontak) | Usulan masa simpan sebagai bahan diskusi: data akun dihapus atau dianonimkan 12 bulan setelah warga pindah; catatan keuangan disimpan sesuai kebutuhan pembukuan RT. **Angka final dari pemilik/Pak RT** | Wajib sebelum data warga asli masuk |
 | K5 | Siapa admin pertama production, dan data rumah/warga mana yang diimpor | Pak RT + pemilik sebagai admin; impor daftar rumah dulu, warga mendaftar sendiri | Data asli tidak boleh dikarang atau disalin dari staging |
 | K6 | Beli Biznet **setelah** jawaban preflight dari support Biznet (bagian 4) | Ya | Paket shared hosting bisa saja tidak mendukung `pdo_pgsql` atau koneksi keluar ke port 5432 |
@@ -62,7 +62,11 @@ Agent bisa mulai Fase A tanpa jawaban ini. Fase B ke atas tertahan sampai keputu
 Sumber: [developer.android.com/developer-verification](https://developer.android.com/developer-verification),
 [Android Developers Blog, Maret 2026](https://android-developers.googleblog.com/2026/03/android-developer-verification-rolling-out-to-all-developers.html).
 
-### 3.2 Langkah verifikasi (pemilik, dipandu agent)
+### 3.2 Langkah verifikasi — ditunda, opsi terakhir (ADR37)
+
+Pemilik memutuskan pada 22 Okt 2026 untuk **tidak** mendaftar dulu. Langkah di bawah dipakai bila nanti diperlukan (mis. Google
+mulai memeriksa unduhan langsung pada 2027). Sebelumnya, amankan Gmail dan GitHub (2FA, kode cadangan), pisahkan kata sandi
+kunci rilis dari Drive, dan atur Pengelola Akun Tidak Aktif Google.
 
 1. Pemilik membuat akun Android Developer Console perorangan dengan akun Google pribadi, KTP, dan nomor HP. Agent tidak
    pernah mengisi identitas atau pembayaran.
@@ -156,7 +160,7 @@ Sumber: [Google — Provide a site name](https://developers.google.com/search/do
 | **A. Persiapan tanpa production** | Agent | SEO bagian 5 (1–6); flavor production + versi 1.0.0; halaman `/aplikasi`, `versi.json`, menu Tentang aplikasi, halaman `/kebijakan-privasi` (teks menunggu K4); pemulihan otomatis foto/push tanpa menunggu sweep per jam; issue #47; teks pertanyaan Biznet; skrip backup/restore + runbook; draf SOP pengurus | Tidak ada. Rilis APK uji baru diberitahukan seperti biasa |
 | **B. Keputusan & pembelian** | Pemilik | K1–K7; kirim pertanyaan Biznet; beli bila lolos; daftar Android Developer Console | Jawaban Biznet |
 | **C. Setup production** | Agent (+ izin pemilik untuk DNS/hosting) | Neon project production + role; deploy shared profile; Resend; cron; backup offsite; drill restore/rollback; drill DB cadangan (G4); smoke dari jaringan luar; GSC | Akses hosting dari pemilik |
-| **D. Verifikasi & APK 1.0.0** | Pemilik + agent | Daftarkan paket + kunci; build APK production; uji HP nyata + 32-bit + TalkBack; halaman unduh live | Akun developer terverifikasi |
+| **D. APK 1.0.0** | Pemilik + agent | Build APK production; uji HP nyata + 32-bit + TalkBack; halaman unduh live (verifikasi developer ditunda, ADR37) | Production live |
 | **E. Data nyata & pilot** | Pengurus + agent | Admin pertama; impor rumah yang tervalidasi; pilot 5–10 rumah; perbaiki temuan | K4, K5 |
 | **F. Peluncuran & serah terima** | Pengurus | Pengumuman + poster QR; pantau 14 hari; serah terima (SOP, biaya perpanjangan, kontak darurat); M16 passed | G1–G13 |
 

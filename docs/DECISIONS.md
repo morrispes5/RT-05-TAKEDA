@@ -521,3 +521,20 @@ Tanggal: 22 Oktober 2026 (jawaban pemilik di sesi Claude). Status: **diputuskan*
    jam. Issue #47 (bukti performa 404) ikut ke M16.
 4. Permintaan pemilik untuk rilis berikutnya: setiap versi APK baru langsung diberitahukan (nomor, tanggal, jam, tautan), dan bug yang
    ditemukan di versi sebelumnya wajib sudah diperbaiki serta dikunci tes regresi sebelum rilis.
+
+### ADR37 — M16 tanpa verifikasi developer Android; verifikasi menjadi opsi terakhir
+
+Tanggal: 22 Oktober 2026 (jawaban pemilik di sesi Claude). Status: **diputuskan**.
+
+1. Pemilik menunda pendaftaran Android Developer Console (biaya US$25 sekali bayar, KTP + bukti alamat, kartu Visa/Mastercard)
+   setelah membahas risiko akun Gmail diretas dan ketergantungan pada identitas pribadi. Verifikasi menjadi **opsi terakhir**,
+   bukan gate M16.
+2. Dasar: aturan yang berlaku di Indonesia sejak 30 September 2026 hanya memeriksa pemasangan lewat toko yang berpartisipasi.
+   Unduhan langsung dari situs resmi belum diperiksa (FAQ Google, dicek 22 Okt 2026). Warga tetap melihat izin bawaan Android
+   "pasang aplikasi tidak dikenal" dan mungkin pemindaian Play Protect. Kepercayaan dibangun lewat halaman unduh resmi, SHA-256,
+   panduan pasang, versi 1.0.0, dan sosialisasi pengurus.
+3. Risiko yang diterima: Google merencanakan pemeriksaan semua aplikasi pada 2027. Bila berlaku, aplikasi tanpa developer
+   terverifikasi hanya bisa dipasang lewat "advanced flow". Pantau pengumuman Google. Bila diperlukan, daftar memakai nama paket
+   `tech.morriz.takeda` dan kunci rilis yang sama (ADR31), jadi warga tidak perlu memasang ulang.
+4. Sebelum pendaftaran (bila nanti dilakukan): amankan Gmail dan GitHub dengan 2FA dan kode cadangan, pisahkan kata sandi kunci
+   rilis dari Drive yang sama, dan siapkan Pengelola Akun Tidak Aktif Google. Dicatat di [M16_PLAN.md](M16_PLAN.md) bagian 3.

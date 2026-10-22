@@ -64,11 +64,77 @@ class SiteContent
     public static function paths(): array
     {
         return array_merge(
-            ['/', '/profil', '/fasilitas', '/dokumentasi', '/artikel', '/kontak', '/pengurus'],
+            ['/', '/profil', '/fasilitas', '/dokumentasi', '/artikel', '/kontak', '/aplikasi', '/kebijakan-privasi', '/pengurus'],
             array_map(fn ($a) => '/artikel/'.$a['slug'], self::articles()),
             array_map(fn ($a) => '/dokumentasi/'.$a['slug'], self::albums()),
             array_map(fn ($screen) => '/pengurus/'.$screen, ['masuk', 'artikel', 'artikel/editor', 'dokumentasi', 'dokumentasi/editor', 'profil', 'pratinjau'])
         );
+    }
+
+    /** M16: halaman publik untuk sitemap.xml (tanpa area pengurus). */
+    public static function publicPaths(): array
+    {
+        return array_values(array_filter(self::paths(), fn (string $path) => ! str_starts_with($path, '/pengurus')));
+    }
+
+    /** M16: mesin pencari boleh mengindeks hanya di production (RT05_SEARCH_INDEXING=true). */
+    public static function indexing(): bool
+    {
+        return (bool) config('services.rt05_site.indexing');
+    }
+
+    /** Kebijakan Privasi publik; isi sama dengan aplikasi (mobile/lib/features/auth/privacy_policy.dart, ADR35). */
+    public static function privacy(): array
+    {
+        return json_decode(file_get_contents(resource_path('data/privasi.json')), true, flags: JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * M16: metadata APK rilis (versi.json dari workflow Mobile release APK). Sumber RT05_APK_META: path berkas atau URL;
+     * kosong = public/unduh/versi.json. Tidak ada atau rusak → null (halaman unduh menampilkan "segera tersedia").
+     *
+     * @return array{versi: string, build: int, tanggal: string, catatan: list<string>, berkas: list<array{abi: string, url: string, ukuran: int, sha256: string}>}|null
+     */
+    public static function apk(): ?array
+    {
+        $source = trim((string) config('services.rt05_site.apk_meta'));
+        try {
+            if (preg_match('#^https?://#', $source)) {
+                $raw = Cache::store('file')->remember('rt05:apk-meta', 300, fn () => Http::acceptJson()->connectTimeout(2)->timeout(3)->get($source)->throw()->body());
+            } else {
+                $path = $source !== '' ? $source : public_path('unduh/versi.json');
+                $raw = is_file($path) ? file_get_contents($path) : null;
+            }
+
+            return is_string($raw) ? self::apkShape(json_decode($raw, true, flags: JSON_THROW_ON_ERROR)) : null;
+        } catch (Throwable $e) {
+            Log::info('site_content.apk_meta_unavailable', ['exception' => class_basename($e)]);
+
+            return null;
+        }
+    }
+
+    private static function apkShape(mixed $m): ?array
+    {
+        if (! is_array($m) || ! is_string($m['versi'] ?? null) || ! is_int($m['build'] ?? null) || ! is_array($m['berkas'] ?? null)) {
+            return null;
+        }
+        $files = [];
+        foreach ($m['berkas'] as $f) {
+            $url = is_array($f) ? (string) ($f['url'] ?? '') : '';
+            // Hanya tautan ke folder unduhan situs sendiri atau HTTPS; tanpa javascript:/data:.
+            if (! in_array($f['abi'] ?? null, ['arm64-v8a', 'armeabi-v7a'], true) || ! preg_match('#^(/unduh/|https://)[^\s"<>]+\.apk$#', $url)
+                || ! is_int($f['ukuran'] ?? null) || ! preg_match('/^[0-9a-f]{64}$/', (string) ($f['sha256'] ?? ''))) {
+                continue;
+            }
+            $files[] = ['abi' => $f['abi'], 'url' => $url, 'ukuran' => $f['ukuran'], 'sha256' => $f['sha256']];
+        }
+        usort($files, fn ($a, $b) => $a['abi'] === 'arm64-v8a' ? -1 : ($b['abi'] === 'arm64-v8a' ? 1 : 0));
+
+        return $files === [] ? null : [
+            'versi' => $m['versi'], 'build' => $m['build'], 'tanggal' => (string) ($m['tanggal'] ?? ''),
+            'catatan' => array_values(array_filter($m['catatan'] ?? [], 'is_string')), 'berkas' => $files,
+        ];
     }
 
     /** api | cache | baked — untuk diagnosis dan tes. */
