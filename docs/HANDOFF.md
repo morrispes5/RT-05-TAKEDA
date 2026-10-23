@@ -222,3 +222,16 @@ M16 in_progress (Fase A di `codex/m16-fase-a`, lihat PROGRESS). ADR37: verifikas
 3. Minta pemilik: kirim pertanyaan Biznet (RUNBOOK_PRODUCTION.md bagian 1), pilih domain (K1), kontak + masa simpan (K4),
    admin pertama (K5), tujuan backup offsite. Jangan membeli, mendaftar, atau mengubah DNS atas nama pemilik.
 4. Setelah hosting ada: ikuti RUNBOOK_PRODUCTION.md bagian 2–5.
+
+## 11. Air Bersih KSM — calon fitur pengurus RT05 (ADR40, 23 Okt 2026)
+
+- **Apa:** aplikasi tagihan air KSM Banyu Bening (catat meter, tagihan air, pembayaran) untuk pengurus. Repo terpisah
+  `morrispes5/air-bersih-ksm-claude` (lokal `C:UsersUSERDocumentsAIR BERSIH KSM CLAUDE`), SvelteKit + WoWSQL, live di
+  https://airbersih-ksm-claude.vercel.app. Dikerjakan sesi Claude Code lain milik pemilik; dokumen kanonik `docs/PRD.md` di
+  repo itu dan catatan lokal `catatan-lokal/HANDOFF.md` (tidak di Git).
+- **Kedudukan:** pemilik menetapkan Air Bersih KSM sebagai **subfitur RT05 di bagian pengurus**, bukan aplikasi terpisah
+  selamanya. Penggabungan kode menunggu diskusi pemilik dengan tim capstone; jangan memulainya tanpa milestone/ADR baru.
+- **Sekarang:** hanya tautan (web sidebar `/pengurus` dan mobile Lainnya). Jangan menambah tabel/endpoint air bersih di
+  `rest-api` dan jangan menyambung ke database WoWSQL-nya.
+- **Koordinasi antar sesi:** perubahan di RT05 yang menyangkut air bersih dicatat di ADR40 + bagian ini; sesi Air Bersih KSM
+  mencatat sisi lainnya di PRD Fase 6 repo itu.
