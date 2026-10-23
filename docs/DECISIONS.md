@@ -592,3 +592,25 @@ Tanggal: 22 Oktober 2026 (jawaban pemilik: "buat neon project kedua aja, biar ga
    `rt05:db-smoke` tulis/baca ok + DDL ditolak, `rt05:rekonsiliasi-keuangan` cocok (saldo sama). Belum: latihan pindah + kembali
    pada staging yang sedang dipakai (perlu jendela waktu yang disepakati pemilik) dan jadwal sinkron otomatis (setelah production).
 6. Kuota project utama per 22 Okt: active_time 822.860 dtk (±229 jam × 0,25 CU ≈ 57 CU-jam dari 100), reset 1 Nov.
+
+### ADR40 — Air Bersih KSM: calon fitur pengurus RT05, sementara hanya tautan
+
+Tanggal: 23 Oktober 2026 (instruksi pemilik). Status: **diputuskan untuk tahap sementara; penggabungan menunggu diskusi tim**.
+
+1. **Air Bersih KSM** = aplikasi pengurus KSM Banyu Bening (koperasi air warga RT 05 RW 07 Taman Kedaung): catat meter air,
+   terbitkan tagihan air, catat pembayaran. Repo terpisah `morrispes5/air-bersih-ksm-claude` (folder lokal pemilik
+   `Documents/AIR BERSIH KSM CLAUDE`), stack SvelteKit 3 + Drizzle + WoWSQL + Better Auth, live di
+   https://airbersih-ksm-claude.vercel.app dengan akun sendiri. Dokumen kanonik: `docs/PRD.md` di repo itu (Fase 6).
+2. Keputusan pemilik: Air Bersih KSM **bukan aplikasi yang berdiri sendiri selamanya**, melainkan **calon fitur/subfitur RT05**
+   di bagian pengurus (admin), web dan mobile. Penggabungan kode menunggu diskusi pemilik dengan tim capstone.
+3. **Sementara hanya tautan** (tidak ada data air bersih di database RT05, tidak ada API, tidak ada login bersama):
+   - Website: Area Pengurus (`/pengurus`, sidebar) → "Tagihan air KSM", tab baru, URL dari
+     `config('services.air_bersih_ksm.url')` (env `AIR_BERSIH_KSM_URL`, bawaan URL Vercel di atas).
+   - Mobile: pengurus → Lainnya → kartu "Air bersih KSM" → "Tagihan air KSM" (`lib/features/pengurus/air_bersih_link.dart`),
+     dibuka di browser. Gagal membuka → pesan, tanpa crash.
+4. Saat penggabungan dibuka nanti (milestone baru, bukan diam-diam): data & aturan bisnis pindah ke `rest-api`/Neon sesuai
+   AGENTS (bukan WoWSQL); layar pengurus di aplikasi mobile; perlu hak terpisah **pengurus KSM** karena BR07 membuat semua admin RT
+   setara sementara tidak semua pengurus RT adalah pengurus KSM; perhitungkan kuota Neon (100 CU-jam/bulan). Aturan tagihan air
+   (tarif per m³ + biaya admin, pasif = admin saja, nomor KSM-001, jatuh tempo +8 hari, foto meter 6 bulan) mengikuti PRD Air
+   Bersih KSM; data dapat dipindah dari file "Unduh cadangan" Excel aplikasi itu. Tautan sementara (butir 3) dihapus setelah
+   fitur asli tersedia.
