@@ -76,6 +76,16 @@ ekspor CSV Kas/Pembayaran per bulan (`OperationsController::export`); `/health/r
 pesan error. Tes baru: `M16AuditFixesTest` (2), `HealthTest` (+2), `M15UatFinanceTest` (+1). Admin staging email RT dibuat
 (kata sandi di berkas catatan lokal pemilik). Belum: SSH VPS, setelan GitHub, rotasi kredensial (menunggu izin pemilik).
 
+
+### M16 — tautan Air Bersih KSM (23 Okt 2026, ADR40, branch `codex/m16-tautan-air-bersih`)
+
+Instruksi pemilik: Air Bersih KSM (repo terpisah, tagihan air KSM) adalah calon fitur pengurus RT05; sementara hanya tautan.
+Area Pengurus web (`/pengurus` sidebar, tab baru, `AIR_BERSIH_KSM_URL`) dan aplikasi mobile (pengurus → Lainnya → "Air bersih
+KSM") menautkan https://airbersih-ksm-claude.vercel.app. Tidak ada perubahan API/database. Validasi lokal: website
+`php artisan test` 33/33 (3 tes baru `AirBersihLinkTest`), `npm.cmd run build:preview` 24 rute (hanya 8 halaman pengurus
+berubah), `test:preview` PASS; mobile `dart format` 0 berubah, `flutter analyze` bersih, `flutter test` 276 lulus (3 tes baru
+`m16_air_bersih_link_test.dart`). Belum: merge, deploy staging, APK baru (butuh persetujuan pemilik).
+
 ## M15 ditutup — 22 Oktober 2026: **passed** atas keputusan pemilik (ADR36)
 
 Bukti UAT: uji tim putaran 1–3, demo ke Ketua RT 20 Okt 20.00 WIB, uji agent di emulator (APK 1010/1011). Nilai kemudahan per

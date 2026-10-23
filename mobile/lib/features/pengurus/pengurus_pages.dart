@@ -9,6 +9,7 @@ import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/widgets.dart';
+import 'air_bersih_link.dart';
 import 'content_admin.dart';
 import 'dues_admin.dart';
 import 'dues_confirmations.dart';
@@ -1050,6 +1051,8 @@ class MoreAdminPage extends ConsumerWidget {
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TreasurerContactPage())),
         ),
       ),
+      const SizedBox(height: 16),
+      const SectionCard(title: 'Air bersih KSM', child: AirBersihKsmTile()),
     ],
   );
 }
