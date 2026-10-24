@@ -7,6 +7,7 @@ import '../../core/models.dart';
 import '../../core/whatsapp.dart';
 import '../../core/widgets.dart';
 import 'admin_edits.dart';
+import 'birth_date.dart';
 import 'census_providers.dart';
 import 'family_actions.dart';
 import 'family_page.dart';
@@ -474,6 +475,8 @@ class _ResidentFormState extends ConsumerState<_ResidentForm> {
   String? _waError;
   String? _formError;
   String? _review;
+  DateTime? _lahir;
+  DateTime? _lahirAwal;
 
   bool get _kepala => widget.resident['is_kepala'] == true;
   bool get _punyaAkun => widget.resident['punya_akun'] == true;
@@ -486,6 +489,7 @@ class _ResidentFormState extends ConsumerState<_ResidentForm> {
     _hubungan = TextEditingController(text: '${widget.resident['hubungan_keluarga'] ?? ''}');
     _wa = TextEditingController(text: '${widget.resident['whatsapp'] ?? ''}');
     _versi = widget.versi ?? familyVersi(widget.resident);
+    _lahir = _lahirAwal = parseTanggalLahir(widget.resident['tanggal_lahir']);
   }
 
   @override
@@ -538,6 +542,7 @@ class _ResidentFormState extends ConsumerState<_ResidentForm> {
             data: {
               ...memberBody(nama: _nama.text, hubungan: _hubungan.text, versi: _versi),
               'whatsapp': phone.isEmpty ? null : phone,
+              if (_lahir != _lahirAwal) 'tanggal_lahir': _lahir == null ? null : tanggalLahirBody(_lahir!),
             },
           );
       if (!mounted) return;
@@ -624,6 +629,8 @@ class _ResidentFormState extends ConsumerState<_ResidentForm> {
           maxLength: 25,
           decoration: InputDecoration(labelText: 'WhatsApp', helperText: 'Boleh dikosongkan.', helperMaxLines: 2, errorText: _waError, errorMaxLines: 4),
         ),
+        const SizedBox(height: 12),
+        BirthDateField(value: _lahir, enabled: !_archived, onChanged: (v) => setState(() => _lahir = v)),
         if (_review != null) ...[const SizedBox(height: 8), Text(_review!, style: const TextStyle(height: 1.35))],
         if (_formError != null) ...[const SizedBox(height: 8), Text(_formError!, style: const TextStyle(color: Brand.danger, height: 1.35))],
         if (!_archived) ...[

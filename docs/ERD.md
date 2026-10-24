@@ -45,6 +45,7 @@ Additive `2026_10_13_000100_m07_keanggotaan_tautan_akun`:
 | rumah | + versi (≥1) |
 | permohonan_akun | + `nama_kepala_diajukan` varchar(120) null (additive `2026_10_21_000100`, ADR34); `alamat_diajukan` boleh null |
 | warga, keluarga | + `nik` / `nomor_kk` text null, cast `encrypted` (additive `2026_10_21_000300`, ADR35) |
+| warga | + `tanggal_lahir` date null (additive `2026_10_24_000100`, ADR42); umur/kelompok dihitung, tidak disimpan |
 | akun | + `privasi_versi` varchar(20) null, `privasi_disetujui_at` timestamptz null (ADR35) |
 | konfirmasi_iuran | id, akun_id, rumah_id, periode jsonb, nominal, catatan, storage_key/mime/bytes/lebar/tinggi, status diajukan/selesai/ditolak, catatan_pengurus, diproses_oleh_id, diproses_at; check status, check diproses_at ⇔ bukan diajukan (ADR35) |
 

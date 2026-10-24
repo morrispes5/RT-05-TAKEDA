@@ -16,6 +16,7 @@ import 'dues_confirmations.dart';
 import 'finance_actions.dart';
 import '../household/admin_census.dart';
 import '../household/admin_links.dart';
+import '../household/age_stats.dart';
 import '../household/census_providers.dart';
 import '../household/paged_list.dart';
 import '../warga/activity_proposal_actions.dart' show jakartaWallToUtc;
@@ -276,7 +277,7 @@ class _ResidentsAdminPageState extends ConsumerState<ResidentsAdminPage> {
 
   @override
   Widget build(BuildContext context) => DefaultTabController(
-    length: 3,
+    length: 4,
     child: Column(
       children: [
         const Material(
@@ -291,6 +292,8 @@ class _ResidentsAdminPageState extends ConsumerState<ResidentsAdminPage> {
               Tab(text: 'Rumah & keluarga'),
               Tab(text: 'Permohonan akun'),
               Tab(text: 'Akun warga'),
+              // ADR42: statistik kelompok umur warga.
+              Tab(text: 'Statistik usia'),
             ],
           ),
         ),
@@ -396,6 +399,7 @@ class _ResidentsAdminPageState extends ConsumerState<ResidentsAdminPage> {
               ),
               const _RequestsView(),
               const AccountsAdminView(),
+              const AgeStatsTab(),
             ],
           ),
         ),

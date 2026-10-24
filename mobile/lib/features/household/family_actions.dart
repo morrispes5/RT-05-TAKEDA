@@ -121,6 +121,7 @@ String memberSubtitle(Map member, {bool phone = false}) {
   return [
     hubungan,
     if (member['is_kepala'] == true && !hubungan.toLowerCase().contains('kepala')) 'kepala keluarga',
+    if (member['umur'] is num) '${member['umur']} th',
     if (member['punya_akun'] == true) 'punya akun',
     if (phone && '${member['whatsapp'] ?? ''}'.isNotEmpty) '${member['whatsapp']}',
   ].join(' • ');
