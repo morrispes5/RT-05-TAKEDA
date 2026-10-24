@@ -38,6 +38,19 @@ test` 272 lulus (5 baru); `check-mobile-build-config.mjs --self-test` OK; `m15-e
 Blocked pada pemilik: K1 domain, K4 kontak/masa simpan privasi, K5 admin pertama, K6 jawaban Biznet + pembelian, tujuan
 backup offsite, akun pemantau uptime.
 
+### M16 — deploy notifikasi bukti transfer + uji APK 1014 Air Bersih (24 Okt 2026)
+
+PR #68 (notifikasi bukti transfer, migrasi `2026_10_22_000300`) di-deploy bersama `main` `1f23045` setelah sesi "Fase 6
+eksekusi" selesai (deploy immutable 24 Okt ±14.15–14.25 WIB, selesai). APK 1014 diunggah ke link Drive tetap 14.25 WIB.
+Uji agent:
+- **Emulator, APK 1014 di atas 1013:** pengurus → Lainnya → kartu "Air Bersih KSM" (logo, tanpa panah) → Chrome membuka
+  `airbersih-ksm-claude.vercel.app/masuk`; kartu Tentang aplikasi "Versi 1.0.0 (build 1014)". Warga (akun sintetis): lima tab
+  digulir, 0 kemunculan Air Bersih/KSM, tanpa tab Lainnya.
+- **Web live** `website/scripts/air-bersih-live.mjs` 4/4 PASS: tersembunyi sebelum login, tampil setelah login pengurus, tab baru
+  ke halaman masuk Air Bersih KSM. Halaman publik tidak memuat tautan.
+- **Notifikasi bukti transfer live:** bukti dari akun warga sintetis → event selesai, inbox 3 pengurus (push 1 terkirim, 2
+  dilewati karena tanpa HP); pengurus menolak bukti uji → warga menerima "Bukti pembayaran diperiksa" dalam 31 dtk.
+
 ### M16 — database cadangan Neon project kedua (22 Okt 2026, ADR39)
 
 Supabase penuh (2 project aktif) → pemilik memilih Neon project kedua `rt05-takeda-cadangan`. Sinkron staging → cadangan dan uji
