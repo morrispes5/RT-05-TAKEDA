@@ -38,6 +38,18 @@ test` 272 lulus (5 baru); `check-mobile-build-config.mjs --self-test` OK; `m15-e
 Blocked pada pemilik: K1 domain, K4 kontak/masa simpan privasi, K5 admin pertama, K6 jawaban Biznet + pembelian, tujuan
 backup offsite, akun pemantau uptime.
 
+### Rilis APK 1015 — statistik usia warga (24 Okt 2026)
+
+PR #74 merge `9f0fdf9`, staging di-deploy (migrasi `2026_10_24_000100_warga_tanggal_lahir` DONE, selesai tanpa GAGAL), APK
+**1015** (1.0.0) dibangun 15.54 WIB (run 40079348721), tersaji di `/unduh` + `versi.json` 15.55 WIB, link Drive tetap 15.56 WIB
+(SHA-256 arm64 `699ce78e…`). Uji agent di emulator dengan staging asli (akun sintetis):
+- Warga: setelah masuk muncul Kebijakan Privasi versi 24 Oktober 2026 (teks tanggal lahir terlihat), setuju lalu lanjut; Tambah
+  anggota "Anak Uji Statistik" dengan kalender (10 Oktober 2019 → "7 tahun"), tersimpan dan terbaca lagi dari server.
+- Pengurus: privasi disetujui ulang; Warga → tab ke-4 **Statistik usia**: total 43 warga aktif, 42 belum diisi, Anak-anak 1
+  ("7 th • Anak-anak • Rumah UJIM06-1"); ketuk membuka form Anggota dengan tanggal lahir; Per rumah menampilkan isi tiap rumah.
+- Catatan untuk rilis berikutnya (dikumpulkan, belum dirilis): daftar keluarga milik warga belum menampilkan umur di baris
+  anggota (layar pengurus sudah).
+
 ### Fitur tambahan RT — statistik usia warga (24 Okt 2026, ADR42, branch `codex/m16-statistik-usia`)
 
 - **Backend:** `warga.tanggal_lahir`, `AgeGroups`, validasi di `/household/members*` dan `/admin/families/{id}/members`,
