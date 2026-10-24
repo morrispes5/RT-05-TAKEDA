@@ -31,7 +31,7 @@ class PublicPageController extends Controller
 
     public function app(): View
     {
-        return view('aplikasi', ['apk' => SiteContent::apk()]);
+        return view('aplikasi', ['apk' => SiteContent::apk(), 'halamanUnduh' => SiteContent::apkPage()]);
     }
 
     public function privacy(): View
