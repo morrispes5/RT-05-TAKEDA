@@ -45,6 +45,9 @@ Kode BR dipakai pada API, tes, issue, dan kriteria milestone. Bagian A mempertah
 - Persetujuan akun tambahan memberikan role resident, tidak admin. Grant/revoke admin hanya lewat command operator yang diaudit pada v1.
 - Akun inactive/archived ditolak dan token/sesi dicabut. Pengurus masih melihat histori.
 - Arsip dapat dipulihkan pengurus (ADR34): konten kembali draf, rumah kembali tanpa tagihan aktif, akun kembali nonaktif, keluarga kembali bersama anggota yang ikut diarsipkan. Hunian dan tautan akun tidak dibuka otomatis.
+- Tanggal lahir anggota keluarga opsional; diisi akun utama atau pengurus. Umur dan kelompok umur (balita 0–5, anak 6–12, remaja
+  13–17, dewasa 18–59, lansia 60–69, lansia 70+) dihitung otomatis per hari ini dan hanya terlihat oleh pengurus serta keluarga
+  sendiri (ADR42).
 - Permohonan akun tambahan wajib nama pemohon, hubungan, dan nama kepala keluarga; alamat opsional. Rumah dicocokkan otomatis dari kepala keluarga yang unik, selain itu pengurus memilih rumah saat menyetujui (ADR34).
 
 ### Token dan registrasi

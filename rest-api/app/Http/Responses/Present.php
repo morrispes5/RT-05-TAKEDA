@@ -3,6 +3,7 @@
 namespace App\Http\Responses;
 
 use App\Domain\Community\Calendar;
+use App\Domain\Residents\AgeGroups;
 use App\Models\Agenda;
 use App\Models\Akun;
 use App\Models\Aspirasi;
@@ -69,6 +70,10 @@ final class Present
             'whatsapp' => $w->whatsapp,
             // ADR35: NIK hanya tersamar (4 digit awal + 4 akhir); nilai utuh tidak pernah keluar dari server.
             'nik_tersamar' => Privacy::mask($w->nik),
+            // ADR42: tanggal lahir opsional; umur dan kelompok dihitung per hari ini (WIB), tidak disimpan.
+            'tanggal_lahir' => $w->tanggal_lahir?->format('Y-m-d'),
+            'umur' => $umur = AgeGroups::age($w->tanggal_lahir),
+            'kelompok_usia' => AgeGroups::group($umur),
             'status' => $w->status,
             'punya_akun' => match (true) {
                 $w->relationLoaded('tautanAktif') => (bool) $w->tautanAktif,

@@ -24,6 +24,9 @@ class HouseholdController extends Controller
 {
     private const WHATSAPP = ['nullable', 'string', 'max:25', 'regex:/^[0-9+ -]{8,25}$/'];
 
+    /** ADR42: opsional, tidak di masa depan. */
+    private const TANGGAL_LAHIR = ['sometimes', 'nullable', 'date_format:Y-m-d', 'after_or_equal:1900-01-01', 'before_or_equal:today'];
+
     private function keluargaOf(Akun $akun): Keluarga
     {
         $keluarga = $akun->keluarga();
@@ -88,6 +91,7 @@ class HouseholdController extends Controller
             'hubungan_keluarga' => ['required', 'string', 'max:40'],
             'whatsapp' => self::WHATSAPP,
             'nik' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
+            'tanggal_lahir' => self::TANGGAL_LAHIR,
             'versi' => ['required', 'integer'],
         ]);
         $warga = Households::addMember($akun, $k->id, $data, $data['versi'], 'akun_utama');
@@ -104,6 +108,7 @@ class HouseholdController extends Controller
             'hubungan_keluarga' => ['sometimes', 'string', 'max:40'],
             'whatsapp' => self::WHATSAPP,
             'nik' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
+            'tanggal_lahir' => self::TANGGAL_LAHIR,
             'versi' => ['required', 'integer'],
         ]);
         $versi = $data['versi'];

@@ -38,6 +38,18 @@ test` 272 lulus (5 baru); `check-mobile-build-config.mjs --self-test` OK; `m15-e
 Blocked pada pemilik: K1 domain, K4 kontak/masa simpan privasi, K5 admin pertama, K6 jawaban Biznet + pembelian, tujuan
 backup offsite, akun pemantau uptime.
 
+### Fitur tambahan RT — statistik usia warga (24 Okt 2026, ADR42, branch `codex/m16-statistik-usia`)
+
+- **Backend:** `warga.tanggal_lahir`, `AgeGroups`, validasi di `/household/members*` dan `/admin/families/{id}/members`,
+  `/admin/residents/{id}`; `GET /admin/age-stats` (kelompok, rentang `min`/`max`, `belum_diisi`, per rumah); Member memuat
+  `tanggal_lahir`, `umur`, `kelompok_usia`; Kebijakan Privasi versi `2026-10-24`. OpenAPI diperbarui.
+- **Mobile:** `BirthDateField` (kalender, bisa dikosongkan) di anggota keluarga warga, tambah anggota pengurus, dan ubah warga
+  pengurus; umur di baris anggota; tab Warga → **Statistik usia** (chip per kelompok, rentang bebas, per warga/per rumah,
+  ketuk untuk ubah). Teks privasi aplikasi dan website disamakan.
+- **Tes:** rest-api `M16AgeStatsTest` (3: batas ulang tahun, isi/kosongkan + tolak tanggal masa depan, statistik + saringan
+  60–65 + 403 warga) → 351/351; Flutter `m16_age_stats_test` (5) + perbaikan 2 tes lama yang perlu `scrollToTop` karena
+  formulir lebih panjang; website 39/39.
+
 ### M16 — deploy notifikasi bukti transfer + uji APK 1014 Air Bersih (24 Okt 2026)
 
 PR #68 (notifikasi bukti transfer, migrasi `2026_10_22_000300`) di-deploy bersama `main` `1f23045` setelah sesi "Fase 6

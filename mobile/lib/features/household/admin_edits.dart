@@ -6,6 +6,7 @@ import '../../core/api.dart';
 import '../../core/models.dart';
 import '../../core/widgets.dart';
 import 'census_providers.dart';
+import 'birth_date.dart';
 import 'family_actions.dart';
 import 'paged_list.dart';
 
@@ -310,6 +311,7 @@ class _AdminAddMemberPageState extends ConsumerState<AdminAddMemberPage> {
   final _nama = TextEditingController();
   final _hubungan = TextEditingController();
   final _wa = TextEditingController();
+  DateTime? _lahir;
   late int? _versi;
   var _busy = false;
   String? _namaError;
@@ -368,7 +370,10 @@ class _AdminAddMemberPageState extends ConsumerState<AdminAddMemberPage> {
           .read(apiProvider)
           .post(
             '/admin/families/${widget.familyId}/members',
-            data: memberBody(nama: _nama.text, hubungan: _hubungan.text, whatsapp: _wa.text, versi: _versi),
+            data: {
+              ...memberBody(nama: _nama.text, hubungan: _hubungan.text, whatsapp: _wa.text, versi: _versi),
+              if (_lahir != null) 'tanggal_lahir': tanggalLahirBody(_lahir!),
+            },
           );
       if (!mounted) return;
       Navigator.pop(context, true);
@@ -408,6 +413,8 @@ class _AdminAddMemberPageState extends ConsumerState<AdminAddMemberPage> {
           keyboardType: TextInputType.phone,
           decoration: InputDecoration(labelText: 'WhatsApp', helperText: 'Boleh dikosongkan.', helperMaxLines: 2, errorText: _waError, errorMaxLines: 3),
         ),
+        const SizedBox(height: 8),
+        BirthDateField(value: _lahir, onChanged: (v) => setState(() => _lahir = v)),
         _Note(review: _review, message: _formError),
         const SizedBox(height: 16),
         _SaveBar(busy: _busy, label: 'Tambah anggota', onPressed: _save),

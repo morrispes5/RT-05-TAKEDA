@@ -2,6 +2,7 @@
 
 use App\Domain\Content\Contents;
 use App\Http\Controllers\ActivityProposalController;
+use App\Http\Controllers\Admin\AgeStatsController;
 use App\Http\Controllers\Admin\OperationsController;
 use App\Http\Controllers\Admin\ResidentsController;
 use App\Http\Controllers\AuthController;
@@ -144,6 +145,8 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::post('families/{id}/restore', [ResidentsController::class, 'restoreFamily'])->whereUuid('id');
     Route::post('families/{id}/members', [ResidentsController::class, 'addFamilyMember'])->whereUuid('id');
     Route::post('families/{id}/primary-account', [ResidentsController::class, 'transferPrimary'])->whereUuid('id');
+    // ADR42: statistik kelompok umur warga.
+    Route::get('age-stats', [AgeStatsController::class, 'index']);
     Route::get('residents/{id}', [ResidentsController::class, 'showResident'])->whereUuid('id');
     Route::patch('residents/{id}', [ResidentsController::class, 'updateResident'])->whereUuid('id');
     Route::post('residents/{id}/end', [ResidentsController::class, 'endResident'])->whereUuid('id');

@@ -10,7 +10,7 @@ use App\Models\Akun;
  */
 final class Privacy
 {
-    public const VERSION = '2026-10-21';
+    public const VERSION = '2026-10-24';
 
     public static function needsConsent(Akun $akun): bool
     {

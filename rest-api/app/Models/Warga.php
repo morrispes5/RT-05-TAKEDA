@@ -21,6 +21,7 @@ class Warga extends Model
             'is_kepala' => 'boolean',
             'archived_at' => 'datetime',
             'nik' => 'encrypted',
+            'tanggal_lahir' => 'date',
         ];
     }
 

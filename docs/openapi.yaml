@@ -1140,6 +1140,25 @@ paths:
           $ref: "#/components/responses/Data"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/admin/age-stats:
+    get:
+      operationId: adminAgeStats
+      tags:
+        - Residents
+      summary: Statistik kelompok umur warga
+      x-status: implemented
+      x-milestone: M16
+      description: 'ADR42 (permintaan Pak RT): jumlah warga aktif per kelompok umur (balita 0–5, anak 6–12, remaja 13–17, dewasa 18–59, lansia 60–69, lansia_70 ≥70), yang belum mengisi tanggal lahir, ringkasan per rumah, dan daftar warga yang dapat disaring kelompok, rentang umur bebas (min/max), atau belum_diisi. Khusus pengurus.'
+      parameters:
+        - {name: kelompok, in: query, schema: {type: string, enum: [balita, anak, remaja, dewasa, lansia, lansia_70]}}
+        - {name: min, in: query, schema: {type: integer, minimum: 0, maximum: 130}}
+        - {name: max, in: query, schema: {type: integer, minimum: 0, maximum: 130}}
+        - {name: belum_diisi, in: query, schema: {type: boolean}}
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/residents/{id}:
     parameters:
       - $ref: "#/components/parameters/Id"
@@ -3725,6 +3744,7 @@ components:
         nama: {type: string, minLength: 1, maxLength: 120}
         hubungan_keluarga: {type: string, minLength: 1, maxLength: 40}
         whatsapp: {$ref: '#/components/schemas/Whatsapp'}
+        tanggal_lahir: {type: [string, 'null'], format: date, description: 'ADR42: opsional, 1900-01-01 s.d. hari ini.'}
         versi: {$ref: '#/components/schemas/Versi'}
     MemberUpdateInput:
       type: object
@@ -3734,6 +3754,7 @@ components:
         nama: {type: string, minLength: 1, maxLength: 120}
         hubungan_keluarga: {type: string, minLength: 1, maxLength: 40}
         whatsapp: {$ref: '#/components/schemas/Whatsapp'}
+        tanggal_lahir: {type: [string, 'null'], format: date, description: 'ADR42: opsional, 1900-01-01 s.d. hari ini.'}
         versi: {$ref: '#/components/schemas/Versi'}
     FamilyCreateInput:
       type: object
@@ -3843,6 +3864,9 @@ components:
         is_kepala: {type: boolean}
         whatsapp: {type: [string, 'null']}
         nik_tersamar: {type: [string, 'null'], description: 'NIK tersamar, mis. 3674••••••••0001 (ADR35).'}
+        tanggal_lahir: {type: [string, 'null'], format: date}
+        umur: {type: [integer, 'null'], description: 'ADR42: umur penuh per hari ini (WIB), dihitung, tidak disimpan.'}
+        kelompok_usia: {type: [string, 'null'], enum: [balita, anak, remaja, dewasa, lansia, lansia_70, null]}
         status: {type: string, enum: [aktif, pindah, meninggal]}
         punya_akun: {type: [boolean, 'null'], description: Tautan akun aktif.}
     Household:
