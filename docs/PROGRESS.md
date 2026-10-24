@@ -84,8 +84,9 @@ Pemilik: `https://rt05takeda.vercel.app/aplikasi` tetap pratinjau dan tidak meny
 langsung (64-bit dan 32-bit), bukan tautan ke dirinya sendiri. `RT05_APK_PAGE` hanya diisi saat ekspor pratinjau, dan
 hanya URL staging itu yang diterima. Validasi lokal: website `php artisan test` 39/39 (3 tes baru di `M16SearchAndAppTest`),
 `npm run build:preview` 24 rute (hanya `preview/aplikasi.html` berubah), `test:preview` PASS (24 rute, 0 error browser),
-`check-repo.mjs` OK. Klik tombol pratinjau di Chromium sampai ke staging dan menampilkan build 1014. Belum di `main`,
-jadi Vercel live belum berubah sampai PR ini digabung.
+`check-repo.mjs` OK. Klik tombol pratinjau di Chromium sampai ke staging dan menampilkan build 1014. PR #72 digabung ke `main`
+`36d6bdc` pada 24 Okt 14.43 WIB. Deploy production Vercel tidak ikut dari commit penggabungan bot, jadi
+commit ini memicu ulang.
 
 ### M16 — menu Air Bersih KSM khusus pengurus (24 Okt 2026, ADR41, branch `codex/m16-menu-air-bersih`)
 
