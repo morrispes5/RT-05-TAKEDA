@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Community\Notifications;
 use App\Domain\Finance\Dues;
 use App\Models\Akun;
 use App\Models\AuditLog;
@@ -141,6 +142,10 @@ class M15bRequestsTest extends TestCase
         $this->assertSame([], Storage::disk('local')->files('iuran/masuk'), 'berkas mentah dihapus setelah transkode');
         $this->assertSame('belum_bayar', $tagihan->fresh()->status, 'konfirmasi bukan pembayaran');
         $this->assertTrue(OutboxEvent::where('type', 'iuran.konfirmasi_dikirim')->where('aggregate_id', $id)->exists());
+        // Temuan uji 22 Okt: event harus benar-benar menjadi inbox pengurus (sebelumnya gagal constraint 23514).
+        Notifications::handle(OutboxEvent::where('type', 'iuran.konfirmasi_dikirim')->where('aggregate_id', $id)->firstOrFail());
+        $this->assertTrue(DB::table('notifikasi')->where('penerima_id', $admin->id)->where('judul', 'Bukti pembayaran iuran')->exists());
+        $this->assertFalse(DB::table('notifikasi')->where('penerima_id', $warga->id)->where('judul', 'Bukti pembayaran iuran')->exists());
 
         $this->getJson('/api/v1/dues/confirmations')->assertOk()->assertJsonPath('data.0.id', $id);
         $this->get("/api/v1/dues/confirmations/$id/photo")->assertOk()->assertHeader('Content-Type', 'image/jpeg');
@@ -156,6 +161,8 @@ class M15bRequestsTest extends TestCase
         $this->postJson("/api/v1/admin/dues-confirmations/$id/process", ['status' => 'ditolak', 'catatan' => 'x'])->assertStatus(409)->assertJsonPath('error.code', 'ALREADY_PROCESSED');
         $this->assertSame('belum_bayar', $tagihan->fresh()->status, 'pengurus tetap mencatat pembayaran secara terpisah');
         $this->assertTrue(OutboxEvent::where('type', 'iuran.konfirmasi_diproses')->where('aggregate_id', $id)->exists());
+        Notifications::handle(OutboxEvent::where('type', 'iuran.konfirmasi_diproses')->where('aggregate_id', $id)->firstOrFail());
+        $this->assertTrue(DB::table('notifikasi')->where('penerima_id', $warga->id)->where('judul', 'Bukti pembayaran diperiksa')->exists());
         $this->getJson('/api/v1/admin/dues-confirmations?status=selesai')->assertJsonPath('data.0.id', $id);
     }
 
