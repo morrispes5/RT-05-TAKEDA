@@ -85,7 +85,11 @@ Bening, tanpa ikon panah. Web: menu sidebar berlogo hanya di mode server dan bar
 pratinjau statis tanpa login tidak lagi memuat tautan. Tanpa perubahan API/database. Validasi lokal: website `php artisan test`
 36/36 (`AirBersihLinkTest` 6 tes), `build:preview` 24 rute, `test:preview` PASS; mobile `dart format` 0 berubah, `flutter analyze`
 bersih, `flutter test` 279 lulus (`m16_air_bersih_link_test.dart` 6 tes: logo, tanpa panah, aplikasi utuh warga = tidak ada
-menu, pengurus = ada); `check-repo` OK.
+menu, pengurus = ada); `check-repo` OK. PR #70 merge `e74f2e0` (CI 9/9). Staging di-deploy 24 Okt ±13.18–13.24 WIB (immutable,
+tanpa GAGAL); uji live Chromium 7/7 PASS (tamu & warga: menu tersembunyi; halaman publik tanpa menu; pengurus: menu + logo
+termuat, klik membuka https://airbersih-ksm-claude.vercel.app/masuk). APK **1014** (run 40069668317) selesai 13.25 WIB,
+`sha256sum -c` OK, sertifikat = `RT05_RELEASE_CERT_SHA256`, tersaji di `/unduh` + `versi.json` 13.27 WIB; `/aplikasi` menampilkan
+1014 dan tetap noindex.
 
 ### M16 — tautan Air Bersih KSM (23 Okt 2026, ADR40, branch `codex/m16-tautan-air-bersih`)
 
