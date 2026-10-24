@@ -122,6 +122,45 @@ class M16SearchAndAppTest extends TestCase
         $this->get('/aplikasi')->assertOk()->assertSee('Aplikasi sedang disiapkan');
     }
 
+    public function test_preview_without_release_links_only_to_the_staging_download_page(): void
+    {
+        config(['services.rt05_site.apk_page' => 'https://takeda-staging.morriz.tech/aplikasi#unduh']);
+
+        $this->get('/aplikasi')->assertOk()
+            ->assertSee('Berkas aplikasi ada di server RT')
+            ->assertSee('href="https://takeda-staging.morriz.tech/aplikasi#unduh"', false)
+            ->assertSee('Buka halaman unduh')
+            ->assertDontSee('Aplikasi sedang disiapkan')
+            ->assertDontSee('.apk"', false);
+    }
+
+    public function test_release_files_stay_on_this_site_even_when_a_preview_link_is_configured(): void
+    {
+        config(['services.rt05_site.apk_page' => 'https://takeda-staging.morriz.tech/aplikasi#unduh']);
+        $hash = str_repeat('ab', 32);
+        File::put($this->meta, json_encode([
+            'versi' => '1.0.0', 'build' => 1014, 'tanggal' => '2026-10-24T06:25:29Z', 'catatan' => [],
+            'berkas' => [
+                ['abi' => 'arm64-v8a', 'url' => '/unduh/rt05-takeda-staging-1014-arm64-v8a.apk', 'ukuran' => 22601718, 'sha256' => $hash],
+            ],
+        ]));
+
+        $this->get('/aplikasi')->assertOk()
+            ->assertSee('href="/unduh/rt05-takeda-staging-1014-arm64-v8a.apk"', false)
+            ->assertSee('Unduh hanya dari halaman resmi ini')
+            ->assertDontSee('takeda-staging.morriz.tech', false)
+            ->assertDontSee('Buka halaman unduh');
+    }
+
+    public function test_preview_download_link_rejects_anything_except_the_staging_page(): void
+    {
+        foreach (['javascript:alert(1)', 'https://evil.example/aplikasi#unduh', 'https://takeda-staging.morriz.tech.evil/aplikasi#unduh', 'http://takeda-staging.morriz.tech/aplikasi#unduh'] as $url) {
+            config(['services.rt05_site.apk_page' => $url]);
+            $this->get('/aplikasi')->assertOk()->assertSee('Aplikasi sedang disiapkan')
+                ->assertDontSee('javascript:', false)->assertDontSee('evil', false);
+        }
+    }
+
     public function test_public_privacy_policy_matches_the_app_and_server_version(): void
     {
         $privacy = SiteContent::privacy();

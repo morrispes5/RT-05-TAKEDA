@@ -77,6 +77,16 @@ pesan error. Tes baru: `M16AuditFixesTest` (2), `HealthTest` (+2), `M15UatFinanc
 (kata sandi di berkas catatan lokal pemilik). Belum: SSH VPS, setelan GitHub, rotasi kredensial (menunggu izin pemilik).
 
 
+### M16 — pratinjau Vercel menaut ke halaman unduh staging (24 Okt 2026)
+
+Pemilik: `https://rt05takeda.vercel.app/aplikasi` tetap pratinjau dan tidak menyimpan APK; tombol unduh di situ membuka
+`https://takeda-staging.morriz.tech/aplikasi#unduh`. Staging yang punya `versi.json` tetap menampilkan tombol berkas
+langsung (64-bit dan 32-bit), bukan tautan ke dirinya sendiri. `RT05_APK_PAGE` hanya diisi saat ekspor pratinjau, dan
+hanya URL staging itu yang diterima. Validasi lokal: website `php artisan test` 39/39 (3 tes baru di `M16SearchAndAppTest`),
+`npm run build:preview` 24 rute (hanya `preview/aplikasi.html` berubah), `test:preview` PASS (24 rute, 0 error browser),
+`check-repo.mjs` OK. Klik tombol pratinjau di Chromium sampai ke staging dan menampilkan build 1014. Belum di `main`,
+jadi Vercel live belum berubah sampai PR ini digabung.
+
 ### M16 — menu Air Bersih KSM khusus pengurus (24 Okt 2026, ADR41, branch `codex/m16-menu-air-bersih`)
 
 Instruksi pemilik: Air Bersih KSM tetap aplikasi terpisah (login sendiri, akun hanya untuk Ketua RT); RT05 cukup punya menu
