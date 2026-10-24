@@ -15,7 +15,7 @@ return [
         'apk_meta' => env('RT05_APK_META'),
     ],
 
-    // ADR40: tautan sementara ke aplikasi Air Bersih KSM (repo terpisah) dari Area Pengurus, sampai digabung.
+    // ADR41: menu Air Bersih KSM (aplikasi terpisah, login sendiri) di Area Pengurus, hanya untuk pengurus.
     'air_bersih_ksm' => [
         'url' => env('AIR_BERSIH_KSM_URL', 'https://airbersih-ksm-claude.vercel.app'),
     ],
