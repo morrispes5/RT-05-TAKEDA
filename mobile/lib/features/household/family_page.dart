@@ -7,6 +7,7 @@ import '../../core/models.dart';
 import '../../core/session.dart';
 import '../../core/widgets.dart';
 import '../warga/providers.dart';
+import 'birth_date.dart';
 import 'family_actions.dart';
 import 'identity_data.dart';
 
@@ -379,8 +380,11 @@ class _MemberPageState extends ConsumerState<MemberPage> {
   String? _waError;
   String? _formError;
   String? _review;
+  DateTime? _lahir;
+  DateTime? _lahirAwal;
 
   bool get _creating => widget.member == null;
+  bool get _lahirBerubah => _lahir != _lahirAwal;
   bool get _kepala => widget.member?['is_kepala'] == true;
 
   @override
@@ -390,6 +394,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
     _hubungan = TextEditingController(text: '${widget.member?['hubungan_keluarga'] ?? ''}');
     _wa = TextEditingController(text: '${widget.member?['whatsapp'] ?? ''}');
     _versi = readVersi(widget.household);
+    _lahir = _lahirAwal = parseTanggalLahir(widget.member?['tanggal_lahir']);
   }
 
   @override
@@ -424,9 +429,22 @@ class _MemberPageState extends ConsumerState<MemberPage> {
       if (_creating) {
         await api.post(
           '/household/members',
-          data: memberBody(nama: _nama.text, hubungan: _hubungan.text, whatsapp: _wa.text, versi: _versi),
+          data: {
+            ...memberBody(nama: _nama.text, hubungan: _hubungan.text, whatsapp: _wa.text, versi: _versi),
+            if (_lahir != null) 'tanggal_lahir': tanggalLahirBody(_lahir!),
+          },
         );
       } else if (_kepala) {
+        // ADR42: tanggal lahir kepala lewat data anggota; versi keluarga terbaru dipakai untuk menyimpan nama/WhatsApp.
+        if (_lahirBerubah) {
+          final res = await api.patch(
+            '/household/members/${widget.member!['id']}',
+            data: {'tanggal_lahir': _lahir == null ? null : tanggalLahirBody(_lahir!), 'versi': _versi},
+          );
+          final fresh = res is Map ? (res['versi_keluarga'] as num?)?.toInt() : null;
+          if (fresh != null) _versi = fresh;
+          _lahirAwal = _lahir;
+        }
         final draft = HouseholdDraft(versi: _versi);
         final phone = _wa.text.trim();
         await api.patch(
@@ -440,6 +458,7 @@ class _MemberPageState extends ConsumerState<MemberPage> {
           data: {
             ...memberBody(nama: _nama.text, hubungan: _hubungan.text, versi: _versi),
             'whatsapp': phone.isEmpty ? null : phone,
+            if (_lahirBerubah) 'tanggal_lahir': _lahir == null ? null : tanggalLahirBody(_lahir!),
           },
         );
       }
@@ -578,6 +597,8 @@ class _MemberPageState extends ConsumerState<MemberPage> {
             },
           ),
           if (_waError != null) Text(_waError!, style: const TextStyle(color: Brand.danger, height: 1.35)),
+          const SizedBox(height: 12),
+          BirthDateField(value: _lahir, onChanged: (v) => setState(() => _lahir = v)),
           if (_kepala) ...[
             const SizedBox(height: 8),
             const Text('Nama kepala diubah dari Data keluarga. Hubungan kepala tidak diubah di sini.', style: TextStyle(color: Brand.muted, height: 1.35)),

@@ -401,6 +401,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Simpan perubahan'));
     await tester.pumpAndSettle();
     expect(find.byType(MemberPage), findsOneWidget);
+    await scrollToTop(tester);
     expect(tester.widget<TextField>(find.widgetWithText(TextField, 'Nama lengkap')).controller!.text, 'Ani Ditulis Duluan');
     expect(tester.widget<TextField>(find.widgetWithText(TextField, 'Hubungan')).controller!.text, 'Keponakan');
     expect(tester.widget<TextField>(find.widgetWithText(TextField, 'WhatsApp')).controller!.text, '081255566677');
