@@ -356,6 +356,8 @@ async function signedIn() {
     try {
         const me = await session.me();
         if (me.peran !== 'pengurus') throw Object.assign(new Error('Akun ini tidak memiliki akses pengurus.'), { status: 403 });
+        // ADR41: menu Air Bersih KSM hanya terlihat setelah sesi terbukti pengurus; warga/tamu tidak pernah melihatnya.
+        document.querySelector('[data-air-bersih-ksm]')?.removeAttribute('hidden');
         document.querySelector('[data-cms-account]')?.replaceChildren(node('span', {}, me.nama || me.email), button('Keluar', async () => {
             if (unsaved && !await confirm('Keluar sekarang?', 'Perubahan yang belum disimpan akan hilang.', 'Keluar')) return;
             try { await session.logout(); } catch { /* sesi sudah berakhir */ }

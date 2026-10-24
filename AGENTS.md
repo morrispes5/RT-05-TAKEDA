@@ -36,11 +36,12 @@ Catatan dari AGENTS repo frontend sebelum M01, dengan path yang diperbarui:
 - Konfigurasi Vercel kanonik `website/vercel.json`; `vercel.json` root adalah jembatan transisi sampai Root Directory Vercel diubah (lihat docs/website/VERCEL_ROOT.md). Ubah keduanya bersamaan.
 - Jangan masukkan foto asli Drive atau draf browser ke Git/arsip.
 
-## Calon subfitur: Air Bersih KSM (ADR40)
+## Air Bersih KSM: aplikasi terpisah, menu khusus pengurus (ADR41)
 
-Tagihan air KSM Banyu Bening (repo terpisah `air-bersih-ksm-claude`) adalah calon fitur pengurus RT05. Sementara hanya tautan
-dari Area Pengurus web dan menu Lainnya pengurus di mobile. Jangan menggabungkan kode/data atau menyambung ke databasenya
-sebelum pemilik membuka milestone penggabungan. Rincian: docs/DECISIONS.md ADR40 dan docs/HANDOFF.md bagian 11.
+Tagihan air KSM Banyu Bening (repo terpisah `air-bersih-ksm-claude`) tetap aplikasi sendiri dengan login sendiri; tidak
+digabung, tidak ada API/login bersama. RT05 hanya punya menu "Air Bersih KSM" berlogo (tanpa panah) di Area Pengurus web
+(tampil setelah sesi pengurus terbukti) dan Lainnya pengurus di mobile. Warga tidak boleh melihatnya. Jangan menyambung ke
+database atau kodenya. Rincian: docs/DECISIONS.md ADR41 dan docs/HANDOFF.md bagian 11.
 
 ## Workflow
 

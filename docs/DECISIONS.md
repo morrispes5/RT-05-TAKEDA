@@ -614,3 +614,20 @@ Tanggal: 23 Oktober 2026 (instruksi pemilik). Status: **diputuskan untuk tahap s
    (tarif per m³ + biaya admin, pasif = admin saja, nomor KSM-001, jatuh tempo +8 hari, foto meter 6 bulan) mengikuti PRD Air
    Bersih KSM; data dapat dipindah dari file "Unduh cadangan" Excel aplikasi itu. Tautan sementara (butir 3) dihapus setelah
    fitur asli tersedia.
+
+### ADR41 — Air Bersih KSM tetap aplikasi terpisah; menu berlogo khusus pengurus (menggantikan butir 2–4 ADR40)
+
+Tanggal: 24 Oktober 2026 (instruksi pemilik). Status: **diputuskan**.
+
+1. Air Bersih KSM **tidak digabung** ke RT05 dan **tidak ada API/login bersama**. Aplikasi itu tetap berdiri sendiri
+   (SvelteKit + WoWSQL + Vercel) dengan login sendiri; akun air bersih hanya diberikan pemilik kepada Ketua RT. Rencana
+   penggabungan/porting di ADR40 butir 2 dan 4 dibatalkan. Tidak ada tabel, endpoint, atau hak baru di `rest-api`.
+2. RT05 hanya menyediakan **pintu masuk** "Air Bersih KSM" dengan **logo KSM Banyu Bening** (tanpa ikon panah) yang
+   mengalihkan pengurus ke aplikasi itu; di sana pengurus login lagi.
+3. **Hanya pengurus** (semua admin RT05, BR07: hak setara) yang melihat menu itu. **Warga tidak boleh melihatnya**:
+   - Mobile: kartu di Lainnya pengurus (`lib/features/pengurus/air_bersih_link.dart`); warga tidak punya tab itu (diuji
+     dengan aplikasi utuh untuk kedua peran).
+   - Web: sidebar Area Pengurus hanya di mode server, dirender `hidden` dan dibuka `cms-preview.js` setelah `/me`
+     terbukti `peran = pengurus`. Pratinjau statis Vercel (tanpa login) dan halaman publik tidak memuatnya sama sekali.
+4. Logo: `website/public/images/logo/air-bersih-ksm.png` = salinan byte-identik `static/logo-ksm.png` repo Air Bersih;
+   `mobile/assets/brand/air-bersih-ksm.png` byte-identik dengan website (diuji).

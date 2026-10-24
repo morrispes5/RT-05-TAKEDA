@@ -223,7 +223,14 @@ M16 in_progress (Fase A di `codex/m16-fase-a`, lihat PROGRESS). ADR37: verifikas
    admin pertama (K5), tujuan backup offsite. Jangan membeli, mendaftar, atau mengubah DNS atas nama pemilik.
 4. Setelah hosting ada: ikuti RUNBOOK_PRODUCTION.md bagian 2–5.
 
-## 11. Air Bersih KSM — calon fitur pengurus RT05 (ADR40, 23 Okt 2026)
+## 11. Air Bersih KSM — aplikasi terpisah, menu khusus pengurus (ADR41, 24 Okt 2026; menggantikan ADR40)
+
+- **Keputusan terbaru (ADR41):** tidak digabung, tidak ada API/login bersama. RT05 hanya punya menu "Air Bersih KSM" berlogo
+  KSM Banyu Bening (tanpa panah) untuk **pengurus saja** (web: tampil setelah sesi pengurus terbukti; mobile: Lainnya pengurus).
+  Pengurus login lagi di aplikasi air bersih; akunnya hanya untuk Ketua RT. Butir di bawah yang menyebut "subfitur/penggabungan"
+  sudah tidak berlaku.
+
+### Catatan lama (ADR40, 23 Okt 2026)
 
 - **Apa:** aplikasi tagihan air KSM Banyu Bening (catat meter, tagihan air, pembayaran) untuk pengurus. Repo terpisah
   `morrispes5/air-bersih-ksm-claude` (lokal `C:UsersUSERDocumentsAIR BERSIH KSM CLAUDE`), SvelteKit + WoWSQL, live di
