@@ -12,8 +12,11 @@
 @foreach(['ringkasan' => ['Ringkasan', 'rumah', '/pengurus'], 'artikel' => ['Artikel', 'buku', '/pengurus/artikel'], 'dokumentasi' => ['Dokumentasi', 'foto', '/pengurus/dokumentasi'], 'profil' => ['Profil RT05', 'warga', '/pengurus/profil']] as $key => [$label, $icon, $href])
 <a href="{{ $href }}" @if($screen === $key || str_starts_with($screen, $key.'/')) aria-current="page" @endif><x-ikon :nama="$icon" />{{ $label }}</a>
 @endforeach
-{{-- ADR40: Air Bersih KSM masih aplikasi terpisah; sementara hanya tautan, kelak digabung sebagai fitur pengurus. --}}
-<a href="{{ config('services.air_bersih_ksm.url') }}" target="_blank" rel="noopener" data-air-bersih-ksm><x-ikon nama="air" />Tagihan air KSM<span class="sr-only"> (aplikasi air bersih, tab baru)</span></a>
+{{-- ADR41: Air Bersih KSM aplikasi terpisah (login sendiri). Hanya untuk pengurus: tidak dirender di pratinjau tanpa login,
+     dan di mode server baru tampil setelah sesi terbukti peran pengurus (cms-preview.js signedIn). --}}
+@if($server)
+<a href="{{ config('services.air_bersih_ksm.url') }}" target="_blank" rel="noopener" data-air-bersih-ksm hidden><img src="/images/logo/air-bersih-ksm.png" width="24" height="24" alt="">Air Bersih KSM<span class="sr-only"> (aplikasi terpisah, tab baru)</span></a>
+@endif
 <a class="cms-return" href="/"><x-ikon nama="panah" />Lihat website</a>
 </nav>
 @if($server)

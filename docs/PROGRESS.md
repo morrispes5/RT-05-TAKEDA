@@ -77,6 +77,16 @@ pesan error. Tes baru: `M16AuditFixesTest` (2), `HealthTest` (+2), `M15UatFinanc
 (kata sandi di berkas catatan lokal pemilik). Belum: SSH VPS, setelan GitHub, rotasi kredensial (menunggu izin pemilik).
 
 
+### M16 — menu Air Bersih KSM khusus pengurus (24 Okt 2026, ADR41, branch `codex/m16-menu-air-bersih`)
+
+Instruksi pemilik: Air Bersih KSM tetap aplikasi terpisah (login sendiri, akun hanya untuk Ketua RT); RT05 cukup punya menu
+berlogo yang mengalihkan pengurus ke sana; warga tidak boleh melihatnya. Mobile: kartu "Air Bersih KSM" dengan logo KSM Banyu
+Bening, tanpa ikon panah. Web: menu sidebar berlogo hanya di mode server dan baru tampil setelah sesi terbukti pengurus;
+pratinjau statis tanpa login tidak lagi memuat tautan. Tanpa perubahan API/database. Validasi lokal: website `php artisan test`
+36/36 (`AirBersihLinkTest` 6 tes), `build:preview` 24 rute, `test:preview` PASS; mobile `dart format` 0 berubah, `flutter analyze`
+bersih, `flutter test` 279 lulus (`m16_air_bersih_link_test.dart` 6 tes: logo, tanpa panah, aplikasi utuh warga = tidak ada
+menu, pengurus = ada); `check-repo` OK.
+
 ### M16 — tautan Air Bersih KSM (23 Okt 2026, ADR40, branch `codex/m16-tautan-air-bersih`)
 
 Instruksi pemilik: Air Bersih KSM (repo terpisah, tagihan air KSM) adalah calon fitur pengurus RT05; sementara hanya tautan.
