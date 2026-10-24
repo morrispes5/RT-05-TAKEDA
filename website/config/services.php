@@ -10,9 +10,11 @@ return [
     ],
 
     // M16: hanya production yang boleh diindeks mesin pencari; staging/preview noindex. APK_META: path/URL versi.json.
+    // APK_PAGE: hanya pratinjau statis (tanpa berkas). Staging/production yang punya versi.json tetap mengunduh langsung.
     'rt05_site' => [
         'indexing' => filter_var(env('RT05_SEARCH_INDEXING', false), FILTER_VALIDATE_BOOL),
         'apk_meta' => env('RT05_APK_META'),
+        'apk_page' => env('RT05_APK_PAGE'),
     ],
 
     // ADR41: menu Air Bersih KSM (aplikasi terpisah, login sendiri) di Area Pengurus, hanya untuk pengurus.

@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **24 Oktober 2026 ±13.30 WIB** oleh Claude (ADR41: PR #70 menu Air Bersih KSM khusus pengurus merge, staging di-deploy, APK 1014 dirilis).
+Terakhir diperbarui: **24 Oktober 2026 ±14.39 WIB** (pratinjau Vercel `/aplikasi` menaut ke halaman unduh staging; staging yang punya APK tidak diubah).
 
 ## 1. Cara mulai sesi baru
 
@@ -23,7 +23,7 @@ Terakhir diperbarui: **24 Oktober 2026 ±13.30 WIB** oleh Claude (ADR41: PR #70 
 | Milestone | M00–M15 **passed**, M15b **passed** (ADR35/36, 22 Okt); **M16 berikutnya** |
 | `main` | `e74f2e0` (PR #70 menu Air Bersih KSM khusus pengurus, ADR41; sebelumnya PR #69, #67) |
 | Staging (VPS Hostinger, project Docker `rt05-staging`) | `e74f2e0`, deploy immutable 24 Okt ±13.18–13.24 WIB, selesai tanpa GAGAL, 9 container sehat. Uji live menu Air Bersih KSM 7/7 PASS (tamu/warga tidak melihat, pengurus melihat berlogo, klik membuka halaman masuk Air Bersih) |
-| Website Vercel (`https://rt05takeda.vercel.app`) | mengikuti `website/preview/` di `main`; ekspor dibangun ulang di PR #58 (tombol Pulihkan hanya di CMS mode server, bukan mode demo). Verifikasi `check-preview.mjs` terhadap Vercel setelah PR #58 **belum dijalankan** |
+| Website Vercel (`https://rt05takeda.vercel.app`) | mengikuti `website/preview/` di `main`. Halaman `/aplikasi` pada pratinjau tidak menyimpan APK; tombol **Buka halaman unduh** menuju `https://takeda-staging.morriz.tech/aplikasi#unduh`. Staging yang punya `versi.json` tetap menampilkan berkas langsung. Perubahan ini masuk setelah PR-nya digabung ke `main` |
 | APK uji tim | build **1014** = versi **1.0.0** (commit `e74f2e0`, run [40069668317](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/40069668317)). Halaman unduh: `https://takeda-staging.morriz.tech/aplikasi`. Riwayat: bagian 2a |
 | Link APK untuk tim (Drive pemilik, "siapa saja yang punya link") | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view — **link tetap**; build baru diunggah sebagai *versi baru* file yang sama. **Isinya masih 1008** sampai pemilik mengunggah 1009 (Chrome sesi agent login sebagai akun lain tanpa akses folder Drive; agent tidak meminta akses). Sementara tim memakai tautan `/unduh` di atas |
 | PR terbuka | tidak ada (PR #50, #53, #55, #56, #58 sudah merge 20 Okt) |
