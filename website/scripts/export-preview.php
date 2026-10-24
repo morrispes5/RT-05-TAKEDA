@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 require __DIR__.'/../vendor/autoload.php';
 $root = realpath(__DIR__.'/..');
-foreach (['RT05_SEARCH_INDEXING' => 'false', 'APP_ENV' => 'production', 'APP_DEBUG' => 'false', 'SESSION_DRIVER' => 'array', 'CACHE_STORE' => 'array', 'APP_URL' => 'https://rt05takeda.vercel.app', 'APP_KEY' => 'base64:'.base64_encode(random_bytes(32))] as $key => $value) {
+foreach (['RT05_SEARCH_INDEXING' => 'false', 'APP_ENV' => 'production', 'APP_DEBUG' => 'false', 'SESSION_DRIVER' => 'array', 'CACHE_STORE' => 'array', 'APP_URL' => 'https://rt05takeda.vercel.app', 'APP_KEY' => 'base64:'.base64_encode(random_bytes(32)), 'RT05_APK_PAGE' => 'https://takeda-staging.morriz.tech/aplikasi#unduh'] as $key => $value) {
     putenv("$key=$value");
     $_ENV[$key] = $value;
     $_SERVER[$key] = $value;

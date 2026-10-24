@@ -114,6 +114,17 @@ class SiteContent
         }
     }
 
+    /**
+     * Pratinjau Vercel tidak menyimpan APK. Hanya URL unduh staging yang diterima, dan hanya dipakai
+     * bila versi.json tidak ada. Alamat lain diabaikan supaya pratinjau tidak menaut ke situs asing.
+     */
+    public static function apkPage(): ?string
+    {
+        $url = trim((string) config('services.rt05_site.apk_page'));
+
+        return $url === 'https://takeda-staging.morriz.tech/aplikasi#unduh' ? $url : null;
+    }
+
     private static function apkShape(mixed $m): ?array
     {
         if (! is_array($m) || ! is_string($m['versi'] ?? null) || ! is_int($m['build'] ?? null) || ! is_array($m['berkas'] ?? null)) {
