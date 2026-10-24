@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **22 Oktober 2026 ±06.30 WIB** oleh Claude (M15b: PR #60 dan #61 merge, APK 1011 dirilis dan diuji di emulator).
+Terakhir diperbarui: **24 Oktober 2026 ±13.30 WIB** oleh Claude (ADR41: PR #70 menu Air Bersih KSM khusus pengurus merge, staging di-deploy, APK 1014 dirilis).
 
 ## 1. Cara mulai sesi baru
 
@@ -21,10 +21,10 @@ Terakhir diperbarui: **22 Oktober 2026 ±06.30 WIB** oleh Claude (M15b: PR #60 d
 | Hal | Nilai |
 | --- | --- |
 | Milestone | M00–M15 **passed**, M15b **passed** (ADR35/36, 22 Okt); **M16 berikutnya** |
-| `main` | `f392612` (PR #61 perbaikan uji emulator; PR #60 M15b; PR #58/#59 putaran 3) |
-| Staging (VPS Hostinger, project Docker `rt05-staging`) | `f392612`, deploy immutable 22 Okt ±06.02–06.06 WIB, 0 GAGAL. Editor Profil RT05 CMS web `cms-profile-live.mjs` 9/9 PASS (22 Okt) |
+| `main` | `e74f2e0` (PR #70 menu Air Bersih KSM khusus pengurus, ADR41; sebelumnya PR #69, #67) |
+| Staging (VPS Hostinger, project Docker `rt05-staging`) | `e74f2e0`, deploy immutable 24 Okt ±13.18–13.24 WIB, selesai tanpa GAGAL, 9 container sehat. Uji live menu Air Bersih KSM 7/7 PASS (tamu/warga tidak melihat, pengurus melihat berlogo, klik membuka halaman masuk Air Bersih) |
 | Website Vercel (`https://rt05takeda.vercel.app`) | mengikuti `website/preview/` di `main`; ekspor dibangun ulang di PR #58 (tombol Pulihkan hanya di CMS mode server, bukan mode demo). Verifikasi `check-preview.mjs` terhadap Vercel setelah PR #58 **belum dijalankan** |
-| APK uji tim | build **1013** = versi **1.0.0** (commit `b1d080d`, run [39718995077](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/39718995077)). Halaman unduh: `https://takeda-staging.morriz.tech/aplikasi`. Riwayat: bagian 2a |
+| APK uji tim | build **1014** = versi **1.0.0** (commit `e74f2e0`, run [40069668317](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/40069668317)). Halaman unduh: `https://takeda-staging.morriz.tech/aplikasi`. Riwayat: bagian 2a |
 | Link APK untuk tim (Drive pemilik, "siapa saja yang punya link") | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view — **link tetap**; build baru diunggah sebagai *versi baru* file yang sama. **Isinya masih 1008** sampai pemilik mengunggah 1009 (Chrome sesi agent login sebagai akun lain tanpa akses folder Drive; agent tidak meminta akses). Sementara tim memakai tautan `/unduh` di atas |
 | PR terbuka | tidak ada (PR #50, #53, #55, #56, #58 sudah merge 20 Okt) |
 | Issue terbuka | **#54** (pelacak sisa gate M15, checklist), #47 (bukti performa, medium). #46 dan #48 ditutup oleh PR #50 |
@@ -42,7 +42,8 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | 1010 | 3010 / 2010 | `2f781d7` | 21 Okt 20.40 | 21 Okt 20.45 ke `/unduh` | M15b (ADR35): Profil RT05, bukti transfer, WhatsApp, NIK/KK, Kebijakan Privasi | Diuji agent di emulator; 6 temuan → 1011 |
 | 1011 | 3011 / 2011 | `f392612` | **22 Okt 06.08** | **22 Okt 06.09 ke `/unduh`** (Drive: menunggu pemilik) | 1010 + perbaikan temuan uji emulator | Diuji ulang agent di emulator (lulus); menunggu uji tim |
 | 1012 (1.0.0) | 3012 / 2012 | `42fadc9` | **22 Okt 09.51** | **22 Okt 09.54 ke `/unduh` + `versi.json`** | M16 Fase A: halaman unduh resmi, kartu Tentang aplikasi, pemberitahuan versi baru | Menunggu uji pemilik |
-| **1013** (1.0.0) | 3013 / 2013 | `b1d080d` | **22 Okt 10.57** | **22 Okt 10.58 ke `/unduh` + `versi.json`** | Foto pengaduan/bukti tidak tertinggal di cache HP; server: kunci tagihan/pembayaran, CSP CMS, performa | Menunggu uji pemilik |
+| 1013 (1.0.0) | 3013 / 2013 | `b1d080d` | 22 Okt 10.57 | 22 Okt 10.58 ke `/unduh` + `versi.json` | Foto pengaduan/bukti tidak tertinggal di cache HP; server: kunci tagihan/pembayaran, CSP CMS, performa | Menunggu uji pemilik |
+| **1014** (1.0.0) | 3014 / 2014 | `e74f2e0` | **24 Okt 13.25** | **24 Okt 13.27 ke `/unduh` + `versi.json`** (Drive: menunggu pemilik) | ADR41: menu Air Bersih KSM berlogo di Lainnya pengurus (warga tidak melihat). Catatan rilis `versi.json` diisi manual (dispatch tanpa input `catatan`); APK, ukuran, SHA-256 tidak berubah, sertifikat = kunci rilis tetap | Menunggu uji pemilik |
 
 Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
 
