@@ -8,7 +8,7 @@ import '../../core/session.dart';
 import '../../core/widgets.dart';
 import 'account_access.dart';
 
-/// Isi Kebijakan Privasi aplikasi (ADR35, versi 2026-10-21). Server hanya menyimpan versi yang disetujui
+/// Isi Kebijakan Privasi aplikasi (ADR35, ADR42: versi 2026-10-24). Server hanya menyimpan versi yang disetujui
 /// (`privasi_versi`); naikkan versi di rest-api `App\Support\Privacy::VERSION` bila isi ini berubah.
 const privacySections = <(String, List<String>)>[
   (
@@ -22,7 +22,7 @@ const privacySections = <(String, List<String>)>[
     [
       'Untuk masuk: nama, email, dan kata sandi (kata sandi disimpan teracak, tidak bisa dibaca siapa pun).',
       'Untuk administrasi rumah: alamat rumah (blok, jalan, nomor), anggota keluarga, dan hubungan keluarga.',
-      'Opsional: nomor WhatsApp, NIK, dan nomor Kartu Keluarga. Boleh dikosongkan; pengurus juga dapat membantu mengisinya sesuai data RT.',
+      'Opsional: nomor WhatsApp, NIK, nomor Kartu Keluarga, dan tanggal lahir anggota keluarga. Boleh dikosongkan; pengurus juga dapat membantu mengisinya sesuai data RT. Tanggal lahir dipakai pengurus untuk menghitung kelompok umur warga (misalnya balita, remaja, dan lansia).',
       'Laporan yang Anda kirim: pengaduan, aspirasi, usulan kegiatan, beserta foto atau dokumennya.',
       'Iuran: tagihan rumah Anda, pembayaran yang dicatat pengurus, dan foto bukti transfer bila Anda mengirimnya.',
       'Token perangkat untuk notifikasi, serta catatan siapa mengubah data dan kapan (untuk keamanan).',
@@ -32,7 +32,7 @@ const privacySections = <(String, List<String>)>[
   (
     'Siapa yang bisa melihat',
     [
-      'Alamat rumah, NIK, nomor KK, dan nomor WhatsApp hanya dapat dilihat oleh pengurus RT dan keluarga Anda sendiri. Warga lain tidak bisa melihatnya.',
+      'Alamat rumah, NIK, nomor KK, nomor WhatsApp, dan tanggal lahir hanya dapat dilihat oleh pengurus RT dan keluarga Anda sendiri. Warga lain tidak bisa melihatnya.',
       'NIK dan nomor KK disimpan terenkripsi dan di aplikasi hanya tampil tersamar (misalnya 3674••••••••0001).',
       'Warga hanya melihat tagihan iuran rumahnya sendiri. Status iuran rumah lain dan kas RT hanya terlihat oleh pengurus.',
       'Laporan yang disembunyikan identitasnya tidak menampilkan nama pelapor kepada warga lain, tetapi pengurus tetap dapat melihat pelapor untuk tindak lanjut.',
@@ -137,7 +137,7 @@ class _PrivacyPolicyPageState extends ConsumerState<PrivacyPolicyPage> {
                 ),
               ),
             ),
-          const Text('Versi 21 Oktober 2026.', style: TextStyle(color: Brand.muted, fontSize: 13)),
+          const Text('Versi 24 Oktober 2026.', style: TextStyle(color: Brand.muted, fontSize: 13)),
           if (widget.consent) ...[
             const SizedBox(height: 12),
             CheckboxListTile(

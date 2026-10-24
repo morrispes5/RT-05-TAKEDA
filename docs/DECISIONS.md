@@ -631,3 +631,22 @@ Tanggal: 24 Oktober 2026 (instruksi pemilik). Status: **diputuskan**.
      terbukti `peran = pengurus`. Pratinjau statis Vercel (tanpa login) dan halaman publik tidak memuatnya sama sekali.
 4. Logo: `website/public/images/logo/air-bersih-ksm.png` = salinan byte-identik `static/logo-ksm.png` repo Air Bersih;
    `mobile/assets/brand/air-bersih-ksm.png` byte-identik dengan website (diuji).
+
+### ADR42 — Fitur tambahan RT: tanggal lahir anggota keluarga dan statistik kelompok umur warga
+
+Tanggal: 24 Oktober 2026 (permintaan Pak RT lewat pemilik; pemilik menyetujui kelompok usulan dan persetujuan ulang privasi).
+Status: **diputuskan**. Fitur tambahan RT di luar M00–M16 (seperti M15b), rilis APK 1015.
+
+1. `warga.tanggal_lahir` (date, nullable, migrasi aditif `2026_10_24_000100`). Umur **tidak disimpan**; dihitung tahun penuh
+   per tanggal hari ini di WIB (`App\Domain\Residents\AgeGroups`, sama dengan `birth_date.dart` di aplikasi). Validasi
+   1900-01-01 s.d. hari ini. Opsional di semua jalur.
+2. Kelompok (dasar: siklus hidup Cek Kesehatan Gratis Kemenkes; lansia ≥60 sesuai UU 13/1998; dirinci untuk RT):
+   balita 0–5, anak-anak 6–12, remaja 13–17, dewasa 18–59, lansia 60–69, lansia 70+ ≥70.
+3. Pengisian: akun utama untuk keluarganya (tambah/ubah anggota, termasuk kepala lewat data anggota); **pengurus CRUD penuh**
+   (tambah anggota, ubah, kosongkan, arsipkan) sehingga Pak RT dapat mengisi dari data manual RT bila warga tidak mengisi.
+4. `GET /api/v1/admin/age-stats` khusus pengurus: total warga aktif, jumlah per kelompok, belum diisi, ringkasan per rumah,
+   daftar warga yang dapat disaring kelompok, rentang umur bebas (`min`/`max`, mis. 60–65), atau `belum_diisi`. Aplikasi:
+   tab Warga → **Statistik usia**; ketuk warga untuk mengubah datanya.
+5. Privasi: tanggal lahir hanya untuk pengurus dan keluarga sendiri. Kebijakan Privasi versi **2026-10-24** menambah tanggal
+   lahir dan tujuannya; semua akun diminta menyetujui ulang sekali (disetujui pemilik). Tanpa jenis kelamin dan tanpa impor
+   Excel otomatis (belum diminta).

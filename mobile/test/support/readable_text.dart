@@ -17,6 +17,14 @@ void expectTextFullyVisible(WidgetTester tester, String message) {
 }
 
 /// Gulir sampai [finder] bisa diketuk. Pola sama dengan scrollAuth di auth_access_test.
+/// Gulir formulir vertikal teratas ke awal (mis. setelah menekan tombol di bagian bawah formulir yang panjang).
+Future<void> scrollToTop(WidgetTester tester) async {
+  final vertical = find.byWidgetPredicate((widget) => widget is Scrollable && axisDirectionToAxis(widget.axisDirection) == Axis.vertical);
+  if (vertical.evaluate().isEmpty) return;
+  tester.state<ScrollableState>(vertical.last).position.jumpTo(0);
+  await tester.pump();
+}
+
 Future<void> scrollUntilReadable(WidgetTester tester, Finder finder) async {
   final vertical = find.byWidgetPredicate((widget) => widget is Scrollable && axisDirectionToAxis(widget.axisDirection) == Axis.vertical);
   var guard = 0;

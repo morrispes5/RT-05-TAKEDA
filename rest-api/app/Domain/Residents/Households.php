@@ -61,6 +61,7 @@ final class Households
                 'hubungan_keluarga' => trim($data['hubungan_keluarga']),
                 'whatsapp' => $data['whatsapp'] ?? null,
                 'nik' => $data['nik'] ?? null,
+                'tanggal_lahir' => $data['tanggal_lahir'] ?? null,
                 'is_kepala' => false,
             ]);
             Links::startMembership($warga, $k, $warga->hubungan_keluarga, $sumber, $actor);
@@ -79,7 +80,7 @@ final class Households
             Links::assertEditor($actor, $k);
             Links::assertVersion($k, $versi);
             $warga = self::member($k, $wargaId, $viaPengurus);
-            $warga->fill(array_intersect_key($data, array_flip(['nama', 'hubungan_keluarga', 'whatsapp', 'nik'])))->save();
+            $warga->fill(array_intersect_key($data, array_flip(['nama', 'hubungan_keluarga', 'whatsapp', 'nik', 'tanggal_lahir'])))->save();
             if (array_key_exists('hubungan_keluarga', $data)) {
                 KeanggotaanKeluarga::where('warga_id', $warga->id)->whereNull('selesai_at')->update(['hubungan_keluarga' => $data['hubungan_keluarga']]);
             }

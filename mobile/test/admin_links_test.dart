@@ -106,6 +106,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Tandai pindah'));
     await tester.pumpAndSettle();
     expect(find.byType(MemberPage), findsOneWidget);
+    await scrollToTop(tester);
     expect(tester.widget<TextField>(find.widgetWithText(TextField, 'Nama lengkap')).controller!.text, 'Ani Uji');
     const kept = 'Data keluarga sudah berubah. Muat ulang lalu coba lagi. Teks yang Anda ketik tetap ada. Periksa data terbaru, lalu kirim lagi.';
     await scrollUntilReadable(tester, find.text(kept));
