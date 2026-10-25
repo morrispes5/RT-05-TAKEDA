@@ -14,7 +14,7 @@ const privacySections = <(String, List<String>)>[
   (
     'Siapa pengelolanya',
     [
-      'Aplikasi dan website RT05 TAKEDA dikelola oleh pengurus RT 05 RW 07 Taman Kedaung. Pertanyaan atau permintaan tentang data pribadi bisa disampaikan ke pengurus RT, langsung atau lewat menu Aspirasi di aplikasi.',
+      'Aplikasi dan website RT05 TAKEDA dikelola oleh pengurus RT 05 RW 07 Taman Kedaung (Ketua RT: Agus Ferdiansyah). Pertanyaan atau permintaan tentang data pribadi bisa disampaikan ke pengurus RT, langsung, lewat WhatsApp Ketua RT yang tercantum di halaman Kontak website, atau lewat menu Aspirasi di aplikasi.',
     ],
   ),
   (
@@ -49,7 +49,7 @@ const privacySections = <(String, List<String>)>[
   (
     'Penyimpanan',
     [
-      'Data tetap tersimpan selama Anda tercatat sebagai warga. Bila pindah, data diarsipkan dan tidak tampil lagi, tetapi catatan iuran dan kas tidak dihapus karena menjadi bukti keuangan RT.',
+      'Data tetap tersimpan selama Anda tercatat sebagai warga. Bila pindah atau meninggal, data diarsipkan dan tidak tampil lagi. 12 bulan kemudian nama, nomor WhatsApp, NIK, nomor KK, dan tanggal lahir dianonimkan otomatis. Catatan iuran dan kas tidak dihapus karena menjadi bukti keuangan RT.',
       'Log teknis disimpan 14 hari, berkas ekspor 24 jam, dan notifikasi sekitar 12 bulan.',
     ],
   ),
@@ -137,7 +137,7 @@ class _PrivacyPolicyPageState extends ConsumerState<PrivacyPolicyPage> {
                 ),
               ),
             ),
-          const Text('Versi 24 Oktober 2026.', style: TextStyle(color: Brand.muted, fontSize: 13)),
+          const Text('Versi 25 Oktober 2026.', style: TextStyle(color: Brand.muted, fontSize: 13)),
           if (widget.consent) ...[
             const SizedBox(height: 12),
             CheckboxListTile(

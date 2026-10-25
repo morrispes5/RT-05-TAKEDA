@@ -194,7 +194,11 @@ void main() {
     expect(first.containsKey('tagihan_aktif'), isFalse);
     expect(first.containsKey('peran'), isFalse);
     expect(find.byType(HouseAddressPage), findsOneWidget);
+    // Pilihan jalan Mawar (M17) memanjangkan formulir: gulir kembali ke kolom Jalan.
+    await tester.drag(find.byType(ListView), const Offset(0, 3000));
+    await tester.pumpAndSettle();
     expect(tester.widget<TextField>(find.widgetWithText(TextField, 'Jalan')).controller!.text, 'Jalan Ditulis Duluan');
+    await _reveal(tester, find.widgetWithText(TextField, 'Alasan'));
     expect(tester.widget<TextField>(find.widgetWithText(TextField, 'Alasan')).controller!.text, 'Koreksi alamat');
     const kept = 'Data rumah sudah berubah. Muat ulang lalu coba lagi. Teks yang Anda ketik tetap ada. Periksa data terbaru, lalu kirim lagi.';
     await scrollUntilReadable(tester, find.text(kept));
@@ -322,7 +326,7 @@ void main() {
     });
     expect(find.text('Anak Uji'), findsOneWidget);
     expect(find.text('Riwayat tautan'), findsWidgets);
-    expect(find.text('Peran tidak diubah dari aplikasi. Setiap pengurus memiliki hak yang sama.'), findsOneWidget);
+    expect(find.text('Peran hanya dapat diubah oleh super admin RT. Setiap pengurus memiliki hak yang sama.'), findsOneWidget);
     expect(find.text('Ubah peran'), findsNothing);
     expect(find.byType(DropdownButtonFormField<String>), findsNothing);
     expect(find.textContaining('password'), findsNothing);

@@ -427,7 +427,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               );
             },
           ),
-          _field('jalan', 'Jalan', optional: widget.additional, maxLength: 150),
+          _field('jalan', 'Jalan', optional: widget.additional, hint: 'mis. Mawar 10', maxLength: 150),
+          StreetChips(controller: c['jalan']!),
           if (!widget.additional) ...[
             DropdownButtonFormField<String>(
               key: const ValueKey('field-hunian'),
@@ -718,7 +719,8 @@ class _RevisionRequestPageState extends ConsumerState<RevisionRequestPage> {
         Text('Alamat rumah (opsional)', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 10),
         _input('blok', 'Blok', _blok, hint: 'mis. A atau D5', max: 30),
-        _input('jalan', 'Jalan', _jalan),
+        _input('jalan', 'Jalan', _jalan, hint: 'mis. Mawar 10'),
+        StreetChips(controller: _jalan),
         _input('nomor', 'Nomor', _nomor, max: 20),
         const SizedBox(height: 8),
         BusyButton(label: 'Kirim perbaikan', icon: Icons.send, onPressed: _submit),

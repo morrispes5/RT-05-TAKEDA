@@ -433,7 +433,7 @@ class ResidentsController extends Controller
         return Api::data(Present::akunDetail(Akun::with(Present::AKUN_DETAIL)->findOrFail($id)));
     }
 
-    /** Nonaktifkan/aktifkan akun; peran tidak dapat diubah lewat API (hanya command operator). */
+    /** Nonaktifkan/aktifkan akun. Peran hanya lewat setRole (super admin, ADR43) atau command operator. */
     public function updateAccount(Request $request, string $id): JsonResponse
     {
         $data = $request->validate([
@@ -449,6 +449,18 @@ class ResidentsController extends Controller
     {
         $data = $request->validate(['alasan' => ['required', 'string', 'max:300']]);
         Accounts::archive($request->user(), $id, $data['alasan']);
+
+        return $this->showAccount($id);
+    }
+
+    /** ADR43: POST /admin/accounts/{id}/role — hanya super admin. */
+    public function setRole(Request $request, string $id): JsonResponse
+    {
+        $data = $request->validate([
+            'peran' => ['required', 'in:pengurus,warga'],
+            'alasan' => ['required', 'string', 'max:300'],
+        ]);
+        Accounts::setRole($request->user(), $id, $data['peran'], $data['alasan']);
 
         return $this->showAccount($id);
     }

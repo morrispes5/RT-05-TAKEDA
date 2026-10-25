@@ -16,7 +16,7 @@ class OpenApiContractTest extends TestCase
 
         foreach (OpenApi::operations() as $operation => $meta) {
             $this->assertContains($meta['status'], ['implemented', 'planned'], $operation);
-            $this->assertMatchesRegularExpression('/^M(0[2-9]|1[0-6])$/', $meta['milestone'], $operation);
+            $this->assertMatchesRegularExpression('/^M(0[2-9]|1[0-9]|20)$/', $meta['milestone'], $operation);
         }
     }
 
