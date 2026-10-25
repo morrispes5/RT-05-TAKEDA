@@ -650,3 +650,46 @@ Status: **diputuskan**. Fitur tambahan RT di luar M00–M16 (seperti M15b), rili
 5. Privasi: tanggal lahir hanya untuk pengurus dan keluarga sendiri. Kebijakan Privasi versi **2026-10-24** menambah tanggal
    lahir dan tujuannya; semua akun diminta menyetujui ulang sekali (disetujui pemilik). Tanpa jenis kelamin dan tanpa impor
    Excel otomatis (belum diminta).
+
+### ADR43 — Hasil rapat RT 24 Okt 2026: milestone M17–M20, M16 dijalankan sesudah domain diputuskan
+
+Tanggal: 25 Oktober 2026 (dokumen pemilik "JAWABAN CLAUDE DAN MEETING RT 24 OKTOBER 2026" + jawaban pemilik di sesi Claude).
+Status: **diputuskan**. Mengubah ADR36/M16 "milestone terakhir": masih ada M17–M20 sebelum rilis penuh.
+
+**Jadwal:** soft launch **beta 8 Nov – Des 2026**, rilis penuh **paling lambat awal 2027**. Beta memakai data warga asli, jadi
+harus di **production** (bukan staging, AGENTS); domain diputuskan awal November, lalu M16 production. Urutan kerja:
+M17 → M18 → (2 Nov pindah VPS staging) → M16 production + beta → M19 → M20.
+
+**Fakta dan keputusan yang mengikat (sumber: pemilik/Pak RT):**
+1. Kontak resmi pengurus: **Ketua RT Agus Ferdiansyah**; nomor WhatsApp-nya boleh dipublikasikan di halaman Kontak dan Kebijakan Privasi. Nomor diisi lewat
+   konten/pengaturan (database), **tidak ditulis di Git** (repo publik).
+2. Bendahara **Mas Wirawan** boleh dipublikasikan; nomor WhatsApp bendahara diisi di pengaturan aplikasi (database), bukan Git.
+   Sekretaris tetap belum dipublikasikan.
+3. Semua pengurus setara hak bisnis (BR07 tetap). **Super admin = akun `takedatamankedaung@gmail.com`**: satu-satunya akun yang
+   boleh mengangkat/menurunkan warga menjadi pengurus dari aplikasi (pengurus terakhir tidak bisa diturunkan; diaudit).
+   Kata sandi diberikan ke pemilik lewat berkas catatan lokal, tidak di Git/chat. Akun uji sintetis M06 tetap dijaga.
+4. Alamat: jalan RT 05 = **Mawar 8 s.d. Mawar 14**; penulisan dibakukan (pilihan jalan, blok, nomor).
+5. Kepala keluarga meninggal → pengurus memindahkan kepala ke istri/anak (fitur sudah ada). Akun anak/istri yang mendaftar
+   dengan alamat/kepala yang sama otomatis dicocokkan dan masuk keluarga itu **setelah disetujui pengurus** (aturan tetap).
+6. **Keuangan (M18, kritis):** iuran bawaan Rp75.000; nominal bayar boleh berbeda.
+   - Bayar kurang: bendahara memilih saat menyetujui — **lunas dengan keringanan** (sisa dibebaskan, alasan wajib) atau **kurang
+     bayar** (sisa tetap tunggakan).
+   - Rumah kedua / rumah jarang dipakai: **tarif khusus per rumah** (nominal, mulai bulan, alasan) diatur pengurus.
+   - Bayar lebih: bendahara memilih — **sumbangan ke kas** atau **titipan bulan berikutnya**.
+   - Bukti transfer warga memuat nominal (75.000 bawaan atau nominal lain); bendahara menyetujui dengan nominal yang dapat
+     dikoreksi; kas bertambah sebesar uang yang benar-benar diterima. Semua nominal di halaman pengurus dapat dikoreksi lewat
+     jalur koreksi (pembalikan + rekaman pengganti), tidak pernah diedit diam-diam.
+   - **Saldo kas transparan ke warga**: saldo + ringkasan masuk/keluar per bulan (tanpa nama rumah). Status iuran rumah lain
+     tetap tertutup (mengubah sebagian ADR26/ADR35).
+   - Laporan bulanan **dan tahunan**; Excel `.xlsx` rapi: sheet per bulan, rekap tahunan, tabel rumah × bulan.
+7. Masa simpan data setelah warga pindah/meninggal: **12 bulan lalu dianonimkan**; catatan iuran/kas tetap sebagai bukti.
+8. **Tombol panik (M19, uji coba):** aktivasi 3 langkah (tekan → baca ketentuan + jenis darurat: kebakaran, kemalingan,
+   penyerangan, darurat serius lain → konfirmasi Ya/Batal). Penerima: **semua warga dan pengurus**; **tidak boleh anonim**
+   (nama, rumah, jenis). Bunyi seperti alarm di Android (kanal notifikasi alarm, izin pengguna). Penyalahgunaan: peringatan,
+   **3 kali → tombol panik akun itu dinonaktifkan**. Bukan pengganti 112/damkar/polisi.
+9. **iPhone (M20):** aplikasi iOS asli butuh Apple Developer berbayar (±US$99/tahun, kartu) dan Mac; pemilik tidak punya kartu
+   kredit/NPWP. Jalan gratis: **versi web yang dipasang di layar utama iPhone (PWA)** dari kode yang sama/website, diuji di iPhone
+   nyata lewat Safari (tanpa emulator). Fitur yang bergantung Android (alarm panik) terbatas di iPhone.
+10. Teknis: hosting Biznet NEO Personal Large menunggu jawaban 6 pertanyaan (sudah dikirim); VPS staging baru 2 Nov; backup
+    otomatis lewat **GitHub Actions ke Drive pemilik** (bukan PC lokal); pemantau uptime gratis (pemilik diajari); hanya layanan
+    gratis (tanpa kartu kredit/NPWP).
