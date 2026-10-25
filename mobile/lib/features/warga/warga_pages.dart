@@ -19,6 +19,7 @@ import '../auth/account_access.dart';
 import '../auth/privacy_policy.dart';
 import '../household/family_actions.dart' show conflictKeptMessage, staleConflict;
 import '../household/complete_data_card.dart';
+import '../household/family_avatar.dart';
 import '../household/family_page.dart';
 import 'activity_proposals.dart';
 import 'app_about.dart';
@@ -1623,17 +1624,22 @@ class AccountPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final akun = ref.watch(sessionProvider).akun!;
+    // M17: foto profil keluarga (avatar bawaan) menggantikan inisial bila sudah dipilih.
+    final avatar = ref.watch(householdProvider).asData?.value['avatar'] as String?;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         SectionCard(
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: Brand.navy,
-                child: Text(akun.nama.isEmpty ? '?' : akun.nama[0].toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 22)),
-              ),
+              if (familyAvatars.containsKey(avatar))
+                FamilyAvatar(code: avatar, size: 56)
+              else
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Brand.navy,
+                  child: Text(akun.nama.isEmpty ? '?' : akun.nama[0].toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 22)),
+                ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
