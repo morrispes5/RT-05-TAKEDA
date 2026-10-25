@@ -21,7 +21,7 @@ Git root adalah folder `RT-05-TAKEDA/`, bukan folder induk `RT X TAKEDA`. Semua 
 
 ## Yang tidak berubah
 
-- Produk: RT05 TAKEDA, singkatan Taman Kedaung. Ketua: Agus Ferdiansyah. Sekretaris dan bendahara belum dipublikasikan. Jangan mengarang nama, kontak, tahun kegiatan, jumlah warga, atau fakta RT.
+- Produk: RT05 TAKEDA, singkatan Taman Kedaung. Ketua: Agus Ferdiansyah. Bendahara Mas Wirawan (ADR43). Sekretaris belum dipublikasikan. **Milestone lanjutan (ADR43, 25 Okt 2026): M17 penyesuaian rapat → M18 keuangan fleksibel → M16 production + beta 8 Nov → M19 tombol panik → M20 iPhone (PWA).** Jangan mengarang nama, kontak, tahun kegiatan, jumlah warga, atau fakta RT.
 - Website publik tanpa akun. Login web hanya CMS Artikel dan Dokumentasi. Desain diterima: navy/kuning/sky, logo gapura, font, foto asli, layout. Jangan ganti dengan desain generik.
 - Warga, rumah, keluarga, pengaduan, aspirasi, agenda, iuran, kas, token, dan notifikasi dilayani mobile.
 - Iuran Rp75.000 per rumah per bulan, dibayar offline, dicatat pengurus. Tidak ada tombol bayar, dompet, QRIS, checkout, atau webhook pembayaran. Nominal tagihan adalah snapshot periode; tarif baru tidak mengubah tagihan lama.

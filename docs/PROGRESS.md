@@ -975,7 +975,11 @@ ditentukan hanya oleh tersedianya kode.
 | M14 | passed | Website membaca API + CMS web nyata (ADR30); staging `08f2a1e` 21/21 + drill API mati |
 | M15 | **passed** (22 Okt, ADR36) | UAT tim putaran 1–3 + demo Ketua RT + uji emulator agent; APK 1011 `f392612`; sisa gate dipindah ke M16 |
 | M15b | **passed** (22 Okt) | Permintaan Pak RT (ADR35): APK 1011, staging `f392612`, uji emulator + live CMS |
-| M16 | in_progress | Fase A (22 Okt): SEO + `/aplikasi` + `/kebijakan-privasi`, versi 1.0.0, #47 dijelaskan; ADR37 tanpa verifikasi developer; production belum |
+| M16 | in_progress | Fase A (22 Okt): SEO + `/aplikasi` + `/kebijakan-privasi`, versi 1.0.0, #47 dijelaskan; ADR37 tanpa verifikasi developer; production menunggu domain (awal Nov, ADR43) |
+| M17 | planned | Penyesuaian hasil rapat RT 24 Okt (ADR43): kontak resmi, bendahara, super admin, jalan Mawar 8–14, masa simpan |
+| M18 | planned | Keuangan fleksibel (kritis): tarif khusus, nominal bebas, keringanan/kurang bayar, sumbangan/titipan, kas transparan, Excel tahunan |
+| M19 | planned | Tombol panik uji coba: 3 langkah, semua warga + pengurus, tidak anonim, 3 penyalahgunaan → nonaktif |
+| M20 | planned | iPhone lewat PWA (tanpa Apple Developer berbayar) |
 
 M00 memakai label accepted_baseline khusus, bukan status passed hasil tes baru. M01–M16 menggunakan planned/in_progress/passed/blocked.
 

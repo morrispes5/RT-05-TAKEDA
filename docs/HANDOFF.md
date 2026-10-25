@@ -217,13 +217,11 @@ judul dengan `update_file`. Connector Drive tidak bisa mengunggah isi file atau 
 
 ## 10. Langkah berikutnya yang disarankan
 
-M16 in_progress (Fase A di `codex/m16-fase-a`, lihat PROGRESS). ADR37: verifikasi developer Android ditunda.
-1. Merge PR M16 (atas izin pemilik), deploy staging, rilis APK uji 1.0.0 (beri tahu pemilik: build, tanggal, jam, tautan),
-   salin `versi.json` ke volume unduhan, cek `/aplikasi` staging tetap noindex.
-2. Selidiki P95 staging yang naik (bukti `docs/evidence/m16/`), bandingkan dengan M15 781 ms.
-3. Minta pemilik: kirim pertanyaan Biznet (RUNBOOK_PRODUCTION.md bagian 1), pilih domain (K1), kontak + masa simpan (K4),
-   admin pertama (K5), tujuan backup offsite. Jangan membeli, mendaftar, atau mengubah DNS atas nama pemilik.
-4. Setelah hosting ada: ikuti RUNBOOK_PRODUCTION.md bagian 2–5.
+**Baca ADR43 dulu (25 Okt 2026).** Setelah rapat RT 24 Okt ada milestone lanjutan, dikerjakan bertahap:
+1. **M17** penyesuaian rapat (kecil) → 2. **M18** keuangan fleksibel (kritis, tes skenario rapat wajib) →
+3. 2 Nov pindah VPS staging (`RUNBOOK_PRODUCTION.md` bagian 7) → 4. **M16** production setelah domain diputuskan awal Nov,
+lalu **soft launch beta 8 Nov** (data asli hanya di production) → 5. **M19** tombol panik → 6. **M20** iPhone (PWA).
+Rilis penuh paling lambat awal 2027. Perbaikan APK kecil dikumpulkan per rilis (jangan rilis APK tiap bug).
 
 ## 11. Air Bersih KSM — aplikasi terpisah, menu khusus pengurus (ADR41, 24 Okt 2026; menggantikan ADR40)
 

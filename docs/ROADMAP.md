@@ -365,6 +365,41 @@ pemulihan otomatis foto/push, issue #47.
 
 **Otorisasi:** perubahan server/DNS/production harus berada dalam instruksi pemilik yang berlaku. Tanpa akses, seluruh artifact/runbook/build tetap dibuat dan status live blocked; jangan mengklaim deploy.
 
+## M17 — Penyesuaian hasil rapat RT 24 Oktober 2026 (ADR43)
+
+**Scope:** kontak resmi Ketua RT di website/Kebijakan Privasi; bendahara Mas Wirawan di profil pengurus + nomor WhatsApp bendahara
+di pengaturan; **super admin** `takedatamankedaung@gmail.com` dapat mengangkat/menurunkan pengurus dari aplikasi (diaudit,
+pengurus terakhir dilindungi); pilihan jalan Mawar 8–14 + blok/nomor baku saat daftar dan input pengurus; masa simpan data
+12 bulan di Kebijakan Privasi (versi baru); verifikasi alur kepala keluarga meninggal dan akun anggota keluarga otomatis.
+Kumpulan perbaikan kecil APK (umur di daftar keluarga warga).
+
+**Gate:** tes backend/mobile/web lulus; super admin tidak bisa dipakai pengurus biasa; tidak ada data/kontak dikarang.
+
+## M18 — Keuangan fleksibel (kritis, ADR43 butir 6)
+
+**Scope:** tarif khusus per rumah; nominal bayar bebas dengan pilihan saat persetujuan (lunas dengan keringanan / kurang bayar,
+sumbangan / titipan); bukti transfer bernominal → persetujuan bendahara dengan nominal terkoreksi → pembayaran + kas; kas =
+uang yang benar-benar diterima; rekonsiliasi diperluas; saldo kas + ringkasan bulanan untuk warga; laporan tahunan; Excel
+`.xlsx` rapi (per bulan, rekap tahun, rumah × bulan).
+
+**Gate:** skenario rapat lulus tes otomatis (contoh: 8 rumah × 75 rb + 2 rumah × 50 rb = kas +700 rb, bukan 750 rb; dua rumah
+75 rb + 25 rb; bayar lebih); rekonsiliasi 0 masalah; tidak ada edit diam-diam (koreksi = pembalikan); uji bendahara di staging.
+
+## M19 — Tombol panik (uji coba, ADR43 butir 8)
+
+**Scope:** shortcut Android; aktivasi 3 langkah; kirim ke semua warga + pengurus dengan identitas pelapor, rumah, jenis
+darurat; notifikasi bergaya alarm (Android); pengurus menandai selesai/palsu; peringatan + nonaktif setelah 3 penyalahgunaan;
+fitur dapat dimatikan pengurus.
+
+**Gate:** uji HP nyata (bunyi di layar terkunci, aplikasi tertutup); batas laju; audit; teks peringatan bukan pengganti 112.
+
+## M20 — Dukungan iPhone lewat PWA (ADR43 butir 9)
+
+**Scope:** versi web aplikasi warga/pengurus yang dapat dipasang di layar utama iPhone (Safari); login, iuran, layanan,
+notifikasi web (iOS 16.4+ setelah dipasang); tanpa Apple Developer berbayar.
+
+**Gate:** diuji di iPhone nyata (milik tim/warga); keterbatasan (alarm panik, kamera) didokumentasikan.
+
 ## Menutup milestone
 
 Status hanya: planned, in_progress, passed, blocked. Partial completion ditulis per task; jangan menandai milestone passed jika gate utama blocked. Setiap hasil akhir menyebutkan milestone berikutnya, bukan otomatis melanjutkan semua milestone tanpa permintaan.
