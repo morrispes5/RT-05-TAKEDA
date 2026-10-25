@@ -1,8 +1,8 @@
 # M18 — Rencana keuangan fleksibel
 
-Tanggal: 25 Oktober 2026. Status: **usulan untuk persetujuan pemilik; belum diimplementasikan**.
+Tanggal: 25 Oktober 2026. Status: **disetujui pemilik 25 Oktober 2026; implementasi bertahap dimulai**.
 Prasyarat M17 passed: PR #81, merge `0f3b251`. Dasar: ADR43 butir 6, BR07/BR10–17, ADR26/27/35.
-Usulan keputusan ada di ADR44. Dokumen ini tidak mengizinkan migrasi sebelum pemilik menyetujui rencana konkret.
+Keputusan ada di ADR44. Pemilik menyetujui kelanjutan M18 setelah membaca hasil rencana; wajib pengujian luas sebelum staging/production.
 
 ## 1. Hasil yang dituju dan keputusan pemilik
 
@@ -54,7 +54,7 @@ flowchart LR
 - **Perubahan tarif tidak menghitung ulang tagihan yang sudah ada.** Tolak tanggal mulai yang menyentuh tagihan
   existing pada/selepas bulan itu; arahkan pengurus ke bulan belum ditagih atau jalur koreksi tagihan eksplisit.
 - Batas nominal tarif mengikuti batas umum saat ini Rp1.000–Rp10.000.000. Gratis satu periode dicatat sebagai
-  keringanan, bukan tarif nol tersembunyi. Usulan ini menunggu persetujuan bersama rencana.
+  keringanan, bukan tarif nol tersembunyi. Default ini disetujui bersama rencana.
 - Koreksi salah input tarif yang belum dipakai: batalkan versi asal dengan alasan, lalu versi pengganti dalam transaksi.
   Tarif yang sudah dirujuk tagihan tetap historis; buat versi untuk bulan berikutnya.
 - Kesalahan nominal tagihan existing memakai **penyesuaian tagihan tercatat**, bukan UPDATE snapshot: delta bertanda,
@@ -303,5 +303,4 @@ perubahan pemilik dicatat di ADR44 sebelum migrasi.
 | Koreksi tagihan historis? | Penyesuaian beralasan + pembalikan/pengganti, snapshot asal tetap; tidak memposting uang |
 | Format laporan? | Tahun kalender Jan–Des, waktu WIB, 14 sheet, angka API sebagai sumber total |
 
-**Gate yang belum selesai:** persetujuan pemilik atas M18_PLAN/ADR44 konkret. Belum ada migrasi, perubahan kontrak aktif,
-penambahan dependency repo, tes M18, deploy M18, atau APK M18 dalam pekerjaan perencanaan ini.
+**Gate persetujuan selesai 25 Oktober 2026:** pemilik meminta lanjut M18 dengan pengujian luas. Implementasi/tes/deploy/rilis tetap harus dibuktikan pada PROGRESS; persetujuan bukan bukti lulus.

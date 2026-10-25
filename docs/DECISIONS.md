@@ -698,16 +698,15 @@ M17 → M18 → (2 Nov pindah VPS staging) → M16 production + beta → M19 →
 setelah tes otomatis dan checklist APK 1018 lulus. Bukti dicatat sebagai emulator/staging, bukan HP nyata atau UAT mitra.
 Hasil verifikasi di [VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md). Gate M16 tetap terpisah.
 
-### ADR44 — Usulan M18: pembayaran fleksibel, keringanan, titipan manual, kas dan laporan
+### ADR44 — M18: pembayaran fleksibel, keringanan, titipan manual, kas dan laporan
 
-Tanggal: 25 Oktober 2026. **Status: diusulkan; menunggu persetujuan pemilik atas rencana konkret sebelum migrasi.**
+Tanggal: 25 Oktober 2026. **Status: diputuskan, disetujui pemilik 25 Oktober 2026.**
 Spesifikasi dan tes: [M18_PLAN.md](M18_PLAN.md). Belum mengubah kontrak API/skema/perilaku aktif M17.
 
 **Sudah diputuskan pemilik:** titipan digunakan **atas pilihan pengurus**, bukan otomatis. Tidak perlu meminta
-keputusan itu lagi. Semua pengurus setara tetap mengikat (BR07). Pemilik telah mengotorisasi penyusunan dokumen ini,
-bukan migrasi M18 sebelum rencana konkret disetujui.
+keputusan itu lagi. Semua pengurus setara tetap mengikat (BR07). Pemilik meminta lanjut implementasi M18 setelah rencana disampaikan, dengan banyak pengujian dan gate keuangan ketat.
 
-**Usulan yang akan berlaku setelah persetujuan:**
+**Keputusan implementasi:**
 
 1. Tarif khusus per rumah memakai riwayat versi dan mulai bulan. Tagihan menyimpan snapshot; tarif baru tidak
    mengubah tagihan existing. Salah input tarif/keringanan/nominal dikoreksi tercatat, tidak UPDATE nilai asal.
@@ -734,5 +733,4 @@ bukan migrasi M18 sebelum rencana konkret disetujui.
    Flag default off; setelah aktif, mutasi keuangan perlu client kontrak v2. Jangan rollback ke kode M17 sesudah
    transaksi v2 tercatat. Staging sintetis + emulator + rekonsiliasi dahulu, satu APK M18 yang dibagikan sesudah lulus.
 
-**Gate persetujuan:** pemilik meninjau M18_PLAN bagian 9 dan ADR ini; jangan menandai “diputuskan” atau menulis
-migrasi hanya karena dokumen sudah dibuat/PR sudah hijau. Semua angka PASS M17 bukan bukti penerimaan M18.
+**Persetujuan:** instruksi pemilik 25 Okt “lanjut ke milestone 18 ... harus banyak pengujian”. Implementasi boleh dimulai; semua angka PASS M17 bukan bukti penerimaan M18.

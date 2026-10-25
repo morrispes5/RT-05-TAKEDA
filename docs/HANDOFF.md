@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **25 Oktober 2026** (M17 lulus verifikasi ulang dan emulator 1018 atas penerimaan pemilik; M18_PLAN dan ADR44 usulan tersedia, menunggu persetujuan sebelum migrasi).
+Terakhir diperbarui: **25 Oktober 2026** (M17 lulus verifikasi ulang dan emulator 1018 atas penerimaan pemilik; M18_PLAN/ADR44 disetujui pemilik; implementasi bertahap dengan pengujian luas).
 
 ## 1. Cara mulai sesi baru
 
@@ -134,7 +134,7 @@ ternyata pulih sendiri (throttle/salah ketik).
 ## 6. Pertanyaan terbuka untuk pemilik
 
 **Keputusan 25 Okt sudah dijawab:** emulator cukup untuk gate M17; titipan M18 digunakan atas pilihan pengurus
-(tidak otomatis, tidak menambah kas kedua). Rencana konkret [M18_PLAN.md](M18_PLAN.md) + ADR44 usulan sudah tersedia; menunggu persetujuan sebelum migrasi.
+(tidak otomatis, tidak menambah kas kedua). Rencana konkret [M18_PLAN.md](M18_PLAN.md) + ADR44 usulan sudah tersedia; disetujui pemilik 25 Okt; implementasi dimulai.
 Default yang perlu ditinjau sekaligus ada di M18_PLAN bagian 9; jangan membuka migrasi sebelum itu.
 Daftar berikut adalah histori gate M15/M16, bukan permintaan mengulang jawaban M17.
 
@@ -239,7 +239,7 @@ Rilis penuh paling lambat awal 2027. Perbaikan APK kecil dikumpulkan per rilis (
 [VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md). PR #77/#78/#79/#80 sudah digabung sebelum verifikasi.
 Tidak ada nomor kontak/kredensial di bukti. Peran akun nyata tidak diubah. Dokumen
 [M18_PLAN.md](M18_PLAN.md) dan usulan ADR44 **sudah tersedia** di branch `codex/m18-rencana-keuangan`.
-Tinjau rencana konkret dengan pemilik sebelum menulis migrasi. Titipan dipakai manual oleh pengurus.
+Pemilik sudah menyetujui rencana konkret dan meminta pengujian luas; mulai PR DB/domain. Titipan dipakai manual oleh pengurus.
 PR #81 penutupan M17 merged `0f3b251`; pemeriksaan PR 3/3 sukses. Dry-run library XLSX memilih OpenSpout 4.32.0
 tanpa mengubah dependency existing; belum diinstal ke repo. Tidak ada tes/implementasi/deploy M18 yang diklaim.
 Implementasi M18 kelak bertahap: DB/domain → API/kontrak → mobile pengurus → transparansi warga → laporan/Excel.
