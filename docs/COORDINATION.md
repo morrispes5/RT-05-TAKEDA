@@ -1,11 +1,13 @@
 # Koordinasi RT05 TAKEDA
 
-## Checkpoint 25 Oktober 2026 — M17
+## Checkpoint 25 Oktober 2026 — M17 ditutup, rencana M18
 
 Codex melanjutkan Claude: M17 lulus tes ulang dan emulator APK 1018; pemilik menerima emulator sebagai gate.
 Bukti di `docs/evidence/m17/VERIFICATION_1018.md`. Pekerjaan dokumentasi memakai worktree
 `codex/m17-verifikasi-1018`; checkout awal dan perubahan MyRepublic dipertahankan.
-Berikutnya M18 rencana + usulan ADR44; tidak ada migrasi sebelum rencana konkret disetujui.
+PR #81 penutupan M17 merged `0f3b251`, checks 3/3. Worktree yang sama kini branch
+`codex/m18-rencana-keuangan`: `docs/M18_PLAN.md` + ADR44 usulan tersedia. Titipan manual sudah diputuskan pemilik;
+tidak ada migrasi sebelum dokumen konkret disetujui. API/ERD aktif belum diubah.
 Catatan sesi di bawah bersifat historis; PROGRESS/HANDOFF terkini mengunggulinya.
 
 ## Tahap M15 (berjalan sejak 19 Oktober 2026)
