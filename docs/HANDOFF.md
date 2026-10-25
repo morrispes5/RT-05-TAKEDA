@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **24 Oktober 2026 ±14.39 WIB** (pratinjau Vercel `/aplikasi` menaut ke halaman unduh staging; staging yang punya APK tidak diubah).
+Terakhir diperbarui: **25 Oktober 2026** (M17 lulus verifikasi ulang dan emulator 1018 atas penerimaan pemilik; M18 berikutnya berupa rencana).
 
 ## 1. Cara mulai sesi baru
 
@@ -13,21 +13,21 @@ Terakhir diperbarui: **24 Oktober 2026 ±14.39 WIB** (pratinjau Vercel `/aplikas
 2. Bandingkan branch lokal dengan `origin/main` sebelum kerja. Pemilik juga memakai agent lain (Codex, Cursor Cloud); branch
    lokal bisa basi dan checkout ini kadang dipakai bersama (lihat bagian 9).
 3. Pemilik berkomunikasi dalam Bahasa Indonesia santai. Jawab dalam Bahasa Indonesia, ringkas, tanpa jargon berlebihan.
-4. Kerjakan satu milestone yang dibuka pemilik. **M15 dan M15b passed (22 Okt, ADR36)**; **M16 berikutnya** (production + sisa gate
-   M15 yang dipindah). Catatan permintaan pemilik juga ada di `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
+4. Kerjakan satu milestone yang dibuka pemilik. **M17 passed (25 Okt, gate emulator diterima pemilik)**; **M18 rencana dahulu**, kemudian M16 production sesuai ADR43. Catatan permintaan pemilik juga ada di `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
 
-## 2. Snapshot status (20 Okt 2026)
+## 2. Snapshot status (25 Okt 2026)
 
 | Hal | Nilai |
 | --- | --- |
-| Milestone | M00–M15 **passed**, M15b **passed** (ADR35/36, 22 Okt); **M16 berikutnya** |
-| `main` | `e74f2e0` (PR #70 menu Air Bersih KSM khusus pengurus, ADR41; sebelumnya PR #69, #67) |
-| Staging (VPS Hostinger, project Docker `rt05-staging`) | `e74f2e0`, deploy immutable 24 Okt ±13.18–13.24 WIB, selesai tanpa GAGAL, 9 container sehat. Uji live menu Air Bersih KSM 7/7 PASS (tamu/warga tidak melihat, pengurus melihat berlogo, klik membuka halaman masuk Air Bersih) |
-| Website Vercel (`https://rt05takeda.vercel.app`) | mengikuti `website/preview/` di `main`. Halaman `/aplikasi` pada pratinjau tidak menyimpan APK; tombol **Buka halaman unduh** menuju `https://takeda-staging.morriz.tech/aplikasi#unduh`. Staging yang punya `versi.json` tetap menampilkan berkas langsung. Perubahan ini masuk setelah PR-nya digabung ke `main` |
-| APK uji tim | build **1015** = versi **1.0.0** (commit `9f0fdf9`, run [40079348721](https://github.com/morrispes5/RT-05-TAKEDA/actions/runs/40079348721)). Halaman unduh: `https://takeda-staging.morriz.tech/aplikasi`; link Drive tetap `1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr` (diperbarui tiap rilis). Riwayat: bagian 2a |
-| Link APK untuk tim (Drive pemilik, "siapa saja yang punya link") | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view — **link tetap**; build baru diunggah sebagai *versi baru* file yang sama. **Isinya masih 1008** sampai pemilik mengunggah 1009 (Chrome sesi agent login sebagai akun lain tanpa akses folder Drive; agent tidak meminta akses). Sementara tim memakai tautan `/unduh` di atas |
-| PR terbuka | tidak ada (PR #50, #53, #55, #56, #58 sudah merge 20 Okt) |
-| Issue terbuka | **#54** (pelacak sisa gate M15, checklist), #47 (bukti performa, medium). #46 dan #48 ditutup oleh PR #50 |
+| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 rencana berikutnya**, M16 Fase A in_progress |
+| Baseline `main` terverifikasi | `cd4a21f` (PR #80; tree identik `c91192f`). PR penutupan M17 hanya dokumentasi |
+| Staging | Deploy terakhir tercatat `d601c43` (M17); tidak dideploy ulang sesi ini. `/health/ready`, kontak publik, Kontak, Profil diverifikasi **4/4 PASS** 25 Okt 18.48 WIB |
+| Website Vercel | Preview statis dari `website/preview/`; `/aplikasi` menaut ke halaman unduh staging. Tidak diuji ulang sesi ini |
+| APK uji tim | **1018 / 1.0.0**, kode `8f8a1f1`, build 25 Okt 16.09, `/unduh` 16.10, Drive 16.11 (catatan rilis). Metadata/checksum `/unduh` diverifikasi ulang |
+| Link APK | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view (ID tetap). https://takeda-staging.morriz.tech/aplikasi |
+| Bukti M17 | [VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md): backend 358, website 40, Flutter 293, staging dan emulator lulus. Bukan bukti HP nyata |
+| PR lain | #26 `cursor/cloud-agent-notes-0d43` masih terbuka pada pemeriksaan sesi ini; tidak disentuh |
+| Gate M16 | Lihat PROGRESS M16 dan bagian 4. Penutupan M17 tidak menutup UAT mitra/perangkat/production |
 
 ## 2a. Riwayat rilis APK uji tim (link Drive tetap sama, tiap build = versi baru file yang sama)
 
@@ -47,7 +47,7 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | **1015** (1.0.0) | 3015 / 2015 | `9f0fdf9` | **24 Okt 15.54** | **24 Okt 15.55 `/unduh` + `versi.json`; Drive 15.56** | ADR42: tanggal lahir anggota + Statistik usia pengurus; privasi 2026-10-24 (setuju ulang) | Diuji agent di emulator (lulus); menunggu uji pemilik |
 | 1016 | — | `9507c4d` | 25 Okt ±14.55 | **Tidak disebar** | M17 tanpa avatar; dibatalkan karena permintaan foto profil keluarga datang sebelum rilis | — |
 | 1017 | 3017 / 2017 | `d601c43` | 25 Okt ±15.38 | **Tidak disebar** (hanya emulator) | M17 + avatar; uji emulator menemukan 2 perbaikan kecil → 1018 | Diuji agent di emulator |
-| **1018** (1.0.0) | 3018 / 2018 | `8f8a1f1` | **25 Okt 16.09** | **25 Okt 16.10 `/unduh` + `versi.json`; Drive 16.11** | M17 (ADR43): foto profil keluarga 15 avatar, nomor WhatsApp Ketua RT, super admin ubah peran, chip jalan Mawar 8–14, umur di daftar keluarga, privasi 2026-10-25 (setuju ulang). Catatan `versi.json` dipecah manual (lihat perbaikan skrip) | Diuji agent di emulator (lulus); menunggu uji pemilik |
+| **1018** (1.0.0) | 3018 / 2018 | `8f8a1f1` | **25 Okt 16.09** | **25 Okt 16.10 `/unduh` + `versi.json`; Drive 16.11** | M17 (ADR43): foto profil keluarga 15 avatar, nomor WhatsApp Ketua RT, super admin ubah peran, chip jalan Mawar 8–14, umur di daftar keluarga, privasi 2026-10-25 (setuju ulang). Catatan `versi.json` dipecah manual (lihat perbaikan skrip) | Verifikasi ulang Codex + emulator 25 Okt lulus; **M17 passed**, pemilik menerima gate emulator |
 
 Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
 
@@ -111,6 +111,10 @@ belum dikonfirmasi; jalankan preflight `SHARED_HOSTING.md` sebelum membeli).
 
 ## 5. Bug dan temuan terbuka
 
+M17: tidak ditemukan blocker aplikasi pada checklist 1018. ANR System UI saat boot emulator pulih tanpa wipe.
+PostgreSQL tes sudah berhenti; folder pgdata sementara belum dihapus karena alat menolak pembersihan.
+Tabel di bawah memuat temuan historis; status yang lebih baru di PROGRESS M16 mengungguli catatan lama.
+
 | Tingkat | Temuan | Status |
 | --- | --- | --- |
 | Medium | #47 skrip bukti performa: 4xx dihitung sukses, 404 tak dijelaskan | Skrip sudah menegakkan gate (PR #50); 404 belum diselidiki, uji beban belum diulang |
@@ -128,6 +132,10 @@ Temuan yang **bukan bug** (jangan dikerjakan ulang): kas admin layar putih = APK
 ternyata pulih sendiri (throttle/salah ketik).
 
 ## 6. Pertanyaan terbuka untuk pemilik
+
+**Keputusan 25 Okt sudah dijawab:** emulator cukup untuk gate M17; titipan M18 digunakan atas pilihan pengurus
+(tidak otomatis, tidak menambah kas kedua). M18 wajib punya rencana konkret + ADR44 usulan sebelum persetujuan migrasi.
+Daftar berikut adalah histori gate M15/M16, bukan permintaan mengulang jawaban M17.
 
 1. ~~Temuan E~~ — dijawab 20 Okt: foto asli tidak menggantikan SVG; sudah diperbaiki (PR #55).
 2. Hasil uji tim dengan APK **1009** (dan sisa 1008): poin mana berhasil/gagal? (Untuk dicatat sebagai bukti, bukan dikarang.)
@@ -226,10 +234,11 @@ judul dengan `update_file`. Connector Drive tidak bisa mengunggah isi file atau 
 lalu **soft launch beta 8 Nov** (data asli hanya di production) → 5. **M19** tombol panik → 6. **M20** iPhone (PWA).
 Rilis penuh paling lambat awal 2027. Perbaikan APK kecil dikumpulkan per rilis (jangan rilis APK tiap bug).
 
-**Status M17 (25 Okt):** kode di PR #77 (`codex/m17-penyesuaian-rapat`), rincian di PROGRESS bagian M17. Nomor WhatsApp Ketua
-RT dan bendahara **tidak ada di Git**: diisi lewat aplikasi (Lainnya pengurus → Kontak website / Iuran) atau
-`PUT /admin/settings/contacts`; sumber nomor = dokumen rapat milik pemilik. Super admin = akun RT resmi
-(`RT05_SUPER_ADMIN_EMAIL`, bawaan di `config/rt05.php`); hanya akun itu yang melihat tombol ubah peran.
+**M17 passed (25 Okt):** penerimaan pemilik memakai emulator; bukti baru di
+[VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md). PR #77/#78/#79/#80 sudah digabung sebelum verifikasi.
+Tidak ada nomor kontak/kredensial di bukti. Peran akun nyata tidak diubah. Langkah berikutnya menyusun
+`docs/M18_PLAN.md` dan usulan ADR44, lalu persetujuan pemilik sebelum menulis migrasi. Titipan dipakai manual oleh pengurus.
+Implementasi M18 kelak bertahap: DB/domain → API/kontrak → mobile pengurus → transparansi warga → laporan/Excel.
 
 ## 11. Air Bersih KSM — aplikasi terpisah, menu khusus pengurus (ADR41, 24 Okt 2026; menggantikan ADR40)
 

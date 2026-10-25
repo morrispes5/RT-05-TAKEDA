@@ -1,6 +1,16 @@
 # Progress — RT05 TAKEDA
 
-## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **in_progress**
+## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**
+
+**Penutupan 25 Oktober 2026 (Codex):** pemilik menerima uji emulator sebagai gate M17 (bukan klaim uji HP nyata).
+Verifikasi ulang baseline `cd4a21f`: backend **358/358, 3.801 assertion**, Pint PASS; website **40/40, 538 assertion**;
+Flutter **293 PASS**, analyze bersih, format 86 file/0 perubahan. Staging publik **4/4 PASS**. APK 1018 checksum cocok;
+reinstall in-place pada Pixel_8a mempertahankan sesi, avatar tersimpan setelah restart, umur tampil, persetujuan privasi
+25 Oktober berhasil, kontak Ketua cocok dengan referensi privat, tombol super admin terlihat tanpa mengubah peran.
+Bukti dan keterbatasan: [VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md). Emulator/Postgres sementara dihentikan;
+penghapusan pgdata ditolak alat sehingga folder sementara tetap lokal. Tidak ada deploy/APK baru/production.
+Pekerjaan dokumentasi di worktree `codex/m17-verifikasi-1018`; perubahan MyRepublic checkout awal tidak ikut.
+Berikutnya **M18: rencana + usulan ADR44 dahulu**, persetujuan pemilik sebelum migrasi.
 
 Branch `codex/m17-penyesuaian-rapat`. Isi (tanpa nomor telepon di Git; nomor diisi lewat aplikasi/API):
 

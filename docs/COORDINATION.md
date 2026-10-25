@@ -1,5 +1,13 @@
 # Koordinasi RT05 TAKEDA
 
+## Checkpoint 25 Oktober 2026 — M17
+
+Codex melanjutkan Claude: M17 lulus tes ulang dan emulator APK 1018; pemilik menerima emulator sebagai gate.
+Bukti di `docs/evidence/m17/VERIFICATION_1018.md`. Pekerjaan dokumentasi memakai worktree
+`codex/m17-verifikasi-1018`; checkout awal dan perubahan MyRepublic dipertahankan.
+Berikutnya M18 rencana + usulan ADR44; tidak ada migrasi sebelum rencana konkret disetujui.
+Catatan sesi di bawah bersifat historis; PROGRESS/HANDOFF terkini mengunggulinya.
+
 ## Tahap M15 (berjalan sejak 19 Oktober 2026)
 
 Claude mengerjakan M15 sendirian (tanpa fleet): APK rilis kunci tetap, keamanan, performa, kuota Neon, UAT tim pemilik
