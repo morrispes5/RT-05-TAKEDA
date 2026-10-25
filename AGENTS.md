@@ -20,14 +20,14 @@ Dokumen frontend dari repository asal tetap menjadi bukti baseline. Sejak M01 do
 - Data penting diarsipkan; koreksi keuangan menggunakan pembalikan dan rekaman pengganti.
 - Database dan aturan bisnis dimiliki rest-api/. Website/mobile tidak terhubung langsung ke Neon atau Redis.
 - Pertahankan desain website yang telah diterima: navy/kuning/sky, logo gapura, font, foto asli, dan layout. Jangan mengganti dengan desain generik.
-- Jangan mengarang nama, kontak, tahun kegiatan, jumlah warga, atau fakta RT. Ketua: Agus Ferdiansyah; sekretaris/bendahara belum dipublikasikan.
+- Jangan mengarang nama, kontak, tahun kegiatan, jumlah warga, atau fakta RT. Ketua: Agus Ferdiansyah; bendahara Mas Wirawan (boleh dipublikasikan, ADR43); sekretaris belum dipublikasikan.
 
 ## Modul website (`website/`)
 
 Catatan dari AGENTS repo frontend sebelum M01, dengan path yang diperbarui:
 
 - Hero otomatis setiap 3 detik, tanpa tombol Jeda/Putar. Empat indikator tetap bekerja. Reduced motion serta tab/hero tidak terlihat tetap dihormati.
-- Album Perayaan 17 Agustus tanpa tahun. Sekretaris dan bendahara anonim.
+- Album Perayaan 17 Agustus tanpa tahun. Sekretaris anonim; bendahara Mas Wirawan (ADR43).
 - Editor saat ini menyimpan draf/foto lokal dalam IndexedDB. Tidak ada autentikasi operasional, upload server, publikasi online, REST API bisnis, atau sinkronisasi mobile. Shell Laravel di website/ bukan bukti backend operasional dan tidak boleh dibuang.
 - Sumber UI: `website/resources/views`, `resources/css`, `resources/js`, `resources/data`, serta `public/images`. `app/Support/SiteContent.php`, controller, dan routes diperlukan untuk render/ekspor Blade.
 - Jangan mengedit `website/preview/` secara manual. Setelah perubahan sumber, jalankan `npm.cmd run build:preview` dari `website/` dan commit hasil ekspornya. Vercel hanya menyajikan preview statis, tidak menjalankan PHP.
