@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **25 Oktober 2026** (M17 lulus verifikasi ulang dan emulator 1018 atas penerimaan pemilik; M18 berikutnya berupa rencana).
+Terakhir diperbarui: **25 Oktober 2026** (M17 lulus verifikasi ulang dan emulator 1018 atas penerimaan pemilik; M18_PLAN dan ADR44 usulan tersedia, menunggu persetujuan sebelum migrasi).
 
 ## 1. Cara mulai sesi baru
 
@@ -19,8 +19,8 @@ Terakhir diperbarui: **25 Oktober 2026** (M17 lulus verifikasi ulang dan emulato
 
 | Hal | Nilai |
 | --- | --- |
-| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 rencana berikutnya**, M16 Fase A in_progress |
-| Baseline `main` terverifikasi | `cd4a21f` (PR #80; tree identik `c91192f`). PR penutupan M17 hanya dokumentasi |
+| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 in_progress (rencana, belum implementasi)**, M16 Fase A in_progress |
+| `main` setelah penutupan M17 | `0f3b251` (PR #81 merged, pemeriksaan 3/3 sukses); baseline aplikasi `cd4a21f`, tree identik `c91192f` |
 | Staging | Deploy terakhir tercatat `d601c43` (M17); tidak dideploy ulang sesi ini. `/health/ready`, kontak publik, Kontak, Profil diverifikasi **4/4 PASS** 25 Okt 18.48 WIB |
 | Website Vercel | Preview statis dari `website/preview/`; `/aplikasi` menaut ke halaman unduh staging. Tidak diuji ulang sesi ini |
 | APK uji tim | **1018 / 1.0.0**, kode `8f8a1f1`, build 25 Okt 16.09, `/unduh` 16.10, Drive 16.11 (catatan rilis). Metadata/checksum `/unduh` diverifikasi ulang |
@@ -134,7 +134,8 @@ ternyata pulih sendiri (throttle/salah ketik).
 ## 6. Pertanyaan terbuka untuk pemilik
 
 **Keputusan 25 Okt sudah dijawab:** emulator cukup untuk gate M17; titipan M18 digunakan atas pilihan pengurus
-(tidak otomatis, tidak menambah kas kedua). M18 wajib punya rencana konkret + ADR44 usulan sebelum persetujuan migrasi.
+(tidak otomatis, tidak menambah kas kedua). Rencana konkret [M18_PLAN.md](M18_PLAN.md) + ADR44 usulan sudah tersedia; menunggu persetujuan sebelum migrasi.
+Default yang perlu ditinjau sekaligus ada di M18_PLAN bagian 9; jangan membuka migrasi sebelum itu.
 Daftar berikut adalah histori gate M15/M16, bukan permintaan mengulang jawaban M17.
 
 1. ~~Temuan E~~ — dijawab 20 Okt: foto asli tidak menggantikan SVG; sudah diperbaiki (PR #55).
@@ -236,8 +237,11 @@ Rilis penuh paling lambat awal 2027. Perbaikan APK kecil dikumpulkan per rilis (
 
 **M17 passed (25 Okt):** penerimaan pemilik memakai emulator; bukti baru di
 [VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md). PR #77/#78/#79/#80 sudah digabung sebelum verifikasi.
-Tidak ada nomor kontak/kredensial di bukti. Peran akun nyata tidak diubah. Langkah berikutnya menyusun
-`docs/M18_PLAN.md` dan usulan ADR44, lalu persetujuan pemilik sebelum menulis migrasi. Titipan dipakai manual oleh pengurus.
+Tidak ada nomor kontak/kredensial di bukti. Peran akun nyata tidak diubah. Dokumen
+[M18_PLAN.md](M18_PLAN.md) dan usulan ADR44 **sudah tersedia** di branch `codex/m18-rencana-keuangan`.
+Tinjau rencana konkret dengan pemilik sebelum menulis migrasi. Titipan dipakai manual oleh pengurus.
+PR #81 penutupan M17 merged `0f3b251`; pemeriksaan PR 3/3 sukses. Dry-run library XLSX memilih OpenSpout 4.32.0
+tanpa mengubah dependency existing; belum diinstal ke repo. Tidak ada tes/implementasi/deploy M18 yang diklaim.
 Implementasi M18 kelak bertahap: DB/domain → API/kontrak → mobile pengurus → transparansi warga → laporan/Excel.
 
 ## 11. Air Bersih KSM — aplikasi terpisah, menu khusus pengurus (ADR41, 24 Okt 2026; menggantikan ADR40)

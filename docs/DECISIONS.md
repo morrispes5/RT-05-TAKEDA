@@ -697,3 +697,42 @@ M17 → M18 → (2 Nov pindah VPS staging) → M16 production + beta → M19 →
 **Penerimaan M17, 25 Oktober 2026 (sesi Codex):** pemilik memilih “Ya, emulator cukup” untuk gate penutupan M17,
 setelah tes otomatis dan checklist APK 1018 lulus. Bukti dicatat sebagai emulator/staging, bukan HP nyata atau UAT mitra.
 Hasil verifikasi di [VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md). Gate M16 tetap terpisah.
+
+### ADR44 — Usulan M18: pembayaran fleksibel, keringanan, titipan manual, kas dan laporan
+
+Tanggal: 25 Oktober 2026. **Status: diusulkan; menunggu persetujuan pemilik atas rencana konkret sebelum migrasi.**
+Spesifikasi dan tes: [M18_PLAN.md](M18_PLAN.md). Belum mengubah kontrak API/skema/perilaku aktif M17.
+
+**Sudah diputuskan pemilik:** titipan digunakan **atas pilihan pengurus**, bukan otomatis. Tidak perlu meminta
+keputusan itu lagi. Semua pengurus setara tetap mengikat (BR07). Pemilik telah mengotorisasi penyusunan dokumen ini,
+bukan migrasi M18 sebelum rencana konkret disetujui.
+
+**Usulan yang akan berlaku setelah persetujuan:**
+
+1. Tarif khusus per rumah memakai riwayat versi dan mulai bulan. Tagihan menyimpan snapshot; tarif baru tidak
+   mengubah tagihan existing. Salah input tarif/keringanan/nominal dikoreksi tercatat, tidak UPDATE nilai asal.
+   Koreksi tagihan existing berupa penyesuaian beralasan, pembalikan + pengganti; snapshot asal dan kas tidak diubah.
+2. Pembayaran boleh sebagian, berulang, atau berlebih. Kekurangan wajib dipilih sebagai tunggakan atau keringanan
+   beralasan; kelebihan sebagai sumbangan atau titipan. Alokasi ke periode terpilih mengikuti bulan tertua.
+3. Satu penerimaan uang membuat satu pemasukan kas sebesar uang nyata. Keringanan bukan kas. Penerimaan titipan
+   menambah kas sekali; penggunaan manual titipan tidak membuat pembayaran/kas baru. Titipan melekat pada rumah,
+   saldo tidak negatif, tanpa pemindahan antarrumah atau pencairan otomatis.
+4. Bukti transfer menyimpan nominal pengajuan asli. Persetujuan bernominal terkoreksi membuat pembayaran dan kas
+   dalam satu transaksi, alasan koreksi wajib, tautan bukti unik. Bukti historis tidak dipasangkan secara perkiraan.
+5. Koreksi = pembalikan + pengganti atomik, alasan wajib, histori asal tetap. Titipan yang sudah dipakai harus
+   dibalik penggunaannya dahulu sebelum sumber uang dikoreksi; tidak membatalkan pelunasan lain diam-diam.
+6. Integer rupiah, CHECK/FK/unique dan trigger menjaga ledger; satu advisory lock keuangan + row lock berurutan,
+   idempotensi existing dan fingerprint pratinjau mencegah retry/concurrency mengubah arti transaksi. Kas bertanda
+   existing dipertahankan. Rekonsiliasi diperluas untuk seluruh persamaan dan harus menghasilkan 0 masalah.
+7. Warga aktif melihat tagihan/tunggakan/titipan rumah sendiri serta kas agregat bulanan tanpa identitas rumah
+   lain. Mengubah sebagian ADR26/35, tidak membuka `/dues/transparency` ke warga. Kebijakan privasi harus diperbarui
+   dan persetujuan memvalidasi versi teks yang benar-benar ditampilkan client.
+8. Laporan bulanan/tahunan dan XLSX memakai satu layanan perhitungan. Tahun kalender, WIB, 14 sheet (rekap tahun,
+   rumah×bulan, 12 bulan), angka sama dengan API, koreksi lintas bulan terpisah. OpenSpout 4.32.0 diusulkan setelah
+   dry-run dependency berhasil; belum ditambahkan ke repo.
+9. Implementasi PR kecil: DB/domain → API/OpenAPI/ERD → mobile pengurus → transparansi warga → laporan/Excel.
+   Flag default off; setelah aktif, mutasi keuangan perlu client kontrak v2. Jangan rollback ke kode M17 sesudah
+   transaksi v2 tercatat. Staging sintetis + emulator + rekonsiliasi dahulu, satu APK M18 yang dibagikan sesudah lulus.
+
+**Gate persetujuan:** pemilik meninjau M18_PLAN bagian 9 dan ADR ini; jangan menandai “diputuskan” atau menulis
+migrasi hanya karena dokumen sudah dibuat/PR sudah hijau. Semua angka PASS M17 bukan bukti penerimaan M18.
