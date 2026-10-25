@@ -2,7 +2,29 @@
 
 Rancangan ini melengkapi kebutuhan dalam paket, bukan salinan ERD lama yang belum tersedia. Tabel infrastruktur Laravel boleh menggunakan bentuk framework resmi. Agent membuat migration bertahap per milestone, tidak membuat seluruh schema spekulatif pada M01.
 
-## Rumah, keluarga, akun
+## Tambahan ledger M18 (implementasi lokal, belum aktivasi staging)
+
+Migration `2026_10_25_000300_m18_finance_ledger.php` menambah:
+
+| Tabel | Relasi dan aturan |
+| --- | --- |
+| tarif_rumah | Rumah, mulai_periode, mode khusus/umum, nominal, alasan, pembuat; versi dibatalkan + pengganti, satu versi aktif per rumah/bulan |
+| tagihan_iuran | Tambahan tarif_rumah_id; nominal_tagihan tetap snapshot immutable |
+| pembayaran_iuran | nominal_sumbangan, nominal_titipan, versi_keuangan; total penerimaan tetap sama dengan kas masuk |
+| alokasi_pembayaran | Sumber XOR pembayaran_id / penggunaan_titipan_id; beberapa alokasi parsial per tagihan diperbolehkan |
+| keringanan_iuran | Tagihan, pembayaran opsional, nominal positif, alasan, aktor, riwayat pembatalan; bukan uang masuk |
+| penggunaan_titipan | Rumah, nominal, tanggal, aktor, riwayat pembatalan; tidak membuat penerimaan kas |
+| mutasi_titipan | Lot dari satu pembayaran, arah ±1 dan nominal positif, pemakaian/pembalikan append-only; saldo tiap lot tidak negatif |
+| penyesuaian_tagihan | Delta bertanda, alasan, aktor, referensi pembalikan; mengubah nominal efektif tanpa menimpa snapshot |
+| konfirmasi_iuran | pembayaran_id nullable unique untuk persetujuan atomik pada tahap API berikutnya |
+
+Views `rt05_tagihan_saldo`, `rt05_titipan_saldo`, `rt05_finance_violations` menghitung saldo dan penyimpangan.
+Constraint trigger deferred memvalidasi keadaan akhir transaksi; advisory lock `rt05:keuangan` menserialkan perubahan ledger.
+Pengecekan mencakup kas/penerimaan, sisa tagihan, status, sumber satu rumah, lot titipan, serta pembalikan.
+Migrasi forward-only: rollback kode M17 setelah transaksi M18 dilarang. Flag `RT05_FINANCE_V2=false` default;
+endpoint/mobile M18 belum tersedia pada tahap fondasi ini. Lihat [M18_PLAN.md](M18_PLAN.md).
+
+## Rumah, keluarga, akun (rancangan dasar)
 
 ```mermaid
 erDiagram

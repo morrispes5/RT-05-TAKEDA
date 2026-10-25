@@ -4,17 +4,25 @@
 
 Prasyarat M17 ditutup lewat [PR #81](https://github.com/morrispes5/RT-05-TAKEDA/pull/81), merge `0f3b251`,
 CI penutupan 3/3 sukses (hygiene, Vercel, komentar preview); tes aplikasi tercatat pada bukti M17 di bawah.
-Branch `codex/m18-rencana-keuangan`: [M18_PLAN.md](M18_PLAN.md) + ADR44 **diusulkan**, belum keputusan implementasi.
+Branch `codex/m18-rencana-keuangan`: [M18_PLAN.md](M18_PLAN.md) + ADR44 disetujui; PR #82 merged `f8135e6`.
 Pemilik sudah memilih titipan **dipakai manual oleh pengurus**. Rencana memetakan kode/trigger/rekonsiliasi yang ada,
 perubahan ledger dan API, pembalikan sumber titipan yang sudah dipakai, privasi, laporan/XLSX, migrasi dan rollback,
-serta skenario uang wajib. Pertanyaan/default tersisa ada pada bagian 9 untuk persetujuan dokumen sekaligus.
+serta skenario uang wajib. Default bagian 9 diterima lewat persetujuan rencana.
 
 Validasi perencanaan: sumber backend/migrasi/kontrak/Flutter dan composer dibaca langsung. Dry-run Composer pada
 salinan konfigurasi sementara memilih OpenSpout **4.32.0** (1 paket baru, 0 update/removal), PHP **8.4.13** dengan
 ext-dom/fileinfo/filter/libxml/xmlreader/zip tersedia. Tidak memasang dependency ke repo; ini bukan tes XLSX/M18.
 `node infra/scripts/check-repo.mjs` dan `git diff --check` dijalankan untuk perubahan dokumen.
 **25 Okt: pemilik menyetujui lanjut implementasi M18 dengan pengujian luas.** ADR44 menjadi diputuskan. Berikutnya PR DB/domain; belum ada deploy/APK M18.
-Tidak mengubah kontrak aktif OpenAPI/ERD sebelum PR implementasi. Production tidak disentuh.
+
+**Checkpoint implementasi DB/domain (dilanjutkan 26 Okt):** worktree `m17-verifikasi-1018`, branch `codex/m18-db-domain` dari main `f8135e6` (PR #82 rencana disetujui/merged).
+Migration ledger + `FlexibleDues` mencakup pembayaran parsial, keringanan, sumbangan/titipan manual, snapshot tarif khusus, koreksi/pembalikan, fingerprint saldo, lock transaksi, dan rekonsiliasi.
+Flag v2 tetap nonaktif; belum endpoint/mobile/aktivasi staging. ERD diperbarui; kontrak HTTP belum berubah.
+Pengujian awal: 14 tes M18 / 88 assertions lulus, termasuk tiga proses independen untuk retry idempoten dan fingerprint basi.
+Full suite pertama menemukan kegagalan cleanup deferred trigger dan scope rollback M07, sudah diperbaiki; subset regresi 21/21 lulus.
+Tes lengkap ulang: `php artisan test` **374/374, 3.913 assertions**, PostgreSQL lokal port 54329. Pint PASS.
+Tambahan akhir canonical payload idempotensi dan preflight migrasi diuji ulang terarah sebelum commit.
+Belum klaim M18 passed atau siap production. Kontrak HTTP belum berubah; production tidak disentuh.
 
 ## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**
 

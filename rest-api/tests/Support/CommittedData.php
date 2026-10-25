@@ -17,8 +17,9 @@ trait CommittedData
     /** Tabel anak lebih dulu agar FK RESTRICT tidak menolak penghapusan. */
     private const COMMITTED_TABLES = [
         'perangkat_push', 'personal_access_tokens', 'password_reset_tokens', 'notifikasi', 'preferensi_notifikasi', 'pengumuman',
-        'permohonan_akun', 'audit_logs', 'outbox_events', 'token_registrasi', 'tautan_akun', 'keanggotaan_keluarga', 'riwayat_transaksi_kas', 'transaksi_kas', 'alokasi_pembayaran', 'pembayaran_iuran', 'idempotency_requests',
-        'tagihan_iuran', 'akun',
+        'permohonan_akun', 'audit_logs', 'outbox_events', 'token_registrasi', 'tautan_akun', 'keanggotaan_keluarga', 'riwayat_transaksi_kas', 'transaksi_kas',
+        'konfirmasi_iuran', 'mutasi_titipan', 'keringanan_iuran', 'penyesuaian_tagihan', 'alokasi_pembayaran', 'penggunaan_titipan', 'pembayaran_iuran', 'idempotency_requests',
+        'tagihan_iuran', 'tarif_rumah', 'akun',
         'penghunian', 'warga', 'keluarga', 'rumah',
     ];
 
@@ -35,6 +36,9 @@ trait CommittedData
     protected function purgeCommittedData(): void
     {
         DB::connection('pgsql_migrations')->transaction(function ($db) {
+            foreach (['tarif_rumah', 'keringanan_iuran', 'penggunaan_titipan', 'mutasi_titipan', 'penyesuaian_tagihan'] as $table) {
+                $db->statement("ALTER TABLE $table DISABLE TRIGGER {$table}_m18_immutable");
+            }
             $db->statement('ALTER TABLE audit_logs DISABLE TRIGGER audit_logs_no_update_delete');
             // Buku kas append-only (trigger) hanya dibuka di dalam transaksi pembersihan database *_test.
             $db->statement('ALTER TABLE transaksi_kas DISABLE TRIGGER transaksi_kas_immutable');
@@ -45,11 +49,16 @@ trait CommittedData
             foreach (self::COMMITTED_TABLES as $table) {
                 $db->table($table)->where('created_at', '>=', $this->committedSince)->delete();
             }
+            // Drain deferred ledger/FK checks before ALTER TABLE restores immutable triggers.
+            $db->statement('SET CONSTRAINTS ALL IMMEDIATE');
             $db->statement('ALTER TABLE pembayaran_iuran ENABLE TRIGGER pembayaran_iuran_terkunci');
             $db->statement('ALTER TABLE alokasi_pembayaran ENABLE TRIGGER alokasi_pembayaran_terkunci');
             $db->statement('ALTER TABLE riwayat_transaksi_kas ENABLE TRIGGER riwayat_transaksi_kas_immutable');
             $db->statement('ALTER TABLE transaksi_kas ENABLE TRIGGER transaksi_kas_immutable');
             $db->statement('ALTER TABLE audit_logs ENABLE TRIGGER audit_logs_no_update_delete');
+            foreach (['tarif_rumah', 'keringanan_iuran', 'penggunaan_titipan', 'mutasi_titipan', 'penyesuaian_tagihan'] as $table) {
+                $db->statement("ALTER TABLE $table ENABLE TRIGGER {$table}_m18_immutable");
+            }
         });
         DB::connection('pgsql_migrations')->disconnect();
     }

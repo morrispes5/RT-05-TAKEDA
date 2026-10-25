@@ -18,17 +18,14 @@ final class Reconciliation
 
         $issues = [
             // Status tagihan harus cocok dengan alokasi aktif (indeks unik menjamin paling banyak satu).
-            'lunas_tanpa_alokasi' => $count("SELECT t.id FROM tagihan_iuran t WHERE t.status = 'lunas'
-                AND NOT EXISTS (SELECT 1 FROM alokasi_pembayaran a WHERE a.tagihan_id = t.id AND a.dibatalkan_at IS NULL)"),
-            'belum_bayar_dengan_alokasi' => $count("SELECT t.id FROM tagihan_iuran t WHERE t.status = 'belum_bayar'
-                AND EXISTS (SELECT 1 FROM alokasi_pembayaran a WHERE a.tagihan_id = t.id AND a.dibatalkan_at IS NULL)"),
-            'alokasi_beda_nominal' => $count('SELECT a.id FROM alokasi_pembayaran a JOIN tagihan_iuran t ON t.id = a.tagihan_id
-                WHERE a.dibatalkan_at IS NULL AND a.nominal_alokasi <> t.nominal_tagihan'),
+            'lunas_tanpa_alokasi' => $count("SELECT id FROM rt05_tagihan_saldo WHERE status='lunas' AND sisa<>0"),
+            'belum_bayar_dengan_alokasi' => $count("SELECT id FROM rt05_tagihan_saldo WHERE status='belum_bayar' AND sisa=0"),
+            'alokasi_beda_nominal' => $count('SELECT id FROM rt05_tagihan_saldo WHERE sisa<0'),
             'alokasi_lintas_rumah' => $count('SELECT a.id FROM alokasi_pembayaran a JOIN tagihan_iuran t ON t.id = a.tagihan_id
                 JOIN pembayaran_iuran p ON p.id = a.pembayaran_id WHERE t.rumah_id <> p.rumah_id'),
             // Pembayaran tercatat: alokasi aktif = total, tepat satu kas pemasukan iuran bernominal sama.
             'pembayaran_tercatat_selisih_alokasi' => $count("SELECT p.id FROM pembayaran_iuran p WHERE p.status = 'tercatat'
-                AND p.total_bayar <> COALESCE((SELECT sum(a.nominal_alokasi) FROM alokasi_pembayaran a WHERE a.pembayaran_id = p.id AND a.dibatalkan_at IS NULL), 0)"),
+                AND p.total_bayar <> p.nominal_sumbangan + p.nominal_titipan + COALESCE((SELECT sum(a.nominal_alokasi) FROM alokasi_pembayaran a WHERE a.pembayaran_id = p.id AND a.dibatalkan_at IS NULL), 0)"),
             'pembayaran_tanpa_kas' => $count("SELECT p.id FROM pembayaran_iuran p
                 WHERE NOT EXISTS (SELECT 1 FROM transaksi_kas k WHERE k.pembayaran_id = p.id AND k.sumber = 'iuran' AND k.jenis = 'pemasukan' AND k.nominal = p.total_bayar)"),
             // Pembayaran dibatalkan: tanpa alokasi aktif dan kas asalnya sudah dibalik.
@@ -43,6 +40,10 @@ final class Reconciliation
             'pembalikan_tidak_netral' => $count('SELECT r.id FROM transaksi_kas r JOIN transaksi_kas k ON k.id = r.membalik_id WHERE r.nominal <> -k.nominal'),
             'saldo_awal_ganda' => max(0, (int) DB::table('transaksi_kas')->where('jenis', 'saldo_awal')->count() - 1),
         ];
+
+        foreach (DB::table('rt05_finance_violations')->selectRaw('jenis, count(*) AS jumlah')->groupBy('jenis')->get() as $violation) {
+            $issues['m18_'.$violation->jenis] = (int) $violation->jumlah;
+        }
 
         return ['masalah' => $issues, 'total_masalah' => array_sum($issues), 'saldo' => Dues::balance()];
     }
