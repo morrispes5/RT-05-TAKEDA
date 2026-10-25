@@ -95,6 +95,14 @@ class Akun extends Authenticatable implements CanResetPasswordContract
         return $this->peran === 'pengurus';
     }
 
+    /** ADR43: super admin = pengurus aktif dengan email `rt05.auth.super_admin_email`; hanya untuk mengelola peran pengurus. */
+    public function isSuperAdmin(): bool
+    {
+        $email = (string) config('rt05.auth.super_admin_email');
+
+        return $email !== '' && $this->isPengurus() && $this->status === 'aktif' && strtolower($this->email) === $email;
+    }
+
     public function isAktif(): bool
     {
         return $this->status === 'aktif';

@@ -47,6 +47,27 @@ class SiteContent
         return self::load()['albums'];
     }
 
+    /**
+     * ADR43: kontak resmi Ketua RT dari pengaturan aplikasi (database, bukan Git). Preview statis/baked: tanpa nomor.
+     *
+     * @return array{ketua_whatsapp: ?string}
+     */
+    public static function contacts(): array
+    {
+        $kontak = self::load()['kontak'] ?? null;
+
+        return ['ketua_whatsapp' => is_array($kontak) && is_string($kontak['ketua_whatsapp'] ?? null) && preg_match('/^62\d{8,13}$/', $kontak['ketua_whatsapp'])
+            ? $kontak['ketua_whatsapp'] : null];
+    }
+
+    /** 6281700006505 → 0817-0006-505 (tampilan lokal). */
+    public static function phoneDisplay(string $intl): string
+    {
+        $local = '0'.substr($intl, 2);
+
+        return implode('-', array_filter([substr($local, 0, 4), substr($local, 4, 4), substr($local, 8)]));
+    }
+
     /** Profil RT05 terbit: wilayah, ringkasan, tentang (paragraf), pengurus[]. */
     public static function profile(): array
     {
@@ -204,6 +225,7 @@ class SiteContent
             'articles' => array_map([self::class, 'article'], $get('/api/v1/public/articles') ?? []),
             'albums' => array_map([self::class, 'album'], $get('/api/v1/public/albums') ?? []),
             'profile' => self::remoteProfile($base),
+            'kontak' => self::remoteContacts($base),
         ];
         $store->put(self::FRESH, $data, max(1, (int) config('services.rt05_content.fresh_seconds', 60)));
         $store->forever(self::LAST_GOOD, $data);
@@ -246,6 +268,23 @@ class SiteContent
     private static function bakedProfile(): array
     {
         return self::profileShape(json_decode(file_get_contents(resource_path('data/profil.json')), true, flags: JSON_THROW_ON_ERROR));
+    }
+
+    /** Kontak gagal dibaca: halaman tetap tampil tanpa nomor. */
+    private static function remoteContacts(string $base): ?array
+    {
+        try {
+            $data = Http::baseUrl($base)->acceptJson()
+                ->connectTimeout(max(1, (int) config('services.rt05_content.timeout', 3)))
+                ->timeout(max(1, (int) config('services.rt05_content.timeout', 3)))
+                ->get('/api/v1/public/contacts')->throw()->json('data');
+
+            return is_array($data) ? $data : null;
+        } catch (Throwable $e) {
+            Log::info('site_content.contacts_unavailable', ['exception' => class_basename($e)]);
+
+            return null;
+        }
     }
 
     /** Profil belum pernah terbit (404) atau rusak: pakai cadangan tanpa menggagalkan artikel/album. */

@@ -48,7 +48,9 @@ class PublicWebsiteTest extends TestCase
 
     public function test_profile_has_confirmed_chairman_and_anonymous_officers(): void
     {
+        // ADR43: bendahara Mas Wirawan boleh dipublikasikan; sekretaris tetap anonim.
         $this->get('/profil')->assertSee('Agus Ferdiansyah')
+            ->assertSee('Wirawan')
             ->assertSee('Nama belum dipublikasikan')
             ->assertDontSee('menunggu konfirmasi pengurus');
     }

@@ -1,5 +1,35 @@
 # Progress — RT05 TAKEDA
 
+## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **in_progress**
+
+Branch `codex/m17-penyesuaian-rapat`. Isi (tanpa nomor telepon di Git; nomor diisi lewat aplikasi/API):
+
+- **Kontak resmi Ketua RT:** pengaturan `ketua_whatsapp` di samping `bendahara_whatsapp`. `PUT /admin/settings/contacts`
+  menerima salah satu/kedua kolom (yang tidak dikirim tidak berubah; payload kosong 422), audit hanya nama kolom.
+  `GET /public/contacts` (tanpa login, cache 60 dtk) hanya mengirim nomor Ketua. Website halaman Kontak menampilkan
+  "Ketua RT Agus Ferdiansyah · 08xx-xxxx-xxx" (tautan wa.me) bila terisi, selain itu "Belum diumumkan". Mobile pengurus:
+  Lainnya → Kontak website → *Nomor WhatsApp Ketua RT*.
+- **Bendahara:** profil website menampilkan "Wirawan" (`profil.json` website + seeder konten identik).
+- **Super admin (ADR43 #8):** `RT05_SUPER_ADMIN_EMAIL` (bawaan akun RT resmi). `Akun::isSuperAdmin()` = pengurus aktif +
+  email itu; payload akun memuat `super_admin`. `POST /admin/accounts/{id}/role` {peran, alasan}: selain super admin 403
+  `SUPER_ADMIN_REQUIRED`, akun sendiri 422, akun tidak aktif tidak bisa dinaikkan, pengurus aktif terakhir dijaga
+  (advisory lock). Sesi akun tujuan diakhiri, audit + notifikasi sistem. Mobile: tombol *Jadikan pengurus* / *Turunkan jadi
+  warga* di Riwayat akun, hanya untuk super admin.
+- **Jalan Mawar 8–14:** `Address::street()` membakukan "jl. mawar8" → "Mawar 8" saat disimpan (mutator `Rumah::jalan`);
+  kunci alamat menyamakan "mawar8" dan "Mawar 8". Mobile: pilihan cepat Mawar 8–14 di semua kolom Jalan.
+- **Masa simpan 12 bulan (ADR43 #7):** kolom `dianonimkan_at` (warga/keluarga/akun, aditif). `rt05:anonimkan-arsip`
+  harian (VPS 02.15 WIB; profil shared lewat slot harian ≥02.00): warga arsip/pindah/meninggal >12 bulan → nama
+  "Warga dianonimkan", WhatsApp/NIK/tanggal lahir kosong; keluarga arsip → nomor KK kosong; akun arsip → nama/email/sandi
+  diganti. Catatan iuran/kas/audit tetap. Arsip yang sudah dianonimkan tidak bisa dipulihkan (409 `ANONYMIZED`).
+- **Kebijakan Privasi v3 (`2026-10-25`):** menyebut Ketua RT sebagai pengelola + WhatsApp di halaman Kontak, dan anonimisasi
+  12 bulan. Teks aplikasi, website `privasi.json`, dan `docs/PRIVACY_NOTICE.md` identik; warga diminta setuju ulang.
+- **Temuan uji APK 1015:** umur anggota kini tampil juga di daftar keluarga warga (menu Akun).
+
+Validasi lokal (25 Okt): rest-api `php artisan test` 356/356 (5 tes baru `M17MeetingTest`; regex milestone kontrak OpenAPI
+diperluas ke M17–M20) + Pint bersih; website `php artisan test` 40/40, `npm.cmd run build:preview` 24 rute; Flutter
+`flutter analyze` bersih, `flutter test` 291 lulus (7 baru `m17_meeting_test.dart`); `check-repo.mjs` OK. Belum: CI, deploy
+staging, nomor kontak staging, APK 1016, uji emulator.
+
 ## M16 — Rilis ke warga (milestone terakhir) — 22 Oktober 2026: **in_progress (Fase A)**
 
 Rencana [M16_PLAN.md](M16_PLAN.md) (gate G1–G13). ADR37: verifikasi developer Android ditunda (opsi terakhir), bukan gate.
@@ -976,7 +1006,7 @@ ditentukan hanya oleh tersedianya kode.
 | M15 | **passed** (22 Okt, ADR36) | UAT tim putaran 1–3 + demo Ketua RT + uji emulator agent; APK 1011 `f392612`; sisa gate dipindah ke M16 |
 | M15b | **passed** (22 Okt) | Permintaan Pak RT (ADR35): APK 1011, staging `f392612`, uji emulator + live CMS |
 | M16 | in_progress | Fase A (22 Okt): SEO + `/aplikasi` + `/kebijakan-privasi`, versi 1.0.0, #47 dijelaskan; ADR37 tanpa verifikasi developer; production menunggu domain (awal Nov, ADR43) |
-| M17 | planned | Penyesuaian hasil rapat RT 24 Okt (ADR43): kontak resmi, bendahara, super admin, jalan Mawar 8–14, masa simpan |
+| M17 | in_progress (25 Okt) | Penyesuaian hasil rapat RT 24 Okt (ADR43): kontak resmi, bendahara, super admin, jalan Mawar 8–14, masa simpan. Bagian "M17" teratas |
 | M18 | planned | Keuangan fleksibel (kritis): tarif khusus, nominal bebas, keringanan/kurang bayar, sumbangan/titipan, kas transparan, Excel tahunan |
 | M19 | planned | Tombol panik uji coba: 3 langkah, semua warga + pengurus, tidak anonim, 3 penyalahgunaan → nonaktif |
 | M20 | planned | iPhone lewat PWA (tanpa Apple Developer berbayar) |

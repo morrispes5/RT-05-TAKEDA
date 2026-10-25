@@ -174,8 +174,12 @@ class _MemberRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final phone = member['whatsapp'];
+    // Temuan uji APK 1015: umur juga tampil di daftar keluarga warga, bukan hanya di layar pengurus.
+    final lahir = parseTanggalLahir(member['tanggal_lahir']);
+    final umur = member['umur'] is int ? member['umur'] as int : (lahir == null ? null : umurPada(lahir, todayJakarta()));
     final subtitle = [
       '${member['hubungan_keluarga'] ?? 'Anggota'}',
+      if (umur != null) '$umur tahun',
       if (member['punya_akun'] == true) 'punya akun',
       if (phone != null && '$phone'.isNotEmpty) '$phone',
     ].join(' • ');

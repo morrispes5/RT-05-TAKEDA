@@ -296,6 +296,9 @@ final class Households
             if (! $k->archived_at) {
                 throw new DomainConflict('NOT_ARCHIVED', 'Keluarga tidak sedang diarsipkan.');
             }
+            if ($k->dianonimkan_at) {
+                throw new DomainConflict('ANONYMIZED', 'Arsip ini sudah dianonimkan (lebih dari 12 bulan) dan tidak dapat dipulihkan.');
+            }
             // Arsip keluarga menutup seluruh keanggotaan lalu menyetel archived_at keluarga, dalam satu transaksi.
             $lama = KeanggotaanKeluarga::where('keluarga_id', $k->id)
                 ->where('alasan_selesai', 'diarsipkan')

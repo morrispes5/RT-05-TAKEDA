@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme.dart';
 import '../../core/api.dart';
 import '../../core/models.dart';
+import '../../core/session.dart';
 import '../../core/widgets.dart';
 import 'census_providers.dart';
 import 'birth_date.dart';
@@ -853,9 +854,9 @@ class _HouseAddressPageState extends ConsumerState<HouseAddressPage> {
         TextField(
           controller: _jalan,
           maxLength: 150,
-          decoration: InputDecoration(labelText: 'Jalan', errorText: _jalanError, errorMaxLines: 3),
+          decoration: InputDecoration(labelText: 'Jalan', hintText: 'mis. Mawar 10', errorText: _jalanError, errorMaxLines: 3),
         ),
-        const SizedBox(height: 8),
+        StreetChips(controller: _jalan),
         TextField(
           controller: _nomor,
           maxLength: 20,
@@ -1039,6 +1040,7 @@ class AccountDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detail = ref.watch(accountDetailProvider(id));
+    final saya = ref.watch(sessionProvider).akun;
     return Scaffold(
       appBar: AppBar(title: const Text('Riwayat akun')),
       body: AsyncView(
@@ -1063,7 +1065,13 @@ class AccountDetailPage extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              const Text('Peran tidak diubah dari aplikasi. Setiap pengurus memiliki hak yang sama.', style: TextStyle(color: Brand.muted, height: 1.35)),
+              if (saya?.raw['super_admin'] == true && saya?.id != id)
+                _RoleSection(id: id, peran: '${akun['peran']}', status: status)
+              else
+                const Text(
+                  'Peran hanya dapat diubah oleh super admin RT. Setiap pengurus memiliki hak yang sama.',
+                  style: TextStyle(color: Brand.muted, height: 1.35),
+                ),
               const SizedBox(height: 16),
               Text('Riwayat tautan', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
@@ -1123,4 +1131,62 @@ class AccountDetailPage extends ConsumerWidget {
     'diarsipkan' => 'Arsip',
     _ => status,
   };
+}
+
+/// ADR43: hanya super admin yang dapat menjadikan pengurus atau mencabutnya. Sesi akun tujuan diakhiri server agar hak baru
+/// berlaku saat masuk lagi.
+class _RoleSection extends ConsumerWidget {
+  const _RoleSection({required this.id, required this.peran, required this.status});
+
+  final String id;
+  final String peran;
+  final String status;
+
+  Future<void> _ubah(BuildContext context, WidgetRef ref, String tujuan) async {
+    final naik = tujuan == 'pengurus';
+    final alasan = await askText(
+      context,
+      title: naik ? 'Jadikan pengurus?' : 'Turunkan jadi warga?',
+      label: 'Alasan (wajib)',
+      hint: naik ? 'mis. ditetapkan rapat RT 24 Oktober' : 'mis. masa jabatan selesai',
+    );
+    if (alasan == null || !context.mounted) return;
+    try {
+      await ref.read(apiProvider).post('/admin/accounts/$id/role', data: {'peran': tujuan, 'alasan': alasan});
+      ref.invalidate(accountDetailProvider(id));
+      if (!context.mounted) return;
+      showMessage(context, naik ? 'Akun menjadi pengurus. Pemilik akun perlu masuk lagi.' : 'Akun kembali menjadi warga. Pemilik akun perlu masuk lagi.');
+    } on ApiException catch (e) {
+      if (context.mounted) showApiError(context, e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pengurus = peran == 'pengurus';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          pengurus ? 'Peran: pengurus. Anda super admin, dapat mencabut peran ini.' : 'Peran: warga. Anda super admin, dapat menjadikannya pengurus.',
+          style: const TextStyle(color: Brand.muted, height: 1.35),
+        ),
+        const SizedBox(height: 8),
+        if (pengurus)
+          OutlinedButton.icon(
+            onPressed: () => _ubah(context, ref, 'warga'),
+            icon: const Icon(Icons.person_remove_outlined),
+            label: const Text('Turunkan jadi warga'),
+          )
+        else if (status == 'aktif')
+          OutlinedButton.icon(
+            onPressed: () => _ubah(context, ref, 'pengurus'),
+            icon: const Icon(Icons.admin_panel_settings_outlined),
+            label: const Text('Jadikan pengurus'),
+          )
+        else
+          const Text('Aktifkan akun dulu sebelum dijadikan pengurus.', style: TextStyle(color: Brand.muted, height: 1.35)),
+      ],
+    );
+  }
 }
