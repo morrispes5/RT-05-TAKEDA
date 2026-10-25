@@ -269,7 +269,7 @@ class FinanceTest extends TestCase
     {
         [$warga] = $this->setupHouse();
         DB::table('rumah')->update(['mulai_tagih' => now('Asia/Jakarta')->subMonths(2)->startOfMonth()->toDateString()]);
-        DB::table('tarif_iuran')->update(['mulai_periode' => now('Asia/Jakarta')->subMonths(2)->startOfMonth()->toDateString()]);
+        TarifIuran::create(['nominal' => 75000, 'mulai_periode' => now('Asia/Jakarta')->subMonths(2)->startOfMonth()->toDateString(), 'alasan' => 'Tarif awal fixture']);
         Dues::catchUp();
 
         $res = $this->as($warga)->getJson('/api/v1/dues/my')->assertOk();

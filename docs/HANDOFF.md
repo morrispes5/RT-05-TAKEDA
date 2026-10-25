@@ -13,13 +13,13 @@ Terakhir diperbarui: **25 Oktober 2026** (M17 lulus verifikasi ulang dan emulato
 2. Bandingkan branch lokal dengan `origin/main` sebelum kerja. Pemilik juga memakai agent lain (Codex, Cursor Cloud); branch
    lokal bisa basi dan checkout ini kadang dipakai bersama (lihat bagian 9).
 3. Pemilik berkomunikasi dalam Bahasa Indonesia santai. Jawab dalam Bahasa Indonesia, ringkas, tanpa jargon berlebihan.
-4. Kerjakan satu milestone yang dibuka pemilik. **M17 passed (25 Okt, gate emulator diterima pemilik)**; **M18 rencana dahulu**, kemudian M16 production sesuai ADR43. Catatan permintaan pemilik juga ada di `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
+4. Kerjakan satu milestone yang dibuka pemilik. **M17 passed (25 Okt, gate emulator diterima pemilik)**; **M18 rencana disetujui, implementasi bertahap**, kemudian M16 production sesuai ADR43. Catatan permintaan pemilik juga ada di `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
 
 ## 2. Snapshot status (25 Okt 2026)
 
 | Hal | Nilai |
 | --- | --- |
-| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 in_progress (rencana, belum implementasi)**, M16 Fase A in_progress |
+| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 in_progress (DB/domain lokal, flag nonaktif)**, M16 Fase A in_progress |
 | `main` setelah penutupan M17 | `0f3b251` (PR #81 merged, pemeriksaan 3/3 sukses); baseline aplikasi `cd4a21f`, tree identik `c91192f` |
 | Staging | Deploy terakhir tercatat `d601c43` (M17); tidak dideploy ulang sesi ini. `/health/ready`, kontak publik, Kontak, Profil diverifikasi **4/4 PASS** 25 Okt 18.48 WIB |
 | Website Vercel | Preview statis dari `website/preview/`; `/aplikasi` menaut ke halaman unduh staging. Tidak diuji ulang sesi ini |
@@ -30,6 +30,11 @@ Terakhir diperbarui: **25 Oktober 2026** (M17 lulus verifikasi ulang dan emulato
 | Gate M16 | Lihat PROGRESS M16 dan bagian 4. Penutupan M17 tidak menutup UAT mitra/perangkat/production |
 
 ## 2a. Riwayat rilis APK uji tim (link Drive tetap sama, tiap build = versi baru file yang sama)
+
+Checkpoint M18 26 Okt: worktree `m17-verifikasi-1018`, branch `codex/m18-db-domain`, base `f8135e6` (PR #82).
+Fondasi ledger/domain sedang diselesaikan dengan flag `RT05_FINANCE_V2=false`; tes lengkap 374/374 dan Pint lulus.
+Perubahan skema ada di ERD; HTTP/mobile belum berubah. Lanjut PR kecil API/OpenAPI, mobile, privasi/transparansi, laporan/XLSX;
+belum deploy atau APK M18. Database tes lokal masih memakai pgdata sementara sesi M17, tidak pernah Neon.
 
 Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dalam WIB.
 

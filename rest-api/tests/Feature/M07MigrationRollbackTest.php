@@ -57,9 +57,10 @@ class M07MigrationRollbackTest extends TestCase
         $tambahan = $this->tambahan('71', 'rollback@contoh.test');
         $before = $this->snapshot();
 
-        // M07 beserta migration additive sesudahnya (M08+) di-rollback, lalu dipasang ulang.
+        // Uji rollback M07 saja. Ledger M18 forward-only tidak termasuk scope pengujian ini.
         $steps = DB::table('migrations')->where('migration', '>=', self::MIGRATION)->count();
-        $this->assertSame(0, Artisan::call('migrate:rollback', ['--database' => 'pgsql_migrations', '--step' => $steps, '--force' => true]));
+        $this->assertSame(0, Artisan::call('migrate:rollback', ['--database' => 'pgsql_migrations', '--step' => $steps,
+            '--path' => ['database/migrations/'.self::MIGRATION.'.php'], '--force' => true]));
         DB::connection('pgsql_migrations')->disconnect();
         $this->assertFalse(DB::table('migrations')->where('migration', self::MIGRATION)->exists());
         $this->assertFalse(Schema::hasTable('tautan_akun'));

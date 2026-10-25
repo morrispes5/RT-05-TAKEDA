@@ -38,7 +38,7 @@ final class Dues
 
     public static function rateFor(CarbonImmutable $period): TarifIuran
     {
-        $rate = TarifIuran::where('mulai_periode', '<=', $period->toDateString())->orderByDesc('mulai_periode')->first();
+        $rate = TarifIuran::whereNull('dibatalkan_at')->where('mulai_periode', '<=', $period->toDateString())->orderByDesc('mulai_periode')->first();
         if (! $rate) {
             throw new DomainConflict('RATE_NOT_FOUND', 'Tarif iuran untuk periode ini belum ditetapkan.', 422);
         }
@@ -53,6 +53,15 @@ final class Dues
      */
     public static function generate(CarbonImmutable $period, ?Akun $actor = null): int
     {
+        return DB::transaction(function () use ($period, $actor) {
+            FlexibleDues::lock();
+
+            return self::generateLocked($period, $actor);
+        });
+    }
+
+    private static function generateLocked(CarbonImmutable $period, ?Akun $actor): int
+    {
         $rate = self::rateFor($period);
         $due = $period->day(10)->toDateString();
 
@@ -64,15 +73,21 @@ final class Dues
 
         $created = 0;
         foreach ($houses->chunk(200) as $chunk) {
-            $rows = $chunk->map(fn ($id) => [
-                'id' => (string) Str::uuid(),
-                'tarif_id' => $rate->id,
-                'rumah_id' => $id,
-                'periode' => $period->toDateString(),
-                'nominal_tagihan' => $rate->nominal,
-                'jatuh_tempo' => $due,
-                'status' => 'belum_bayar',
-            ])->all();
+            $rows = $chunk->map(function ($id) use ($period, $rate, $due) {
+                $special = config('finance.v2') ? DB::table('tarif_rumah')->where('rumah_id', $id)
+                    ->whereNull('dibatalkan_at')->where('mulai_periode', '<=', $period->toDateString())->orderByDesc('mulai_periode')->first() : null;
+
+                return [
+                    'id' => (string) Str::uuid(),
+                    'tarif_id' => $rate->id,
+                    'rumah_id' => $id,
+                    'periode' => $period->toDateString(),
+                    'nominal_tagihan' => $special?->mode === 'khusus' ? $special->nominal : $rate->nominal,
+                    'tarif_rumah_id' => $special?->id,
+                    'jatuh_tempo' => $due,
+                    'status' => 'belum_bayar',
+                ];
+            })->all();
             // ON CONFLICT DO NOTHING: tagihan lama (dan snapshot nominalnya) tidak pernah ditimpa.
             $created += DB::table('tagihan_iuran')->insertOrIgnore($rows);
         }
@@ -132,6 +147,7 @@ final class Dues
         $dates = array_map(fn ($p) => self::period($p)->toDateString(), $periods);
 
         return DB::transaction(function () use ($pengurus, $rumahId, $dates, $periods, $amount, $paidOn, $note, $replacesId) {
+            FlexibleDues::lock();
             // Urutan lock stabil: rumah lalu tagihan berdasarkan periode.
             $rumah = Rumah::whereKey($rumahId)->lockForUpdate()->first();
             if (! $rumah) {
@@ -205,6 +221,7 @@ final class Dues
     public static function reversePayment(Akun $pengurus, string $paymentId, string $reason): PembayaranIuran
     {
         return DB::transaction(function () use ($pengurus, $paymentId, $reason) {
+            FlexibleDues::lock();
             $payment = PembayaranIuran::whereKey($paymentId)->lockForUpdate()->first();
             if (! $payment) {
                 throw new DomainConflict('PAYMENT_NOT_FOUND', 'Pembayaran tidak ditemukan.', 404);
@@ -275,6 +292,7 @@ final class Dues
         }
 
         return DB::transaction(function () use ($pengurus, $jenis, $amount, $date, $kategori, $keterangan, $confirmNegative) {
+            FlexibleDues::lock();
             // Satu pencatatan kas manual pada satu waktu: saldo yang diperiksa tidak basi.
             DB::select("SELECT pg_advisory_xact_lock(hashtext('rt05:kas-manual'))");
             if ($jenis === 'saldo_awal' && TransaksiKas::where('jenis', 'saldo_awal')->exists()) {
@@ -310,6 +328,7 @@ final class Dues
     public static function reverseCash(Akun $pengurus, string $entryId, string $reason): TransaksiKas
     {
         return DB::transaction(function () use ($pengurus, $entryId, $reason) {
+            FlexibleDues::lock();
             $entry = TransaksiKas::whereKey($entryId)->lockForUpdate()->first();
             if (! $entry) {
                 throw new DomainConflict('CASH_NOT_FOUND', 'Transaksi kas tidak ditemukan.', 404);

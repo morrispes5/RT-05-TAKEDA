@@ -29,7 +29,7 @@ final class Idempotency
             throw ValidationException::withMessages(['idempotency_key' => ['Header Idempotency-Key wajib berupa UUID.']]);
         }
 
-        ksort($payload);
+        $payload = self::canonical($payload);
         $hash = hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION));
 
         $existing = DB::table('idempotency_requests')
@@ -73,6 +73,20 @@ final class Idempotency
 
             return self::replay($existing, $hash);
         }
+    }
+
+    private static function canonical(array $value): array
+    {
+        if (! array_is_list($value)) {
+            ksort($value);
+        }
+        foreach ($value as &$item) {
+            if (is_array($item)) {
+                $item = self::canonical($item);
+            }
+        }
+
+        return $value;
     }
 
     private static function replay(object $existing, string $hash): JsonResponse
