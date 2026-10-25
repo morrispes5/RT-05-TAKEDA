@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Domain\Residents\Address;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -20,6 +22,12 @@ class Rumah extends Model
             'mulai_tagih' => 'date',
             'archived_at' => 'datetime',
         ];
+    }
+
+    /** ADR43: penulisan nama jalan dibakukan di semua jalur (registrasi, pengurus). */
+    protected function jalan(): Attribute
+    {
+        return Attribute::make(set: fn (?string $v) => $v === null ? null : Address::street($v));
     }
 
     public function pemilik(): BelongsTo

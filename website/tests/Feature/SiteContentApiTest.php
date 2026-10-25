@@ -62,7 +62,7 @@ class SiteContentApiTest extends TestCase
         $this->get('/artikel/kerja-bakti-oktober')->assertOk()->assertSee('Minggu pagi.');
         $this->get('/dokumentasi/kerja-bakti')->assertOk()->assertSee('/api/v1/public/media/m-1', false);
         $this->get('/artikel/cara-mencuci-tangan')->assertNotFound();
-        Http::assertSentCount(3); // artikel, album, profil sekali ambil; sisanya dari cache fresh
+        Http::assertSentCount(4); // artikel, album, profil, kontak sekali ambil; sisanya dari cache fresh
     }
 
     public function test_api_outage_falls_back_to_last_good_then_to_baked(): void
@@ -110,7 +110,25 @@ class SiteContentApiTest extends TestCase
         SiteContent::forget();
         $this->get('/artikel')->assertOk()->assertSee('Jadwal ronda malam baru');
         $this->assertSame('api', SiteContent::source());
-        Http::assertSentCount(3);
+        Http::assertSentCount(4); // artikel, album, profil, kontak (ADR43)
+    }
+
+    /** ADR43: halaman Kontak menampilkan Ketua RT dari pengaturan aplikasi; tanpa API (preview) tidak ada nomor. */
+    public function test_contact_page_shows_chairman_whatsapp_from_settings_only_when_available(): void
+    {
+        $this->get('/kontak')->assertOk()->assertSee('Belum diumumkan')->assertDontSee('wa.me', false);
+
+        Cache::store('file')->flush();
+        SiteContent::forget();
+        config(['services.rt05_content.api' => 'http://api.internal']);
+        Http::fake([
+            'api.internal/api/v1/public/contacts*' => Http::response(['data' => ['ketua_whatsapp' => '6281200001234']]),
+            'api.internal/api/v1/public/*' => Http::response(['data' => []]),
+        ]);
+        $this->get('/kontak')->assertOk()
+            ->assertSee('Ketua RT Agus Ferdiansyah')
+            ->assertSee('href="https://wa.me/6281200001234"', false)
+            ->assertSee('0812-0000-1234');
     }
 
     /** UAT M15: foto sampul asli yang diunggah lewat CMS tampil menggantikan SVG; artikel tanpa sampul tetap SVG. */

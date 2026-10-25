@@ -1056,6 +1056,17 @@ class MoreAdminPage extends ConsumerWidget {
         ),
       ),
       const SizedBox(height: 16),
+      SectionCard(
+        title: 'Kontak website',
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.contact_phone_outlined, color: Brand.navy),
+          title: const Text('Nomor WhatsApp Ketua RT'),
+          subtitle: const Text('Tampil di halaman Kontak website'),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TreasurerContactPage(ketua: true))),
+        ),
+      ),
+      const SizedBox(height: 16),
       const SectionCard(title: 'Air bersih KSM', child: AirBersihKsmTile()),
     ],
   );

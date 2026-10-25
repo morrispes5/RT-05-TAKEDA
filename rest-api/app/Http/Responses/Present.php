@@ -55,6 +55,8 @@ final class Present
             'keluarga_id' => $a->keluarga()?->id,
             'dapat_ubah_keluarga' => $a->isAktif() && ($a->isUtama() || $a->isPengurus()),
             // ADR35: aplikasi menampilkan Kebijakan Privasi sampai versi terbaru disetujui.
+            // ADR43: tombol angkat/turunkan pengurus hanya tampil untuk super admin.
+            'super_admin' => $a->isSuperAdmin(),
             'privasi_versi' => Privacy::VERSION,
             'privasi_perlu_setuju' => Privacy::needsConsent($a),
         ];

@@ -438,9 +438,9 @@ class _HouseCreatePageState extends ConsumerState<HouseCreatePage> {
         TextField(
           controller: _jalan,
           maxLength: 150,
-          decoration: InputDecoration(labelText: 'Jalan', errorText: _errors['jalan'], errorMaxLines: 3),
+          decoration: InputDecoration(labelText: 'Jalan', hintText: 'mis. Mawar 10', errorText: _errors['jalan'], errorMaxLines: 3),
         ),
-        const SizedBox(height: 8),
+        StreetChips(controller: _jalan),
         TextField(
           controller: _nomor,
           maxLength: 20,
