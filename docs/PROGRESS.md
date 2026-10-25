@@ -1,6 +1,6 @@
 # Progress — RT05 TAKEDA
 
-## M18 — Keuangan fleksibel — 25 Oktober 2026: **in_progress (rencana, belum implementasi)**
+## M18 — Keuangan fleksibel — 25 Oktober 2026: **in_progress (implementasi bertahap)**
 
 Prasyarat M17 ditutup lewat [PR #81](https://github.com/morrispes5/RT-05-TAKEDA/pull/81), merge `0f3b251`,
 CI penutupan 3/3 sukses (hygiene, Vercel, komentar preview); tes aplikasi tercatat pada bukti M17 di bawah.
@@ -13,7 +13,7 @@ Validasi perencanaan: sumber backend/migrasi/kontrak/Flutter dan composer dibaca
 salinan konfigurasi sementara memilih OpenSpout **4.32.0** (1 paket baru, 0 update/removal), PHP **8.4.13** dengan
 ext-dom/fileinfo/filter/libxml/xmlreader/zip tersedia. Tidak memasang dependency ke repo; ini bukan tes XLSX/M18.
 `node infra/scripts/check-repo.mjs` dan `git diff --check` dijalankan untuk perubahan dokumen.
-**Menunggu:** persetujuan pemilik atas M18_PLAN + ADR44 sebelum migrasi. Belum ada kode/migrasi/deploy/APK M18.
+**25 Okt: pemilik menyetujui lanjut implementasi M18 dengan pengujian luas.** ADR44 menjadi diputuskan. Berikutnya PR DB/domain; belum ada deploy/APK M18.
 Tidak mengubah kontrak aktif OpenAPI/ERD sebelum PR implementasi. Production tidak disentuh.
 
 ## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**
