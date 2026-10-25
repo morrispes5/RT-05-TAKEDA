@@ -2,6 +2,10 @@
 
 ## Checkpoint 25 Oktober 2026 — M17 ditutup, rencana M18
 
+Pembaruan 26 Okt: rencana/ADR44 disetujui pemilik, PR #82 merged `f8135e6`.
+Codex di worktree `m17-verifikasi-1018`, branch `codex/m18-db-domain`, mengerjakan fondasi ledger/domain dan tes.
+Checkout awal tetap tidak disentuh. Flag keuangan v2 nonaktif; staging/production belum berubah. Status rinci di PROGRESS.
+
 Codex melanjutkan Claude: M17 lulus tes ulang dan emulator APK 1018; pemilik menerima emulator sebagai gate.
 Bukti di `docs/evidence/m17/VERIFICATION_1018.md`. Pekerjaan dokumentasi memakai worktree
 `codex/m17-verifikasi-1018`; checkout awal dan perubahan MyRepublic dipertahankan.
