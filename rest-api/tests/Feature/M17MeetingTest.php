@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Domain\Residents\Address;
+use App\Domain\Residents\FamilyAvatars;
 use App\Domain\Residents\Retention;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -145,5 +146,33 @@ class M17MeetingTest extends TestCase
             ->assertStatus(409)->assertJsonPath('error.code', 'ANONYMIZED');
 
         $this->artisan('rt05:anonimkan-arsip')->assertSuccessful();
+    }
+
+    public function test_primary_account_picks_one_of_fifteen_family_avatars(): void
+    {
+        $w = $this->warga('177');
+        $this->as($w)->getJson('/api/v1/household')->assertOk()->assertJsonPath('data.avatar', null);
+        $versi = $this->getJson('/api/v1/household')->json('data.versi');
+        $this->putJson('/api/v1/household/avatar', ['avatar' => 'ibu_hijab'])->assertOk()->assertJsonPath('data.avatar', 'ibu_hijab')
+            ->assertJsonPath('data.versi', $versi); // kosmetik: tidak menaikkan versi keluarga
+        $this->putJson('/api/v1/household/avatar', ['avatar' => 'foto-galeri.jpg'])->assertStatus(422);
+        $this->putJson('/api/v1/household/avatar', [])->assertStatus(422);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'keluarga.avatar_diubah', 'entity_id' => $w->keluarga()->id]);
+
+        $admin = $this->pengurus('m17-avatar@contoh.test');
+        $this->as($admin)->getJson('/api/v1/admin/families?q='.urlencode('Uji Kepala 177'))->assertOk()
+            ->assertJsonPath('data.0.avatar', 'ibu_hijab');
+
+        $this->as($w)->putJson('/api/v1/household/avatar', ['avatar' => null])->assertOk()->assertJsonPath('data.avatar', null);
+    }
+
+    public function test_avatar_codes_match_mobile_assets(): void
+    {
+        $files = array_map(fn ($f) => basename($f, '.svg'), glob(base_path('../mobile/assets/avatars/*.svg')));
+        sort($files);
+        $codes = FamilyAvatars::CODES;
+        sort($codes);
+        $this->assertCount(15, $codes);
+        $this->assertSame($codes, $files);
     }
 }

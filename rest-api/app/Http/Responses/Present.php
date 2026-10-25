@@ -101,6 +101,7 @@ final class Present
             'rumah' => $rumah ? self::rumah($rumah) : null,
             'jenis_hunian' => $k->penghunianAktif?->jenis_hunian,
             'nomor_kk_tersamar' => Privacy::mask($k->nomor_kk),
+            'avatar' => $k->avatar,
             'anggota' => $anggota->map(fn ($w) => self::warga($w))->all(),
         ] + ($dapatUbah === null ? [] : ['dapat_ubah' => $dapatUbah]);
     }
@@ -116,6 +117,7 @@ final class Present
             'status' => $k->status,
             'versi' => $k->versi,
             'kepala' => $anggota->firstWhere('is_kepala', true)?->nama,
+            'avatar' => $k->avatar,
             'jumlah_anggota' => $anggota->count(),
             'rumah' => $rumah ? ['id' => $rumah->id, 'kode_rumah' => $rumah->kode_rumah, 'alamat' => $rumah->alamat()] : null,
             'archived_at' => self::ts($k->archived_at),

@@ -73,6 +73,7 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
 
     Route::get('household', [HouseholdController::class, 'show']);
     Route::patch('household', [HouseholdController::class, 'update']);
+    Route::put('household/avatar', [HouseholdController::class, 'updateAvatar']);
     Route::post('household/members', [HouseholdController::class, 'addMember']);
     Route::patch('household/members/{id}', [HouseholdController::class, 'updateMember'])->whereUuid('id');
     Route::delete('household/members/{id}', [HouseholdController::class, 'endMember'])->whereUuid('id');

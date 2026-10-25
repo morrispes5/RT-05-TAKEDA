@@ -27,8 +27,20 @@ Branch `codex/m17-penyesuaian-rapat`. Isi (tanpa nomor telepon di Git; nomor dii
 
 Validasi lokal (25 Okt): rest-api `php artisan test` 356/356 (5 tes baru `M17MeetingTest`; regex milestone kontrak OpenAPI
 diperluas ke M17–M20) + Pint bersih; website `php artisan test` 40/40, `npm.cmd run build:preview` 24 rute; Flutter
-`flutter analyze` bersih, `flutter test` 291 lulus (7 baru `m17_meeting_test.dart`); `check-repo.mjs` OK. Belum: CI, deploy
-staging, nomor kontak staging, APK 1016, uji emulator.
+`flutter analyze` bersih, `flutter test` 291 lulus (7 baru `m17_meeting_test.dart`); `check-repo.mjs` OK.
+
+PR #77 merged (`9507c4d`), CI 10/10 hijau; staging dideploy `9507c4d` (skrip immutable, health ready). Staging diisi lewat
+API (akun pengurus sintetis): nomor Ketua RT + bendahara dari dokumen rapat pemilik (salinan privat `~/.rt05/m17-kontak.json`,
+tidak di Git) dan profil terbit bendahara "Wirawan"; `/kontak` dan `/profil` staging menampilkan keduanya. Build APK 1016
+(run 40174095835) **tidak disebar** karena permintaan avatar datang sebelum rilis; rilis berikutnya 1017.
+
+- **Foto profil keluarga (permintaan pemilik 25 Okt, PR lanjutan):** 15 avatar SVG bertema keluarga (ayah, ibu, ayah berpeci,
+  ibu berhijab, kakek, nenek, nenek berhijab, kakak laki-laki/perempuan/berhijab, adik laki-laki/perempuan, bayi, pasangan,
+  keluarga) dibuat `mobile/tool/avatars.py` → `mobile/assets/avatars/`. Bukan foto galeri (tanpa unggahan wajah warga).
+  Kolom `keluarga.avatar` (aditif, CHECK daftar kode), `PUT /household/avatar` {avatar|null} khusus akun utama, tidak menaikkan
+  versi keluarga, teraudit; `avatar` ikut di GET /household dan daftar keluarga pengurus. Mobile: avatar di papan rumah menu
+  Akun, ketuk → lembar 15 pilihan (atau hapus). Validasi: rest-api 358/358 (2 tes baru, termasuk kode = berkas aset), Flutter
+  293 lulus, analyzer bersih.
 
 ## M16 — Rilis ke warga (milestone terakhir) — 22 Oktober 2026: **in_progress (Fase A)**
 
