@@ -8,9 +8,12 @@
 | Menolak berjalan bila database bukan *_test pada host lokal.
 */
 
+use App\Domain\Finance\FlexibleDues;
 use App\Domain\Identity\RegistrationToken;
 use App\Domain\Identity\TokenAttempts;
+use App\Exceptions\DomainConflict;
 use App\Models\Akun;
+use App\Support\Idempotency;
 use Illuminate\Cache\Events\WritingKey;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
@@ -70,6 +73,24 @@ if ($gate = (int) ($spec['gate'] ?? 0)) {
 }
 
 $result = match ($spec['kind']) {
+    'm18-payment' => (function () use ($spec) {
+        try {
+            $actor = Akun::findOrFail($spec['actor']);
+            $request = Request::create('/test/m18', 'POST');
+            $request->headers->set('Idempotency-Key', $spec['key']);
+            $response = Idempotency::run($request, $actor, 'm18-test', $spec['body'], function () use ($actor, $spec) {
+                $p = $spec['body'];
+                $payment = FlexibleDues::record($actor, $p['house'], $p['periods'], $p['amount'], '2026-10-25',
+                    'kurang_bayar', 'titipan', null, $p['fingerprint']);
+
+                return response()->json(['id' => $payment->id], 201);
+            });
+
+            return ['status' => $response->getStatusCode(), 'code' => null, 'data' => json_decode($response->getContent(), true)];
+        } catch (DomainConflict $e) {
+            return ['status' => 409, 'code' => 'CONFLICT', 'data' => null];
+        }
+    })(),
     'http' => (function () use ($http, $spec) {
         $request = Request::create($spec['uri'], $spec['method'], [], [], [], [
             'HTTP_ACCEPT' => 'application/json',
