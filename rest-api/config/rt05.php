@@ -41,6 +41,8 @@ return [
 
     // M06 identitas (docs/API.md §Autentikasi, SECURITY.md §Identitas).
     'auth' => [
+        // ADR43: satu-satunya akun yang boleh mengangkat/menurunkan pengurus dari aplikasi (hak bisnis tetap setara, BR07).
+        'super_admin_email' => strtolower(trim((string) env('RT05_SUPER_ADMIN_EMAIL', 'takedatamankedaung@gmail.com'))),
         // Nama cookie CSRF API; berbeda dari XSRF-TOKEN milik website pada origin yang sama.
         'csrf_cookie' => env('RT05_XSRF_COOKIE', 'rt05_api_xsrf'),
         // Kegagalan token registrasi per IP per jam (selain throttle registrasi 5/10 menit).

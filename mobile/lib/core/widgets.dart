@@ -353,3 +353,33 @@ Future<String?> askText(BuildContext context, {required String title, required S
   );
   return (result == null || result.isEmpty) ? null : result;
 }
+
+/// ADR43: jalan di RT 05 adalah Mawar 8 sampai Mawar 14. Pilihan cepat mengisi kolom Jalan dengan ejaan baku; ketikan bebas
+/// tetap dinormalkan server ("jl. mawar8" menjadi "Mawar 8").
+class StreetChips extends StatelessWidget {
+  const StreetChips({super.key, required this.controller});
+
+  final TextEditingController controller;
+
+  static const streets = ['Mawar 8', 'Mawar 9', 'Mawar 10', 'Mawar 11', 'Mawar 12', 'Mawar 13', 'Mawar 14'];
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final s in streets)
+          ActionChip(
+            key: ValueKey('jalan-$s'),
+            label: Text(s),
+            onPressed: () => controller.value = TextEditingValue(
+              text: s,
+              selection: TextSelection.collapsed(offset: s.length),
+            ),
+          ),
+      ],
+    ),
+  );
+}

@@ -365,9 +365,12 @@ class _DuesConfirmationDetailPageState extends ConsumerState<DuesConfirmationDet
   }
 }
 
-/// Nomor WhatsApp bendahara yang dipakai tombol chat di menu Iuran warga.
+/// Nomor WhatsApp bendahara (tombol chat di menu Iuran warga) atau, dengan [ketua], nomor Ketua RT yang tampil di halaman
+/// Kontak website (ADR43). Keduanya disimpan terpisah; PUT hanya mengirim kolom halaman ini.
 class TreasurerContactPage extends ConsumerStatefulWidget {
-  const TreasurerContactPage({super.key});
+  const TreasurerContactPage({super.key, this.ketua = false});
+
+  final bool ketua;
 
   @override
   ConsumerState<TreasurerContactPage> createState() => _TreasurerContactPageState();
@@ -378,6 +381,10 @@ class _TreasurerContactPageState extends ConsumerState<TreasurerContactPage> {
   bool _terisi = false;
   String? _fieldError;
 
+  String get _field => widget.ketua ? 'ketua_whatsapp' : 'bendahara_whatsapp';
+  String get _siapa => widget.ketua ? 'Ketua RT' : 'bendahara';
+  String get _dampakKosong => widget.ketua ? 'Halaman Kontak website menampilkan "Belum diumumkan".' : 'Tombol WhatsApp di menu Iuran warga nonaktif.';
+
   @override
   void initState() {
     super.initState();
@@ -385,7 +392,7 @@ class _TreasurerContactPageState extends ConsumerState<TreasurerContactPage> {
     ref.read(contactsProvider.future).then((d) {
       if (!mounted || _terisi) return;
       _terisi = true;
-      _nomor.text = d['bendahara_whatsapp'] == null ? '' : waDisplay('${d['bendahara_whatsapp']}');
+      _nomor.text = d[_field] == null ? '' : waDisplay('${d[_field]}');
     }, onError: (_) {});
   }
 
@@ -395,32 +402,34 @@ class _TreasurerContactPageState extends ConsumerState<TreasurerContactPage> {
     super.dispose();
   }
 
-  Future<void> _simpan() => _kirim(_nomor.text.trim().isEmpty ? null : _nomor.text.trim(), sukses: 'Nomor WhatsApp bendahara tersimpan.');
+  Future<void> _simpan() => _kirim(_nomor.text.trim().isEmpty ? null : _nomor.text.trim(), sukses: 'Nomor WhatsApp $_siapa tersimpan.');
 
   Future<void> _kosongkan() async {
     final ok = await confirm(
       context,
-      title: 'Kosongkan nomor bendahara?',
-      message: 'Tombol WhatsApp di menu Iuran warga nonaktif sampai nomor baru diisi.',
+      title: 'Kosongkan nomor $_siapa?',
+      message: widget.ketua
+          ? 'Halaman Kontak website menampilkan "Belum diumumkan" sampai nomor baru diisi.'
+          : 'Tombol WhatsApp di menu Iuran warga nonaktif sampai nomor baru diisi.',
       yes: 'Kosongkan',
       danger: true,
     );
     if (!ok || !mounted) return;
-    await _kirim(null, sukses: 'Nomor bendahara dikosongkan.');
+    await _kirim(null, sukses: 'Nomor $_siapa dikosongkan.');
   }
 
   Future<void> _kirim(String? nomor, {required String sukses}) async {
     setState(() => _fieldError = null);
     try {
-      final res = await ref.read(apiProvider).put('/admin/settings/contacts', data: {'bendahara_whatsapp': nomor});
+      final res = await ref.read(apiProvider).put('/admin/settings/contacts', data: {_field: nomor});
       ref.invalidate(contactsProvider);
       if (!mounted) return;
-      final normal = res is Map ? res['bendahara_whatsapp'] : null;
+      final normal = res is Map ? res[_field] : null;
       _nomor.text = normal == null ? '' : waDisplay('$normal');
       showMessage(context, sukses);
     } on ApiException catch (e) {
       if (!mounted) return;
-      final pesanField = e.fields['bendahara_whatsapp'];
+      final pesanField = e.fields[_field];
       if (pesanField != null && pesanField.isNotEmpty) {
         setState(() => _fieldError = pesanField.first);
       } else {
@@ -432,15 +441,17 @@ class _TreasurerContactPageState extends ConsumerState<TreasurerContactPage> {
   @override
   Widget build(BuildContext context) {
     final kontak = ref.watch(contactsProvider);
-    final tersimpan = kontak.asData?.value['bendahara_whatsapp'] as String?;
+    final tersimpan = kontak.asData?.value[_field] as String?;
     return Scaffold(
-      appBar: AppBar(title: const Text('Nomor WhatsApp bendahara')),
+      appBar: AppBar(title: Text('Nomor WhatsApp $_siapa')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Nomor ini dipakai tombol "Chat bendahara lewat WhatsApp" di menu Iuran warga. Isi dengan nomor WhatsApp bendahara yang aktif.',
-            style: TextStyle(height: 1.45),
+          Text(
+            widget.ketua
+                ? 'Nomor ini tampil sebagai kontak resmi Ketua RT di halaman Kontak website (bisa dilihat siapa saja). Isi dengan nomor WhatsApp Ketua RT yang aktif.'
+                : 'Nomor ini dipakai tombol "Chat bendahara lewat WhatsApp" di menu Iuran warga. Isi dengan nomor WhatsApp bendahara yang aktif.',
+            style: const TextStyle(height: 1.45),
           ),
           const SizedBox(height: 16),
           AsyncView(
@@ -448,18 +459,15 @@ class _TreasurerContactPageState extends ConsumerState<TreasurerContactPage> {
             onRetry: () => ref.invalidate(contactsProvider),
             builder: (_) => SectionCard(
               title: 'Nomor tersimpan',
-              child: Text(
-                tersimpan == null ? 'Belum diatur. Tombol WhatsApp di menu Iuran warga nonaktif.' : waDisplay(tersimpan),
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
+              child: Text(tersimpan == null ? 'Belum diatur. $_dampakKosong' : waDisplay(tersimpan), style: const TextStyle(fontWeight: FontWeight.w700)),
             ),
           ),
           const SizedBox(height: 16),
           TextField(
-            key: const ValueKey('nomor-bendahara'),
+            key: ValueKey(widget.ketua ? 'nomor-ketua' : 'nomor-bendahara'),
             controller: _nomor,
             keyboardType: TextInputType.phone,
-            decoration: InputDecoration(labelText: 'Nomor WhatsApp bendahara', hintText: 'mis. 0812 3456 7890', errorText: _fieldError),
+            decoration: InputDecoration(labelText: 'Nomor WhatsApp $_siapa', hintText: 'mis. 0812 3456 7890', errorText: _fieldError),
           ),
           const SizedBox(height: 12),
           BusyButton(label: 'Simpan nomor', icon: Icons.save_outlined, onPressed: _simpan),

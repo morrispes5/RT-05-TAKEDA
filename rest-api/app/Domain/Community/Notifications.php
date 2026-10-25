@@ -46,6 +46,9 @@ final class Notifications
             // Audit M16: pengurus tahu setiap akun utama baru agar akun asing bisa segera dinonaktifkan.
             'akun.registrasi_utama' => self::toPengurus($event, 'sistem', [], 'Akun utama baru', 'Warga baru mendaftar sebagai akun utama. Cocokkan dengan data RT; nonaktifkan bila tidak dikenal.'),
             'token.dirotasi_otomatis' => self::toPengurus($event, 'sistem', [], 'Token registrasi diganti', 'Terlalu banyak percobaan token salah, jadi token registrasi diganti otomatis. Bagikan token baru dari menu Token registrasi.'),
+            // ADR43: akun target diberi tahu perubahan perannya (token lama sudah dicabut; masuk ulang).
+            'akun.peran_diubah' => self::send($event, [$id], 'sistem', [], ($event->safe_payload['peran'] ?? '') === 'pengurus' ? 'Anda menjadi pengurus' : 'Peran pengurus dicabut',
+                ($event->safe_payload['peran'] ?? '') === 'pengurus' ? 'Super admin menjadikan akun Anda pengurus RT05. Masuk kembali untuk membuka menu pengurus.' : 'Akun Anda kembali menjadi akun warga. Masuk kembali untuk melanjutkan.'),
             'akun.permohonan_tambahan' => self::toPengurus($event, 'sistem', [], 'Permohonan akun tambahan', 'Ada permohonan akun tambahan yang menunggu persetujuan.'),
             'akun.permohonan_disetujui' => self::send($event, [$id], 'sistem', [], 'Akun disetujui', 'Akun Anda telah disetujui pengurus. Selamat datang di RT05 TAKEDA.'),
             'iuran.pembayaran_dicatat' => self::paymentRecorded($event),

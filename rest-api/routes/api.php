@@ -35,6 +35,8 @@ Route::middleware('throttle:120,1')->prefix('public')->group(function () {
         Route::get("$type/{slug}", [ContentController::class, 'publicShow'])->defaults('type', $type)->where('slug', '[a-z0-9-]{1,120}');
     }
     Route::get('site-profile', [ContentController::class, 'publicProfile']);
+    // ADR43: kontak resmi Ketua RT untuk halaman Kontak website (nomor dari pengaturan, bukan Git).
+    Route::get('contacts', [SettingsController::class, 'publicContacts']);
     Route::get('media/{id}', [ContentController::class, 'publicMedia'])->whereUuid('id');
 });
 
@@ -159,6 +161,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::patch('accounts/{id}', [ResidentsController::class, 'updateAccount'])->whereUuid('id');
     Route::post('accounts/{id}/archive', [ResidentsController::class, 'archiveAccount'])->whereUuid('id');
     Route::post('accounts/{id}/restore', [ResidentsController::class, 'restoreAccount'])->whereUuid('id');
+    Route::post('accounts/{id}/role', [ResidentsController::class, 'setRole'])->whereUuid('id');
     Route::get('additional-account-requests', [ResidentsController::class, 'requests']);
     Route::post('additional-account-requests/{id}/approve', [ResidentsController::class, 'approve'])->whereUuid('id');
     Route::post('additional-account-requests/{id}/reject', [ResidentsController::class, 'reject'])->whereUuid('id');
