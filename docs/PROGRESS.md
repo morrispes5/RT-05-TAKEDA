@@ -49,7 +49,10 @@ simpan berhasil → Riwayat akun "Tambahan Sintetis M06": *Jadikan pengurus* lal
 ketuk Mawar 10 mengisi kolom → warga utama sintetis: umur anggota tampil ("Anak · 7 tahun"), avatar papan rumah → lembar 15
 avatar → pilih *Keluarga* tersimpan. Temuan yang langsung diperbaiki (PR lanjutan): kartu profil Akun masih inisial (kini
 memakai avatar keluarga bila dipilih) dan teks lama "Peran tidak diubah dari aplikasi" di daftar akun pengurus. APK 1017
-**tidak disebar**; rilis ke HP = 1018. Keterbatasan: nama jalan lama yang sudah tersimpan tidak diubah otomatis (pembakuan
+**tidak disebar**; rilis ke HP = 1018 (PR #79, `8f8a1f1`): build 25 Okt 16.09 WIB, `/unduh` + `versi.json` staging 16.10, Drive
+16.11 (file ID tetap); dipasang ulang di emulator, avatar tampil di kartu profil dan papan rumah. Catatan rilis yang diketik
+dengan `\n` di form dispatch tidak terpecah → `versi.json` 1018 dipecah manual dan skrip build kini juga memecah `\n` teks
+(self-test baru). Keterbatasan: nama jalan lama yang sudah tersimpan tidak diubah otomatis (pembakuan
 berlaku saat rumah disimpan/diubah).
 
 ## M16 — Rilis ke warga (milestone terakhir) — 22 Oktober 2026: **in_progress (Fase A)**

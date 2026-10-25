@@ -45,6 +45,9 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | 1013 (1.0.0) | 3013 / 2013 | `b1d080d` | 22 Okt 10.57 | 22 Okt 10.58 ke `/unduh` + `versi.json` | Foto pengaduan/bukti tidak tertinggal di cache HP; server: kunci tagihan/pembayaran, CSP CMS, performa | Menunggu uji pemilik |
 | **1014** (1.0.0) | 3014 / 2014 | `e74f2e0` | **24 Okt 13.25** | **24 Okt 13.27 ke `/unduh` + `versi.json`** (Drive: menunggu pemilik) | ADR41: menu Air Bersih KSM berlogo di Lainnya pengurus (warga tidak melihat). Catatan rilis `versi.json` diisi manual (dispatch tanpa input `catatan`); APK, ukuran, SHA-256 tidak berubah, sertifikat = kunci rilis tetap | Menunggu uji pemilik |
 | **1015** (1.0.0) | 3015 / 2015 | `9f0fdf9` | **24 Okt 15.54** | **24 Okt 15.55 `/unduh` + `versi.json`; Drive 15.56** | ADR42: tanggal lahir anggota + Statistik usia pengurus; privasi 2026-10-24 (setuju ulang) | Diuji agent di emulator (lulus); menunggu uji pemilik |
+| 1016 | — | `9507c4d` | 25 Okt ±14.55 | **Tidak disebar** | M17 tanpa avatar; dibatalkan karena permintaan foto profil keluarga datang sebelum rilis | — |
+| 1017 | 3017 / 2017 | `d601c43` | 25 Okt ±15.38 | **Tidak disebar** (hanya emulator) | M17 + avatar; uji emulator menemukan 2 perbaikan kecil → 1018 | Diuji agent di emulator |
+| **1018** (1.0.0) | 3018 / 2018 | `8f8a1f1` | **25 Okt 16.09** | **25 Okt 16.10 `/unduh` + `versi.json`; Drive 16.11** | M17 (ADR43): foto profil keluarga 15 avatar, nomor WhatsApp Ketua RT, super admin ubah peran, chip jalan Mawar 8–14, umur di daftar keluarga, privasi 2026-10-25 (setuju ulang). Catatan `versi.json` dipecah manual (lihat perbaikan skrip) | Diuji agent di emulator (lulus); menunggu uji pemilik |
 
 Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
 
