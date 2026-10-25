@@ -693,3 +693,7 @@ M17 → M18 → (2 Nov pindah VPS staging) → M16 production + beta → M19 →
 10. Teknis: hosting Biznet NEO Personal Large menunggu jawaban 6 pertanyaan (sudah dikirim); VPS staging baru 2 Nov; backup
     otomatis lewat **GitHub Actions ke Drive pemilik** (bukan PC lokal); pemantau uptime gratis (pemilik diajari); hanya layanan
     gratis (tanpa kartu kredit/NPWP).
+
+**Penerimaan M17, 25 Oktober 2026 (sesi Codex):** pemilik memilih “Ya, emulator cukup” untuk gate penutupan M17,
+setelah tes otomatis dan checklist APK 1018 lulus. Bukti dicatat sebagai emulator/staging, bukan HP nyata atau UAT mitra.
+Hasil verifikasi di [VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md). Gate M16 tetap terpisah.
