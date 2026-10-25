@@ -2373,6 +2373,29 @@ paths:
           $ref: "#/components/responses/Data"
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/household/avatar:
+    put:
+      operationId: householdAvatarUpdate
+      tags:
+        - Residents
+      summary: Pilih foto profil keluarga dari 15 avatar bawaan
+      description: M17 (permintaan pemilik 25 Okt 2026). Akun utama saja (akun tambahan 403 PRIMARY_ACCOUNT_REQUIRED). Bukan unggahan foto; kode di luar daftar → 422; null menghapus. Tidak menaikkan versi keluarga. Respons sama dengan GET /household.
+      x-status: implemented
+      x-milestone: M17
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [avatar]
+              properties:
+                avatar: {type: [string, 'null'], enum: [ayah, ibu, ayah_peci, ibu_hijab, kakek, nenek, nenek_hijab, kakak_laki, kakak_perempuan, remaja_hijab, adik_laki, adik_perempuan, bayi, pasangan, keluarga, null]}
+      responses:
+        "200":
+          $ref: "#/components/responses/Data"
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/household:
     get:
       operationId: householdShow
@@ -3924,6 +3947,7 @@ components:
             - {type: 'null'}
         jenis_hunian: {type: [string, 'null'], enum: [pemilik, kontrak, null]}
         nomor_kk_tersamar: {type: [string, 'null'], description: 'Nomor KK tersamar (ADR35).'}
+        avatar: {type: [string, 'null'], enum: [ayah, ibu, ayah_peci, ibu_hijab, kakek, nenek, nenek_hijab, kakak_laki, kakak_perempuan, remaja_hijab, adik_laki, adik_perempuan, bayi, pasangan, keluarga, null], description: 'M17: kode avatar keluarga bawaan (aset mobile assets/avatars/<kode>.svg).'}
         anggota:
           type: array
           items: {$ref: '#/components/schemas/Member'}

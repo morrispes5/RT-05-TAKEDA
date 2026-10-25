@@ -223,6 +223,11 @@ judul dengan `update_file`. Connector Drive tidak bisa mengunggah isi file atau 
 lalu **soft launch beta 8 Nov** (data asli hanya di production) → 5. **M19** tombol panik → 6. **M20** iPhone (PWA).
 Rilis penuh paling lambat awal 2027. Perbaikan APK kecil dikumpulkan per rilis (jangan rilis APK tiap bug).
 
+**Status M17 (25 Okt):** kode di PR #77 (`codex/m17-penyesuaian-rapat`), rincian di PROGRESS bagian M17. Nomor WhatsApp Ketua
+RT dan bendahara **tidak ada di Git**: diisi lewat aplikasi (Lainnya pengurus → Kontak website / Iuran) atau
+`PUT /admin/settings/contacts`; sumber nomor = dokumen rapat milik pemilik. Super admin = akun RT resmi
+(`RT05_SUPER_ADMIN_EMAIL`, bawaan di `config/rt05.php`); hanya akun itu yang melihat tombol ubah peran.
+
 ## 11. Air Bersih KSM — aplikasi terpisah, menu khusus pengurus (ADR41, 24 Okt 2026; menggantikan ADR40)
 
 - **Keputusan terbaru (ADR41):** tidak digabung, tidak ada API/login bersama. RT05 hanya punya menu "Air Bersih KSM" berlogo

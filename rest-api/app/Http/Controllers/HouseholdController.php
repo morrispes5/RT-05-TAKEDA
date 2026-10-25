@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Residents\FamilyAvatars;
 use App\Domain\Residents\Households;
 use App\Exceptions\DomainConflict;
 use App\Http\Responses\Api;
@@ -10,6 +11,7 @@ use App\Models\Akun;
 use App\Models\Keluarga;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * Data keluarga sendiri (BR05, ADR10, M07). Keluarga ditentukan dari tautan akun aktif:
@@ -78,6 +80,17 @@ class HouseholdController extends Controller
             'nomor_kk' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
         ]);
         Households::updateHead($akun, $k->id, $data);
+
+        return $this->show($request);
+    }
+
+    /** M17: PUT /household/avatar — pilih salah satu avatar bawaan atau null (akun utama saja). */
+    public function updateAvatar(Request $request): JsonResponse
+    {
+        $akun = $request->user();
+        $k = $this->editableKeluarga($akun);
+        $data = $request->validate(['avatar' => ['present', 'nullable', 'string', Rule::in(FamilyAvatars::CODES)]]);
+        FamilyAvatars::set($akun, $k->id, $data['avatar']);
 
         return $this->show($request);
     }

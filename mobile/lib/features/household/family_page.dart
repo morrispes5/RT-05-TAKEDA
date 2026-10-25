@@ -9,38 +9,49 @@ import '../../core/widgets.dart';
 import '../warga/providers.dart';
 import 'birth_date.dart';
 import 'family_actions.dart';
+import 'family_avatar.dart';
 import 'identity_data.dart';
 
 /// Papan rumah: satu elemen tegas, isi halaman tetap tenang.
 class HousePlate extends StatelessWidget {
-  const HousePlate({super.key, required this.kode, required this.alamat, this.hunian, this.footer});
+  const HousePlate({super.key, required this.kode, required this.alamat, this.hunian, this.footer, this.leading});
 
   final String kode;
   final String alamat;
   final String? hunian;
   final String? footer;
 
+  /// M17: foto profil keluarga di kiri papan (opsional).
+  final Widget? leading;
+
   @override
   Widget build(BuildContext context) => Container(
     width: double.infinity,
     padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
     decoration: BoxDecoration(color: Brand.navy, borderRadius: BorderRadius.circular(18)),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    child: Row(
       children: [
-        Text(kode, style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.white, height: 1.15)),
-        const SizedBox(height: 6),
-        Text(alamat, style: const TextStyle(color: Colors.white70, height: 1.35)),
-        if (hunian != null && hunian!.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Text(
-            hunian!,
-            style: const TextStyle(color: Brand.yellow, fontWeight: FontWeight.w700),
-          ),
-        ],
-        if (footer != null && footer!.isNotEmpty) ...[const SizedBox(height: 8), Text(footer!, style: const TextStyle(color: Colors.white70, height: 1.35))],
+        if (leading != null) ...[leading!, const SizedBox(width: 14)],
+        Expanded(child: _plateText(context)),
       ],
     ),
+  );
+
+  Widget _plateText(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(kode, style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.white, height: 1.15)),
+      const SizedBox(height: 6),
+      Text(alamat, style: const TextStyle(color: Colors.white70, height: 1.35)),
+      if (hunian != null && hunian!.isNotEmpty) ...[
+        const SizedBox(height: 8),
+        Text(
+          hunian!,
+          style: const TextStyle(color: Brand.yellow, fontWeight: FontWeight.w700),
+        ),
+      ],
+      if (footer != null && footer!.isNotEmpty) ...[const SizedBox(height: 8), Text(footer!, style: const TextStyle(color: Colors.white70, height: 1.35))],
+    ],
   );
 }
 
@@ -81,6 +92,7 @@ class FamilyPanel extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               HousePlate(
+                leading: _AvatarButton(code: data['avatar'] as String?, editable: editable),
                 kode: '${rumah?['kode_rumah'] ?? 'Rumah'}',
                 alamat: '${rumah?['alamat'] ?? 'Alamat menyusul'}',
                 hunian: hunian.isEmpty ? null : hunian,
@@ -160,6 +172,63 @@ class FamilyPanel extends ConsumerWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// M17: foto profil keluarga dari 15 avatar bawaan; hanya akun utama yang dapat mengganti (ketuk avatar).
+class _AvatarButton extends ConsumerWidget {
+  const _AvatarButton({required this.code, required this.editable});
+
+  final String? code;
+  final bool editable;
+
+  Future<void> _ubah(BuildContext context, WidgetRef ref) async {
+    final pilih = await pickFamilyAvatar(context, current: code);
+    if (pilih == null || !context.mounted) return;
+    try {
+      await ref.read(apiProvider).put('/household/avatar', data: {'avatar': pilih.isEmpty ? null : pilih});
+      // Pesan dulu: memuat ulang keluarga membangun ulang papan rumah sehingga context tombol ini tidak lagi terpasang.
+      if (context.mounted) showMessage(context, pilih.isEmpty ? 'Foto profil keluarga dihapus.' : 'Foto profil keluarga tersimpan.');
+      ref.invalidate(householdProvider);
+    } on ApiException catch (e) {
+      if (context.mounted) showApiError(context, e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final avatar = Container(
+      padding: const EdgeInsets.all(3),
+      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+      child: FamilyAvatar(code: code, size: 58),
+    );
+    if (!editable) return avatar;
+    return Tooltip(
+      message: code == null ? 'Pilih foto profil keluarga' : 'Ganti foto profil keluarga',
+      child: InkWell(
+        key: const ValueKey('foto-profil-keluarga'),
+        customBorder: const CircleBorder(),
+        onTap: () => _ubah(context, ref),
+        child: Stack(
+          children: [
+            avatar,
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Brand.yellow,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Brand.navy, width: 2),
+                ),
+                child: const Icon(Icons.edit, size: 12, color: Brand.navy),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

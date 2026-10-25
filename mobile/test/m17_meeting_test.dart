@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart' show RequestOptions;
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:rt05_takeda/core/models.dart';
 import 'package:rt05_takeda/core/session.dart';
 import 'package:rt05_takeda/core/widgets.dart';
 import 'package:rt05_takeda/features/household/admin_edits.dart';
+import 'package:rt05_takeda/features/household/family_avatar.dart';
 import 'package:rt05_takeda/features/pengurus/dues_confirmations.dart';
 
 import 'support/app_harness.dart';
@@ -213,5 +215,44 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('41 tahun'), findsOneWidget);
     expect(find.textContaining('null tahun'), findsNothing);
+  });
+
+  test('15 avatar keluarga: setiap kode punya berkas SVG dan tidak ada berkas lain', () {
+    final files = Directory('assets/avatars').listSync().whereType<File>().map((f) => f.uri.pathSegments.last).toSet();
+    expect(familyAvatars, hasLength(15));
+    expect(files, {for (final k in familyAvatars.keys) '$k.svg'});
+  });
+
+  testWidgets('akun utama memilih foto profil keluarga dari 15 avatar, bukan galeri', (tester) async {
+    useCompactScreen(tester, height: 1400);
+    final fixtures = shellFixtures();
+    final puts = <RequestOptions>[];
+    final base = apiHandler(me: akunJson, fixtures: fixtures);
+    await pumpApp(
+      tester,
+      storage: MemoryTokenStorage('t'),
+      handler: (o) {
+        if (o.uri.path == '/api/v1/household/avatar' && o.method == 'PUT') {
+          puts.add(o);
+          ((fixtures['/api/v1/household']! as Map)['data'] as Map)['avatar'] = 'ibu_hijab';
+          return jsonBody(200, fixtures['/api/v1/household']!);
+        }
+        return base(o);
+      },
+    );
+    await tester.tap(find.widgetWithText(NavigationDestination, 'Akun'));
+    await tester.pumpAndSettle();
+    expect(find.bySemanticsLabel('Belum ada foto profil keluarga'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('foto-profil-keluarga')));
+    await tester.pumpAndSettle();
+    for (final k in familyAvatars.keys) {
+      expect(find.byKey(ValueKey('avatar-$k')), findsOneWidget);
+    }
+    await tester.tap(find.byKey(const ValueKey('avatar-ibu_hijab')));
+    await tester.pumpAndSettle();
+    expect(puts, hasLength(1));
+    expect(_bodyOf(puts.single), {'avatar': 'ibu_hijab'});
+    expect(find.text('Foto profil keluarga tersimpan.'), findsOneWidget);
+    expect(find.bySemanticsLabel('Foto profil keluarga: Ibu berhijab'), findsOneWidget);
   });
 }
