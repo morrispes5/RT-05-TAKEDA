@@ -184,7 +184,8 @@ function releaseManifest({ versionName, buildNumber, files, notes = '', now = ne
         }
         berkas.push({ abi: f.abi, url: `/unduh/${f.name}`, ukuran: f.size, sha256: f.sha256 });
     }
-    const catatan = String(notes).split(/\r?\n/).map(l => l.replace(/[<>]/g, '').trim()).filter(Boolean).slice(0, 10).map(l => l.slice(0, 200));
+    // Form dispatch GitHub hanya satu baris: "\n" yang diketik sebagai teks juga memisahkan baris (temuan rilis 1018).
+    const catatan = String(notes).split(/\r?\n|\\n/).map(l => l.replace(/[<>]/g, '').trim()).filter(Boolean).slice(0, 10).map(l => l.slice(0, 200));
     return { ok: true, manifest: { versi: versionName, build: Number(buildNumber), tanggal: now.toISOString(), catatan, berkas } };
 }
 
@@ -335,6 +336,8 @@ function selfTest() {
     const man = releaseManifest({ versionName: '1.0.0', buildNumber: '42', files: [apk], notes: 'Baru <b>\n\n  Perbaikan  ', now: new Date('2026-10-23T03:00:00Z') });
     expect(failures, man.ok && man.manifest.build === 42 && man.manifest.berkas[0].url === '/unduh/rt05-takeda-prod-42-arm64-v8a.apk' && man.manifest.tanggal === '2026-10-23T03:00:00.000Z', 'manifest-ok');
     expect(failures, man.ok && JSON.stringify(man.manifest.catatan) === JSON.stringify(['Baru b', 'Perbaikan']), 'manifest-notes');
+    const literal = releaseManifest({ versionName: '1.0.0', buildNumber: '42', files: [apk], notes: 'Satu\\nDua \\n Tiga' });
+    expect(failures, literal.ok && JSON.stringify(literal.manifest.catatan) === JSON.stringify(['Satu', 'Dua', 'Tiga']), 'manifest-notes-literal');
     expect(failures, releaseManifest({ versionName: '1.0', buildNumber: '42', files: [apk] }).error === 'manifest-version', 'manifest-version');
     expect(failures, releaseManifest({ versionName: '1.0.0', buildNumber: '42', files: [{ ...apk, name: '../x.apk' }] }).error === 'manifest-file', 'manifest-path');
     expect(failures, pubspecVersionName('name: x\nversion: 1.0.0+1\n') === '1.0.0' && pubspecVersionName('version: 1.0+1') === null, 'pubspec-version');
