@@ -40,7 +40,17 @@ tidak di Git) dan profil terbit bendahara "Wirawan"; `/kontak` dan `/profil` sta
   Kolom `keluarga.avatar` (aditif, CHECK daftar kode), `PUT /household/avatar` {avatar|null} khusus akun utama, tidak menaikkan
   versi keluarga, teraudit; `avatar` ikut di GET /household dan daftar keluarga pengurus. Mobile: avatar di papan rumah menu
   Akun, ketuk → lembar 15 pilihan (atau hapus). Validasi: rest-api 358/358 (2 tes baru, termasuk kode = berkas aset), Flutter
-  293 lulus, analyzer bersih.
+  293 lulus, analyzer bersih. PR #78 merged (`d601c43`), staging dideploy `d601c43`.
+
+**Uji emulator APK 1017 (staging `d601c43`, 25 Okt ±15.40 WIB, Pixel_8a headless):** super admin masuk → Kebijakan Privasi
+versi 25 Okt diminta setuju ulang (teks Ketua RT benar) → Lainnya: menu *Nomor WhatsApp Ketua RT* menampilkan nomor tersimpan,
+simpan berhasil → Riwayat akun "Tambahan Sintetis M06": *Jadikan pengurus* lalu *Turunkan jadi warga* berhasil, audit
+`akun.peran_pengurus`/`akun.peran_warga` + alasan tercatat → Rumah baru dan formulir daftar akun tambahan: 7 chip Mawar,
+ketuk Mawar 10 mengisi kolom → warga utama sintetis: umur anggota tampil ("Anak · 7 tahun"), avatar papan rumah → lembar 15
+avatar → pilih *Keluarga* tersimpan. Temuan yang langsung diperbaiki (PR lanjutan): kartu profil Akun masih inisial (kini
+memakai avatar keluarga bila dipilih) dan teks lama "Peran tidak diubah dari aplikasi" di daftar akun pengurus. APK 1017
+**tidak disebar**; rilis ke HP = 1018. Keterbatasan: nama jalan lama yang sudah tersimpan tidak diubah otomatis (pembakuan
+berlaku saat rumah disimpan/diubah).
 
 ## M16 — Rilis ke warga (milestone terakhir) — 22 Oktober 2026: **in_progress (Fase A)**
 
