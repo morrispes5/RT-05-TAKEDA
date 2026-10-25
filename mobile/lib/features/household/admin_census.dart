@@ -731,7 +731,7 @@ class _ArchiveAccountPageState extends ConsumerState<ArchiveAccountPage> {
         Text('${widget.akun['email']}', style: const TextStyle(color: Brand.muted)),
         const SizedBox(height: 12),
         const Text(
-          'Akun arsip tidak dihapus dan bisa dipulihkan pengurus (kembali nonaktif). Peran tidak diubah dari aplikasi.',
+          'Akun arsip tidak dihapus dan bisa dipulihkan pengurus (kembali nonaktif). Peran hanya diubah super admin di Riwayat akun.',
           style: TextStyle(height: 1.35),
         ),
         const SizedBox(height: 12),
@@ -790,7 +790,10 @@ class _AccountsAdminViewState extends ConsumerState<AccountsAdminView> {
           ],
         ),
         const SizedBox(height: 8),
-        const Text('Setiap pengurus memiliki hak yang sama. Peran tidak diubah dari aplikasi.', style: TextStyle(color: Brand.muted, height: 1.35)),
+        const Text(
+          'Setiap pengurus memiliki hak yang sama. Peran hanya dapat diubah super admin RT di Riwayat akun.',
+          style: TextStyle(color: Brand.muted, height: 1.35),
+        ),
         const SizedBox(height: 12),
         AsyncView(
           value: data,

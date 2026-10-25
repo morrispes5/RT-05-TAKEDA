@@ -253,6 +253,6 @@ void main() {
     expect(puts, hasLength(1));
     expect(_bodyOf(puts.single), {'avatar': 'ibu_hijab'});
     expect(find.text('Foto profil keluarga tersimpan.'), findsOneWidget);
-    expect(find.bySemanticsLabel('Foto profil keluarga: Ibu berhijab'), findsOneWidget);
+    expect(find.byWidgetPredicate((w) => w is FamilyAvatar && w.code == 'ibu_hijab'), findsNWidgets(2)); // papan rumah + kartu profil
   });
 }
