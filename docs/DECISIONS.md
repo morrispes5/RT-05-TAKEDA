@@ -726,6 +726,9 @@ keputusan itu lagi. Semua pengurus setara tetap mengikat (BR07). Pemilik meminta
 7. Warga aktif melihat tagihan/tunggakan/titipan rumah sendiri serta kas agregat bulanan tanpa identitas rumah
    lain. Mengubah sebagian ADR26/35, tidak membuka `/dues/transparency` ke warga. Kebijakan privasi harus diperbarui
    dan persetujuan memvalidasi versi teks yang benar-benar ditampilkan client.
+   Implementasi: teks M18 versi 26 Oktober 2026, aktif bersama flag keuangan v2. Saat flag nonaktif server tetap
+   meminta versi 25 Oktober; APK baru membawa kedua teks. Versi server yang tidak dikenali APK tidak dapat disetujui
+   dengan hanya menyalin nomornya. Endpoint kas warga menolak akses sebelum persetujuan teks M18.
 8. Laporan bulanan/tahunan dan XLSX memakai satu layanan perhitungan. Tahun kalender, WIB, 14 sheet (rekap tahun,
    rumah×bulan, 12 bulan), angka sama dengan API, koreksi lintas bulan terpisah. OpenSpout 4.32.0 diusulkan setelah
    dry-run dependency berhasil; belum ditambahkan ke repo.

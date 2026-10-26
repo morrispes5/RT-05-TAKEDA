@@ -22,6 +22,7 @@ Terakhir diperbarui: **26 Oktober 2026** (M17 passed; M18_PLAN/ADR44 disetujui; 
 | Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 in_progress (ledger merged, API lokal, flag nonaktif)**, M16 Fase A in_progress |
 | `main` terbaru M18 | `209e44e` merge PR #83 fondasi ledger, CI 5/5 PASS. API dikerjakan di `codex/m18-api-keuangan` |
 | API M18 merged | `ee18f55` PR #84, CI 5/5 PASS pada head `672f447`. Belum deploy, flag nonaktif |
+| Mobile pengurus merged | `c68a7a1` PR #85, CI 7/7 PASS termasuk APK debug dev/staging. Belum APK rilis M18 |
 | `main` setelah penutupan M17 | `0f3b251` (PR #81 merged, pemeriksaan 3/3 sukses); baseline aplikasi `cd4a21f`, tree identik `c91192f` |
 | Staging | Deploy terakhir tercatat `d601c43` (M17); tidak dideploy ulang sesi ini. `/health/ready`, kontak publik, Kontak, Profil diverifikasi **4/4 PASS** 25 Okt 18.48 WIB |
 | Website Vercel | Preview statis dari `website/preview/`; `/aplikasi` menaut ke halaman unduh staging. Tidak diuji ulang sesi ini |
@@ -47,6 +48,11 @@ Tidak ada aktivasi v2, deploy, atau rilis mobile pada tahap API.
 Tahap mobile pengurus di branch `codex/m18-mobile-pengurus`: form penerimaan/approval/koreksi, pengelolaan tarif rumah,
 titipan, keringanan/penyesuaian, detail penerimaan dan koreksi kas. Analisis bersih, format 91/0, tes awal 298/298 +
 3 tes pengelolaan lulus; suite terakhir **301/301 PASS**. Berikutnya privasi/transparansi warga, laporan/XLSX dan integrasi staging/emulator.
+
+Tahap transparansi/privasi lokal sudah diuji: backend 396/396 (4.136 assertions), Flutter 306/306, website 40/40 (538),
+Pint/analyze/format/OpenAPI/hygiene PASS. Endpoint kas warga hanya agregat, memerlukan persetujuan teks M18 versi 26 Okt;
+flag false mempertahankan versi 25 Okt dan alur lama. APK baru memuat kedua teks. Website preview dibangun dari sumber.
+Branch `codex/m18-transparansi-privasi`; selanjutnya laporan/CSV/XLSX, staging, emulator dan satu APK M18. Production tidak disentuh.
 
 Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dalam WIB.
 
