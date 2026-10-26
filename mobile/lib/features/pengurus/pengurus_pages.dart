@@ -672,7 +672,7 @@ class _PaymentsView extends ConsumerWidget {
                                         title: 'Batalkan pembayaran ${p['nomor_bukti']}?',
                                         done: 'Pembayaran dibatalkan',
                                         effect:
-                                            'Tagihan ${(p['periode'] as List).map((x) => periode('$x')).join(', ')} kembali belum dibayar dan kas dikurangi ${rupiah(p['total_bayar'] as num)}.',
+                                            'Saldo tagihan ${(p['periode'] as List).map((x) => periode('$x')).join(', ')} dihitung ulang dan kas dikurangi ${rupiah(p['total_bayar'] as num)}.',
                                       );
                                       if (done) ref.invalidate(paymentsProvider);
                                     },

@@ -120,7 +120,13 @@ Penolakan tambahan mencabut token lama. Akun tetap jenis tambahan/status menungg
 dan permohonan ditolak; login ulang hanya membuka profil/status/alasan sendiri
 serta logout. Akun nonaktif/diarsipkan tetap tidak dapat login.
 
-Default limiter v1: login 5/menit per IP+normalized email; register 5/10 menit per IP; token failure 10/jam per IP; forgot 3/15 menit per IP+email; reset 10/15 menit per IP+email dengan penghitung terpisah dari forgot. Angka konfigurabel. Perhatikan NAT bersama; jangan membuka enumerasi email.
+Default limiter v1: login mobile/CMS berbagi 5/menit per IP+normalized email dan budget agregat 60/menit per IP;
+register 5/10 menit per IP; token failure 10/jam per IP; forgot 3/15 menit per IP+email dan agregat 20/15 menit per IP;
+reset 10/15 menit per IP+email dan agregat 60/15 menit per IP, dengan penghitung terpisah dari forgot.
+Budget agregat dikonfigurasi lewat `RT05_LOGIN_IP_PER_MINUTE`, `RT05_FORGOT_IP_PER_15_MINUTES`,
+`RT05_RESET_IP_PER_15_MINUTES` (minimum efektif 1). Perhatikan NAT bersama. Jalur akun tidak dikenal,
+password tak didukung, token missing/expired dan recovery recent tetap melakukan kerja hash pembanding
+dengan driver/cost konfigurasi, tanpa mengubah respons generik; ini bukan jaminan waktu respons jaringan identik.
 
 Kuota kegagalan token memesan slot sebelum verifikasi dan mengembalikannya
 bila token benar atau kegagalan disebabkan hal lain. Penghitung dan expiry

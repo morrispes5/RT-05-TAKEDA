@@ -1633,15 +1633,21 @@ class NotificationsPage extends ConsumerWidget {
                       subtitle: Text('${n['isi']}\n${tanggal(parseTime(n['created_at']), jam: true)}'),
                       isThreeLine: true,
                       onTap: () async {
+                        final session = ref.read(sessionProvider);
+                        final controller = ref.read(sessionProvider.notifier);
+                        final epoch = controller.epoch;
+                        bool current() => context.mounted && controller.isCurrentActive(session, epoch: epoch);
+                        if (!current()) return;
                         if (n['dibaca_at'] == null) {
                           try {
                             await ref.read(apiProvider).patch('/notifications/${n['id']}/read');
                           } on ApiException {
                             // Status baca gagal tersimpan tidak menghalangi membuka detail.
                           }
+                          if (!current()) return;
                           ref.invalidate(notificationsProvider);
                         }
-                        if (!context.mounted) return;
+                        if (!context.mounted || !current()) return;
                         // Detail dimuat ulang dari API (policy server), bukan dari isi notifikasi.
                         final r = n['referensi'] as Map?;
                         openReference(context, type: r?['tipe'] as String?, id: r?['id'] as String?, admin: ref.read(sessionProvider).pengurus);
