@@ -15,6 +15,9 @@ Sebelum penerimaan, POST `/admin/dues-payments/preview` dengan rumah_id, periode
 Respons memberi alokasi tertua, kurang/lebih, sisa, saldo titipan dan fingerprint. Kirim fingerprint itu ke POST
 `/admin/dues-payments`; kurang wajib memilih kurang_bayar/keringanan, lebih wajib sumbangan/titipan.
 Keringanan dan koreksi nominal bukti wajib alasan. Fingerprint basi menghasilkan 409, tanpa pencatatan uang.
+Untuk koreksi, preview boleh membawa koreksi_pembayaran_id atau koreksi_penggunaan_id (saling eksklusif), dari rumah sama.
+Alokasi/kurang/lebih memakai sisa setelah pembalikan asal; sisa tetap keadaan sekarang dan sisa_setelah_pembalikan memberi
+nilai hipotetis. Fingerprint selalu ledger sekarang, tidak membuat pembalikan maupun audit sementara.
 
 POST `/admin/dues-confirmations/{id}/approve` mengunci bukti lalu membuat pembayaran, kas, tautan pembayaran,
 audit/outbox dan status selesai secara atomik. Nominal pengajuan tidak berubah. Endpoint `/process` pada v2 hanya penolakan;

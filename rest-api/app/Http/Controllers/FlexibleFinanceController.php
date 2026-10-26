@@ -77,24 +77,56 @@ class FlexibleFinanceController extends Controller
     {
         self::client($request);
         $data = $request->validate(['rumah_id' => ['required', 'uuid'], 'periode' => ['required', 'array', 'min:1', 'max:24'],
-            'periode.*' => ['required', 'date_format:Y-m', 'distinct'], 'nominal' => ['required', 'integer', 'min:1', 'max:1000000000']]);
+            'periode.*' => ['required', 'date_format:Y-m', 'distinct'], 'nominal' => ['required', 'integer', 'min:1', 'max:1000000000'],
+            'koreksi_pembayaran_id' => ['nullable', 'uuid', 'prohibits:koreksi_penggunaan_id'],
+            'koreksi_penggunaan_id' => ['nullable', 'uuid']]);
 
         return DB::transaction(function () use ($data) {
             FlexibleDues::lock();
             $preview = FlexibleDues::preview($data['rumah_id'], $data['periode']);
             $rows = DB::table('rt05_tagihan_saldo')->where('rumah_id', $data['rumah_id'])
                 ->whereIn('periode', array_map(fn ($p) => $p.'-01', $data['periode']))->orderBy('periode')->get();
+            // Hypothetical reversal is a query only. Fingerprint still represents the current ledger.
+            $restored = collect();
+            $relief = collect();
+            if (isset($data['koreksi_pembayaran_id'])) {
+                $id = $data['koreksi_pembayaran_id'];
+                $original = DB::table('pembayaran_iuran')->where('id', $id)->where('rumah_id', $data['rumah_id'])->where('status', 'tercatat')->first();
+                if (! $original) {
+                    throw new DomainConflict('PAYMENT_NOT_REVERSIBLE', 'Pembayaran asal tidak dapat dikoreksi.');
+                }
+                $deposit = (int) DB::table('rt05_titipan_saldo')->where('pembayaran_id', $id)->sum('saldo');
+                if ($deposit !== (int) $original->nominal_titipan) {
+                    throw new DomainConflict('DEPOSIT_ALREADY_USED', 'Balik pemakaian titipan terkait terlebih dahulu.');
+                }
+                $restored = DB::table('alokasi_pembayaran')->where('pembayaran_id', $id)->whereNull('dibatalkan_at')->pluck('nominal_alokasi', 'tagihan_id');
+                $relief = DB::table('keringanan_iuran')->where('pembayaran_id', $id)->whereNull('dibatalkan_at')
+                    ->selectRaw('tagihan_id, sum(nominal) AS nominal')->groupBy('tagihan_id')->pluck('nominal', 'tagihan_id');
+                $preview['titipan_setelah_pembalikan'] = $preview['titipan'] - $deposit;
+            } elseif (isset($data['koreksi_penggunaan_id'])) {
+                $id = $data['koreksi_penggunaan_id'];
+                $original = DB::table('penggunaan_titipan')->where('id', $id)->where('rumah_id', $data['rumah_id'])->whereNull('dibatalkan_at')->first();
+                if (! $original) {
+                    throw new DomainConflict('DEPOSIT_NOT_REVERSIBLE', 'Pemakaian asal tidak dapat dikoreksi.');
+                }
+                $restored = DB::table('alokasi_pembayaran')->where('penggunaan_titipan_id', $id)->whereNull('dibatalkan_at')->pluck('nominal_alokasi', 'tagihan_id');
+                $preview['titipan_setelah_pembalikan'] = $preview['titipan'] + (int) $original->nominal;
+            }
+            $due = 0;
             $left = (int) $data['nominal'];
             $allocation = [];
             foreach ($rows as $row) {
-                $paid = min($left, (int) $row->sisa);
-                $allocation[] = ['tagihan_id' => $row->id, 'periode' => substr($row->periode, 0, 7), 'sisa_sebelum' => (int) $row->sisa,
-                    'alokasi' => $paid, 'sisa_sesudah' => (int) $row->sisa - $paid];
+                $remaining = (int) $row->sisa + (int) ($restored[$row->id] ?? 0) + (int) ($relief[$row->id] ?? 0);
+                $due += $remaining;
+                $paid = min($left, $remaining);
+                $allocation[] = ['tagihan_id' => $row->id, 'periode' => substr($row->periode, 0, 7), 'sisa_sebelum' => $remaining,
+                    'alokasi' => $paid, 'sisa_sesudah' => $remaining - $paid];
                 $left -= $paid;
             }
+            $preview['sisa_setelah_pembalikan'] = $due;
 
-            return Api::data($preview + ['kas_diterima' => (int) $data['nominal'], 'kurang' => max(0, $preview['sisa'] - $data['nominal']),
-                'lebih' => max(0, $data['nominal'] - $preview['sisa']), 'alokasi' => $allocation]);
+            return Api::data($preview + ['kas_diterima' => (int) $data['nominal'], 'kurang' => max(0, $due - $data['nominal']),
+                'lebih' => max(0, $data['nominal'] - $due), 'alokasi' => $allocation]);
         });
     }
 

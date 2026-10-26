@@ -4011,6 +4011,8 @@ components:
       type: object
       required: [versi_keuangan, rumah_id, periode, nominal]
       properties:
+        koreksi_pembayaran_id: {type: [string, 'null'], format: uuid, description: Pratinjau setelah pembalikan pembayaran asal rumah sama; fingerprint tetap ledger saat ini.}
+        koreksi_penggunaan_id: {type: [string, 'null'], format: uuid, description: Pratinjau setelah pembalikan pemakaian titipan; saling eksklusif dengan koreksi_pembayaran_id.}
         versi_keuangan: {type: integer, const: 2}
         rumah_id: {type: string, format: uuid}
         periode:

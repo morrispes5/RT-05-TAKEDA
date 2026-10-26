@@ -34,6 +34,9 @@ dua rumah keringanan/kurang bayar ditambah; suite lengkap akhir **389/389, 4.053
 Tambahan informasi versi alur keuangan pada profil akun dan tes penolakan tautan bukti lintas rumah:
 subset akhir **23/23, 590 assertions**; Pint, lint OpenAPI tanpa warning, check-repo dan diff-check PASS.
 Rincian/batas bukti: [BACKEND_API.md](evidence/m18/BACKEND_API.md).
+PR #84 API dibuat. Pemeriksaan alur mobile menemukan kebutuhan preview koreksi sebelum implementasi UI:
+preview kini menerima referensi pembayaran/pemakaian asal dan menampilkan sisa setelah pembalikan secara query,
+tanpa menulis ledger; fingerprint tetap keadaan saat ini. Subset koreksi/API/kontrak **16/16, 500 assertions** PASS.
 Belum deploy/APK M18. Berikutnya mobile pengurus, privasi/transparansi warga, laporan/XLSX, lalu staging/emulator/rilis terpadu.
 
 ## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**
