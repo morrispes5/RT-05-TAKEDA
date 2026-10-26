@@ -71,7 +71,7 @@ Ringkasan; CRUD/arsip data warga/rumah/keluarga; persetujuan akun tambahan; toke
 | FR13 | Pembayaran offline dicatat admin untuk satu atau beberapa periode |
 | FR14 | Belum bayar tetap merah sampai pencatatan berhasil; warna disertai teks |
 | FR15 | Tunggakan, rekap lunas/belum, dan histori minimal 12 bulan tersedia |
-| FR16 | Warga melihat iuran rumahnya sendiri dan mengirim konfirmasi bayar (foto bukti transfer atau WhatsApp bendahara). Transparansi status iuran per kode rumah dan ringkasan kas RT hanya untuk pengurus (ADR26, diubah ADR35 21 Oktober 2026) |
+| FR16 | Warga melihat iuran/tunggakan/titipan rumah sendiri dan mengirim konfirmasi bayar. M18 membuka kas agregat bulanan tanpa identitas setelah persetujuan privasi; status iuran rumah lain dan detail transaksi tetap khusus pengurus (ADR44) |
 | FR17 | Kas memuat iuran yang tercatat, pemasukan lain, pengeluaran, dan pembalikan koreksi |
 | FR18 | Perubahan warga/keuangan/token/konten dan tindakan admin memiliki audit |
 | FR19 | Ekspor CSV sesuai hak akses; ekspor besar via worker dan unduhan privat |

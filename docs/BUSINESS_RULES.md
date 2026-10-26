@@ -15,12 +15,12 @@ Kode BR dipakai pada API, tes, issue, dan kriteria milestone. Bagian A mempertah
 | BR07 | Semua admin memiliki hak pengelolaan bisnis setara |
 | BR08 | Pengaduan dan aspirasi terpisah; dapat dibaca warga terdaftar |
 | BR09 | Privasi identitas laporan berlaku terhadap warga lain, tidak terhadap pengurus |
-| BR10 | Iuran Rp75.000 per rumah per bulan, bukan per akun/orang |
+| BR10 | Tarif umum awal Rp75.000 per rumah per bulan, bukan per akun/orang; M18 mendukung tarif khusus beralasan mulai periode tertentu tanpa mengubah snapshot lama (ADR44) |
 | BR11 | Pembayaran offline; pencatatan admin; tidak ada payment gateway atau bukti wajib |
 | BR12 | Status belum bayar berubah setelah transaksi pencatatan berhasil |
 | BR13 | Menunggak dan membayar beberapa bulan sekaligus diperbolehkan |
 | BR14 | Tarif dapat diubah untuk periode yang ditentukan; riwayat minimal 12 bulan |
-| BR15 | Warga terdaftar melihat iuran rumahnya sendiri dan dapat mengirim bukti transfer atau chat bendahara lewat WhatsApp. Transparansi status iuran per kode rumah dan kas RT hanya untuk pengurus (ADR26, diubah ADR35 21 Oktober 2026) |
+| BR15 | Warga melihat iuran/tunggakan/titipan rumah sendiri dan dapat mengirim bukti transfer atau chat bendahara. M18 membuka kas agregat bulanan tanpa identitas setelah persetujuan teks privasi terbaru; status iuran rumah lain dan detail transaksi tetap khusus pengurus (ADR44 mengubah sebagian ADR26/35) |
 | BR16 | Pemasukan iuran harus berhubungan dengan pembayaran yang dicatat |
 | BR17 | Koreksi keuangan dapat dilakukan admin dan historinya tetap tersedia |
 | BR18 | Hapus dari tampilan menggunakan arsip untuk data penting; arsip dapat dipulihkan pengurus (ADR34) |
@@ -78,13 +78,16 @@ Jika anonymous_to_residents=true, resource warga tidak memuat user_id, nama, kon
 - Setiap rumah/periode hanya punya satu charge. Generation boleh dijalankan ulang.
 - Amount_due adalah snapshot tarif efektif saat charge dibuat. Tarif baru tidak mengubah charge lama otomatis.
 - Setiap charge berstatus unpaid atau paid. Nilai uang integer rupiah positif.
-- V1 hanya menerima pelunasan penuh untuk setiap bulan yang dipilih. Pembayaran sebagian/kelebihan ditolak dengan pesan jelas; tidak diam-diam dijadikan saldo.
-- Satu payment dapat melunasi beberapa charge unpaid pada satu rumah; total payment harus sama dengan jumlah amount_due.
+- Sebelum M18 aktif, kontrak M12 hanya menerima pelunasan penuh bulan terpilih; parsial/lebih ditolak.
+- M18: satu penerimaan dapat melunasi sebagian/beberapa tagihan rumah yang sama, tertua dari bulan dipilih dahulu.
+  Kurang wajib dipilih sebagai tunggakan atau keringanan beralasan; lebih wajib sumbangan atau titipan.
+  Kas masuk sama dengan uang diterima. Keringanan bukan kas; pemakaian titipan manual tidak menambah kas kedua.
+  Nominal efektif = snapshot + penyesuaian; terbayar + keringanan + sisa = nominal efektif, saldo titipan tidak negatif.
 - Admin boleh mencatat tanggal bayar aktual serta catatan; server mencatat recorded_at dan recorded_by terpisah.
 - Pembayaran diproses sinkron dalam satu transaksi: payment, allocations, cash entry, audit, outbox.
 - Belum dicatat = belum bayar pada aplikasi, walaupun pembayaran offline mungkin sudah terjadi; tampilkan penjelasan singkat.
 - Tidak membuat tunggakan sebelum billing_start_month atau sebelum tanggal go-live pencatatan tanpa impor terverifikasi.
-- Tunggakan bulan lewat dihitung dari charge unpaid sebelum bulan berjalan; unpaid bulan berjalan ditampilkan terpisah.
+- Tunggakan bulan lewat dihitung dari sisa tagihan sebelum bulan berjalan; bulan berjalan ditampilkan terpisah.
 - Arsip rumah tidak boleh menghapus charge/payments/kas historis.
 
 ### Koreksi keuangan
