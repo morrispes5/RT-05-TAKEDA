@@ -1,6 +1,24 @@
 # Progress — RT05 TAKEDA
 
-## M18 — Keuangan fleksibel — 25 Oktober 2026: **in_progress (implementasi bertahap)**
+## M18 — Keuangan fleksibel — 26 Oktober 2026: **passed (staging sintetis + emulator)**
+
+**Penutupan 26 Okt:** kode implementasi main dan staging `afe4ebb` (PR #88 merged, CI 9/9 PASS), v2 aktif hanya staging;
+PR #87 laporan merged `6b44763`, CI 9/9 PASS. Backend **406/406, 4.316 assertions**, Flutter **308/308**,
+analyze bersih, format **96/0**, Pint PASS. Backup/restore/offsite pra-migrasi, kompatibilitas flag off, migrasi 2/2,
+aktivasi seluruh service dan skenario uang HTTP staging lulus. Kas delapan penuh + dua Rp50.000 = Rp700.000;
+titipan tidak menambah kas kedua, koreksi append-only, request bersamaan/idempotensi/stale preview aman,
+JSON/CSV/XLSX 14 sheet cocok dan rekonsiliasi **0 masalah**. Bukti: [STAGING_ACCEPTANCE.md](evidence/m18/STAGING_ACCEPTANCE.md).
+APK **1020** dari `afe4ebb` lulus workflow rilis, sertifikat sama dengan 1018 dan upgrade in-place **3018 → 3020**
+tanpa uninstall mempertahankan sesi/avatar/data. Privasi 26 Okt disetujui dari teks lokal baru. Pengurus mencatat
+Rp50.000 + keringanan Rp25.000 dan Rp100.000 dengan titipan Rp25.000; pemeriksaan API independen cocok, warga
+melihat hasil rumah sendiri. Excel disimpan melalui Android dan dibaca ulang: 14 sheet/angka sama dengan API.
+Seluruh transaksi sintetis dibalik, 14 rumah/akun uji diarsipkan; kas kembali **Rp2.180.000** dan rekonsiliasi akhir **0 masalah**.
+Backup setelah v2 + restore terisolasi memeriksa **19 tabel/view**, cocok semua (12 detik), salinan terenkripsi offsite.
+Emulator dan PostgreSQL lokal dihentikan; AVD/data tidak dihapus. Kedua APK dan metadata terakhir disebar di `/unduh`
+**Senin 26 Okt 14.28 WIB** dan Drive **14.28 WIB**, ID file tetap. Ini satu build M18 yang disebar; 1019 dibatalkan.
+Jangan rollback M17 atau menonaktifkan v2 setelah transaksi v2. Production dan UAT HP nyata belum diklaim.
+Berikutnya persiapan M16/UAT mitra dan pindah VPS staging 2 Nov sesuai ADR43; tidak dijalankan otomatis di sesi M18.
+Catatan implementasi bertahap di bawah adalah riwayat pada tahap masing-masing.
 
 Prasyarat M17 ditutup lewat [PR #81](https://github.com/morrispes5/RT-05-TAKEDA/pull/81), merge `0f3b251`,
 CI penutupan 3/3 sukses (hygiene, Vercel, komentar preview); tes aplikasi tercatat pada bukti M17 di bawah.
