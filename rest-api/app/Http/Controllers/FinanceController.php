@@ -282,7 +282,7 @@ class FinanceController extends Controller
 
     public function payments(Request $request): JsonResponse
     {
-        $q = PembayaranIuran::with(['rumah', 'alokasi.tagihan'])
+        $q = PembayaranIuran::with(config('finance.v2') ? ['rumah', 'alokasi.tagihan', 'keringanan.tagihan'] : ['rumah', 'alokasi.tagihan'])
             ->when($request->query('rumah_id'), fn ($q, $r) => $q->where('rumah_id', $r))
             ->orderByDesc('created_at');
 
@@ -291,7 +291,7 @@ class FinanceController extends Controller
 
     public function payment(string $id): JsonResponse
     {
-        return Api::data(Present::pembayaran(PembayaranIuran::with(['rumah', 'alokasi.tagihan'])->findOrFail($id)));
+        return Api::data(Present::pembayaran(PembayaranIuran::with(config('finance.v2') ? ['rumah', 'alokasi.tagihan', 'keringanan.tagihan'] : ['rumah', 'alokasi.tagihan'])->findOrFail($id)));
     }
 
     public function reversePayment(Request $request, string $id): JsonResponse

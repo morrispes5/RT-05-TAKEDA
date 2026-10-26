@@ -20,6 +20,7 @@ Flag keuangan v2 **false**; tidak ada deploy, APK M18, atau perubahan production
 | Tambahan terakhir profil versi_keuangan + tautan bukti lintas rumah — subset M18FinanceApiTest, OpenApiContractTest, AuthTest, M15bRequestsTest | 23/23, 590 assertions |
 | Preview koreksi hipotetis (query saja, fingerprint keadaan saat ini) — API + kontrak | 16/16, 500 assertions |
 | Riwayat rumah/titipan, snapshot baca, batch query rekap 10 rumah — API + kontrak | 17/17, 509 assertions |
+| Riwayat periode penerimaan termasuk bulan seluruhnya dengan keringanan — API + kontrak | 18/18, 515 assertions |
 | php vendor/bin/pint --test / --dirty (setelah format) | PASS |
 | npx.cmd --yes @redocly/cli@2 lint docs/openapi.yaml | Valid, tanpa warning |
 | node infra/scripts/check-repo.mjs; git diff --check | PASS |

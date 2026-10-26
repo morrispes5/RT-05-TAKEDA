@@ -40,6 +40,8 @@ tanpa menulis ledger; fingerprint tetap keadaan saat ini. Subset koreksi/API/kon
 Integrasi mobile menambah riwayat per rumah dan penggunaan titipan pada response yang sama, serta eager-loading saldo
 agar rekap tidak membuat query per rumah. Snapshot ringkasan rumah dikunci selama dibaca. Tes 10 rumah membatasi query
 rekap maksimal 15 dan memastikan riwayat rumah lain tidak terbuka; subset API/kontrak **17/17, 509 assertions** PASS.
+Rincian penerimaan kini mencakup bulan yang seluruh sisanya dilunasi keringanan, agar koreksi berikutnya tidak kehilangan
+bulan tersebut. Tes dua periode dengan pembayaran Rp50.000 + keringanan: subset API/kontrak **18/18, 515 assertions** PASS.
 Belum deploy/APK M18. Berikutnya mobile pengurus, privasi/transparansi warga, laporan/XLSX, lalu staging/emulator/rilis terpadu.
 
 ## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**
