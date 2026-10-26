@@ -658,7 +658,8 @@ Status: **diputuskan**. Mengubah ADR36/M16 "milestone terakhir": masih ada M17�
 
 **Jadwal:** soft launch **beta 8 Nov – Des 2026**, rilis penuh **paling lambat awal 2027**. Beta memakai data warga asli, jadi
 harus di **production** (bukan staging, AGENTS); domain diputuskan awal November, lalu M16 production. Urutan kerja:
-M17 → M18 → (2 Nov pindah VPS staging) → M16 production + beta → M19 → M20.
+Urutan awal: M17 → M18 → (2 Nov pindah VPS staging) → M16 production + beta → M19 → M20.
+**Perubahan 27 Okt (ADR45): M19 didahulukan sebelum M16; urutan aktif M17 → M18 → M19 → M16 → M20.**
 
 **Fakta dan keputusan yang mengikat (sumber: pemilik/Pak RT):**
 1. Kontak resmi pengurus: **Ketua RT Agus Ferdiansyah**; nomor WhatsApp-nya boleh dipublikasikan di halaman Kontak dan Kebijakan Privasi. Nomor diisi lewat
@@ -737,3 +738,20 @@ keputusan itu lagi. Semua pengurus setara tetap mengikat (BR07). Pemilik meminta
    transaksi v2 tercatat. Staging sintetis + emulator + rekonsiliasi dahulu, satu APK M18 yang dibagikan sesudah lulus.
 
 **Persetujuan:** instruksi pemilik 25 Okt “lanjut ke milestone 18 ... harus banyak pengujian”. Implementasi boleh dimulai; semua angka PASS M17 bukan bukti penerimaan M18.
+
+### ADR45 — M19 tombol panik sebelum M16; dokumentasi lokal tanpa akses origin otomatis
+
+Tanggal: **27 Oktober 2026**. Status: **diputuskan oleh pemilik**.
+
+Pemilik mengoreksi langkah berikutnya: “ubah ke milestone 19 ... panic button dulu” dan meminta berfokus pada
+dokumentasi Claude karena akses `origin` berulang memunculkan permintaan kata sandi Git di PC.
+
+1. Urutan kerja aktif menjadi **M17 → M18 → M19 → M16 → M20**. Menggantikan bagian urutan ADR43;
+   ketentuan tombol panik ADR43 butir 8 dan ROADMAP M19 tetap berlaku. M18 tetap passed staging/emulator.
+2. M19 dimulai dengan merinci rencana dari dokumentasi yang sudah ada: [M19_PLAN.md](M19_PLAN.md).
+   Status awal perencanaan, bukan fitur selesai atau bukti alarm bekerja. Gate HP nyata M19 tetap wajib.
+3. Jadwal pindah VPS staging 2 Nov dan target beta 8 Nov dari ADR43 tetap rencana yang harus dinilai terhadap
+   hasil M19. Perubahan prioritas tidak menghapus gate M16 dan tidak mengotorisasi perubahan production/DNS.
+4. Sesi lanjutan memakai dokumentasi dan Git lokal; **jangan fetch, pull, push, atau mengakses remote `origin`
+   secara otomatis**. Otorisasi remote sebelumnya tidak dipakai sebagai alasan mengulang akses yang kini dilarang.
+   Akses remote menunggu instruksi baru pemilik. Tidak mengubah credential helper, URL remote, atau autentikasi.
