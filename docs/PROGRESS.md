@@ -2,6 +2,16 @@
 
 ## M18 — Keuangan fleksibel — 26 Oktober 2026: **passed (staging sintetis + emulator)**
 
+**Rilis QA 27 Okt selesai:** PR #90 merged `b6e1c4b`, CI source 9/9; staging deploy immutable SHA yang sama,
+runtime-smoke PASS, v2 tetap aktif, rekonsiliasi akhir 0 masalah. APK **1021/1.0.0**, versionCode **3021/2021**,
+workflow 40324263431 sukses **Senin 26 Okt 19.48.25 WIB**; Drive ID tetap diperbarui **Selasa 27 Okt 00.07.29 WIB**,
+`/unduh` kedua ABI+metadata terakhir **00.12.04 WIB**. Hash artifact/HTTP/Drive cocok; sertifikat tetap sama.
+Upgrade emulator 1020→1021 tanpa uninstall mempertahankan sesi/data/firstInstallTime; bukti cicilan Rp25.000
+dan copy pembalikan baru benar. Satu transaksi uji dibalik, satu rumah/dua akun diarsipkan, kas kembali baseline.
+Backup/restore 19 tabel/view cocok 11 detik dan encrypted offsite privat. Uji baca 20 pengguna: **895/895 expected,
+0 unexpected, P95 710 ms**, gate lulus. Emulator/PG lokal berhenti.
+Bukti/batas: [RELEASE_1021.md](evidence/m18/RELEASE_1021.md). Production/HP nyata/UAT mitra tetap gate M16.
+
 **Perbaikan QA 26 Okt**, branch `codex/m18-perbaikan-qa`: QA-S1–S3 dan QA-F1–F3 diperbaiki pada kode lokal.
 Backend **413/413, 4.359 assertions**, Flutter **326/326**, website **40/40, 538 assertions**; Pint/analyze/format 98/0,
 OpenAPI/check-repo/diff-check PASS. Guard token/akun/epoch melindungi dokumen dan navigasi push/inbox;
