@@ -1,5 +1,14 @@
 # Koordinasi RT05 TAKEDA
 
+## Checkpoint 27 Oktober 2026 — perbaikan QA dirilis
+
+PR #90 merged `b6e1c4b`, staging memakai SHA tersebut; v2 aktif, runtime-smoke/reconciliation PASS.
+Source backend 413/413, Flutter 326/326, website 40/40, CI 9/9. APK 1021 (3021/2021) disebar lewat
+Drive ID tetap 27 Okt 00.07 WIB dan `/unduh` 00.12 WIB; upgrade 1020 tanpa uninstall teruji, cicilan Rp25.000 benar.
+Fixture QA dibalik/diarsipkan, baseline kas pulih; backup/restore 19 tabel/view cocok dan encrypted offsite privat.
+Emulator/PG lokal berhenti. Bukti [RELEASE_1021.md](evidence/m18/RELEASE_1021.md). Checkout awal/MyRepublic utuh.
+M18 passed staging/emulator; berikutnya gate M16, bukan deploy production otomatis.
+
 ## Checkpoint 26 Oktober 2026 — M18 passed staging/emulator
 
 PR #82–88 merged. Kode staging `afe4ebb`, v2 aktif hanya staging; APK 1020 disebar 26 Okt 14.28 WIB ke unduh resmi
