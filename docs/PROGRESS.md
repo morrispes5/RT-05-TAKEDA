@@ -37,6 +37,9 @@ Rincian/batas bukti: [BACKEND_API.md](evidence/m18/BACKEND_API.md).
 PR #84 API dibuat. Pemeriksaan alur mobile menemukan kebutuhan preview koreksi sebelum implementasi UI:
 preview kini menerima referensi pembayaran/pemakaian asal dan menampilkan sisa setelah pembalikan secara query,
 tanpa menulis ledger; fingerprint tetap keadaan saat ini. Subset koreksi/API/kontrak **16/16, 500 assertions** PASS.
+Integrasi mobile menambah riwayat per rumah dan penggunaan titipan pada response yang sama, serta eager-loading saldo
+agar rekap tidak membuat query per rumah. Snapshot ringkasan rumah dikunci selama dibaca. Tes 10 rumah membatasi query
+rekap maksimal 15 dan memastikan riwayat rumah lain tidak terbuka; subset API/kontrak **17/17, 509 assertions** PASS.
 Belum deploy/APK M18. Berikutnya mobile pengurus, privasi/transparansi warga, laporan/XLSX, lalu staging/emulator/rilis terpadu.
 
 ## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**
