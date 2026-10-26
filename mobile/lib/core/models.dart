@@ -15,6 +15,7 @@ class Akun {
   String get jenis => '${raw['jenis']}';
   String get status => '${raw['status']}';
   bool get dapatUbahKeluarga => raw['dapat_ubah_keluarga'] == true;
+  bool get keuanganFleksibel => raw['versi_keuangan'] == 2;
 
   /// ADR35: true bila Kebijakan Privasi versi terbaru belum disetujui (field lama tidak ada = tidak perlu).
   bool get perluSetujuPrivasi => raw['privasi_perlu_setuju'] == true;
@@ -30,6 +31,9 @@ class Tagihan {
   String get id => raw['id'] as String;
   String get periode => '${raw['periode']}';
   int get nominal => (raw['nominal'] as num).toInt();
+  int get sisa => (raw['sisa'] as num?)?.toInt() ?? (lunas ? 0 : nominal);
+  int get terbayar => (raw['terbayar'] as num?)?.toInt() ?? (lunas ? nominal : 0);
+  int get keringanan => (raw['keringanan'] as num?)?.toInt() ?? 0;
   String get status => '${raw['status']}';
   bool get lunas => status == 'lunas';
   String get label => '${raw['status_label']}';
