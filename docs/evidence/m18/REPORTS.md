@@ -29,3 +29,9 @@ latensi transaksi normal atau SLA staging. Tidak ada bypass constraint, trigger 
 
 Gate berikut: CI PR, pemeriksaan ekstensi image dan staging immutable, aktivasi flag terkendali, rekonsiliasi nol,
 uji integrasi pengurus/warga, upgrade APK dan satu rilis M18. Production tetap di luar ruang lingkup.
+
+Perbaikan integrasi ringkasan kas pengurus setelah PR #87: agregat v2 memakai layanan laporan/warga yang sama;
+modal awal dan pembalikan bertanda ditampilkan terpisah. Regresi membuat modal Rp500.000, pengeluaran Rp20.000
+dan penerimaan Rp100.000 lalu membalik dua transaksi terakhir: masuk Rp100.000, keluar Rp20.000, koreksi -Rp80.000,
+saldo Rp500.000 di ketiga respons. Suite akhir **406/406, 4.316 assertions**, 163.559 ms; Flutter **308/308**, analyze
+bersih, format **96/0**, Pint PASS. Angka laporan sebelum perbaikan di atas tetap bukti pada tahapnya.

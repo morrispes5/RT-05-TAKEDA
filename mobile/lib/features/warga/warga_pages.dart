@@ -1493,6 +1493,11 @@ class CashView extends ConsumerWidget {
                         ),
                       ],
                     ),
+                    if (month.containsKey('koreksi')) ...[
+                      const SizedBox(height: 10),
+                      Text('Modal awal bulan ini: ${rupiah(month['modal_awal'] as num)}', style: const TextStyle(color: Colors.white)),
+                      Text('Koreksi bulan ini: ${rupiah(month['koreksi'] as num)}', style: const TextStyle(color: Colors.white)),
+                    ],
                   ],
                 ),
               ),

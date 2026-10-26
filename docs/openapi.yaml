@@ -1976,7 +1976,10 @@ paths:
       tags:
         - Finance
       summary: Ringkasan kas (saldo, bulan ini, mutasi terakhir)
-      description: Khusus pengurus (ADR26, keputusan pemilik 17 Oktober 2026). Warga 403; warga melihat iuran sendiri dan transparansi status iuran per kode rumah.
+      description: >-
+        Khusus pengurus. M18 v2 memakai perhitungan yang sama dengan laporan dan agregat warga;
+        bulan_ini berisi periode, saldo_awal, modal_awal, pemasukan, pengeluaran, koreksi dan saldo_akhir.
+        Pembalikan masuk koreksi bertanda, bukan penerimaan/pengeluaran baru. Flag nonaktif mempertahankan respons M17.
       x-status: implemented
       x-milestone: M12
       responses:
