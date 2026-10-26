@@ -74,7 +74,14 @@ layar 320 skala 2; analyze bersih, format **95/0**. Pint dan audit Composer PASS
 Pemeriksaan deployment menemukan flag belum diteruskan Compose; ditambahkan ke env API bersama (worker/scheduler
 mewarisi) dengan default false. Image memasang ekstensi XLSX eksplisit dan CI menulis workbook tanpa database.
 Sisa gate: staging immutable + aktivasi flag terkendali, rekonsiliasi nol, emulator warga/pengurus, upgrade dan satu APK M18.
-Belum deploy/APK M18. Berikutnya CI laporan, staging/emulator/rilis terpadu. Bukti lokal: [REPORTS.md](evidence/m18/REPORTS.md).
+PR #87 laporan merged `6b44763`, CI 9/9 PASS. Backup staging terenkripsi dan restore drill terisolasi cocok pada
+26 Okt (10 detik, 12 tabel pembanding); rekonsiliasi baseline nol. Deploy immutable `6b44763` dimulai dengan flag false.
+Penelusuran integrasi menemukan ringkasan kas pengurus lama mengelompokkan pembalikan sebagai masuk/keluar baru.
+Branch `codex/m18-konsistensi-kas` menyamakan agregat v2 dengan laporan/warga serta menampilkan modal dan koreksi
+terpisah. Subset backend 4/4 (63 assertions), Flutter 5/5 lulus. Suite akhir **406/406, 4.316 assertions**;
+Flutter **308/308**, analyze bersih, format **96/0**, Pint PASS. Deploy `6b44763` selesai, migrasi 2/2 berhasil,
+heartbeat empat komponen sehat, volume dan container layanan lain terjaga. Flag masih false.
+Build kandidat 1019 dibatalkan, tidak disebar; kandidat final mengikuti CI setelah perbaikan. Bukti lokal: [REPORTS.md](evidence/m18/REPORTS.md).
 
 ## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**
 

@@ -29,6 +29,8 @@ Tes transaksi memaksa `SET CONSTRAINTS ALL IMMEDIATE` sebelum rollback agar cons
 rumah arsip/bulan kosong, header no-store serta delete-after-send dan cleanup privat. `M18DurabilityTest` memakai
 commit nyata dan koneksi kedua untuk membuktikan gangguan cache/queue tidak menghapus pembayaran atau menggandakan retry.
 `M18ScaleTest`: 300 rumah sintetis × 12 bulan, constraint diperiksa nyata, laporan dibatasi maksimal 10 query.
+`M18TransparencyTest` membandingkan ringkasan kas pengurus, warga dan laporan setelah modal awal, penerimaan,
+pengeluaran dan pembalikan: koreksi bertanda tidak dihitung sebagai uang masuk/keluar baru. Widget pengurus diuji skala 2.
 Flag v2 nonaktif tetap diuji untuk kompatibilitas M17. Kelulusan backend belum membuktikan UI, ekspor/XLSX atau staging.
 
 ### Identitas/keluarga

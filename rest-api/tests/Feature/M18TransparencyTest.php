@@ -64,6 +64,30 @@ class M18TransparencyTest extends TestCase
             ->assertJsonPath('data.koreksi', -100000)->assertJsonPath('data.saldo_akhir', 450000);
     }
 
+    public function test_admin_month_matches_report_and_resident_without_classifying_reversals_as_new_money(): void
+    {
+        config(['finance.v2' => true]);
+        $this->travelTo(now()->setDate(2026, 10, 26));
+        $resident = $this->warga();
+        $actor = $this->pengurus();
+        $house = $resident->rumah()->id;
+        Dues::recordCash($actor, 'saldo_awal', 500000, '2026-10-01', 'Modal', 'Modal awal sintetis');
+        $expense = Dues::recordCash($actor, 'pengeluaran', 20000, '2026-10-26', 'Uji', 'Pengeluaran salah input');
+        Dues::reverseCash($actor, $expense->id, 'Pembalikan pengeluaran uji');
+        $payment = FlexibleDues::record($actor, $house, ['2026-10'], 100000, '2026-10-26', null, 'titipan', null,
+            FlexibleDues::preview($house, ['2026-10'])['fingerprint']);
+        FlexibleDues::reverse($actor, $payment->id, 'Pembalikan penerimaan uji');
+        $admin = $this->as($actor)->getJson('/api/v1/admin/cash/summary')->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+        $admin->assertJsonPath('data.saldo', 500000)->assertJsonPath('data.bulan_ini.pemasukan', 100000)
+            ->assertJsonPath('data.bulan_ini.pengeluaran', 20000)->assertJsonPath('data.bulan_ini.koreksi', -80000)
+            ->assertJsonPath('data.bulan_ini.modal_awal', 500000);
+        $report = $this->getJson('/api/v1/admin/finance-reports?periode=2026-10')->assertOk()->json('data.kas');
+        $this->consent($resident);
+        $public = $this->getJson('/api/v1/cash/summary?periode=2026-10')->assertOk()->json('data');
+        $this->assertSame($admin->json('data.bulan_ini'), $report);
+        $this->assertSame($report, $public);
+    }
+
     public function test_access_and_validation_keep_other_house_dues_private(): void
     {
         config(['finance.v2' => true]);
