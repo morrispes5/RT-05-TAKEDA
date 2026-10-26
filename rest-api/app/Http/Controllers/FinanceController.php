@@ -135,6 +135,19 @@ class FinanceController extends Controller
     /** GET /admin/cash/summary — saldo dan mutasi kas, khusus pengurus (ADR26; warga tidak melihat kas). */
     public function cashSummary(): JsonResponse
     {
+        if (config('finance.v2')) {
+            return DB::transaction(function () {
+                FlexibleDues::lock();
+                $period = now('Asia/Jakarta')->format('Y-m');
+                $reversed = self::reversedIds();
+
+                return Api::data([
+                    'saldo' => Dues::balance(), 'bulan_ini' => CashSummary::month($period),
+                    'mutasi_terakhir' => TransaksiKas::orderByDesc('tanggal')->orderByDesc('created_at')->limit(30)->get()
+                        ->map(fn ($k) => Present::kas($k, isset($reversed[$k->id])))->values(),
+                ])->header('Cache-Control', 'private, no-store');
+            });
+        }
         $month = CarbonImmutable::now('Asia/Jakarta')->startOfMonth();
         $reversed = self::reversedIds();
 
