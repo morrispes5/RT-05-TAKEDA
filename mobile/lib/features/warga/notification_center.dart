@@ -35,7 +35,11 @@ void openReference(BuildContext context, {required String? type, required String
 /// Ketukan push saat aplikasi di latar belakang atau tertutup: buka inbox, tandai dibaca, lalu detail.
 Future<void> handlePushTap(GoRouter router, WidgetRef ref, PushTap tap) async {
   final session = ref.read(sessionProvider);
-  if (!session.signedIn || session.pending) return;
+  final controller = ref.read(sessionProvider.notifier);
+  final epoch = controller.epoch;
+  final origin = ref.context;
+  bool current() => origin.mounted && controller.isCurrentActive(session, epoch: epoch);
+  if (!current()) return;
   if (tap.notifikasiId != null) {
     try {
       await ref.read(apiProvider).patch('/notifications/${tap.notifikasiId}/read');
@@ -43,16 +47,19 @@ Future<void> handlePushTap(GoRouter router, WidgetRef ref, PushTap tap) async {
       // Notifikasi milik akun lain/terhapus: abaikan, detail tetap lewat policy API.
     }
   }
+  if (!current()) return;
   ref.invalidate(notificationsProvider);
   router.go('/home');
   router.push('/notifications');
   await WidgetsBinding.instance.endOfFrame;
+  if (!current()) return;
   final context = router.routerDelegate.navigatorKey.currentContext;
-  if (context != null && context.mounted) openReference(context, type: tap.refType, id: tap.refId, admin: session.pengurus);
+  if (context != null && context.mounted) openReference(context, type: tap.refType, id: tap.refId, admin: ref.read(sessionProvider).pengurus);
 }
 
 /// Push di depan layar: Android tidak menampilkan notifikasi sistem, jadi tampilkan alert info.
 void showForegroundPush(GoRouter router, WidgetRef ref, PushTap tap) {
+  if (!ref.read(sessionProvider).readyForServices) return;
   ref.invalidate(notificationsProvider);
   final context = router.routerDelegate.navigatorKey.currentContext;
   if (context == null || !context.mounted) return;

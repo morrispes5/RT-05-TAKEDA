@@ -57,6 +57,10 @@ class SessionState {
 
   /// Akun aktif yang belum menyetujui Kebijakan Privasi terbaru (ADR35).
   bool get needsPrivacy => akun != null && !pending && akun!.perluSetujuPrivasi;
+
+  /// Akun menunggu tetap boleh menerima kabar persetujuan; navigasi layanan tetap ditahan.
+  bool get canRegisterPush => signedIn && !loading && unavailable == null && !needsPrivacy;
+  bool get readyForServices => canRegisterPush && !pending;
 }
 
 class SessionController extends Notifier<SessionState> {
@@ -67,6 +71,11 @@ class SessionController extends Notifier<SessionState> {
   /// Epoch yang sedang berlaku. Logout yang menunggu respons menyimpan nilai ini
   /// sebelum request dan memeriksanya lagi di dalam antrean storage.
   int get epoch => _epoch;
+
+  /// Periksa pemilik operasi async. Token ikut dibandingkan karena signIn menaikkan
+  /// epoch sebelum storage selesai, ketika state sesi lama masih tersedia.
+  bool isCurrentActive(SessionState started, {required int epoch}) =>
+      state.readyForServices && _epoch == epoch && state.token == started.token && state.akun?.id == started.akun?.id;
 
   /// Operasi storage dijalankan berurutan: hapus milik logout tidak dapat
   /// menyusul dan menghapus token login baru.

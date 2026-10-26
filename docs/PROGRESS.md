@@ -2,6 +2,25 @@
 
 ## M18 — Keuangan fleksibel — 26 Oktober 2026: **passed (staging sintetis + emulator)**
 
+**Perbaikan QA 26 Okt**, branch `codex/m18-perbaikan-qa`: QA-S1–S3 dan QA-F1–F3 diperbaiki pada kode lokal.
+Backend **413/413, 4.359 assertions**, Flutter **326/326**, website **40/40, 538 assertions**; Pint/analyze/format 98/0,
+OpenAPI/check-repo/diff-check PASS. Guard token/akun/epoch melindungi dokumen dan navigasi push/inbox;
+consent tetap menahan layanan, pending tetap menerima push persetujuan. Recovery/login/reset memiliki budget IP
+agregat dan kerja hash pembanding; cicilan memakai sisa. Tidak ada migrasi/perubahan ledger.
+Bukti dan batas: [QA_FIXES.md](evidence/m18/QA_FIXES.md). Belum deploy/APK baru; staging/APK 1020 tetap versi sebelumnya.
+PostgreSQL lokal dihentikan; pekerjaan MyRepublic pada checkout asli tetap utuh.
+
+**Audit QA ulang 26 Okt (kode `1955d69`, `codex/m18-qa-audit`):** backend **406/406, 4.316 assertions**,
+website **40/40, 538 assertions**, Flutter **308/308**, analyze/Pint/format/check-repo PASS; dependency runtime
+tanpa advisory. Uji baca staging 20 pengguna: **899/899 expected**, 0 unexpected, **p95 656 ms**; 43 respons 404
+adalah fixture admin tanpa rumah yang eksplisit diharapkan. Issue #47 masih terbuka, bukti teknis diperbarui.
+**Lima bug baru direproduksi dengan tujuh PoC:** security medium budget recovery dan dokumen sesi lama,
+security low hash-work akun, serta P2 nominal bukti cicilan dan push melewati consent privasi.
+Tidak ditemukan high/critical atau uang hilang/ganda pada cakupan audit; manual parsial (141 file unik dibaca penuh).
+Rincian: [QA_REVIEW.md](evidence/m18/QA_REVIEW.md). Implementasi belum diperbaiki;
+**tangani sebelum gate production M16**. Passed staging/emulator di bawah bukan clearance production.
+Audit tidak melakukan merge/deploy/rilis APK; PostgreSQL lokal dihentikan setelah uji.
+
 **Penutupan 26 Okt:** kode implementasi main dan staging `afe4ebb` (PR #88 merged, CI 9/9 PASS), v2 aktif hanya staging;
 PR #87 laporan merged `6b44763`, CI 9/9 PASS. Backend **406/406, 4.316 assertions**, Flutter **308/308**,
 analyze bersih, format **96/0**, Pint PASS. Backup/restore/offsite pra-migrasi, kompatibilitas flag off, migrasi 2/2,

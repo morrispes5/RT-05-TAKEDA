@@ -17,11 +17,10 @@ use App\Support\Privacy;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -198,7 +197,7 @@ class AuthController extends Controller
             $akun = Akun::where('email', $email)->whereIn('status', self::STATUS_PULIH)->first();
             if (! $akun) {
                 // Biaya hash setara pembuatan token agar waktu respons tidak membedakan email.
-                Hash::make(Str::random(40));
+                PasswordPolicy::consumeHashWork();
 
                 return null;
             }
@@ -228,8 +227,11 @@ class AuthController extends Controller
         $email = Registration::email($data['email']);
 
         $status = DB::transaction(function () use ($data, $email) {
-            DB::table('password_reset_tokens')->where('email', $email)->lockForUpdate()->first();
-            if (! Akun::where('email', $email)->whereIn('status', self::STATUS_PULIH)->exists()) {
+            $stored = DB::table('password_reset_tokens')->where('email', $email)->lockForUpdate()->first();
+            if (! Akun::where('email', $email)->whereIn('status', self::STATUS_PULIH)->exists()
+                || ! $stored || Carbon::parse($stored->created_at)->addMinutes((int) config('auth.passwords.akun.expire'))->isPast()) {
+                PasswordPolicy::consumeHashWork();
+
                 return Password::INVALID_TOKEN;
             }
 
