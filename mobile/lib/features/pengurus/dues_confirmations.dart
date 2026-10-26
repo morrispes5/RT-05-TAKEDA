@@ -5,11 +5,13 @@ import '../../app/theme.dart';
 import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../core/session.dart';
 import '../../core/whatsapp.dart';
 import '../../core/widgets.dart';
 import '../warga/dues_proof.dart';
 import '../warga/providers.dart';
 import 'pengurus_pages.dart';
+import 'flexible_payment.dart';
 
 /// Bukti pembayaran iuran warga per status (diajukan | selesai | ditolak).
 final duesConfirmationsProvider = FutureProvider.autoDispose.family<Json, String>(
@@ -187,12 +189,28 @@ class DuesConfirmationDetailPage extends ConsumerStatefulWidget {
 }
 
 class _DuesConfirmationDetailPageState extends ConsumerState<DuesConfirmationDetailPage> {
+  final _processKey = newKey();
   Json get _k => widget.item;
   Json get _rumah => Json.from((_k['rumah'] as Map?) ?? const {});
   Json get _pengirim => Json.from((_k['pengirim'] as Map?) ?? const {});
   bool get _menunggu => _k['status'] == 'diajukan';
 
   Future<void> _catatPembayaran() async {
+    if (ref.read(sessionProvider).akun?.keuanganFleksibel == true) {
+      final saved = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FlexiblePaymentPage(
+            house: _rumah,
+            initialPeriods: [for (final p in (_k['periode'] as List? ?? const [])) '$p'],
+            initialAmount: (_k['nominal'] as num?)?.toInt(),
+            confirmationId: '${_k['id']}',
+          ),
+        ),
+      );
+      if (mounted && saved == true) Navigator.pop(context, true);
+      return;
+    }
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -233,7 +251,7 @@ class _DuesConfirmationDetailPageState extends ConsumerState<DuesConfirmationDet
 
   Future<void> _proses(Map<String, dynamic> body, {required String judul, required String pesan, AlertKind kind = AlertKind.success}) async {
     try {
-      await ref.read(apiProvider).post('/admin/dues-confirmations/${_k['id']}/process', data: body);
+      await ref.read(apiProvider).post('/admin/dues-confirmations/${_k['id']}/process', data: body, idempotencyKey: _processKey);
       if (!mounted) return;
       await showResultDialog(context, title: judul, message: pesan, kind: kind);
       if (mounted) Navigator.pop(context, true);
@@ -350,12 +368,15 @@ class _DuesConfirmationDetailPageState extends ConsumerState<DuesConfirmationDet
               label: const Text('Catat pembayaran'),
             ),
             const SizedBox(height: 8),
-            BusyButton(label: 'Tandai selesai', icon: Icons.check_circle_outline, outlined: true, onPressed: _tandaiSelesai),
+            if (ref.watch(sessionProvider).akun?.keuanganFleksibel != true)
+              BusyButton(label: 'Tandai selesai', icon: Icons.check_circle_outline, outlined: true, onPressed: _tandaiSelesai),
             const SizedBox(height: 8),
             BusyButton(label: 'Tolak', icon: Icons.cancel_outlined, outlined: true, onPressed: _tolak),
             const SizedBox(height: 12),
-            const Text(
-              'Catat pembayaran di layar berikutnya. Bukti hanya konfirmasi; kas dan tagihan berubah setelah pembayaran dicatat.',
+            Text(
+              ref.watch(sessionProvider).akun?.keuanganFleksibel == true
+                  ? 'Periksa nominal transfer. Persetujuan, penerimaan kas dan tagihan disimpan bersama setelah rincian dikonfirmasi.'
+                  : 'Catat pembayaran di layar berikutnya. Bukti hanya konfirmasi; kas dan tagihan berubah setelah pembayaran dicatat.',
               style: TextStyle(color: Brand.muted, fontSize: 13, height: 1.4),
             ),
           ],

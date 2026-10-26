@@ -5,8 +5,11 @@ import '../../app/theme.dart';
 import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../core/session.dart';
 import '../../core/widgets.dart';
 import 'finance_actions.dart';
+import 'pengurus_pages.dart' show newKey;
+import 'house_finance.dart';
 
 /// M11 pengurus: rekap iuran bulanan dan tarif per periode. Angka selalu dari server;
 /// fungsi murni di bawah hanya untuk navigasi bulan dan validasi form sebelum dikirim.
@@ -55,6 +58,7 @@ class DuesRecapView extends ConsumerStatefulWidget {
 }
 
 class _DuesRecapViewState extends ConsumerState<DuesRecapView> {
+  final _generateKey = newKey();
   late String _period = currentPeriod((widget.now?.call() ?? DateTime.now()).toUtc());
 
   Future<void> _generate() async {
@@ -67,7 +71,7 @@ class _DuesRecapViewState extends ConsumerState<DuesRecapView> {
     );
     if (!ok || !mounted) return;
     try {
-      final r = await ref.read(apiProvider).post('/admin/dues/generate', data: <String, dynamic>{});
+      final r = await ref.read(apiProvider).post('/admin/dues/generate', data: <String, dynamic>{}, idempotencyKey: _generateKey);
       ref.invalidate(duesRecapProvider(_period));
       final n = (r is Map ? r['tagihan_baru'] : null) ?? 0;
       if (mounted) showMessage(context, n == 0 ? 'Semua tagihan sudah ada.' : '$n tagihan baru dibuat.');
@@ -129,7 +133,9 @@ class _DuesRecapViewState extends ConsumerState<DuesRecapView> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    d['tarif'] == null ? 'Belum ada tarif untuk bulan ini.' : 'Tarif ${rupiah(d['tarif'] as num)} per rumah. Ditampilkan per kode rumah.',
+                    d['tarif'] == null
+                        ? 'Belum ada tarif untuk bulan ini.'
+                        : 'Tarif umum ${rupiah(d['tarif'] as num)} per rumah. Tarif khusus mengikuti ketentuan tiap rumah.',
                     style: const TextStyle(color: Brand.muted, fontSize: 13),
                   ),
                   const SizedBox(height: 12),
@@ -159,6 +165,8 @@ class _DuesRecapViewState extends ConsumerState<DuesRecapView> {
                                 Text(
                                   [
                                     rupiah(r['nominal'] as num),
+                                    if (r['sisa'] != null) 'sisa ${rupiah(r['sisa'] as num)}',
+                                    if (r['keringanan'] != null && (r['keringanan'] as num) > 0) 'keringanan ${rupiah(r['keringanan'] as num)}',
                                     if (r['tanggal_bayar'] != null) 'dibayar ${r['tanggal_bayar']}',
                                     if ((r['bulan_tunggakan_sebelumnya'] as num) > 0) 'tunggakan ${r['bulan_tunggakan_sebelumnya']} bulan sebelumnya',
                                   ].join(' • '),
@@ -167,6 +175,17 @@ class _DuesRecapViewState extends ConsumerState<DuesRecapView> {
                               ],
                             ),
                             StatusChip('${r['status']}', label: '${r['status_label']}'),
+                            if (ref.watch(sessionProvider).akun?.keuanganFleksibel == true)
+                              TextButton(
+                                onPressed: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => HouseFinancePage(house: {'id': r['rumah_id'], 'kode_rumah': r['kode_rumah']})),
+                                  );
+                                  ref.invalidate(duesRecapProvider(_period));
+                                },
+                                child: const Text('Kelola rumah'),
+                              ),
                           ],
                         ),
                       ),
@@ -224,7 +243,7 @@ class DuesRatesPage extends ConsumerWidget {
           value: rates,
           onRetry: () => ref.invalidate(duesRatesProvider),
           builder: (list) {
-            final active = list.where((r) => '${r['mulai_periode']}'.compareTo(current) <= 0).firstOrNull;
+            final active = list.where((r) => r['dibatalkan_at'] == null && '${r['mulai_periode']}'.compareTo(current) <= 0).firstOrNull;
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -265,7 +284,17 @@ class DuesRatesPage extends ConsumerWidget {
                         '${rupiah(r['nominal'] as num)} • mulai ${periode('${r['mulai_periode']}')}',
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
-                      subtitle: Text('${r['alasan']}'),
+                      subtitle: Text('${r['alasan']}${r['dibatalkan_at'] == null ? '' : '\nSudah dibalik'}'),
+                      trailing: ref.watch(sessionProvider).akun?.keuanganFleksibel == true && r['dibatalkan_at'] == null
+                          ? IconButton(
+                              tooltip: 'Koreksi tarif umum',
+                              icon: const Icon(Icons.edit_outlined),
+                              onPressed: () async {
+                                await Navigator.push(context, MaterialPageRoute(builder: (_) => FinanceRatePage(original: r)));
+                                ref.invalidate(duesRatesProvider);
+                              },
+                            )
+                          : null,
                     ),
                   ),
               ],
@@ -286,6 +315,7 @@ class DuesRateFormPage extends ConsumerStatefulWidget {
 }
 
 class _DuesRateFormPageState extends ConsumerState<DuesRateFormPage> {
+  final _key = newKey();
   final _nominal = TextEditingController(text: '75000');
   final _alasan = TextEditingController();
   String? _mulai;
@@ -309,7 +339,9 @@ class _DuesRateFormPageState extends ConsumerState<DuesRateFormPage> {
     );
     if (!ok || !mounted) return;
     try {
-      await ref.read(apiProvider).post('/admin/dues-rates', data: {'nominal': nominal, 'mulai_periode': _mulai, 'alasan': _alasan.text.trim()});
+      await ref
+          .read(apiProvider)
+          .post('/admin/dues-rates', data: {'nominal': nominal, 'mulai_periode': _mulai, 'alasan': _alasan.text.trim()}, idempotencyKey: _key);
       if (!mounted) return;
       await showResultDialog(context, title: 'Tarif ditetapkan', message: '${rupiah(nominal)} berlaku mulai ${periode(_mulai!)}.');
       if (mounted) Navigator.pop(context, true);

@@ -17,6 +17,7 @@ import 'family_page.dart';
 import 'identity_data.dart';
 import 'paged_list.dart';
 import 'restore_page.dart';
+import '../pengurus/house_finance.dart';
 
 class HouseAdminPage extends ConsumerWidget {
   const HouseAdminPage({super.key, required this.summary, required this.onRecordPayment});
@@ -40,6 +41,17 @@ class HouseAdminPage extends ConsumerWidget {
             builder: (house) => _HouseBody(house: house, onChanged: () => ref.invalidate(houseDetailProvider(id))),
           ),
           const SizedBox(height: 16),
+          if (ref.watch(sessionProvider).akun?.keuanganFleksibel == true) ...[
+            OutlinedButton.icon(
+              icon: const Icon(Icons.account_balance_outlined),
+              label: const Text('Kelola tarif, titipan dan keringanan'),
+              onPressed: () async {
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => HouseFinancePage(house: detail.asData?.value ?? summary)));
+                ref.invalidate(houseDuesProvider(id));
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
           SectionCard(
             title: 'Iuran rumah',
             trailing: TextButton(
