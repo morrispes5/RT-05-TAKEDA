@@ -124,9 +124,9 @@ final class FlexibleDues
         });
     }
 
-    public static function useDeposit(Akun $actor, string $house, array $periods, int $amount, string $date, string $fingerprint): string
+    public static function useDeposit(Akun $actor, string $house, array $periods, int $amount, string $date, string $fingerprint, ?string $replaces = null): string
     {
-        return DB::transaction(function () use ($actor, $house, $periods, $amount, $date, $fingerprint) {
+        return DB::transaction(function () use ($actor, $house, $periods, $amount, $date, $fingerprint, $replaces) {
             self::lock();
             self::checkPreview($house, $periods, $fingerprint);
             $charges = self::charges($house, $periods);
@@ -134,7 +134,7 @@ final class FlexibleDues
             if ($amount <= 0 || $amount > min((int) $charges->sum('sisa'), (int) $lots->sum('saldo'))) {
                 throw new DomainConflict('INVALID_DEPOSIT_AMOUNT', 'Nominal melebihi titipan atau sisa tagihan.', 422);
             }
-            $usage = self::insert('penggunaan_titipan', ['rumah_id' => $house, 'nominal' => $amount, 'tanggal' => $date, 'dicatat_oleh_id' => $actor->id]);
+            $usage = self::insert('penggunaan_titipan', ['rumah_id' => $house, 'nominal' => $amount, 'tanggal' => $date, 'dicatat_oleh_id' => $actor->id, 'menggantikan_id' => $replaces]);
             $left = $amount;
             foreach ($lots as $lot) {
                 $used = min($left, (int) $lot->saldo);
@@ -268,18 +268,18 @@ final class FlexibleDues
         });
     }
 
-    public static function relieve(Akun $actor, string $chargeId, int $amount, string $reason): string
+    public static function relieve(Akun $actor, string $chargeId, int $amount, string $reason, ?string $replaces = null): string
     {
         self::reason($reason);
 
-        return DB::transaction(function () use ($actor, $chargeId, $amount, $reason) {
+        return DB::transaction(function () use ($actor, $chargeId, $amount, $reason, $replaces) {
             self::lock();
             $charge = DB::table('rt05_tagihan_saldo')->where('id', $chargeId)->first();
             if (! $charge || $amount <= 0 || $amount > (int) $charge->sisa) {
                 throw new DomainConflict('INVALID_RELIEF', 'Keringanan harus lebih dari nol dan tidak melebihi sisa tagihan.', 422);
             }
             $id = self::insert('keringanan_iuran', ['tagihan_id' => $chargeId, 'nominal' => $amount,
-                'alasan' => $reason, 'dicatat_oleh_id' => $actor->id]);
+                'alasan' => $reason, 'dicatat_oleh_id' => $actor->id, 'menggantikan_id' => $replaces]);
             self::sync([$chargeId]);
             Audit::record($actor, 'keringanan.dicatat', 'keringanan_iuran', $id, ['nominal' => $amount, 'alasan' => $reason]);
 

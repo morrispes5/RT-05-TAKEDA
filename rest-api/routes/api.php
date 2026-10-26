@@ -11,6 +11,7 @@ use App\Http\Controllers\ContentController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\DuesConfirmationController;
 use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\FlexibleFinanceController;
 use App\Http\Controllers\HouseholdController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ServiceInfoController;
@@ -188,6 +189,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
 
     Route::get('dues-rates', [FinanceController::class, 'rates']);
     Route::post('dues-rates', [FinanceController::class, 'storeRate']);
+    Route::post('dues-rates/{id}/correct', [FlexibleFinanceController::class, 'correctRate'])->whereUuid('id');
     Route::post('dues/generate', [FinanceController::class, 'generate']);
     // Konten publik M13: draf/terbit/arsip dengan versi.
     foreach (array_keys(Contents::TYPES) as $type) {
@@ -207,6 +209,21 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::get('dues-charges', [FinanceController::class, 'charges']);
     Route::get('dues-recap', [FinanceController::class, 'recap']);
     Route::get('dues-payments', [FinanceController::class, 'payments']);
+    Route::post('dues-payments/preview', [FlexibleFinanceController::class, 'preview']);
+    Route::post('dues-confirmations/{id}/approve', [FlexibleFinanceController::class, 'approve'])->whereUuid('id');
+    Route::get('houses/{id}/dues-rates', [FlexibleFinanceController::class, 'rates'])->whereUuid('id');
+    Route::post('houses/{id}/dues-rates', [FlexibleFinanceController::class, 'storeRate'])->whereUuid('id');
+    Route::post('houses/{id}/dues-rates/{rateId}/correct', [FlexibleFinanceController::class, 'storeRate'])->whereUuid(['id', 'rateId']);
+    Route::get('houses/{id}/deposits', [FlexibleFinanceController::class, 'deposits'])->whereUuid('id');
+    Route::post('deposit-usages', [FlexibleFinanceController::class, 'useDeposit']);
+    Route::post('deposit-usages/{id}/reverse', [FlexibleFinanceController::class, 'reverseDeposit'])->whereUuid('id');
+    Route::post('deposit-usages/{id}/correct', [FlexibleFinanceController::class, 'correctDeposit'])->whereUuid('id');
+    Route::post('dues-charges/{id}/reliefs', [FlexibleFinanceController::class, 'relief'])->whereUuid('id');
+    Route::post('dues-charges/{id}/adjustments', [FlexibleFinanceController::class, 'adjustment'])->whereUuid('id');
+    Route::post('dues-reliefs/{id}/reverse', [FlexibleFinanceController::class, 'reverseRelief'])->whereUuid('id');
+    Route::post('dues-reliefs/{id}/correct', [FlexibleFinanceController::class, 'correctRelief'])->whereUuid('id');
+    Route::post('dues-adjustments/{id}/reverse', [FlexibleFinanceController::class, 'reverseAdjustment'])->whereUuid('id');
+    Route::post('dues-adjustments/{id}/correct', [FlexibleFinanceController::class, 'correctAdjustment'])->whereUuid('id');
     Route::post('dues-payments', [FinanceController::class, 'storePayment']);
     Route::get('dues-payments/{id}', [FinanceController::class, 'payment'])->whereUuid('id');
     Route::post('dues-payments/{id}/reverse', [FinanceController::class, 'reversePayment'])->whereUuid('id');
@@ -216,4 +233,5 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::get('cash-transactions', [FinanceController::class, 'cash']);
     Route::post('cash-transactions', [FinanceController::class, 'storeCash']);
     Route::post('cash-transactions/{id}/reverse', [FinanceController::class, 'reverseCash'])->whereUuid('id');
+    Route::post('cash-transactions/{id}/correct', [FlexibleFinanceController::class, 'correctCash'])->whereUuid('id');
 });

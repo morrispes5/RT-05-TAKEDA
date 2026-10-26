@@ -49,6 +49,7 @@ final class Present
             'nama' => $a->nama,
             'email' => $a->email,
             'peran' => $a->peran,
+            'versi_keuangan' => config('finance.v2') ? 2 : 1,
             'jenis' => $a->jenis,
             'status' => $a->status,
             'rumah' => $rumah ? ['id' => $rumah->id, 'kode_rumah' => $rumah->kode_rumah, 'alamat' => $rumah->alamat()] : null,
@@ -260,6 +261,7 @@ final class Present
     {
         return [
             'id' => $k->id,
+            ...(config('finance.v2') ? ['pembayaran_id' => $k->pembayaran_id] : []),
             'status' => $k->status,
             'status_label' => match ($k->status) {
                 'selesai' => 'Sudah diperiksa pengurus',
@@ -431,6 +433,21 @@ final class Present
     public static function tagihan(TagihanIuran $t): array
     {
         $active = $t->relationLoaded('alokasi') ? $t->alokasi->firstWhere('dibatalkan_at', null) : null;
+        if (config('finance.v2')) {
+            $s = $t->saldo;
+            $status = (int) $s->sisa === 0 ? ((int) $s->keringanan > 0 ? 'lunas_keringanan' : 'lunas')
+                : ((int) $s->terbayar_uang + (int) $s->terbayar_titipan + (int) $s->keringanan > 0 ? 'kurang_bayar' : 'belum_bayar');
+
+            return ['id' => $t->id, 'periode' => $t->periode->format('Y-m'), 'nominal' => (int) $s->nominal_efektif,
+                'nominal_snapshot' => (int) $s->nominal_tagihan, 'nominal_efektif' => (int) $s->nominal_efektif,
+                'terbayar' => (int) $s->terbayar_uang + (int) $s->terbayar_titipan, 'terbayar_titipan' => (int) $s->terbayar_titipan,
+                'keringanan' => (int) $s->keringanan, 'sisa' => (int) $s->sisa, 'jatuh_tempo' => $t->jatuh_tempo->toDateString(),
+                'status' => $t->status, 'status_pelunasan' => $status,
+                'status_label' => ['lunas' => 'Lunas', 'lunas_keringanan' => 'Lunas dengan keringanan', 'kurang_bayar' => 'Kurang bayar', 'belum_bayar' => 'Belum dibayar'][$status],
+                'pembayaran_id' => $active?->pembayaran_id,
+                'alokasi' => $t->alokasi->map(fn ($a) => ['pembayaran_id' => $a->pembayaran_id, 'penggunaan_titipan_id' => $a->penggunaan_titipan_id,
+                    'nominal' => $a->nominal_alokasi, 'dibatalkan_at' => self::ts($a->dibatalkan_at)])->values()->all()];
+        }
 
         return [
             'id' => $t->id,
@@ -445,7 +462,14 @@ final class Present
 
     public static function pembayaran(PembayaranIuran $p): array
     {
+        $periods = $p->alokasi->map(fn ($a) => $a->tagihan?->periode->format('Y-m'))->filter();
+        if (config('finance.v2')) {
+            $periods = $periods->merge($p->keringanan->map(fn ($k) => $k->tagihan?->periode->format('Y-m'))->filter());
+        }
+
         return [
+            ...(config('finance.v2') ? ['nominal_sumbangan' => (int) $p->nominal_sumbangan, 'nominal_titipan' => (int) $p->nominal_titipan,
+                'nominal_alokasi' => (int) $p->alokasi->sum('nominal_alokasi'), 'versi_keuangan' => (int) $p->versi_keuangan] : []),
             'id' => $p->id,
             'nomor_bukti' => $p->nomor_bukti,
             'rumah' => $p->rumah ? ['id' => $p->rumah->id, 'kode_rumah' => $p->rumah->kode_rumah] : null,
@@ -453,7 +477,7 @@ final class Present
             'total_bayar' => $p->total_bayar,
             'status' => $p->status,
             'catatan' => $p->catatan,
-            'periode' => $p->alokasi->map(fn ($a) => $a->tagihan?->periode->format('Y-m'))->filter()->values()->all(),
+            'periode' => $periods->unique()->sort()->values()->all(),
             'menggantikan_id' => $p->menggantikan_id,
             'alasan_pembatalan' => $p->alasan_pembatalan,
             'dibatalkan_at' => self::ts($p->dibatalkan_at),
