@@ -1,5 +1,8 @@
 # Perbaikan temuan QA — 26 Oktober 2026
 
+**Tindak lanjut 27 Okt:** PR #90 merged, staging dan APK 1021 sudah dirilis serta diuji. Lihat
+[RELEASE_1021.md](RELEASE_1021.md). Catatan di bawah adalah verifikasi lokal sebelum distribusi.
+
 Status: **fixed pada kode lokal, terverifikasi otomatis** di branch `codex/m18-perbaikan-qa`,
 berbasis main `1955d69`. Bukti audit asal: [QA_REVIEW.md](QA_REVIEW.md).
 Belum menjadi bukti deploy staging, APK baru atau HP nyata. Staging/APK 1020 sebelumnya tetap berjalan.
