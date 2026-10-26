@@ -32,7 +32,7 @@ class FlexibleFinanceController extends Controller
             FlexibleDues::lock();
             $arrears = DB::table('rt05_tagihan_saldo')->where('periode', '<', $period->toDateString())->where('sisa', '>', 0)
                 ->selectRaw('rumah_id, count(*) AS bulan, sum(sisa) AS nominal')->groupBy('rumah_id')->get()->keyBy('rumah_id');
-            $rows = TagihanIuran::with(['rumah', 'alokasi.pembayaran'])->where('periode', $period->toDateString())->get()
+            $rows = TagihanIuran::with(['rumah', 'alokasi.pembayaran', 'saldo'])->where('periode', $period->toDateString())->get()
                 ->sortBy(fn ($t) => $t->rumah->kode_rumah)->map(fn ($t) => Present::tagihan($t) + [
                     'rumah_id' => $t->rumah_id, 'kode_rumah' => $t->rumah->kode_rumah,
                     'bulan_tunggakan_sebelumnya' => (int) ($arrears[$t->rumah_id]->bulan ?? 0),
@@ -184,9 +184,21 @@ class FlexibleFinanceController extends Controller
     {
         self::enabled();
 
-        return Api::data(['saldo' => (int) DB::table('rt05_titipan_saldo')->where('rumah_id', $id)->sum('saldo'),
-            'lot' => DB::table('rt05_titipan_saldo')->where('rumah_id', $id)->orderBy('created_at')->get(),
-            'riwayat' => DB::table('mutasi_titipan')->where('rumah_id', $id)->orderBy('created_at')->get()]);
+        return DB::transaction(function () use ($id) {
+            FlexibleDues::lock();
+            $periods = DB::table('alokasi_pembayaran as a')->join('tagihan_iuran as t', 't.id', '=', 'a.tagihan_id')
+                ->where('t.rumah_id', $id)->whereNotNull('a.penggunaan_titipan_id')->orderBy('t.periode')
+                ->get(['a.penggunaan_titipan_id', 't.periode'])->groupBy('penggunaan_titipan_id');
+
+            return Api::data(['saldo' => (int) DB::table('rt05_titipan_saldo')->where('rumah_id', $id)->sum('saldo'),
+                'lot' => DB::table('rt05_titipan_saldo')->where('rumah_id', $id)->orderBy('created_at')->get(),
+                'penggunaan' => DB::table('penggunaan_titipan')->where('rumah_id', $id)->orderByRaw('dibatalkan_at NULLS FIRST')->orderByDesc('created_at')->orderBy('id')->get()->map(function ($usage) use ($periods) {
+                    $usage->periode = ($periods[$usage->id] ?? collect())->map(fn ($p) => substr($p->periode, 0, 7))->unique()->values()->all();
+
+                    return $usage;
+                }),
+                'riwayat' => DB::table('mutasi_titipan')->where('rumah_id', $id)->orderBy('created_at')->get()]);
+        });
     }
 
     public function useDeposit(Request $request): JsonResponse

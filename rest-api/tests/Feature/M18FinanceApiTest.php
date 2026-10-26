@@ -172,6 +172,8 @@ class M18FinanceApiTest extends TestCase
         $use['fingerprint'] = FlexibleDues::preview($house, ['2026-11'])['fingerprint'];
         $this->postJson("/api/v1/admin/deposit-usages/$id/correct", $use, ['Idempotency-Key' => (string) Str::uuid()])->assertCreated();
         $this->getJson("/api/v1/admin/houses/$house/deposits")->assertOk()->assertJsonPath('data.saldo', 15000);
+        $this->getJson("/api/v1/admin/houses/$house/deposits")->assertOk()->assertJsonPath('data.penggunaan.0.menggantikan_id', $id)
+            ->assertJsonPath('data.penggunaan.0.periode.0', '2026-11');
         $this->assertSame(100000, Dues::balance());
         $this->assertSame(0, Reconciliation::run()['total_masalah']);
         DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
@@ -213,6 +215,23 @@ class M18FinanceApiTest extends TestCase
         $this->assertSame(50000, FlexibleDues::preview($house, ['2026-11'])['sisa']);
         $this->postJson("/api/v1/admin/houses/$house/dues-rates/$special/correct", $d, ['Idempotency-Key' => (string) Str::uuid()])->assertConflict();
         $this->assertSame(0, Reconciliation::run()['total_masalah']);
+    }
+
+    public function test_recap_batches_balance_queries_and_house_history_stays_scoped(): void
+    {
+        [, $actor, $house] = $this->setupFinance();
+        for ($i = 2; $i <= 10; $i++) {
+            $this->warga((string) $i);
+        }
+        $other = DB::table('tagihan_iuran')->where('rumah_id', '<>', $house)->value('id');
+        FlexibleDues::relieve($actor, $other, 25000, 'Alasan privat rumah lain');
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+        $this->getJson('/api/v1/admin/dues-recap?periode=2026-10')->assertOk()->assertJsonPath('data.jumlah_rumah', 10);
+        $queries = count(DB::getQueryLog());
+        DB::disableQueryLog();
+        $this->assertLessThanOrEqual(15, $queries, 'Recap should batch balances, not query once per house');
+        $this->getJson("/api/v1/admin/houses/$house/dues")->assertOk()->assertJsonPath('data.riwayat_keringanan', []);
     }
 
     public function test_manual_cash_correction_failure_rolls_back_original_reversal(): void

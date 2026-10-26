@@ -24,7 +24,6 @@ use App\Models\UsulanKegiatan;
 use App\Models\Warga;
 use App\Support\Privacy;
 use DateTimeInterface;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Serializer allowlist. Setiap field yang keluar dari API ditulis eksplisit di sini.
@@ -435,7 +434,7 @@ final class Present
     {
         $active = $t->relationLoaded('alokasi') ? $t->alokasi->firstWhere('dibatalkan_at', null) : null;
         if (config('finance.v2')) {
-            $s = DB::table('rt05_tagihan_saldo')->where('id', $t->id)->first();
+            $s = $t->saldo;
             $status = (int) $s->sisa === 0 ? ((int) $s->keringanan > 0 ? 'lunas_keringanan' : 'lunas')
                 : ((int) $s->terbayar_uang + (int) $s->terbayar_titipan + (int) $s->keringanan > 0 ? 'kurang_bayar' : 'belum_bayar');
 

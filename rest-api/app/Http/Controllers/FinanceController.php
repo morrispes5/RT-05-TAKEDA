@@ -37,14 +37,20 @@ class FinanceController extends Controller
             throw new DomainConflict('HOUSEHOLD_NOT_LINKED', 'Akun belum terhubung dengan rumah.', 404);
         }
 
-        return Api::data($this->houseSummary($rumah, (int) $request->query('bulan', 24)));
+        return DB::transaction(function () use ($rumah, $request) {
+            if (config('finance.v2')) {
+                FlexibleDues::lock();
+            }
+
+            return Api::data($this->houseSummary($rumah, (int) $request->query('bulan', 24)));
+        });
     }
 
     private function houseSummary(Rumah $rumah, int $months): array
     {
         $months = max(12, min(60, $months));
         $current = CarbonImmutable::now('Asia/Jakarta')->startOfMonth()->format('Y-m-01');
-        $charges = TagihanIuran::with('alokasi')->where('rumah_id', $rumah->id)
+        $charges = TagihanIuran::with(config('finance.v2') ? ['alokasi', 'saldo'] : ['alokasi'])->where('rumah_id', $rumah->id)
             ->where('periode', '>=', CarbonImmutable::parse($current)->subMonths($months - 1)->toDateString())
             ->orderByDesc('periode')->get();
         $all = TagihanIuran::where('rumah_id', $rumah->id)->where('status', 'belum_bayar');
@@ -59,6 +65,12 @@ class FinanceController extends Controller
             'rumah' => ['id' => $rumah->id, 'kode_rumah' => $rumah->kode_rumah, 'alamat' => $rumah->alamat()],
             'tarif_berlaku' => $special?->mode === 'khusus' ? (int) $special->nominal : $rate,
             ...($v2 ? ['saldo_titipan' => (int) DB::table('rt05_titipan_saldo')->where('rumah_id', $rumah->id)->sum('saldo'), 'versi_keuangan' => 2] : []),
+            ...($v2 ? [
+                'riwayat_keringanan' => DB::table('keringanan_iuran as k')->join('tagihan_iuran as t', 't.id', '=', 'k.tagihan_id')
+                    ->where('t.rumah_id', $rumah->id)->orderByDesc('k.created_at')->get(['k.*', 't.periode']),
+                'riwayat_penyesuaian' => DB::table('penyesuaian_tagihan as j')->join('tagihan_iuran as t', 't.id', '=', 'j.tagihan_id')
+                    ->where('t.rumah_id', $rumah->id)->orderByDesc('j.created_at')->get(['j.*', 't.periode']),
+            ] : []),
             'tunggakan' => [
                 'jumlah_bulan' => (clone $all)->where('periode', '<', $current)->count(),
                 'total' => (int) (clone $all)->where('periode', '<', $current)->sum($v2 ? 'sisa' : 'nominal_tagihan'),
@@ -228,7 +240,7 @@ class FinanceController extends Controller
 
     public function charges(Request $request): JsonResponse
     {
-        $q = TagihanIuran::with(['rumah', 'alokasi'])
+        $q = TagihanIuran::with(config('finance.v2') ? ['rumah', 'alokasi', 'saldo'] : ['rumah', 'alokasi'])
             ->when($request->query('periode'), fn ($q, $p) => $q->where('periode', Dues::period($p)->toDateString()))
             ->when($request->query('rumah_id'), fn ($q, $r) => $q->where('rumah_id', $r))
             ->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))
@@ -239,7 +251,13 @@ class FinanceController extends Controller
 
     public function houseDues(string $id): JsonResponse
     {
-        return Api::data($this->houseSummary(Rumah::findOrFail($id), 24));
+        return DB::transaction(function () use ($id) {
+            if (config('finance.v2')) {
+                FlexibleDues::lock();
+            }
+
+            return Api::data($this->houseSummary(Rumah::findOrFail($id), 24));
+        });
     }
 
     /** POST /admin/dues-payments — catat pembayaran offline (Idempotency-Key wajib). */
