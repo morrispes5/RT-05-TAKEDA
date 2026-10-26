@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Domain\Finance\Dues;
+use App\Domain\Finance\FinanceReports;
+use App\Domain\Finance\FlexibleDues;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\Api;
 use App\Http\Responses\Present;
@@ -19,6 +21,7 @@ use App\Support\Audit;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** Dashboard pengurus, audit, dan ekspor CSV (FR18, FR19). */
@@ -67,6 +70,10 @@ class OperationsController extends Controller
         // Audit M16: kas dan pembayaran disaring per tanggal transaksi/bayar di bulan itu (sebelumnya semua periode).
         $bulan = $periode ? [CarbonImmutable::parse($periode.'-01')->toDateString(), CarbonImmutable::parse($periode.'-01')->endOfMonth()->toDateString()] : null;
 
+        if (config('finance.v2') && $jenis !== 'rumah') {
+            return $this->financeCsv($jenis, $periode);
+        }
+
         [$header, $rows] = match ($jenis) {
             'iuran' => [['kode_rumah', 'periode', 'nominal', 'status'], TagihanIuran::join('rumah', 'rumah.id', '=', 'tagihan_iuran.rumah_id')
                 ->when($periode, fn ($q) => $q->where('tagihan_iuran.periode', $periode.'-01'))
@@ -101,5 +108,42 @@ class OperationsController extends Controller
         $s = (string) $v;
 
         return preg_match('/^[=+\-@\t\r]/', $s) && ! is_numeric($s) ? "'".$s : $s;
+    }
+
+    private function financeCsv(string $jenis, ?string $period): StreamedResponse
+    {
+        [$header, $rows] = DB::transaction(function () use ($jenis, $period) {
+            FlexibleDues::lock();
+            $start = $period ? Dues::period($period)->toDateString() : null;
+            $end = $period ? Dues::period($period)->addMonth()->toDateString() : null;
+            if ($jenis === 'iuran') {
+                return [['kode_rumah', 'periode', 'nominal_snapshot', 'nominal_efektif', 'terbayar', 'dari_titipan', 'keringanan', 'sisa', 'status'],
+                    array_map(fn ($r) => [$r['kode_rumah'], $r['periode'], $r['nominal_snapshot'], $r['nominal_efektif'], $r['terbayar'], $r['terbayar_titipan'], $r['keringanan'], $r['sisa'], $r['status_label']], FinanceReports::charges($start, $end))];
+            }
+            if ($jenis === 'kas') {
+                return [['tanggal', 'jenis', 'sumber', 'kategori', 'nominal', 'keterangan', 'nomor_bukti', 'bagian_iuran', 'sumbangan', 'titipan'],
+                    array_map(fn ($r) => [$r['tanggal'], $r['jenis'], $r['sumber'], $r['kategori'], $r['nominal'], $r['keterangan'], $r['nomor_bukti'], $r['iuran'], $r['sumbangan'], $r['titipan']], FinanceReports::cash($start, $end))];
+            }
+
+            return [['nomor_bukti', 'kode_rumah', 'tanggal_bayar', 'periode', 'total_bayar', 'bagian_iuran_asal', 'sumbangan', 'titipan', 'status', 'catatan', 'alasan_pembatalan'],
+                PembayaranIuran::with(['rumah', 'alokasi.tagihan', 'keringanan.tagihan'])
+                    ->when($start, fn ($q) => $q->where('tanggal_bayar', '>=', $start))->when($end, fn ($q) => $q->where('tanggal_bayar', '<', $end))
+                    ->orderBy('tanggal_bayar')->orderBy('nomor_bukti')->get()->map(fn ($p) => [
+                        $p->nomor_bukti, $p->rumah->kode_rumah, $p->tanggal_bayar->toDateString(),
+                        $p->alokasi->concat($p->keringanan)->map(fn ($r) => $r->tagihan->periode->format('Y-m'))->unique()->sort()->implode(' '),
+                        $p->total_bayar, $p->total_bayar - $p->nominal_sumbangan - $p->nominal_titipan, $p->nominal_sumbangan, $p->nominal_titipan,
+                        $p->status, $p->catatan, $p->alasan_pembatalan,
+                    ])->all()];
+        });
+
+        return response()->streamDownload(function () use ($header, $rows) {
+            $out = fopen('php://output', 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, $header, ',', '"', '');
+            foreach ($rows as $row) {
+                fputcsv($out, array_map([self::class, 'safeCell'], $row), ',', '"', '');
+            }
+            fclose($out);
+        }, "rt05-$jenis-".($period ?? 'semua').'.csv', ['Content-Type' => 'text/csv; charset=utf-8', 'Cache-Control' => 'private, no-store']);
     }
 }

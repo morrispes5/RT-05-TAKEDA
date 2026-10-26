@@ -25,6 +25,10 @@ Uji 8 rumah tarif umum + 2 tarif khusus = Rp700.000, keringanan dan tunggakan ya
 titipan tanpa kas kedua, pembalikan/koreksi atomik, SQL langsung invalid, fingerprint basi, nominal asli pengajuan terkunci,
 dan dua pengurus menyetujui satu bukti. Worker proses independen menguji idempotensi, duplikasi dan pemakaian titipan bersamaan.
 Tes transaksi memaksa `SET CONSTRAINTS ALL IMMEDIATE` sebelum rollback agar constraint deferred benar-benar diperiksa.
+`M18ReportsTest` membaca ulang 14 sheet XLSX, membandingkan angka API/CSV, menguji formula injection, lintas tahun,
+rumah arsip/bulan kosong, header no-store serta delete-after-send dan cleanup privat. `M18DurabilityTest` memakai
+commit nyata dan koneksi kedua untuk membuktikan gangguan cache/queue tidak menghapus pembayaran atau menggandakan retry.
+`M18ScaleTest`: 300 rumah sintetis × 12 bulan, constraint diperiksa nyata, laporan dibatasi maksimal 10 query.
 Flag v2 nonaktif tetap diuji untuk kompatibilitas M17. Kelulusan backend belum membuktikan UI, ekspor/XLSX atau staging.
 
 ### Identitas/keluarga

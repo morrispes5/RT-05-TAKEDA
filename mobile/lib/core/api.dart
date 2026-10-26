@@ -149,7 +149,10 @@ class Api {
       final res = await _dio.get<List<int>>(
         path,
         queryParameters: query,
-        options: Options(responseType: ResponseType.bytes, headers: {'Accept': 'text/csv, application/json'}),
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv, application/json'},
+        ),
       );
       return Uint8List.fromList(res.data ?? const []);
     } on DioException catch (e) {
