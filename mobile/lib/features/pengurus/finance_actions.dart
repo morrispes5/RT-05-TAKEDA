@@ -59,7 +59,13 @@ Future<bool> reverseEntry(
 typedef SaveBytes = Future<bool> Function(String fileName, Uint8List bytes);
 
 Future<bool> _saveWithPicker(String fileName, Uint8List bytes) async =>
-    await FilePicker.saveFile(fileName: fileName, bytes: bytes, mimeType: 'text/csv', dialogTitle: 'Simpan ekspor CSV') != null;
+    await FilePicker.saveFile(
+      fileName: fileName,
+      bytes: bytes,
+      mimeType: fileName.endsWith('.xlsx') ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'text/csv',
+      dialogTitle: 'Simpan laporan',
+    ) !=
+    null;
 
 final saveBytesProvider = Provider<SaveBytes>((ref) => _saveWithPicker);
 

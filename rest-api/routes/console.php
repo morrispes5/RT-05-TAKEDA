@@ -3,6 +3,7 @@
 use App\Domain\Community\Notifications;
 use App\Domain\Content\Catalog;
 use App\Domain\Finance\Dues;
+use App\Domain\Finance\FinanceWorkbook;
 use App\Domain\Finance\Reconciliation;
 use App\Domain\Identity\RegistrationToken;
 use App\Domain\Operations\OutboxDispatcher;
@@ -126,6 +127,10 @@ Artisan::command('rt05:anonimkan-arsip', function () {
     $this->info("Dianonimkan: warga {$r['warga']}, keluarga {$r['keluarga']}, akun {$r['akun']}");
 })->purpose('Anonimkan data pribadi arsip yang berumur lebih dari 12 bulan');
 
+Artisan::command('rt05:bersihkan-ekspor', function () {
+    $this->info('Ekspor sementara dihapus: '.FinanceWorkbook::prune());
+})->purpose('Hapus ekspor keuangan sementara yang kedaluwarsa');
+
 Artisan::command('rt05:siaran-sistem {kategori : kebijakan|pembaruan_aplikasi} {--judul=} {--isi=}', function () {
     $kategori = (string) $this->argument('kategori');
     $judul = trim((string) $this->option('judul'));
@@ -157,6 +162,7 @@ Artisan::command('rt05:pengingat-iuran', function () {
             $count++;
         }
     });
+
     $this->info("Pengingat iuran: $count");
 })->purpose('Pengingat iuran bulan berjalan ke akun utama rumah');
 
@@ -234,6 +240,9 @@ if (SharedHosting::enabled()) {
     Schedule::command('rt05:anonimkan-arsip')->everyMinute()->withoutOverlapping(60)
         ->when(fn () => $wib()->hour >= 2 && SharedHosting::dueSlot('anonimkan-arsip', $wib()->toDateString()))
         ->onSuccess(fn () => SharedHosting::markRan('anonimkan-arsip', $wib()->toDateString()));
+    Schedule::command('rt05:bersihkan-ekspor')->everyMinute()->withoutOverlapping(60)
+        ->when(fn () => $wib()->hour >= 2 && SharedHosting::dueSlot('bersihkan-ekspor', $wib()->toDateString()))
+        ->onSuccess(fn () => SharedHosting::markRan('bersihkan-ekspor', $wib()->toDateString()));
 } else {
     // Heartbeat scheduler M03: dibaca rt05:heartbeat-check, tidak lewat endpoint publik.
     Schedule::call(fn () => Heartbeat::beat('scheduler'))->everyMinute()->name('rt05:heartbeat-scheduler');
@@ -248,6 +257,7 @@ if (SharedHosting::enabled()) {
         ->when(fn () => IdleGuard::shouldRun('push-recover'))->onSuccess(fn () => IdleGuard::markRan('push-recover'));
     Schedule::command('rt05:rekonsiliasi-keuangan')->dailyAt('01:30')->timezone('Asia/Jakarta')->withoutOverlapping(60)->onOneServer();
     Schedule::command('rt05:anonimkan-arsip')->dailyAt('02:15')->timezone('Asia/Jakarta')->withoutOverlapping(60)->onOneServer();
+    Schedule::command('rt05:bersihkan-ekspor')->dailyAt('02:30')->timezone('Asia/Jakarta')->withoutOverlapping(60)->onOneServer();
     Schedule::command('rt05:pengingat-agenda')->hourly()->withoutOverlapping(60)->onOneServer();
     Schedule::command('rt05:pengingat-iuran')->monthlyOn(5, '08:00')->timezone('Asia/Jakarta')->onOneServer();
     Schedule::command('rt05:pengingat-iuran')->monthlyOn(20, '08:00')->timezone('Asia/Jakarta')->onOneServer();

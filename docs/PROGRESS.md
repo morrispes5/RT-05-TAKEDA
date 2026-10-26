@@ -60,7 +60,21 @@ bukan menerima nomor versi terbaru tanpa teks. Website/preview dan dokumen kebij
 Validasi: backend **396/396, 4.136 assertions**; Flutter **306/306**; analyze bersih, format 93/0; website **40/40, 538 assertions**,
 build:preview 24 rute dan Pint PASS; OpenAPI lint tanpa warning, check-repo/diff-check PASS. Flag masih false; belum deploy/APK M18.
 Berikutnya laporan/CSV/XLSX satu layanan, kemudian verifikasi staging/emulator dan satu rilis M18.
-Belum deploy/APK M18. Berikutnya mobile pengurus, privasi/transparansi warga, laporan/XLSX, lalu staging/emulator/rilis terpadu.
+
+**Laporan/Excel 26 Okt**, branch `codex/m18-laporan-excel`: PR #86 merged `1464239` setelah CI 10/10 PASS.
+`FinanceReports`/`CashSummary` menjadi sumber JSON, CSV dan workbook; 14 sheet memakai OpenSpout **4.32.0**
+(1 dependency gratis, audit tanpa advisory). CSV detail lama v2 memakai nominal efektif/sisa serta kas bertanda.
+File XLSX privat, no-store, audit, dihapus setelah respons; jaring cleanup berkas UUID kedaluwarsa 24 jam.
+Tes lintas tahun, koreksi/pemakaian titipan lintas bulan, rumah arsip, bulan kosong, formula injection, 14 sheet,
+kesamaan total JSON/CSV/XLSX dan penghapusan berkas lulus. Gangguan cache/queue tidak membatalkan uang yang committed.
+Suite backend akhir **405/405, 4.302 assertions**. Uji skala **300 rumah × 12 bulan = 3.600 tagihan** lulus;
+validasi deferred lokal 14.657 ms terarah / 48.326 ms saat suite penuh, laporan tahunan **7 query**.
+Ini pengukuran lokal sintetis, bukan latensi staging. Flutter akhir **307/307**, termasuk laporan/unduh XLSX dan
+layar 320 skala 2; analyze bersih, format **95/0**. Pint dan audit Composer PASS.
+Pemeriksaan deployment menemukan flag belum diteruskan Compose; ditambahkan ke env API bersama (worker/scheduler
+mewarisi) dengan default false. Image memasang ekstensi XLSX eksplisit dan CI menulis workbook tanpa database.
+Sisa gate: staging immutable + aktivasi flag terkendali, rekonsiliasi nol, emulator warga/pengurus, upgrade dan satu APK M18.
+Belum deploy/APK M18. Berikutnya CI laporan, staging/emulator/rilis terpadu. Bukti lokal: [REPORTS.md](evidence/m18/REPORTS.md).
 
 ## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**
 

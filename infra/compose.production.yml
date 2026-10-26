@@ -30,6 +30,8 @@ services:
       APP_KEY: ${API_APP_KEY}
       APP_URL: ${APP_URL}
       APP_TIMEZONE: UTC
+      # M18 opt-in bersama API, worker dan scheduler; tidak aktif hanya karena kode dideploy.
+      RT05_FINANCE_V2: ${RT05_FINANCE_V2:-false}
       DB_CONNECTION: pgsql
       DATABASE_URL: ${DATABASE_URL}
       DB_SSLMODE: verify-full

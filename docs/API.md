@@ -44,6 +44,15 @@ catatan, bukti atau transaksi individual. Header private/no-store. Pembalikan te
 Persetujuan `/auth/privacy-consent` versi M18 wajib menyertakan versi_teks lokal yang cocok dengan teks yang ditampilkan;
 APK yang belum membawa teks tersebut harus diperbarui, tidak boleh sekadar menyalin versi dari profil server.
 
+Laporan pengurus M18: GET `/admin/finance-reports?tahun=YYYY` menghasilkan 12 bulan dan total tahun;
+`?periode=YYYY-MM` menghasilkan satu bulan (kedua parameter saling eksklusif). Tahun kalender 2000–2100.
+Arus kas mengikuti tanggal posting; pembalikan tidak menghapus penerimaan bulan asal. Posisi pelunasan adalah keadaan
+saat laporan dibuat, disertai timestamp. Saldo awal, modal awal, penerimaan, pengeluaran dan koreksi terpisah.
+GET `/admin/exports/keuangan.csv?tahun=YYYY` dan `/admin/exports/keuangan.xlsx?tahun=YYYY` memakai snapshot laporan yang sama.
+XLSX berisi Rekap Tahun, Rumah x Bulan dan 12 sheet bulan. Angka rupiah integer, teks pengguna string eksplisit,
+tanpa formula; privat/no-store, diaudit, berkas sementara dihapus setelah dikirim.
+CSV iuran v2 menambah snapshot/efektif/terbayar/titipan/keringanan/sisa; CSV kas memakai ledger bertanda dan komponen penerimaan.
+
 JSON UTF-8, snake_case, UUID, timestamp ISO-8601 UTC, period YYYY-MM, amount_rupiah integer. List default 20, max 100, pagination dengan meta dan links. Filter/sort allowlist; jangan menerima SQL/field arbitrary.
 
 ```json
