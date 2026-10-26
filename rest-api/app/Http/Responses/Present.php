@@ -462,6 +462,11 @@ final class Present
 
     public static function pembayaran(PembayaranIuran $p): array
     {
+        $periods = $p->alokasi->map(fn ($a) => $a->tagihan?->periode->format('Y-m'))->filter();
+        if (config('finance.v2')) {
+            $periods = $periods->merge($p->keringanan->map(fn ($k) => $k->tagihan?->periode->format('Y-m'))->filter());
+        }
+
         return [
             ...(config('finance.v2') ? ['nominal_sumbangan' => (int) $p->nominal_sumbangan, 'nominal_titipan' => (int) $p->nominal_titipan,
                 'nominal_alokasi' => (int) $p->alokasi->sum('nominal_alokasi'), 'versi_keuangan' => (int) $p->versi_keuangan] : []),
@@ -472,7 +477,7 @@ final class Present
             'total_bayar' => $p->total_bayar,
             'status' => $p->status,
             'catatan' => $p->catatan,
-            'periode' => $p->alokasi->map(fn ($a) => $a->tagihan?->periode->format('Y-m'))->filter()->values()->all(),
+            'periode' => $periods->unique()->sort()->values()->all(),
             'menggantikan_id' => $p->menggantikan_id,
             'alasan_pembatalan' => $p->alasan_pembatalan,
             'dibatalkan_at' => self::ts($p->dibatalkan_at),

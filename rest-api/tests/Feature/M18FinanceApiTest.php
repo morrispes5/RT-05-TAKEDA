@@ -135,6 +135,20 @@ class M18FinanceApiTest extends TestCase
         DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     }
 
+    public function test_receipt_remembers_month_settled_entirely_by_relief_for_later_correction(): void
+    {
+        [, , $house] = $this->setupFinance();
+        Dues::generate(Dues::period('2026-11'));
+        $d = ['versi_keuangan' => 2, 'rumah_id' => $house, 'periode' => ['2026-10', '2026-11'], 'nominal' => 50000];
+        $preview = $this->postJson('/api/v1/admin/dues-payments/preview', $d)->assertOk();
+        $payment = $this->postJson('/api/v1/admin/dues-payments', $d + ['tanggal_bayar' => '2026-10-26',
+            'fingerprint' => $preview->json('data.fingerprint'), 'perlakuan_kurang' => 'keringanan', 'alasan' => 'Keringanan dua periode uji'],
+            ['Idempotency-Key' => (string) Str::uuid()])->assertCreated();
+        $payment->assertJsonPath('data.periode', ['2026-10', '2026-11']);
+        $this->getJson('/api/v1/admin/dues-payments/'.$payment->json('data.id'))->assertOk()->assertJsonPath('data.periode', ['2026-10', '2026-11']);
+        $this->assertSame(0, Reconciliation::run()['total_masalah']);
+    }
+
     public function test_database_rejects_confirmation_linked_to_other_house_payment(): void
     {
         [$resident, $actor, $house] = $this->setupFinance();
