@@ -278,6 +278,15 @@ Queue AOF membantu restart; bukan pengganti backup DB atau outbox. RPO nyata ber
 
 Dashboard minimum: uptime/public smoke, latency/error, queue/outbox age, worker/scheduler, failed jobs, CPU/RAM/disk, DB connections, backup success. Gunakan fasilitas existing dahulu; monitoring stack besar bukan syarat v1.
 
+## Aktivasi keuangan M18 di staging
+
+`RT05_FINANCE_V2=false` bawaan diteruskan Compose ke API, worker dan scheduler. Tambahkan atau ubah hanya nilai
+ini di env privat staging; jangan mencetak seluruh env. Jalankan deploy immutable SHA main melalui skrip terverifikasi
+seperti biasa agar semua container dan config cache memakai nilai sama. Jangan mengaktifkannya pada production dari sesi M18.
+Sebelum migrasi: backup terenkripsi/restore drill terisolasi dan rekonsiliasi baseline nol. Sesudah deploy: periksa
+flag semua service, ekstensi XLSX image, rekonsiliasi nol dan versi privasi/client. Aktivasi penerimaan staging memakai
+data sintetis; kode M17 tidak boleh dideploy ulang setelah transaksi v2 tersimpan (lihat M18_PLAN bagian 8).
+
 ## Biaya
 
 Neon, backup, email provider, push tooling/distribusi, domain, dan VPS dapat mempunyai limit/biaya berbeda. Paket ini tidak memesan layanan atau menjamin semua gratis. M04/M16 mencatat plan aktual, budget, dan alert biaya; layanan berbayar baru memerlukan instruksi pemilik.

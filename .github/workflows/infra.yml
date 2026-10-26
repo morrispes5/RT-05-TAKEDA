@@ -76,6 +76,22 @@ jobs:
           bash -n infra/docker/redis-health.sh
       - name: Build image API
         run: docker build -f infra/docker/api.Dockerfile -t rt05-api:ci .
+      - name: Runtime XLSX tanpa database
+        run: |
+          docker run --rm --entrypoint php rt05-api:ci -r '
+            require "/app/vendor/autoload.php";
+            foreach (["dom", "fileinfo", "filter", "libxml", "xmlreader", "zip"] as $ext) {
+              if (!extension_loaded($ext)) { fwrite(STDERR, "Missing XLSX extension: $ext\n"); exit(1); }
+            }
+            $file = tempnam(sys_get_temp_dir(), "xlsx-");
+            $writer = new OpenSpout\Writer\XLSX\Writer();
+            $writer->openToFile($file);
+            $writer->addRow(OpenSpout\Common\Entity\Row::fromValues(["Runtime XLSX", 75000]));
+            $writer->close();
+            if (filesize($file) === 0) { exit(1); }
+            unlink($file);
+            echo "XLSX runtime OK\n";
+          '
       - name: Build image website
         run: docker build -f infra/docker/web.Dockerfile -t rt05-web:ci .
       - name: Smoke image (tanpa database)

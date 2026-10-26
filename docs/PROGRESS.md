@@ -71,6 +71,8 @@ Suite backend akhir **405/405, 4.302 assertions**. Uji skala **300 rumah × 12 b
 validasi deferred lokal 14.657 ms terarah / 48.326 ms saat suite penuh, laporan tahunan **7 query**.
 Ini pengukuran lokal sintetis, bukan latensi staging. Flutter akhir **307/307**, termasuk laporan/unduh XLSX dan
 layar 320 skala 2; analyze bersih, format **95/0**. Pint dan audit Composer PASS.
+Pemeriksaan deployment menemukan flag belum diteruskan Compose; ditambahkan ke env API bersama (worker/scheduler
+mewarisi) dengan default false. Image memasang ekstensi XLSX eksplisit dan CI menulis workbook tanpa database.
 Sisa gate: staging immutable + aktivasi flag terkendali, rekonsiliasi nol, emulator warga/pengurus, upgrade dan satu APK M18.
 Belum deploy/APK M18. Berikutnya CI laporan, staging/emulator/rilis terpadu. Bukti lokal: [REPORTS.md](evidence/m18/REPORTS.md).
 
