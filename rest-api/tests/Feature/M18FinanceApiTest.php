@@ -112,6 +112,29 @@ class M18FinanceApiTest extends TestCase
         $this->assertSame(0, Dues::balance());
     }
 
+    public function test_correction_preview_restores_original_settlement_without_writing(): void
+    {
+        [, , $house] = $this->setupFinance();
+        $original = $this->postJson('/api/v1/admin/dues-payments', $this->payload($house, 50000) + [
+            'perlakuan_kurang' => 'keringanan', 'alasan' => 'Keringanan awal uji',
+        ], ['Idempotency-Key' => (string) Str::uuid()])->assertCreated()->json('data.id');
+        $auditCount = DB::table('audit_logs')->count();
+        $data = ['versi_keuangan' => 2, 'rumah_id' => $house, 'periode' => ['2026-10'], 'nominal' => 75000,
+            'koreksi_pembayaran_id' => $original];
+        $preview = $this->postJson('/api/v1/admin/dues-payments/preview', $data)->assertOk();
+        $preview->assertJsonPath('data.sisa', 0)->assertJsonPath('data.sisa_setelah_pembalikan', 75000)
+            ->assertJsonPath('data.kurang', 0)->assertJsonPath('data.lebih', 0)->assertJsonPath('data.alokasi.0.alokasi', 75000);
+        $this->assertSame(50000, Dues::balance());
+        $this->assertSame(1, DB::table('pembayaran_iuran')->count());
+        $this->assertSame($auditCount, DB::table('audit_logs')->count());
+        $this->postJson("/api/v1/admin/dues-payments/$original/correct", $data + [
+            'tanggal_bayar' => '2026-10-26', 'fingerprint' => $preview->json('data.fingerprint'), 'alasan' => 'Koreksi hasil verifikasi',
+        ], ['Idempotency-Key' => (string) Str::uuid()])->assertCreated();
+        $this->assertSame(75000, Dues::balance());
+        $this->assertSame(0, Reconciliation::run()['total_masalah']);
+        DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    }
+
     public function test_database_rejects_confirmation_linked_to_other_house_payment(): void
     {
         [$resident, $actor, $house] = $this->setupFinance();

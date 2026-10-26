@@ -18,6 +18,7 @@ Flag keuangan v2 **false**; tidak ada deploy, APK M18, atau perubahan production
 | API — php artisan test sebelum proteksi pengajuan | 386/386, 4.034 assertions |
 | API + proteksi pengajuan + skenario rapat terpisah — php artisan test | 389/389, 4.053 assertions |
 | Tambahan terakhir profil versi_keuangan + tautan bukti lintas rumah — subset M18FinanceApiTest, OpenApiContractTest, AuthTest, M15bRequestsTest | 23/23, 590 assertions |
+| Preview koreksi hipotetis (query saja, fingerprint keadaan saat ini) — API + kontrak | 16/16, 500 assertions |
 | php vendor/bin/pint --test / --dirty (setelah format) | PASS |
 | npx.cmd --yes @redocly/cli@2 lint docs/openapi.yaml | Valid, tanpa warning |
 | node infra/scripts/check-repo.mjs; git diff --check | PASS |
