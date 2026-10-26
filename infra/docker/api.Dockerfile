@@ -10,7 +10,7 @@ COPY rest-api/ ./
 RUN composer dump-autoload --no-dev --optimize --classmap-authoritative --no-scripts
 
 FROM dunglas/frankenphp:1-php8.4
-RUN install-php-extensions pdo_pgsql pgsql intl gd redis pcntl opcache zip \
+RUN install-php-extensions pdo_pgsql pgsql intl gd redis pcntl opcache zip dom xmlreader \
     && apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=vendor /app /app
