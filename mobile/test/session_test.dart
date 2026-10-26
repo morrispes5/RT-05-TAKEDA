@@ -11,6 +11,16 @@ import 'package:rt05_takeda/core/session.dart';
 
 import 'support/fakes.dart';
 
+class _DelayedWriteStorage extends MemoryTokenStorage {
+  Completer<void>? gate;
+
+  @override
+  Future<void> write(String value) async {
+    await gate?.future;
+    await super.write(value);
+  }
+}
+
 void main() {
   late MemoryTokenStorage storage;
 
@@ -28,6 +38,34 @@ void main() {
   }
 
   setUp(() => storage = MemoryTokenStorage('token-lama'));
+
+  test('guard operasi menolak epoch lama walau token dan akun dipakai ulang', () async {
+    final c = container((_) async => Akun(akunJson()));
+    final controller = c.read(sessionProvider.notifier);
+    await controller.signIn('sama', Akun(akunJson()));
+    final started = c.read(sessionProvider);
+    final epoch = controller.epoch;
+    expect(controller.isCurrentActive(started, epoch: epoch), isTrue);
+    await controller.signIn('sama', Akun(akunJson()));
+    expect(controller.isCurrentActive(started, epoch: epoch), isFalse);
+  });
+
+  test('guard membandingkan token saat snapshot tertangkap selama signIn menunggu storage', () async {
+    final delayed = _DelayedWriteStorage();
+    final c = ProviderContainer(overrides: [tokenStorageProvider.overrideWithValue(delayed)]);
+    addTearDown(c.dispose);
+    final controller = c.read(sessionProvider.notifier);
+    await controller.signIn('lama', Akun(akunJson()));
+    delayed.gate = Completer<void>();
+    final changing = controller.signIn('baru', Akun(akunJson()));
+    await Future<void>.delayed(Duration.zero);
+    final duringWrite = c.read(sessionProvider);
+    final epoch = controller.epoch;
+    expect(duringWrite.token, 'lama');
+    delayed.gate!.complete();
+    await changing;
+    expect(controller.isCurrentActive(duringWrite, epoch: epoch), isFalse);
+  });
 
   test('restore sukses: akun dari server, token tetap', () async {
     final c = container((t) async => Akun(akunJson()));

@@ -54,7 +54,7 @@ class _Rt05AppState extends ConsumerState<Rt05App> {
     if (!client.available) return;
     void open(PushTap tap) {
       final s = ref.read(sessionProvider);
-      if (!s.signedIn || s.pending) {
+      if (!s.readyForServices) {
         _waitingTap = tap;
         return;
       }
@@ -66,18 +66,21 @@ class _Rt05AppState extends ConsumerState<Rt05App> {
       ..add(client.opened.listen(open))
       ..add(
         client.tokenRefresh.listen((t) {
-          if (ref.read(sessionProvider).signedIn) ref.read(pushServiceProvider).sendToken(t);
+          if (ref.read(sessionProvider).canRegisterPush) ref.read(pushServiceProvider).sendToken(t);
         }),
       );
     client.initialTap().then((t) {
       if (t != null) open(t);
     });
     ref.listenManual(sessionProvider, (prev, next) {
-      if (!next.signedIn) return;
+      // Antrean startup belum punya akun; pertahankan sampai sesi pertama siap.
+      // Antrean milik akun lama dibuang ketika keluar atau berganti akun.
+      if (prev?.akun != null && prev!.akun?.id != next.akun?.id) _waitingTap = null;
+      if (!next.canRegisterPush) return;
       // ADR35: izin notifikasi baru diminta setelah Kebijakan Privasi disetujui, tidak menimpa halaman kebijakan.
-      if (next.needsPrivacy) return;
       final consented = prev?.needsPrivacy == true;
       if (consented || prev?.token != next.token || prev?.akun?.id != next.akun?.id) ref.read(pushServiceProvider).register();
+      if (!next.readyForServices) return;
       final waiting = _waitingTap;
       if (!next.pending && waiting != null) {
         _waitingTap = null;
