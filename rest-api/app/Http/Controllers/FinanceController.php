@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Finance\CashSummary;
 use App\Domain\Finance\Dues;
 use App\Domain\Finance\FlexibleDues;
 use App\Exceptions\DomainConflict;
@@ -14,6 +15,7 @@ use App\Models\TarifIuran;
 use App\Models\TransaksiKas;
 use App\Support\Audit;
 use App\Support\Idempotency;
+use App\Support\Privacy;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -28,6 +30,22 @@ use Illuminate\Support\Facades\DB;
 class FinanceController extends Controller
 {
     private const OFFLINE_NOTE = 'Iuran dibayar langsung kepada pengurus. Status berubah setelah pengurus mencatat pembayaran.';
+
+    public function residentCash(Request $request): JsonResponse
+    {
+        abort_unless(config('finance.v2'), 404);
+        if (Privacy::needsConsent($request->user())) {
+            throw new DomainConflict('PRIVACY_CONSENT_REQUIRED', 'Baca dan setujui Kebijakan Privasi terbaru dahulu.', 403);
+        }
+        $data = $request->validate(['periode' => ['nullable', 'date_format:Y-m']]);
+        $period = $data['periode'] ?? now('Asia/Jakarta')->format('Y-m');
+
+        return DB::transaction(function () use ($period) {
+            FlexibleDues::lock();
+
+            return Api::data(CashSummary::month($period));
+        })->header('Cache-Control', 'private, no-store');
+    }
 
     /** GET /dues/my — tagihan rumah akun (minimal 12 bulan terakhir), tunggakan dipisah dari bulan berjalan. */
     public function my(Request $request): JsonResponse

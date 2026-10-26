@@ -28,6 +28,7 @@ import 'notification_center.dart';
 import 'providers.dart';
 import 'report_actions.dart';
 import 'report_draft.dart';
+import 'resident_cash.dart';
 
 // ─────────────────────────────────────────── Beranda warga
 class WargaHomePage extends ConsumerWidget {
@@ -1212,7 +1213,22 @@ class DuesPage extends ConsumerWidget {
   const DuesPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => _MyDues(footer: (d) => _PaymentProofCard(kodeRumah: '${(d['rumah'] as Map)['kode_rumah']}'));
+  Widget build(BuildContext context, WidgetRef ref) => _MyDues(
+    footer: (d) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (ref.watch(sessionProvider).akun?.keuanganFleksibel == true) ...[
+          OutlinedButton.icon(
+            icon: const Icon(Icons.account_balance_outlined),
+            label: const Text('Ringkasan kas RT'),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ResidentCashPage())),
+          ),
+          const SizedBox(height: 12),
+        ],
+        _PaymentProofCard(kodeRumah: '${(d['rumah'] as Map)['kode_rumah']}'),
+      ],
+    ),
+  );
 }
 
 class _MyDues extends ConsumerWidget {
@@ -1244,6 +1260,11 @@ class _MyDues extends ConsumerWidget {
                     Text('Rumah ${(d['rumah'] as Map)['kode_rumah']}', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 4),
                     Text('Tarif berlaku: ${rupiah(d['tarif_berlaku'] as num? ?? 0)} per rumah per bulan'),
+                    if (d['saldo_titipan'] != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text('Titipan rumah: ${rupiah(d['saldo_titipan'] as num)}. Pemakaian untuk tagihan dicatat oleh pengurus.'),
+                      ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -1288,6 +1309,10 @@ class _MyDues extends ConsumerWidget {
                           children: [
                             Text(periode(t.periode), style: const TextStyle(fontWeight: FontWeight.w700)),
                             Text(rupiah(t.nominal), style: const TextStyle(color: Brand.muted)),
+                            if (t.raw.containsKey('sisa')) ...[
+                              Text('Terbayar ${rupiah(t.terbayar)} • Keringanan ${rupiah(t.keringanan)}'),
+                              Text('Sisa ${rupiah(t.sisa)}'),
+                            ],
                           ],
                         ),
                         StatusChip(t.status, label: t.label),

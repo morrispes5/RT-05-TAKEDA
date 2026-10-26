@@ -116,6 +116,7 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
     Route::patch('notification-preferences', [CommunityController::class, 'updatePreferences']);
 
     Route::get('dues/my', [FinanceController::class, 'my']);
+    Route::get('cash/summary', [FinanceController::class, 'residentCash']);
     Route::get('dues/transparency', [FinanceController::class, 'transparency']);
     // ADR35: bukti transfer iuran dan kontak bendahara untuk tombol WhatsApp.
     Route::get('dues/confirmations', [DuesConfirmationController::class, 'mine']);

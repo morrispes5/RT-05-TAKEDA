@@ -1,11 +1,12 @@
 # Kebijakan Privasi — RT05 TAKEDA
 
-Versi **2026-10-21** (ADR35). Teks ini sama dengan yang tampil di aplikasi (`mobile/lib/features/auth/privacy_policy.dart`)
-dan disetujui warga setelah masuk. Bila isinya berubah, naikkan `App\Support\Privacy::VERSION` di rest-api agar warga
+Versi **2026-10-26** (ADR44/M18; aktif bersama flag keuangan v2). Teks ini sama dengan yang tampil di aplikasi (`mobile/lib/features/auth/privacy_policy.dart`)
+dan disetujui warga setelah masuk. Bila isinya berubah, naikkan versi aktif `App\Support\Privacy::version()` di rest-api agar warga
 diminta setuju lagi.
 
-> Belum diputuskan pemilik: kontak resmi untuk permintaan data pribadi, masa simpan data setelah warga pindah, dan batas
-> waktu tanggapan. Teks merujuk ke pengurus RT tanpa nomor/email sampai pemilik menetapkannya (lihat docs/HANDOFF.md).
+Versi 25 Oktober tetap digunakan saat flag keuangan v2 nonaktif. Aplikasi menyimpan teks lokal kedua versi;
+server meminta versi teks yang ditampilkan saat persetujuan M18. Nomor WhatsApp kontak resmi berasal dari database,
+bukan dokumen/Git. Ringkasan kas M18 tidak memuat identitas atau status iuran rumah lain.
 
 ## Siapa pengelolanya
 
@@ -17,7 +18,7 @@ diminta setuju lagi.
 - Untuk administrasi rumah: alamat rumah (blok, jalan, nomor), anggota keluarga, dan hubungan keluarga.
 - Opsional: nomor WhatsApp, NIK, nomor Kartu Keluarga, dan tanggal lahir anggota keluarga. Boleh dikosongkan; pengurus juga dapat membantu mengisinya sesuai data RT. Tanggal lahir dipakai pengurus untuk menghitung kelompok umur warga (misalnya balita, remaja, dan lansia).
 - Laporan yang Anda kirim: pengaduan, aspirasi, usulan kegiatan, beserta foto atau dokumennya.
-- Iuran: tagihan rumah Anda, pembayaran yang dicatat pengurus, dan foto bukti transfer bila Anda mengirimnya.
+- Iuran: tagihan rumah Anda, pembayaran, keringanan, sumbangan atau titipan yang dicatat pengurus, dan foto bukti transfer bila Anda mengirimnya.
 - Token perangkat untuk notifikasi, serta catatan siapa mengubah data dan kapan (untuk keamanan).
 - Kami tidak meminta rekening bank, lokasi GPS, atau kontak di HP Anda, dan tidak ada pembayaran online.
 
@@ -25,7 +26,7 @@ diminta setuju lagi.
 
 - Alamat rumah, NIK, nomor KK, nomor WhatsApp, dan tanggal lahir hanya dapat dilihat oleh pengurus RT dan keluarga Anda sendiri. Warga lain tidak bisa melihatnya.
 - NIK dan nomor KK disimpan terenkripsi dan di aplikasi hanya tampil tersamar (misalnya 3674••••••••0001).
-- Warga hanya melihat tagihan iuran rumahnya sendiri. Status iuran rumah lain dan kas RT hanya terlihat oleh pengurus.
+- Warga hanya melihat tagihan, pembayaran, keringanan, tunggakan, dan titipan rumahnya sendiri. Warga dapat melihat saldo serta ringkasan kas RT per bulan tanpa nama atau kode rumah. Status iuran rumah lain, rincian transaksi, catatan, dan bukti transfer hanya terlihat oleh pengurus.
 - Laporan yang disembunyikan identitasnya tidak menampilkan nama pelapor kepada warga lain, tetapi pengurus tetap dapat melihat pelapor untuk tindak lanjut.
 - Website publik hanya menampilkan artikel, dokumentasi, fasilitas, dan profil RT yang diterbitkan pengurus.
 
