@@ -24,6 +24,26 @@ Tes lengkap ulang: `php artisan test` **374/374, 3.913 assertions**, PostgreSQL 
 Tambahan akhir canonical payload idempotensi dan preflight migrasi diuji ulang terarah sebelum commit.
 Belum klaim M18 passed atau siap production. Kontrak HTTP belum berubah; production tidak disentuh.
 
+**Checkpoint API 26 Okt:** PR #83 fondasi ledger merged `209e44e` setelah CI 5/5 PASS (API verification termasuk drill Redis, build, hygiene, Vercel).
+Branch `codex/m18-api-keuangan` menambah preview/fingerprint, API pembayaran fleksibel, persetujuan bukti atomik,
+tarif rumah/umum dan koreksinya, titipan/keringanan/penyesuaian/kas dengan pembalikan+pengganti, serta rekap sisa.
+Semua mutasi keuangan v2 mensyaratkan versi client 2 dan idempotensi; flag tetap false. OpenAPI/API diperbarui.
+Suite penuh sebelum proteksi tambahan pengajuan: **386/386, 4.034 assertions**; Pint PASS; OpenAPI lint tanpa warning.
+Setelah proteksi nominal asli bukti/tautan pembayaran: subset **42/42, 720 assertions**. Tes skenario rapat tarif khusus dan
+dua rumah keringanan/kurang bayar ditambah; suite lengkap akhir **389/389, 4.053 assertions**.
+Tambahan informasi versi alur keuangan pada profil akun dan tes penolakan tautan bukti lintas rumah:
+subset akhir **23/23, 590 assertions**; Pint, lint OpenAPI tanpa warning, check-repo dan diff-check PASS.
+Rincian/batas bukti: [BACKEND_API.md](evidence/m18/BACKEND_API.md).
+PR #84 API dibuat. Pemeriksaan alur mobile menemukan kebutuhan preview koreksi sebelum implementasi UI:
+preview kini menerima referensi pembayaran/pemakaian asal dan menampilkan sisa setelah pembalikan secara query,
+tanpa menulis ledger; fingerprint tetap keadaan saat ini. Subset koreksi/API/kontrak **16/16, 500 assertions** PASS.
+Integrasi mobile menambah riwayat per rumah dan penggunaan titipan pada response yang sama, serta eager-loading saldo
+agar rekap tidak membuat query per rumah. Snapshot ringkasan rumah dikunci selama dibaca. Tes 10 rumah membatasi query
+rekap maksimal 15 dan memastikan riwayat rumah lain tidak terbuka; subset API/kontrak **17/17, 509 assertions** PASS.
+Rincian penerimaan kini mencakup bulan yang seluruh sisanya dilunasi keringanan, agar koreksi berikutnya tidak kehilangan
+bulan tersebut. Tes dua periode dengan pembayaran Rp50.000 + keringanan: subset API/kontrak **18/18, 515 assertions** PASS.
+Belum deploy/APK M18. Berikutnya mobile pengurus, privasi/transparansi warga, laporan/XLSX, lalu staging/emulator/rilis terpadu.
+
 ## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**
 
 **Penutupan 25 Oktober 2026 (Codex):** pemilik menerima uji emulator sebagai gate M17 (bukan klaim uji HP nyata).

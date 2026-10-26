@@ -18,6 +18,15 @@ Uji aturan dan alur nyata, bukan tes yang hanya menyalin implementasi. Perubahan
 
 ## Skenario kritis
 
+### Keuangan fleksibel M18
+
+`M18FinanceDomainTest`, `M18FinanceApiTest`, `M18ConcurrencyTest` memakai PostgreSQL nyata dengan role runtime.
+Uji 8 rumah tarif umum + 2 tarif khusus = Rp700.000, keringanan dan tunggakan yang berbeda dari kas, penerimaan dua kali,
+titipan tanpa kas kedua, pembalikan/koreksi atomik, SQL langsung invalid, fingerprint basi, nominal asli pengajuan terkunci,
+dan dua pengurus menyetujui satu bukti. Worker proses independen menguji idempotensi, duplikasi dan pemakaian titipan bersamaan.
+Tes transaksi memaksa `SET CONSTRAINTS ALL IMMEDIATE` sebelum rollback agar constraint deferred benar-benar diperiksa.
+Flag v2 nonaktif tetap diuji untuk kompatibilitas M17. Kelulusan backend belum membuktikan UI, ekspor/XLSX atau staging.
+
 ### Identitas/keluarga
 
 Token valid/invalid/revoked/leading zero; rotasi manual+scheduled; registrasi collision rumah/email; akun tambahan pending/approve/reject; akun inactive dengan token valid; role mass-assignment ditolak; primary house link concurrent ditolak; pindah penghuni mempertahankan histori.

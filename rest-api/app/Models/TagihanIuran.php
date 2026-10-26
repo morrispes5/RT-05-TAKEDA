@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class TagihanIuran extends Model
 {
@@ -28,5 +29,10 @@ class TagihanIuran extends Model
     public function alokasi(): HasMany
     {
         return $this->hasMany(AlokasiPembayaran::class, 'tagihan_id');
+    }
+
+    public function saldo(): HasOne
+    {
+        return $this->hasOne(SaldoTagihan::class, 'id', 'id');
     }
 }

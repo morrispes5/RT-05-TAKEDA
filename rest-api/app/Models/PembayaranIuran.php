@@ -34,4 +34,9 @@ class PembayaranIuran extends Model
     {
         return $this->belongsTo(Akun::class, 'diterima_oleh_id');
     }
+
+    public function keringanan(): HasMany
+    {
+        return $this->hasMany(KeringananIuran::class, 'pembayaran_id');
+    }
 }

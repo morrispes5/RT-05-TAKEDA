@@ -24,6 +24,11 @@ Pengecekan mencakup kas/penerimaan, sisa tagihan, status, sumber satu rumah, lot
 Migrasi forward-only: rollback kode M17 setelah transaksi M18 dilarang. Flag `RT05_FINANCE_V2=false` default;
 endpoint/mobile M18 belum tersedia pada tahap fondasi ini. Lihat [M18_PLAN.md](M18_PLAN.md).
 
+Tahap API menambah migration `2026_10_26_000100_m18_confirmation_integrity.php`: field asli pengajuan bukti transfer
+dikunci; transisi proses satu kali. View `rt05_konfirmasi_violations` dan constraint deferred memeriksa status selesai,
+rumah sama dengan pembayaran, pemeriksa/waktu, serta alasan bila nominal penerimaan berbeda dari pengajuan.
+Status selesai M17 tanpa pembayaran_id tetap histori; tidak dibuatkan pembayaran otomatis.
+
 ## Rumah, keluarga, akun (rancangan dasar)
 
 ```mermaid

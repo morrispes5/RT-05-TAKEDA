@@ -55,6 +55,51 @@ class M18FinanceDomainTest extends TestCase
         $this->invariant();
     }
 
+    public function test_meeting_eight_regular_two_special_rates_snapshot_and_cash_are_700000(): void
+    {
+        $actor = $this->pengurus();
+        $houses = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $house = $this->house((string) $i);
+            $houses[] = $house;
+            if ($i > 8) {
+                Finance::setHouseRate($actor, $house, '2026-11', 50000, 'Tarif khusus keputusan rapat');
+            }
+        }
+        Dues::generate(Dues::period('2026-11'));
+        $this->assertSame(0, Dues::generate(Dues::period('2026-11')));
+        foreach ($houses as $i => $house) {
+            $this->pay($actor, $house, $i < 8 ? 75000 : 50000, null, null, ['2026-11']);
+        }
+        $this->assertSame(700000, Dues::balance());
+        $this->assertSame(700000, (int) DB::table('tagihan_iuran')->where('periode', '2026-11-01')->sum('nominal_tagihan'));
+        $this->assertSame(750000, (int) DB::table('tagihan_iuran')->where('periode', '2026-10-01')->sum('nominal_tagihan'));
+        $this->invariant();
+    }
+
+    public function test_meeting_two_short_receipts_with_relief_close_750000_charges_with_700000_cash(): void
+    {
+        $this->meetingShortfall('keringanan', 50000, 0);
+    }
+
+    public function test_meeting_two_short_receipts_without_relief_leave_50000_arrears(): void
+    {
+        $this->meetingShortfall('kurang_bayar', 0, 50000);
+    }
+
+    private function meetingShortfall(string $choice, int $relief, int $remainder): void
+    {
+        $actor = $this->pengurus();
+        for ($i = 1; $i <= 10; $i++) {
+            $this->pay($actor, $this->house((string) $i), $i <= 8 ? 75000 : 50000, $choice);
+        }
+        $this->assertSame(700000, Dues::balance());
+        $this->assertSame(750000, (int) DB::table('rt05_tagihan_saldo')->sum('nominal_efektif'));
+        $this->assertSame($relief, (int) DB::table('rt05_tagihan_saldo')->sum('keringanan'));
+        $this->assertSame($remainder, (int) DB::table('rt05_tagihan_saldo')->sum('sisa'));
+        $this->invariant();
+    }
+
     public function test_partial_payments_and_reversal_keep_remaining_allocations(): void
     {
         $house = $this->house();
