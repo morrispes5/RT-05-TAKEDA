@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **26 Oktober 2026** (M17 passed; M18 PR #83–86 merged; laporan/Excel diuji lokal; flag nonaktif).
+Terakhir diperbarui: **26 Oktober 2026** (M18 passed staging/emulator; PR #83–88 merged; staging `afe4ebb` v2 aktif; APK 1020 disebar 14.28 WIB).
 
 ## 1. Cara mulai sesi baru
 
@@ -13,58 +13,39 @@ Terakhir diperbarui: **26 Oktober 2026** (M17 passed; M18 PR #83–86 merged; la
 2. Bandingkan branch lokal dengan `origin/main` sebelum kerja. Pemilik juga memakai agent lain (Codex, Cursor Cloud); branch
    lokal bisa basi dan checkout ini kadang dipakai bersama (lihat bagian 9).
 3. Pemilik berkomunikasi dalam Bahasa Indonesia santai. Jawab dalam Bahasa Indonesia, ringkas, tanpa jargon berlebihan.
-4. Kerjakan satu milestone yang dibuka pemilik. **M17 passed (25 Okt, gate emulator diterima pemilik)**; **M18 rencana disetujui, implementasi bertahap**, kemudian M16 production sesuai ADR43. Catatan permintaan pemilik juga ada di `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
+4. Kerjakan satu milestone yang dibuka pemilik. **M17 passed (25 Okt, gate emulator diterima pemilik)**; **M18 passed staging sintetis/emulator, APK 1020**, kemudian M16 production sesuai ADR43. Catatan permintaan pemilik juga ada di `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
 
-## 2. Snapshot status (25 Okt 2026)
+## 2. Snapshot status (26 Okt 2026)
 
 | Hal | Nilai |
 | --- | --- |
-| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 in_progress (PR #83–86 merged, laporan lokal, flag nonaktif)**, M16 Fase A in_progress |
-| `main` terbaru M18 | `1464239` merge PR #86 transparansi/privasi, CI 10/10 PASS. Laporan di `codex/m18-laporan-excel` |
-| API M18 merged | `ee18f55` PR #84, CI 5/5 PASS pada head `672f447`. Belum deploy, flag nonaktif |
-| Mobile pengurus merged | `c68a7a1` PR #85, CI 7/7 PASS termasuk APK debug dev/staging. Belum APK rilis M18 |
+| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 passed (staging sintetis + emulator, APK 1020)**, M16 Fase A in_progress |
+| Kode implementasi M18 | `afe4ebb` merge PR #88 konsistensi kas, CI 9/9 PASS. PR #87 laporan `6b44763` CI 9/9 PASS |
+| API M18 merged | `ee18f55` PR #84, CI 5/5 PASS pada head `672f447`. Termasuk staging/APK 1020 |
+| Mobile pengurus merged | `c68a7a1` PR #85, CI 7/7 PASS; rilis M18 terpadu 1020 sudah diuji/distribusikan |
 | `main` setelah penutupan M17 | `0f3b251` (PR #81 merged, pemeriksaan 3/3 sukses); baseline aplikasi `cd4a21f`, tree identik `c91192f` |
-| Staging | Deploy terakhir tercatat `d601c43` (M17); tidak dideploy ulang sesi ini. `/health/ready`, kontak publik, Kontak, Profil diverifikasi **4/4 PASS** 25 Okt 18.48 WIB |
+| Staging | Immutable `afe4ebb`, v2 aktif hanya staging. Migrasi 2/2, heartbeat, ekstensi XLSX dan skenario API/ekspor lulus; rekonsiliasi nol. Jangan rollback kode M17/flag off setelah transaksi v2 |
 | Website Vercel | Preview statis dari `website/preview/`; `/aplikasi` menaut ke halaman unduh staging. Tidak diuji ulang sesi ini |
-| APK uji tim | **1018 / 1.0.0**, kode `8f8a1f1`, build 25 Okt 16.09, `/unduh` 16.10, Drive 16.11 (catatan rilis). Metadata/checksum `/unduh` diverifikasi ulang |
+| APK uji tim | **1020 / 1.0.0**, kode `afe4ebb`, Senin 26 Okt build 14.11.44, `/unduh` 14.28.29, Drive 14.28 WIB. Kedua APK/metadata HTTP cocok artifact; ID Drive tetap |
 | Link APK | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view (ID tetap). https://takeda-staging.morriz.tech/aplikasi |
 | Bukti M17 | [VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md): backend 358, website 40, Flutter 293, staging dan emulator lulus. Bukan bukti HP nyata |
 | PR lain | #26 `cursor/cloud-agent-notes-0d43` masih terbuka pada pemeriksaan sesi ini; tidak disentuh |
 | Gate M16 | Lihat PROGRESS M16 dan bagian 4. Penutupan M17 tidak menutup UAT mitra/perangkat/production |
 
+Penerimaan lengkap: [STAGING_ACCEPTANCE.md](evidence/m18/STAGING_ACCEPTANCE.md). Backend **406/406 (4.316 assertions)**,
+Flutter **308/308**, analyze bersih, format **96/0**, Pint PASS. Skenario uang, kebocoran, konkurensi dan
+JSON/CSV/XLSX lulus di staging; upgrade 1018 → 1020 mempertahankan sesi/avatar. Pengurus/warga dan penyimpanan Excel
+Android diuji. Semua transaksi sintetis dibalik, 14 rumah/akun uji diarsipkan, kas kembali baseline, rekonsiliasi akhir nol.
+Backup pasca-v2/restore terisolasi **19 tabel/view cocok** dan salinan terenkripsi offsite. Emulator dan PostgreSQL lokal berhenti.
+UAT HP nyata/mitra dan production M16 tetap terbuka. Skrip/state/kredensial uji hanya di direktori privat operator
+`.rt05/m18-stage-check` dan `/root/.rt05/m18` staging; tidak di Git.
+
 ## 2a. Riwayat rilis APK uji tim (link Drive tetap sama, tiap build = versi baru file yang sama)
 
-Checkpoint M18 26 Okt: worktree `m17-verifikasi-1018`, branch `codex/m18-db-domain`, base `f8135e6` (PR #82).
-Fondasi ledger/domain sedang diselesaikan dengan flag `RT05_FINANCE_V2=false`; tes lengkap 374/374 dan Pint lulus.
-Perubahan skema ada di ERD; HTTP/mobile belum berubah. Lanjut PR kecil API/OpenAPI, mobile, privasi/transparansi, laporan/XLSX;
-belum deploy atau APK M18. Database tes lokal masih memakai pgdata sementara sesi M17, tidak pernah Neon.
-
-Kelanjutan checkpoint: PR #83 merged `209e44e`, CI lengkap PASS. Branch `codex/m18-api-keuangan` mengerjakan
-endpoint/kontrak dan presenter saldo, persetujuan bukti atomik serta versi client/idempotensi. Suite penuh API 386/386;
-proteksi DB nominal pengajuan/tautan lintas rumah ditambah. Suite akhir 389/389 (4.053 assertions), subset final 23/23 (590 assertions),
-Pint dan OpenAPI lint tanpa warning lulus. Bukti di `docs/evidence/m18/BACKEND_API.md`.
-Tidak ada aktivasi v2, deploy, atau rilis mobile pada tahap API.
-
-Tahap mobile pengurus di branch `codex/m18-mobile-pengurus`: form penerimaan/approval/koreksi, pengelolaan tarif rumah,
-titipan, keringanan/penyesuaian, detail penerimaan dan koreksi kas. Analisis bersih, format 91/0, tes awal 298/298 +
-3 tes pengelolaan lulus; suite terakhir **301/301 PASS**. Berikutnya privasi/transparansi warga, laporan/XLSX dan integrasi staging/emulator.
-
-Tahap transparansi/privasi lokal sudah diuji: backend 396/396 (4.136 assertions), Flutter 306/306, website 40/40 (538),
-Pint/analyze/format/OpenAPI/hygiene PASS. Endpoint kas warga hanya agregat, memerlukan persetujuan teks M18 versi 26 Okt;
-flag false mempertahankan versi 25 Okt dan alur lama. APK baru memuat kedua teks. Website preview dibangun dari sumber.
-Branch `codex/m18-transparansi-privasi`; selanjutnya laporan/CSV/XLSX, staging, emulator dan satu APK M18. Production tidak disentuh.
-
-PR #86 merged `1464239` dengan CI 10/10. Laporan/Excel di `codex/m18-laporan-excel`: OpenSpout 4.32.0 gratis,
-API/CSV/XLSX satu snapshot; workbook 14 sheet, private/no-store, audit dan delete-after-send + cleanup berkas kedaluwarsa.
-Backend akhir laporan **405/405, 4.302 assertions**; 300 rumah/3.600 tagihan dan query laporan 7 lulus. Flutter **307/307**,
-analyze bersih, format 95/0. Pint/audit Composer PASS. PR #87 merged `6b44763`, CI 9/9 PASS.
-Backup/restore staging pra-migrasi cocok; baseline rekonsiliasi nol. Deploy flag false dimulai.
-Perbaikan integrasi berikut: ringkasan kas pengurus v2 harus memakai agregat laporan/warga, pembalikan terpisah sebagai
-koreksi. Kandidat build 1019 dibatalkan/tidak disebar; branch `codex/m18-konsistensi-kas` lulus backend **406/406,
-4.316 assertions**, Flutter **308/308**, analyze bersih, format **96/0**, Pint PASS. Deploy `6b44763` selesai dengan flag
-false; 2 migrasi berhasil, heartbeat sehat, volume/layanan lain terjaga. Empat belas akun/rumah khusus uji M18 dibuat
-melalui domain registrasi, kredensial hanya privat. Berikutnya PR perbaikan kas, deploy/aktivasi staging dan uji API/emulator.
-Bukti/batas pengukuran: `docs/evidence/m18/REPORTS.md`.
+M18 selesai bertahap melalui PR #82 rencana, #83 DB/domain, #84 API, #85 mobile pengurus, #86 transparansi/privasi,
+#87 laporan/Excel dan #88 konsistensi kas. Rincian tes tiap tahap di PROGRESS serta bukti `evidence/m18/`.
+APK 1019 dibatalkan/tidak disebar; hanya build 1020 yang disebar untuk M18. Flag aktif di staging dan tetap default false
+pada kode/konfigurasi contoh; production tidak diubah. Jangan rollback kode M17/flag off sesudah transaksi v2.
 
 Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dalam WIB.
 
@@ -83,6 +64,8 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | 1016 | — | `9507c4d` | 25 Okt ±14.55 | **Tidak disebar** | M17 tanpa avatar; dibatalkan karena permintaan foto profil keluarga datang sebelum rilis | — |
 | 1017 | 3017 / 2017 | `d601c43` | 25 Okt ±15.38 | **Tidak disebar** (hanya emulator) | M17 + avatar; uji emulator menemukan 2 perbaikan kecil → 1018 | Diuji agent di emulator |
 | **1018** (1.0.0) | 3018 / 2018 | `8f8a1f1` | **25 Okt 16.09** | **25 Okt 16.10 `/unduh` + `versi.json`; Drive 16.11** | M17 (ADR43): foto profil keluarga 15 avatar, nomor WhatsApp Ketua RT, super admin ubah peran, chip jalan Mawar 8–14, umur di daftar keluarga, privasi 2026-10-25 (setuju ulang). Catatan `versi.json` dipecah manual (lihat perbaikan skrip) | Verifikasi ulang Codex + emulator 25 Okt lulus; **M17 passed**, pemilik menerima gate emulator |
+| 1019 | — | `6b44763` | **Dibatalkan** | **Tidak disebar** | Kandidat awal M18, dihentikan untuk menyamakan ringkasan kas pengurus dengan laporan | Bukan rilis tim |
+| **1020** (1.0.0) | **3020 / 2020** | `afe4ebb` | **Senin 26 Okt 14.11.44** | **26 Okt 14.28.29 `/unduh` + metadata terakhir; Drive 14.28 WIB, ID tetap** | M18: tarif rumah, parsial/keringanan, sumbangan/titipan manual, bukti terkoreksi, pembalikan, kas warga, laporan Excel 14 sheet, privasi 26 Okt | **Lulus staging + emulator**, upgrade in-place 1018, pengurus/warga/Excel teruji. HP nyata/UAT mitra di M16 |
 
 Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
 
@@ -146,12 +129,14 @@ belum dikonfirmasi; jalankan preflight `SHARED_HOSTING.md` sebelum membeli).
 
 ## 5. Bug dan temuan terbuka
 
-M17: tidak ditemukan blocker aplikasi pada checklist 1018. ANR System UI saat boot emulator pulih tanpa wipe.
+M18: seluruh gate uang staging/emulator lulus, tidak ada blocker keuangan yang ditemukan pada cakupan uji.
+M17: checklist 1018 lulus; ANR System UI saat boot emulator pulih tanpa wipe.
 PostgreSQL tes sudah berhenti; folder pgdata sementara belum dihapus karena alat menolak pembersihan.
 Tabel di bawah memuat temuan historis; status yang lebih baru di PROGRESS M16 mengungguli catatan lama.
 
 | Tingkat | Temuan | Status |
 | --- | --- | --- |
+| Low, copy sebelum production | Dialog pembatalan pada daftar pembayaran masih memakai kalimat M12 "tagihan kembali belum dibayar". Pada penerimaan tambahan M18, pembayaran lain dapat tetap melunasi tagihan | Inspeksi sumber `mobile/lib/features/pengurus/pengurus_pages.dart`: sesuaikan menjadi "saldo tagihan dihitung ulang" pada paket APK berikutnya bersama temuan UAT. Ledger/pembalikan sudah diuji; bukan selisih uang. Tidak merilis APK tambahan hanya untuk teks ini |
 | Medium | #47 skrip bukti performa: 4xx dihitung sukses, 404 tak dijelaskan | Skrip sudah menegakkan gate (PR #50); 404 belum diselidiki, uji beban belum diulang |
 | Info | Aturan minimal 10 karakter (ringkasan, pembuka, isi bagian artikel; deskripsi album) | Validasi M13, **tidak diubah** di PR #58. Pemilik menyebutnya saat melaporkan arsip; belum jelas apakah ingin dilonggarkan |
 | Selesai, perlu uji tim | UAT E: "gambar artikel tidak bisa diganti, tetap SVG" | Penyebab dikonfirmasi dari data staging: artikel tim (terbit 19 Okt 22.43 WIB) punya foto sampul asli, tetapi website selalu menggambar SVG. Diperbaiki PR #55 (ADR33 butir 7): sampul asli tampil di kartu, artikel pilihan, halaman baca; tanpa sampul tetap SVG. Live staging `cms-ui-live.mjs` 17/17 termasuk C05b |
@@ -169,8 +154,8 @@ ternyata pulih sendiri (throttle/salah ketik).
 ## 6. Pertanyaan terbuka untuk pemilik
 
 **Keputusan 25 Okt sudah dijawab:** emulator cukup untuk gate M17; titipan M18 digunakan atas pilihan pengurus
-(tidak otomatis, tidak menambah kas kedua). Rencana konkret [M18_PLAN.md](M18_PLAN.md) + ADR44 usulan sudah tersedia; disetujui pemilik 25 Okt; implementasi dimulai.
-Default yang perlu ditinjau sekaligus ada di M18_PLAN bagian 9; jangan membuka migrasi sebelum itu.
+(tidak otomatis, tidak menambah kas kedua). [M18_PLAN.md](M18_PLAN.md) + ADR44 beserta default bagian 9
+disetujui pemilik 25 Okt dan sudah diimplementasikan/diuji. Tidak ada pertanyaan bisnis M18 yang harus dijawab ulang.
 Daftar berikut adalah histori gate M15/M16, bukan permintaan mengulang jawaban M17.
 
 1. ~~Temuan E~~ — dijawab 20 Okt: foto asli tidak menggantikan SVG; sudah diperbaiki (PR #55).
@@ -183,7 +168,7 @@ Daftar berikut adalah histori gate M15/M16, bukan permintaan mengulang jawaban M
 8. Vercel perlu ekspor konten berkala dari API agar artikel baru ikut tampil saat VPS mati?
 9. Boleh menghapus APK lama di `/unduh` staging? Aktifkan Dependabot?
 10. Latihan PostgreSQL cadangan (ADR29) tetap di M15 atau digeser ke M16?
-11. Unggah APK **1009** ke Drive sebagai versi baru file yang sama (agent tidak punya akses akun Drive pemilik)? Atau tim cukup memakai tautan `/unduh`?
+11. **Selesai:** APK terbaru 1020 sudah di Drive ID tetap dan `/unduh`; akses rclone berfungsi, jangan tanyakan ulang distribusi lama 1009.
 12. Aturan minimal 10 karakter pada isi artikel/album: dipertahankan atau dilonggarkan (angka berapa)?
 14. Kebijakan Privasi: kontak resmi (nomor/email), masa simpan data setelah warga pindah, batas waktu tanggapan?
 15. Impor NIK/KK dari Excel RT: perlu? (Belum dibuat; butuh keputusan dan dasar persetujuan warga.)
@@ -270,14 +255,13 @@ judul dengan `update_file`. Connector Drive tidak bisa mengunggah isi file atau 
 lalu **soft launch beta 8 Nov** (data asli hanya di production) → 5. **M19** tombol panik → 6. **M20** iPhone (PWA).
 Rilis penuh paling lambat awal 2027. Perbaikan APK kecil dikumpulkan per rilis (jangan rilis APK tiap bug).
 
-**M17 passed (25 Okt):** penerimaan pemilik memakai emulator; bukti baru di
-[VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md). PR #77/#78/#79/#80 sudah digabung sebelum verifikasi.
-Tidak ada nomor kontak/kredensial di bukti. Peran akun nyata tidak diubah. Dokumen
-[M18_PLAN.md](M18_PLAN.md) dan usulan ADR44 **sudah tersedia** di branch `codex/m18-rencana-keuangan`.
-Pemilik sudah menyetujui rencana konkret dan meminta pengujian luas; mulai PR DB/domain. Titipan dipakai manual oleh pengurus.
-PR #81 penutupan M17 merged `0f3b251`; pemeriksaan PR 3/3 sukses. Dry-run library XLSX memilih OpenSpout 4.32.0
-tanpa mengubah dependency existing; belum diinstal ke repo. Tidak ada tes/implementasi/deploy M18 yang diklaim.
-Implementasi M18 kelak bertahap: DB/domain → API/kontrak → mobile pengurus → transparansi warga → laporan/Excel.
+**M17 passed (25 Okt)** dengan penerimaan emulator oleh pemilik. **M18 passed (26 Okt)** untuk staging sintetis
++ emulator; bukti lengkap di [STAGING_ACCEPTANCE.md](evidence/m18/STAGING_ACCEPTANCE.md), APK 1020 sudah di
+Drive ID tetap dan unduh resmi (14.28 WIB). Titipan manual, keringanan bukan uang masuk, koreksi append-only;
+flag v2 hanya staging. Jangan mengulang rencana/migrasi M18 atau rollback ke kode M17.
+
+Berikutnya persiapan/penerimaan M16, uji HP nyata/UAT mitra dan pindah VPS staging 2 Nov sesuai ADR43/runbook.
+Jangan menganggap hasil emulator sebagai HP nyata atau izin deploy production. Daftar gate M16 di PROGRESS tetap berlaku.
 
 ## 11. Air Bersih KSM — aplikasi terpisah, menu khusus pengurus (ADR41, 24 Okt 2026; menggantikan ADR40)
 

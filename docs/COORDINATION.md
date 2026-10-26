@@ -1,5 +1,14 @@
 # Koordinasi RT05 TAKEDA
 
+## Checkpoint 26 Oktober 2026 — M18 passed staging/emulator
+
+PR #82–88 merged. Kode staging `afe4ebb`, v2 aktif hanya staging; APK 1020 disebar 26 Okt 14.28 WIB ke unduh resmi
++ Drive ID tetap. Backend 406/406, Flutter 308/308; uang/konkurensi/ekspor di staging dan upgrade/pengurus/warga/Excel
+Android lulus. Cleanup pembalikan+arsip sintetis selesai, kas kembali baseline, rekonsiliasi nol; backup/restore 19 tabel/view cocok.
+Emulator dan PG lokal dihentikan. Bukti/limit di [STAGING_ACCEPTANCE.md](evidence/m18/STAGING_ACCEPTANCE.md).
+Worktree `m17-verifikasi-1018`, branch dokumentasi `codex/m18-bukti-integrasi`. Checkout awal/MyRepublic tetap tidak disentuh.
+Berikutnya M16 dan pindah VPS 2 Nov, tanpa menjalankan production di sesi M18. Catatan di bawah historis.
+
 ## Checkpoint 25 Oktober 2026 — M17 ditutup, rencana M18
 
 Pembaruan 26 Okt: rencana/ADR44 disetujui pemilik, PR #82 merged `f8135e6`.
