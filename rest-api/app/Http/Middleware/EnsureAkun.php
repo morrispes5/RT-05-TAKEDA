@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\FlexibleFinanceController;
 use App\Models\Akun;
 use App\Support\BrowserSession;
 use Closure;
@@ -47,6 +48,11 @@ class EnsureAkun
 
         if ($mode === 'pengurus' && ! $akun->isPengurus()) {
             throw new AuthorizationException('Khusus pengurus.');
+        }
+
+        if ($mode === 'pengurus' && config('finance.v2') && ! $request->isMethod('GET')
+            && $request->is('api/v1/admin/dues*', 'api/v1/admin/deposit*', 'api/v1/admin/cash*', 'api/v1/admin/houses/*/dues-rates*')) {
+            FlexibleFinanceController::client($request);
         }
 
         return $next($request);

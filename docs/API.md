@@ -5,6 +5,33 @@ Desain ini digunakan untuk membuat docs/openapi.yaml di M02. Implementasi endpoi
 
 ## Konvensi
 
+### M18 — endpoint keuangan fleksibel (flag nonaktif sampai rilis lengkap)
+
+`RT05_FINANCE_V2=false` mempertahankan kontrak pencatatan M12. Saat aktif, mutasi keuangan pengurus wajib
+`versi_keuangan: 2` dan `Idempotency-Key` UUID; APK lama mendapat `FINANCE_CLIENT_UPDATE_REQUIRED`.
+Endpoint baru mengembalikan 404 saat flag nonaktif. Akses tetap pengurus aktif; data rumah lain tidak dibuka ke warga.
+
+Sebelum penerimaan, POST `/admin/dues-payments/preview` dengan rumah_id, periode, nominal dan versi_keuangan.
+Respons memberi alokasi tertua, kurang/lebih, sisa, saldo titipan dan fingerprint. Kirim fingerprint itu ke POST
+`/admin/dues-payments`; kurang wajib memilih kurang_bayar/keringanan, lebih wajib sumbangan/titipan.
+Keringanan dan koreksi nominal bukti wajib alasan. Fingerprint basi menghasilkan 409, tanpa pencatatan uang.
+
+POST `/admin/dues-confirmations/{id}/approve` mengunci bukti lalu membuat pembayaran, kas, tautan pembayaran,
+audit/outbox dan status selesai secara atomik. Nominal pengajuan tidak berubah. Endpoint `/process` pada v2 hanya penolakan;
+status selesai historis tanpa pembayaran tetap historis, tidak dibuatkan transaksi otomatis.
+
+Tarif rumah: GET/POST `/admin/houses/{id}/dues-rates`; nominal null berarti kembali tarif umum.
+Tarif/pembayaran/penggunaan titipan/keringanan/penyesuaian/kas memiliki aksi koreksi beralasan yang membalik asal
+dan membuat pengganti atomik. Rute dan schema permintaan lengkap di `openapi.yaml`.
+Pemakaian titipan melalui `/admin/deposit-usages` tidak menambah kas; koreksi sumber ditolak jika titipan masih dipakai.
+Keringanan mandiri melalui `/admin/dues-charges/{id}/reliefs`, koreksi snapshot efektif melalui `/adjustments`.
+
+Respons tagihan v2 menambah nominal_snapshot, nominal_efektif, terbayar, terbayar_titipan, keringanan, sisa,
+status_pelunasan dan riwayat alokasi. Enum status lama tetap belum_bayar/lunas. Tunggakan dihitung dari sisa.
+Ringkasan kas warga dan laporan/XLSX berada pada PR selanjutnya; penambahan API ini belum mengaktifkan transparansi warga.
+
+### Bentuk umum
+
 JSON UTF-8, snake_case, UUID, timestamp ISO-8601 UTC, period YYYY-MM, amount_rupiah integer. List default 20, max 100, pagination dengan meta dan links. Filter/sort allowlist; jangan menerima SQL/field arbitrary.
 
 ```json

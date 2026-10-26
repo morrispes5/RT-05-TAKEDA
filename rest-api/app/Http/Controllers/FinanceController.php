@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Finance\Dues;
+use App\Domain\Finance\FlexibleDues;
 use App\Exceptions\DomainConflict;
 use App\Http\Responses\Api;
 use App\Http\Responses\Present;
@@ -47,13 +48,20 @@ class FinanceController extends Controller
             ->where('periode', '>=', CarbonImmutable::parse($current)->subMonths($months - 1)->toDateString())
             ->orderByDesc('periode')->get();
         $all = TagihanIuran::where('rumah_id', $rumah->id)->where('status', 'belum_bayar');
+        $v2 = (bool) config('finance.v2');
+        if ($v2) {
+            $all = DB::table('rt05_tagihan_saldo')->where('rumah_id', $rumah->id)->where('sisa', '>', 0);
+        }
+        $rate = TarifIuran::whereNull('dibatalkan_at')->where('mulai_periode', '<=', $current)->orderByDesc('mulai_periode')->value('nominal');
+        $special = $v2 ? DB::table('tarif_rumah')->where('rumah_id', $rumah->id)->whereNull('dibatalkan_at')->where('mulai_periode', '<=', $current)->orderByDesc('mulai_periode')->first() : null;
 
         return [
             'rumah' => ['id' => $rumah->id, 'kode_rumah' => $rumah->kode_rumah, 'alamat' => $rumah->alamat()],
-            'tarif_berlaku' => TarifIuran::where('mulai_periode', '<=', $current)->orderByDesc('mulai_periode')->value('nominal'),
+            'tarif_berlaku' => $special?->mode === 'khusus' ? (int) $special->nominal : $rate,
+            ...($v2 ? ['saldo_titipan' => (int) DB::table('rt05_titipan_saldo')->where('rumah_id', $rumah->id)->sum('saldo'), 'versi_keuangan' => 2] : []),
             'tunggakan' => [
                 'jumlah_bulan' => (clone $all)->where('periode', '<', $current)->count(),
-                'total' => (int) (clone $all)->where('periode', '<', $current)->sum('nominal_tagihan'),
+                'total' => (int) (clone $all)->where('periode', '<', $current)->sum($v2 ? 'sisa' : 'nominal_tagihan'),
             ],
             'bulan_berjalan' => ($c = $charges->firstWhere(fn ($t) => $t->periode->format('Y-m-01') === $current)) ? Present::tagihan($c) : null,
             'tagihan' => $charges->map(fn ($t) => Present::tagihan($t))->values()->all(),
@@ -69,6 +77,9 @@ class FinanceController extends Controller
     {
         if (! $request->user()->isPengurus()) {
             throw new AuthorizationException('Transparansi iuran hanya untuk pengurus.');
+        }
+        if (config('finance.v2')) {
+            return app(FlexibleFinanceController::class)->recap($request);
         }
         $period = Dues::period($request->query('periode', CarbonImmutable::now('Asia/Jakarta')->format('Y-m')));
         $rows = TagihanIuran::join('rumah', 'rumah.id', '=', 'tagihan_iuran.rumah_id')
@@ -122,6 +133,9 @@ class FinanceController extends Controller
     /** POST /admin/dues-rates — tarif baru untuk periode mendatang; tagihan lama tidak berubah. */
     public function storeRate(Request $request): JsonResponse
     {
+        if (config('finance.v2')) {
+            return app(FlexibleFinanceController::class)->storeCommonRate($request);
+        }
         $data = $request->validate([
             'nominal' => ['required', 'integer', 'min:1000', 'max:10000000'],
             'mulai_periode' => ['required', 'date_format:Y-m'],
@@ -154,6 +168,7 @@ class FinanceController extends Controller
         return [
             'id' => $t->id, 'nominal' => $t->nominal, 'mulai_periode' => $t->mulai_periode->format('Y-m'), 'alasan' => $t->alasan,
             'created_at' => Present::ts($t->created_at),
+            ...(config('finance.v2') ? ['dibatalkan_at' => $t->dibatalkan_at, 'menggantikan_id' => $t->menggantikan_id] : []),
         ];
     }
 
@@ -163,6 +178,9 @@ class FinanceController extends Controller
      */
     public function recap(Request $request): JsonResponse
     {
+        if (config('finance.v2')) {
+            return app(FlexibleFinanceController::class)->recap($request);
+        }
         $period = Dues::period((string) $request->query('periode', CarbonImmutable::now('Asia/Jakarta')->format('Y-m')));
         $date = $period->toDateString();
         $charges = TagihanIuran::with(['rumah:id,kode_rumah', 'alokasi' => fn ($q) => $q->whereNull('dibatalkan_at')->with('pembayaran:id,tanggal_bayar')])
@@ -196,6 +214,11 @@ class FinanceController extends Controller
     public function generate(Request $request): JsonResponse
     {
         $data = $request->validate(['periode' => ['nullable', 'date_format:Y-m']]);
+        if (config('finance.v2')) {
+            return Idempotency::run($request, $request->user(), 'dues.generate', $data, fn () => Api::data([
+                'tagihan_baru' => isset($data['periode']) ? Dues::generate(Dues::period($data['periode']), $request->user()) : Dues::catchUp($request->user()),
+            ]));
+        }
         $created = isset($data['periode'])
             ? Dues::generate(Dues::period($data['periode']), $request->user())
             : Dues::catchUp($request->user());
@@ -222,6 +245,9 @@ class FinanceController extends Controller
     /** POST /admin/dues-payments — catat pembayaran offline (Idempotency-Key wajib). */
     public function storePayment(Request $request): JsonResponse
     {
+        if (config('finance.v2')) {
+            return app(FlexibleFinanceController::class)->storePayment($request);
+        }
         $data = $request->validate([
             'rumah_id' => ['required', 'uuid'],
             'periode' => ['required', 'array', 'min:1', 'max:24'],
@@ -252,6 +278,14 @@ class FinanceController extends Controller
 
     public function reversePayment(Request $request, string $id): JsonResponse
     {
+        if (config('finance.v2')) {
+            FlexibleFinanceController::client($request);
+            $data = $request->validate(['alasan' => ['required', 'string', 'min:5', 'max:300']]);
+
+            return Idempotency::run($request, $request->user(), 'dues-payments.reverse', $data + ['id' => $id], fn () => Api::data(Present::pembayaran(
+                FlexibleDues::reverse($request->user(), $id, $data['alasan'])
+            )));
+        }
         $data = $request->validate(['alasan' => ['required', 'string', 'max:300']]);
 
         return Idempotency::run($request, $request->user(), 'dues-payments.reverse', $data + ['id' => $id], fn () => Api::data(Present::pembayaran(
@@ -261,6 +295,9 @@ class FinanceController extends Controller
 
     public function correctPayment(Request $request, string $id): JsonResponse
     {
+        if (config('finance.v2')) {
+            return app(FlexibleFinanceController::class)->correctPayment($request, $id);
+        }
         $data = $request->validate([
             'alasan' => ['required', 'string', 'max:300'],
             'periode' => ['required', 'array', 'min:1', 'max:24'],

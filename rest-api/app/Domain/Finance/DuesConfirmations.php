@@ -90,7 +90,12 @@ final class DuesConfirmations
 
     public static function process(Akun $pengurus, string $id, string $status, ?string $catatan): KonfirmasiIuran
     {
+        if (config('finance.v2') && $status !== 'ditolak') {
+            throw new DomainConflict('FINANCE_CLIENT_UPDATE_REQUIRED', 'Gunakan persetujuan dan pencatatan penerimaan pada aplikasi terbaru.', 422);
+        }
+
         return DB::transaction(function () use ($pengurus, $id, $status, $catatan) {
+            FlexibleDues::lock();
             $k = KonfirmasiIuran::whereKey($id)->lockForUpdate()->firstOrFail();
             if ($k->status !== 'diajukan') {
                 throw new DomainConflict('ALREADY_PROCESSED', 'Konfirmasi ini sudah diproses.');
@@ -105,6 +110,29 @@ final class DuesConfirmations
             Outbox::record('iuran.konfirmasi_diproses', 'konfirmasi_iuran', $k->id, ['status' => $status]);
 
             return $k;
+        });
+    }
+
+    public static function approve(Akun $actor, string $id, array $data): KonfirmasiIuran
+    {
+        return DB::transaction(function () use ($actor, $id, $data) {
+            FlexibleDues::lock();
+            $confirmation = KonfirmasiIuran::whereKey($id)->lockForUpdate()->firstOrFail();
+            if ($confirmation->status !== 'diajukan' || $confirmation->pembayaran_id !== null) {
+                throw new DomainConflict('ALREADY_PROCESSED', 'Konfirmasi ini sudah diproses.');
+            }
+            if ((int) $confirmation->nominal !== (int) $data['nominal'] && mb_strlen(trim($data['alasan'] ?? '')) < 5) {
+                throw new DomainConflict('REASON_REQUIRED', 'Nominal terkoreksi wajib disertai alasan.', 422);
+            }
+            $payment = FlexibleDues::record($actor, $confirmation->rumah_id, $data['periode'], (int) $data['nominal'],
+                $data['tanggal_bayar'], $data['perlakuan_kurang'] ?? null, $data['perlakuan_lebih'] ?? null,
+                $data['alasan'] ?? null, $data['fingerprint']);
+            $confirmation->forceFill(['status' => 'selesai', 'pembayaran_id' => $payment->id,
+                'catatan_pengurus' => $data['alasan'] ?? null, 'diproses_oleh_id' => $actor->id, 'diproses_at' => now()])->save();
+            Audit::record($actor, 'iuran.konfirmasi_disetujui', 'konfirmasi_iuran', $id, ['pembayaran_id' => $payment->id]);
+            Outbox::record('iuran.konfirmasi_diproses', 'konfirmasi_iuran', $id, ['status' => 'selesai']);
+
+            return $confirmation;
         });
     }
 }

@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **25 Oktober 2026** (M17 lulus verifikasi ulang dan emulator 1018 atas penerimaan pemilik; M18_PLAN/ADR44 disetujui pemilik; implementasi bertahap dengan pengujian luas).
+Terakhir diperbarui: **26 Oktober 2026** (M17 passed; M18_PLAN/ADR44 disetujui; PR #83 ledger merged, API M18 diuji lokal, flag nonaktif).
 
 ## 1. Cara mulai sesi baru
 
@@ -19,7 +19,8 @@ Terakhir diperbarui: **25 Oktober 2026** (M17 lulus verifikasi ulang dan emulato
 
 | Hal | Nilai |
 | --- | --- |
-| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 in_progress (DB/domain lokal, flag nonaktif)**, M16 Fase A in_progress |
+| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 in_progress (ledger merged, API lokal, flag nonaktif)**, M16 Fase A in_progress |
+| `main` terbaru M18 | `209e44e` merge PR #83 fondasi ledger, CI 5/5 PASS. API dikerjakan di `codex/m18-api-keuangan` |
 | `main` setelah penutupan M17 | `0f3b251` (PR #81 merged, pemeriksaan 3/3 sukses); baseline aplikasi `cd4a21f`, tree identik `c91192f` |
 | Staging | Deploy terakhir tercatat `d601c43` (M17); tidak dideploy ulang sesi ini. `/health/ready`, kontak publik, Kontak, Profil diverifikasi **4/4 PASS** 25 Okt 18.48 WIB |
 | Website Vercel | Preview statis dari `website/preview/`; `/aplikasi` menaut ke halaman unduh staging. Tidak diuji ulang sesi ini |
@@ -35,6 +36,12 @@ Checkpoint M18 26 Okt: worktree `m17-verifikasi-1018`, branch `codex/m18-db-doma
 Fondasi ledger/domain sedang diselesaikan dengan flag `RT05_FINANCE_V2=false`; tes lengkap 374/374 dan Pint lulus.
 Perubahan skema ada di ERD; HTTP/mobile belum berubah. Lanjut PR kecil API/OpenAPI, mobile, privasi/transparansi, laporan/XLSX;
 belum deploy atau APK M18. Database tes lokal masih memakai pgdata sementara sesi M17, tidak pernah Neon.
+
+Kelanjutan checkpoint: PR #83 merged `209e44e`, CI lengkap PASS. Branch `codex/m18-api-keuangan` mengerjakan
+endpoint/kontrak dan presenter saldo, persetujuan bukti atomik serta versi client/idempotensi. Suite penuh API 386/386;
+proteksi DB nominal pengajuan/tautan lintas rumah ditambah. Suite akhir 389/389 (4.053 assertions), subset final 23/23 (590 assertions),
+Pint dan OpenAPI lint tanpa warning lulus. Bukti di `docs/evidence/m18/BACKEND_API.md`.
+Tidak ada aktivasi v2, deploy, atau rilis mobile pada tahap API.
 
 Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dalam WIB.
 
