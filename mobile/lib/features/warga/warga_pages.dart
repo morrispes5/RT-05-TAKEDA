@@ -1428,13 +1428,14 @@ class _BuktiTile extends StatelessWidget {
 
 /// Ringkasan kas RT, khusus pengurus (ADR26). Dipakai di tab Keuangan → Kas.
 class CashView extends ConsumerWidget {
-  const CashView({super.key, this.onReverse, this.action});
+  const CashView({super.key, this.onReverse, this.onCorrect, this.action});
 
   /// Pengurus: aksi di atas daftar mutasi (mis. ekspor CSV).
   final Widget? action;
 
   /// Pengurus: balik kas manual yang `dapat_dibalik` (kas iuran dibatalkan lewat pembayaran).
   final Future<void> Function(Json entry)? onReverse;
+  final Future<void> Function(Json entry)? onCorrect;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final data = ref.watch(cashProvider);
@@ -1508,6 +1509,15 @@ class CashView extends ConsumerWidget {
                                     onPressed: () => onReverse!(Json.from(k)),
                                     icon: const Icon(Icons.undo),
                                     label: const Text('Balik'),
+                                  ),
+                                ),
+                              if (onCorrect != null && k['dapat_dibalik'] == true && ['pemasukan', 'pengeluaran'].contains(k['jenis']))
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    icon: const Icon(Icons.edit_outlined),
+                                    label: const Text('Koreksi'),
+                                    onPressed: () => onCorrect!(Json.from(k)),
                                   ),
                                 ),
                             ],

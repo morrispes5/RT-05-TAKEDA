@@ -8,12 +8,16 @@ import '../../app/theme.dart';
 import '../../core/api.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
+import '../../core/session.dart';
 import '../../core/widgets.dart';
 import 'air_bersih_link.dart';
 import 'content_admin.dart';
 import 'dues_admin.dart';
 import 'dues_confirmations.dart';
 import 'finance_actions.dart';
+import 'flexible_payment.dart';
+import 'house_finance.dart';
+import 'cash_correction.dart';
 import '../household/admin_census.dart';
 import '../household/admin_links.dart';
 import '../household/age_stats.dart';
@@ -625,6 +629,9 @@ class _PaymentsView extends ConsumerWidget {
                         children: [
                           ListTile(
                             title: Text('${p['nomor_bukti']} • ${(p['rumah'] as Map?)?['kode_rumah']}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                            onTap: ref.watch(sessionProvider).akun?.keuanganFleksibel == true
+                                ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentDetailPage(id: '${p['id']}')))
+                                : null,
                             subtitle: Text(
                               '${(p['periode'] as List).map((x) => periode('$x')).join(', ')}\n${rupiah(p['total_bayar'] as num)} • dibayar ${p['tanggal_bayar']}',
                             ),
@@ -638,6 +645,12 @@ class _PaymentsView extends ConsumerWidget {
                               spacing: 8,
                               children: [
                                 StatusChip('${p['status']}'),
+                                if (p['status'] == 'tercatat' && ref.watch(sessionProvider).akun?.keuanganFleksibel == true)
+                                  TextButton.icon(
+                                    icon: const Icon(Icons.edit_outlined),
+                                    label: const Text('Koreksi'),
+                                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentDetailPage(id: '${p['id']}'))),
+                                  ),
                                 if (p['status'] == 'tercatat')
                                   TextButton.icon(
                                     key: ValueKey('batalkan-${p['id']}'),
@@ -692,6 +705,12 @@ class _AdminCashView extends ConsumerWidget {
     ),
     body: CashView(
       action: const ExportButton(jenis: 'kas', label: 'Mutasi kas'),
+      onCorrect: ref.watch(sessionProvider).akun?.keuanganFleksibel == true
+          ? (k) async {
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => CashCorrectionPage(original: k)));
+              ref.invalidate(cashProvider);
+            }
+          : null,
       onReverse: (k) async {
         final done = await reverseEntry(
           context,
@@ -735,6 +754,9 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (ref.watch(sessionProvider).akun?.keuanganFleksibel == true) {
+      return FlexiblePaymentPage(house: widget.house, initialPeriods: widget.initialPeriods);
+    }
     final houses = ref.watch(housesProvider((q: '', arsip: false, page: 1)));
     return Scaffold(
       appBar: AppBar(title: const Text('Catat pembayaran iuran')),

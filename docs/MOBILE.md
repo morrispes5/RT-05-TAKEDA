@@ -1,5 +1,21 @@
 # Flutter mobile — rancangan eksekusi
 
+## M18 — pengurus (flag server, implementasi lokal 26 Okt)
+
+Profil akun `versi_keuangan=2` memilih alur fleksibel. Form penerimaan memakai preview API, input uang aktual,
+pilihan keringanan/tunggakan atau sumbangan/titipan, alasan dan konfirmasi rincian. Persetujuan bukti memakai endpoint
+approval atomik, tidak lagi tombol selesai terpisah. Hasil jaringan tak diketahui mengunci rincian dan mempertahankan
+body serta Idempotency-Key untuk retry.
+
+Keuangan → Rekap → Kelola rumah dan Warga → Rumah → Kelola tarif/titipan/keringanan membuka riwayat rumah.
+Pengurus dapat menetapkan tarif khusus/kembali umum, memakai titipan manual, memberi keringanan, menyesuaikan tagihan
+dan membalik/mengoreksi catatan. Keuangan → Pembayaran membuka detail penerimaan serta koreksi/pembalikan;
+Kas menyediakan koreksi pemasukan/pengeluaran manual dengan konfirmasi saldo negatif.
+Saldo awal tetap satu pencatatan menurut ADR27. Riwayat dan angka dari server; Flutter tidak menghitung saldo.
+
+Flag nonaktif mempertahankan alur M17. Tahap ini belum rilis APK atau membuktikan integrasi staging;
+privasi/transparansi warga dan laporan/XLSX menyusul sesuai M18_PLAN.
+
 ## Target
 
 Satu Flutter/Dart application, Android first, layanan warga dan pengurus dalam aplikasi yang sama. UI berubah berdasarkan role/status dari API. Tidak membuat aplikasi admin terpisah atau memasukkan Laravel/Redis/Neon driver ke APK.

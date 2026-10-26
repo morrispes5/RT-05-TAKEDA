@@ -124,7 +124,7 @@ class Api {
   Future<dynamic> post(String path, {Object? data, String? idempotencyKey, String? bearer, int? sessionEpoch}) => _wrap(
     () => _dio.post(
       path,
-      data: data,
+      data: _financeData(path, data),
       options: Options(
         headers: {'Idempotency-Key': ?idempotencyKey, if (bearer != null) 'Authorization': 'Bearer $bearer'},
         extra: {'sessionEpoch': ?sessionEpoch},
@@ -132,6 +132,12 @@ class Api {
     ),
     (b) => b is Map ? b['data'] : null,
   );
+
+  Object? _financeData(String path, Object? data) {
+    if (_ref.read(sessionProvider).akun?.keuanganFleksibel != true || data is! Map) return data;
+    if (!RegExp(r'^/admin/(dues|deposit|cash|houses/[^/]+/dues-rates)').hasMatch(path)) return data;
+    return {...data, 'versi_keuangan': 2};
+  }
 
   Future<dynamic> patch(String path, {Object? data}) => _wrap(() => _dio.patch(path, data: data), (b) => b is Map ? b['data'] : null);
 

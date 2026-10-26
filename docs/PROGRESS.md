@@ -42,6 +42,15 @@ agar rekap tidak membuat query per rumah. Snapshot ringkasan rumah dikunci selam
 rekap maksimal 15 dan memastikan riwayat rumah lain tidak terbuka; subset API/kontrak **17/17, 509 assertions** PASS.
 Rincian penerimaan kini mencakup bulan yang seluruh sisanya dilunasi keringanan, agar koreksi berikutnya tidak kehilangan
 bulan tersebut. Tes dua periode dengan pembayaran Rp50.000 + keringanan: subset API/kontrak **18/18, 515 assertions** PASS.
+PR #84 API merged `ee18f55`, CI 5/5 PASS pada head `672f447`.
+
+**Mobile pengurus 26 Okt**, branch `codex/m18-mobile-pengurus`: alur aktif mengikuti versi_keuangan dari profil server.
+Form penerimaan/approval bukti/koreksi memakai preview, pilihan selisih, alasan, key tetap dan body terkunci saat hasil jaringan belum diketahui.
+Layar keuangan rumah memuat tarif khusus/kembali umum, titipan manual dan riwayat, keringanan/penyesuaian serta koreksi/pembalikan;
+detail penerimaan dan koreksi kas manual terhubung dari tab Keuangan. Alur M17 tetap tersedia saat flag nonaktif.
+Tes Flutter awal **298/298**; tiga tes pengelolaan tambahan lulus. `flutter analyze --no-pub` bersih;
+`dart format --output=none --set-exit-if-changed lib test` **91 file, 0 berubah**. Suite akhir **301/301 PASS** (konkurensi 2).
+Belum bukti integrasi staging/emulator M18, belum APK. Privasi/transparansi warga dan laporan/XLSX berikutnya.
 Belum deploy/APK M18. Berikutnya mobile pengurus, privasi/transparansi warga, laporan/XLSX, lalu staging/emulator/rilis terpadu.
 
 ## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**
