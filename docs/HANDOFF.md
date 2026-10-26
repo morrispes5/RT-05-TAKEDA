@@ -56,8 +56,15 @@ Branch `codex/m18-transparansi-privasi`; selanjutnya laporan/CSV/XLSX, staging, 
 
 PR #86 merged `1464239` dengan CI 10/10. Laporan/Excel di `codex/m18-laporan-excel`: OpenSpout 4.32.0 gratis,
 API/CSV/XLSX satu snapshot; workbook 14 sheet, private/no-store, audit dan delete-after-send + cleanup berkas kedaluwarsa.
-Backend akhir **405/405, 4.302 assertions**; 300 rumah/3.600 tagihan dan query laporan 7 lulus. Flutter akhir **307/307**,
-analyze bersih, format 95/0. Pint/audit Composer PASS. Bukti/batas pengukuran: `docs/evidence/m18/REPORTS.md`.
+Backend akhir laporan **405/405, 4.302 assertions**; 300 rumah/3.600 tagihan dan query laporan 7 lulus. Flutter **307/307**,
+analyze bersih, format 95/0. Pint/audit Composer PASS. PR #87 merged `6b44763`, CI 9/9 PASS.
+Backup/restore staging pra-migrasi cocok; baseline rekonsiliasi nol. Deploy flag false dimulai.
+Perbaikan integrasi berikut: ringkasan kas pengurus v2 harus memakai agregat laporan/warga, pembalikan terpisah sebagai
+koreksi. Kandidat build 1019 dibatalkan/tidak disebar; branch `codex/m18-konsistensi-kas` lulus backend **406/406,
+4.316 assertions**, Flutter **308/308**, analyze bersih, format **96/0**, Pint PASS. Deploy `6b44763` selesai dengan flag
+false; 2 migrasi berhasil, heartbeat sehat, volume/layanan lain terjaga. Empat belas akun/rumah khusus uji M18 dibuat
+melalui domain registrasi, kredensial hanya privat. Berikutnya PR perbaikan kas, deploy/aktivasi staging dan uji API/emulator.
+Bukti/batas pengukuran: `docs/evidence/m18/REPORTS.md`.
 
 Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dalam WIB.
 

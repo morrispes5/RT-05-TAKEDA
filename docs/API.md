@@ -31,7 +31,9 @@ Keringanan mandiri melalui `/admin/dues-charges/{id}/reliefs`, koreksi snapshot 
 
 Respons tagihan v2 menambah nominal_snapshot, nominal_efektif, terbayar, terbayar_titipan, keringanan, sisa,
 status_pelunasan dan riwayat alokasi. Enum status lama tetap belum_bayar/lunas. Tunggakan dihitung dari sisa.
-Ringkasan kas warga dan laporan/XLSX berada pada PR selanjutnya; penambahan API ini belum mengaktifkan transparansi warga.
+Ringkasan kas warga dan laporan/XLSX tersedia saat flag v2 aktif. `/admin/cash/summary` v2 memakai agregat bulanan
+yang sama: modal awal dan pembalikan bertanda (`koreksi`) terpisah dari pemasukan/pengeluaran baru; saldo dan mutasi
+tetap tersedia. Header private/no-store, snapshot diambil dengan lock keuangan. Respons M17 dipertahankan saat flag off.
 Ringkasan rumah v2 juga memuat riwayat_keringanan dan riwayat_penyesuaian yang dibatasi rumah tersebut.
 Saldo/riwayat titipan pengurus memuat penggunaan beserta periode, nominal, pembatalan dan referensi pengganti.
 Rekap memuat saldo dari view secara batch; pembacaan ringkasan rumah/titipan tidak mencampur beberapa keadaan transaksi.
