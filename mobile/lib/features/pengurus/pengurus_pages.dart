@@ -18,6 +18,7 @@ import 'finance_actions.dart';
 import 'flexible_payment.dart';
 import 'house_finance.dart';
 import 'cash_correction.dart';
+import 'finance_reports.dart';
 import '../household/admin_census.dart';
 import '../household/admin_links.dart';
 import '../household/age_stats.dart';
@@ -573,6 +574,15 @@ class FinanceAdminPage extends ConsumerWidget {
     child: Column(
       children: [
         const DuesConfirmationsEntry(),
+        if (ref.watch(sessionProvider).akun?.keuanganFleksibel == true)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.summarize_outlined),
+              label: const Text('Laporan & Excel'),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceReportsPage())),
+            ),
+          ),
         const Material(
           color: Colors.white,
           child: TabBar(

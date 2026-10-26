@@ -16,6 +16,10 @@ Saldo awal tetap satu pencatatan menurut ADR27. Riwayat dan angka dari server; F
 Flag nonaktif mempertahankan alur M17. Tahap ini belum rilis APK atau membuktikan integrasi staging;
 privasi/transparansi warga dan laporan/XLSX menyusul sesuai M18_PLAN.
 
+Tahap laporan: tombol **Laporan & Excel** di tab Keuangan (v2) membuka pilihan tahun, ringkasan dan rincian bulanan.
+Unduh Excel/CSV memakai dialog simpan OS; nama dan MIME sesuai jenis berkas. Ringkasan mengikuti response server,
+pelunasan diberi waktu acuan agar tidak disalahartikan sebagai saldo tagihan pada akhir bulan lampau.
+
 ## Target
 
 Satu Flutter/Dart application, Android first, layanan warga dan pengurus dalam aplikasi yang sama. UI berubah berdasarkan role/status dari API. Tidak membuat aplikasi admin terpisah atau memasukkan Laravel/Redis/Neon driver ke APK.

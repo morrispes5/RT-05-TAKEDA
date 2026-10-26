@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **26 Oktober 2026** (M17 passed; M18_PLAN/ADR44 disetujui; PR #83 ledger merged, API M18 diuji lokal, flag nonaktif).
+Terakhir diperbarui: **26 Oktober 2026** (M17 passed; M18 PR #83–86 merged; laporan/Excel diuji lokal; flag nonaktif).
 
 ## 1. Cara mulai sesi baru
 
@@ -19,8 +19,8 @@ Terakhir diperbarui: **26 Oktober 2026** (M17 passed; M18_PLAN/ADR44 disetujui; 
 
 | Hal | Nilai |
 | --- | --- |
-| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 in_progress (ledger merged, API lokal, flag nonaktif)**, M16 Fase A in_progress |
-| `main` terbaru M18 | `209e44e` merge PR #83 fondasi ledger, CI 5/5 PASS. API dikerjakan di `codex/m18-api-keuangan` |
+| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 in_progress (PR #83–86 merged, laporan lokal, flag nonaktif)**, M16 Fase A in_progress |
+| `main` terbaru M18 | `1464239` merge PR #86 transparansi/privasi, CI 10/10 PASS. Laporan di `codex/m18-laporan-excel` |
 | API M18 merged | `ee18f55` PR #84, CI 5/5 PASS pada head `672f447`. Belum deploy, flag nonaktif |
 | Mobile pengurus merged | `c68a7a1` PR #85, CI 7/7 PASS termasuk APK debug dev/staging. Belum APK rilis M18 |
 | `main` setelah penutupan M17 | `0f3b251` (PR #81 merged, pemeriksaan 3/3 sukses); baseline aplikasi `cd4a21f`, tree identik `c91192f` |
@@ -53,6 +53,11 @@ Tahap transparansi/privasi lokal sudah diuji: backend 396/396 (4.136 assertions)
 Pint/analyze/format/OpenAPI/hygiene PASS. Endpoint kas warga hanya agregat, memerlukan persetujuan teks M18 versi 26 Okt;
 flag false mempertahankan versi 25 Okt dan alur lama. APK baru memuat kedua teks. Website preview dibangun dari sumber.
 Branch `codex/m18-transparansi-privasi`; selanjutnya laporan/CSV/XLSX, staging, emulator dan satu APK M18. Production tidak disentuh.
+
+PR #86 merged `1464239` dengan CI 10/10. Laporan/Excel di `codex/m18-laporan-excel`: OpenSpout 4.32.0 gratis,
+API/CSV/XLSX satu snapshot; workbook 14 sheet, private/no-store, audit dan delete-after-send + cleanup berkas kedaluwarsa.
+Backend akhir **405/405, 4.302 assertions**; 300 rumah/3.600 tagihan dan query laporan 7 lulus. Flutter akhir **307/307**,
+analyze bersih, format 95/0. Pint/audit Composer PASS. Bukti/batas pengukuran: `docs/evidence/m18/REPORTS.md`.
 
 Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dalam WIB.
 
