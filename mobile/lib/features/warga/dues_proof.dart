@@ -61,7 +61,7 @@ class _DuesProofPageState extends ConsumerState<DuesProofPage> {
         _selected.remove(t.periode);
       }
       if (!_nominalDiubah) {
-        final total = tagihan.where((x) => _selected.contains(x.periode)).fold<int>(0, (sum, x) => sum + x.nominal);
+        final total = tagihan.where((x) => _selected.contains(x.periode)).fold<int>(0, (sum, x) => sum + x.sisa);
         _nominal.text = _selected.isEmpty ? '' : '$total';
       }
     });
@@ -219,7 +219,7 @@ class _DuesProofPageState extends ConsumerState<DuesProofPage> {
                               value: _selected.contains(t.periode),
                               onChanged: (v) => _centang(t, v ?? false, tagihan),
                               title: Text(periode(t.periode)),
-                              subtitle: Text(rupiah(t.nominal)),
+                              subtitle: Text(t.terbayar > 0 || t.keringanan > 0 ? 'Sisa ${rupiah(t.sisa)} dari ${rupiah(t.nominal)}' : rupiah(t.sisa)),
                             ),
                         ],
                       )

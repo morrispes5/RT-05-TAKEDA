@@ -94,7 +94,8 @@ void main() {
     await _settle(tester);
     await _reason(tester, 'Salah rumah');
     expect(find.text('Batalkan pembayaran IUR-2026-000007?'), findsOneWidget);
-    expect(find.textContaining('Tagihan Oktober 2026, November 2026 kembali belum dibayar'), findsOneWidget);
+    expect(find.textContaining('Saldo tagihan Oktober 2026, November 2026 dihitung ulang'), findsOneWidget);
+    expect(find.textContaining('kembali belum dibayar'), findsNothing);
     await tester.tap(find.text('Balik'));
     await _settle(tester);
 

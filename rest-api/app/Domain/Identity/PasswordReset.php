@@ -20,6 +20,8 @@ final class PasswordReset
     {
         $broker = Password::broker('akun');
         if ($broker->getRepository()->recentlyCreatedToken($akun)) {
+            PasswordPolicy::consumeHashWork();
+
             return null;
         }
 

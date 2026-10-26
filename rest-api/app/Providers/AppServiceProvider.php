@@ -27,14 +27,23 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Batas default docs/API.md; berdasar IP + email ternormalisasi agar NAT bersama tidak terkunci total.
+        // Budget IP membatasi kerja hash meski email berganti; bucket pasangan tetap melindungi tiap akun.
         $email = fn (Request $r) => strtolower(trim((string) $r->input('email')));
-        RateLimiter::for('login', fn (Request $r) => Limit::perMinute(5)->by($r->ip().'|'.$email($r)));
+        RateLimiter::for('login', fn (Request $r) => [
+            Limit::perMinute(max(1, (int) config('rt05.auth.login_ip_per_minute', 60)))->by('ip:'.$r->ip()),
+            Limit::perMinute(5)->by('email:'.$r->ip().'|'.$email($r)),
+        ]);
         RateLimiter::for('registrasi', fn (Request $r) => Limit::perMinutes(10, 5)->by($r->ip()));
-        RateLimiter::for('lupa-password', fn (Request $r) => Limit::perMinutes(15, 3)->by($r->ip().'|'.$email($r)));
+        RateLimiter::for('lupa-password', fn (Request $r) => [
+            Limit::perMinutes(15, max(1, (int) config('rt05.auth.forgot_ip_per_15_minutes', 20)))->by('ip:'.$r->ip()),
+            Limit::perMinutes(15, 3)->by('email:'.$r->ip().'|'.$email($r)),
+        ]);
         // Submit reset memakai bucket sendiri: permintaan lupa password tidak menghabiskan kuota
         // reset dengan token yang masih berlaku. Token reset 64 hex, jadi batas ini untuk biaya bcrypt.
-        RateLimiter::for('reset-password', fn (Request $r) => Limit::perMinutes(15, 10)->by($r->ip().'|'.$email($r)));
+        RateLimiter::for('reset-password', fn (Request $r) => [
+            Limit::perMinutes(15, max(1, (int) config('rt05.auth.reset_ip_per_15_minutes', 60)))->by('ip:'.$r->ip()),
+            Limit::perMinutes(15, 10)->by('email:'.$r->ip().'|'.$email($r)),
+        ]);
         RateLimiter::for('laporan', fn (Request $r) => Limit::perHour(20)->by((string) $r->user()?->id));
 
         if (SharedHosting::enabled() && (config('mail.mailers.smtp.timeout') === null || config('mail.mailers.smtp.timeout') === '')) {

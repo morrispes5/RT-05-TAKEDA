@@ -39,11 +39,19 @@ final class PasswordPolicy
      */
     public static function matches(?Akun $akun, mixed $password): bool
     {
-        return $akun !== null
-            && is_string($password)
-            && strlen($password) <= self::MAX_BYTES
-            && ! str_contains($password, "\0")
-            && Hash::check($password, $akun->password_hash);
+        if ($akun === null || ! is_string($password) || strlen($password) > self::MAX_BYTES || str_contains($password, "\0")) {
+            self::consumeHashWork();
+
+            return false;
+        }
+
+        return Hash::check($password, $akun->password_hash);
+    }
+
+    /** Kerja pembanding memakai driver/cost konfigurasi, bukan hash tetap yang mungkin berbeda cost. */
+    public static function consumeHashWork(): void
+    {
+        Hash::make('rt05-rejected-authentication');
     }
 
     /** Pengganti `current_password:sanctum` (logout-all, ganti kata sandi) dengan batas byte yang sama. */

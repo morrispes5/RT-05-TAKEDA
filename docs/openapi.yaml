@@ -1782,7 +1782,7 @@ paths:
       x-status: implemented
       x-milestone: M06
       security: []
-      description: Respons generik tidak membuktikan email sudah tiba. Notification diantrekan after_commit; token berlaku 60 menit dan hanya sekali pakai. Batas 3 permintaan per 15 menit per IP dan email, terpisah dari reset.
+      description: Respons generik tidak membuktikan email sudah tiba. Notification diantrekan after_commit; token berlaku 60 menit dan hanya sekali pakai. Batas 3 permintaan per 15 menit per IP dan email, ditambah budget agregat default 20 per 15 menit per IP (RT05_FORGOT_IP_PER_15_MINUTES), terpisah dari reset. Email berganti tetap memakai budget IP yang sama.
       requestBody:
         required: true
         content:
@@ -1853,7 +1853,7 @@ paths:
       tags:
         - Identity
       summary: Login mobile, bearer token per perangkat
-      description: Berbagi kuota login dengan web-login, maksimum 5 permintaan per menit untuk kombinasi IP dan email yang dinormalisasi. Kuota habis menghasilkan 429.
+      description: Berbagi kuota login dengan web-login, maksimum 5 permintaan per menit untuk kombinasi IP dan email yang dinormalisasi serta budget agregat default 60 per menit per IP (RT05_LOGIN_IP_PER_MINUTE). Kuota habis menghasilkan 429.
       x-status: implemented
       x-milestone: M06
       security: []
@@ -1929,7 +1929,7 @@ paths:
       x-status: implemented
       x-milestone: M06
       security: []
-      description: Password baru mencabut semua bearer dan sesi cookie; token invalid, kedaluwarsa atau digunakan ulang ditolak 422. Batas reset 10 percobaan per 15 menit per IP dan email, terpisah dari forgot.
+      description: Password baru mencabut semua bearer dan sesi cookie; token invalid, kedaluwarsa atau digunakan ulang ditolak 422. Batas reset 10 percobaan per 15 menit per IP dan email, ditambah budget agregat default 60 per 15 menit per IP (RT05_RESET_IP_PER_15_MINUTES), terpisah dari forgot.
       requestBody:
         required: true
         content:
@@ -1954,7 +1954,7 @@ paths:
       x-status: implemented
       x-milestone: M06
       security: []
-      description: Cookie API HttpOnly/Secure/SameSite=Lax untuk pengurus aktif. GET csrf-cookie dahulu lalu X-XSRF-TOKEN; sesi idle 120 menit. Tidak menghasilkan bearer. Berbagi kuota login dengan mobile-login, maksimum 5 permintaan per menit untuk kombinasi IP dan email yang dinormalisasi; kuota habis menghasilkan 429.
+      description: Cookie API HttpOnly/Secure/SameSite=Lax untuk pengurus aktif. GET csrf-cookie dahulu lalu X-XSRF-TOKEN; sesi idle 120 menit. Tidak menghasilkan bearer. Berbagi kuota login dengan mobile-login, maksimum 5 permintaan per menit untuk kombinasi IP dan email yang dinormalisasi serta budget agregat default 60 per menit per IP (RT05_LOGIN_IP_PER_MINUTE); kuota habis menghasilkan 429.
       requestBody:
         required: true
         content:

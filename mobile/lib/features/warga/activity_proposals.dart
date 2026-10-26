@@ -625,7 +625,7 @@ class ActivityProposalDetailPage extends ConsumerWidget {
                             title: Text('Dokumen ${doc['urutan']} (${_mimeLabel('${doc['mime']}')})'),
                             subtitle: Text('${((doc['bytes'] as num) / 1024).ceil()} KB • privat'),
                             trailing: const Icon(Icons.open_in_new),
-                            onTap: () => _openDocument(context, api, '${doc['id']}'),
+                            onTap: () => _openDocument(context, ref, api, '${doc['id']}'),
                           ),
                       ],
                     ),
@@ -691,16 +691,22 @@ class ActivityProposalDetailPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _openDocument(BuildContext context, Api api, String documentId) async {
+  Future<void> _openDocument(BuildContext context, WidgetRef ref, Api api, String documentId) async {
+    final session = ref.read(sessionProvider);
+    final controller = ref.read(sessionProvider.notifier);
+    final epoch = controller.epoch;
+    bool current() => context.mounted && controller.isCurrentActive(session, epoch: epoch);
+    if (!current()) return;
     try {
       final link = await api.post('/activity-proposals/$id/documents/$documentId/link') as Map;
+      if (!context.mounted || !current()) return;
       final ok = await launchUrl(Uri.parse(api.absolute('${link['url']}')), mode: LaunchMode.externalApplication);
-      if (!context.mounted) return;
+      if (!context.mounted || !current()) return;
       ok
           ? showMessage(context, 'Dokumen dibuka di browser. Tautan berlaku 5 menit.', kind: AlertKind.info, title: 'Membuka dokumen')
           : showMessage(context, 'Tidak ada aplikasi untuk membuka dokumen.', kind: AlertKind.error);
     } on ApiException catch (e) {
-      if (context.mounted) showApiError(context, e);
+      if (context.mounted && current()) showApiError(context, e);
     }
   }
 

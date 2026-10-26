@@ -47,6 +47,10 @@ return [
         'csrf_cookie' => env('RT05_XSRF_COOKIE', 'rt05_api_xsrf'),
         // Kegagalan token registrasi per IP per jam (selain throttle registrasi 5/10 menit).
         'token_failures_per_hour' => (int) env('RT05_TOKEN_FAILURES_PER_HOUR', 10),
+        // Budget agregat sebelum hashing; kuota per akun dan antar operasi tetap terpisah.
+        'login_ip_per_minute' => (int) env('RT05_LOGIN_IP_PER_MINUTE', 60),
+        'forgot_ip_per_15_minutes' => (int) env('RT05_FORGOT_IP_PER_15_MINUTES', 20),
+        'reset_ip_per_15_minutes' => (int) env('RT05_RESET_IP_PER_15_MINUTES', 60),
     ],
 
     'heartbeat' => [
