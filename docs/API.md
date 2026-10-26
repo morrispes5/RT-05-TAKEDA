@@ -38,6 +38,12 @@ Rekap memuat saldo dari view secara batch; pembacaan ringkasan rumah/titipan tid
 
 ### Bentuk umum
 
+M18 menambah GET `/cash/summary?periode=YYYY-MM` untuk akun aktif yang telah menyetujui privasi terbaru.
+Payload hanya periode, saldo_awal, modal_awal, pemasukan, pengeluaran, koreksi dan saldo_akhir; tidak ada nama/kode rumah,
+catatan, bukti atau transaksi individual. Header private/no-store. Pembalikan tetap masuk pada bulan postingnya.
+Persetujuan `/auth/privacy-consent` versi M18 wajib menyertakan versi_teks lokal yang cocok dengan teks yang ditampilkan;
+APK yang belum membawa teks tersebut harus diperbarui, tidak boleh sekadar menyalin versi dari profil server.
+
 JSON UTF-8, snake_case, UUID, timestamp ISO-8601 UTC, period YYYY-MM, amount_rupiah integer. List default 20, max 100, pagination dengan meta dan links. Filter/sort allowlist; jangan menerima SQL/field arbitrary.
 
 ```json

@@ -51,6 +51,15 @@ detail penerimaan dan koreksi kas manual terhubung dari tab Keuangan. Alur M17 t
 Tes Flutter awal **298/298**; tiga tes pengelolaan tambahan lulus. `flutter analyze --no-pub` bersih;
 `dart format --output=none --set-exit-if-changed lib test` **91 file, 0 berubah**. Suite akhir **301/301 PASS** (konkurensi 2).
 Belum bukti integrasi staging/emulator M18, belum APK. Privasi/transparansi warga dan laporan/XLSX berikutnya.
+
+**Transparansi/privasi 26 Okt**, branch `codex/m18-transparansi-privasi`: PR #85 mobile pengurus merged `c68a7a1`, CI 7/7 PASS
+termasuk build APK debug dev/staging (bukan rilis yang disebar). GET `/cash/summary` memberi allowlist agregat bulanan,
+saldo awal/modal/masuk/keluar/koreksi/akhir tanpa identitas; kas warga memerlukan persetujuan teks M18.
+Privasi 26 Okt aktif bersama flag v2; APK membawa teks 25/26 dan menolak versi asing. Server memvalidasi versi_teks,
+bukan menerima nomor versi terbaru tanpa teks. Website/preview dan dokumen kebijakan diperbarui.
+Validasi: backend **396/396, 4.136 assertions**; Flutter **306/306**; analyze bersih, format 93/0; website **40/40, 538 assertions**,
+build:preview 24 rute dan Pint PASS; OpenAPI lint tanpa warning, check-repo/diff-check PASS. Flag masih false; belum deploy/APK M18.
+Berikutnya laporan/CSV/XLSX satu layanan, kemudian verifikasi staging/emulator dan satu rilis M18.
 Belum deploy/APK M18. Berikutnya mobile pengurus, privasi/transparansi warga, laporan/XLSX, lalu staging/emulator/rilis terpadu.
 
 ## M17 — Penyesuaian hasil rapat RT 24 Okt (ADR43) — 25 Oktober 2026: **passed**

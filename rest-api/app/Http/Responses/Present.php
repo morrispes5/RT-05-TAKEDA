@@ -58,7 +58,7 @@ final class Present
             // ADR35: aplikasi menampilkan Kebijakan Privasi sampai versi terbaru disetujui.
             // ADR43: tombol angkat/turunkan pengurus hanya tampil untuk super admin.
             'super_admin' => $a->isSuperAdmin(),
-            'privasi_versi' => Privacy::VERSION,
+            'privasi_versi' => Privacy::version(),
             'privasi_perlu_setuju' => Privacy::needsConsent($a),
         ];
     }

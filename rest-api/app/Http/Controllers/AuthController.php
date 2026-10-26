@@ -270,13 +270,16 @@ class AuthController extends Controller
     /** POST /auth/privacy-consent — setujui Kebijakan Privasi versi terbaru (ADR35). Akun menunggu juga boleh. */
     public function privacyConsent(Request $request): JsonResponse
     {
-        $data = $request->validate(['versi' => ['required', 'string', 'max:20']]);
-        if ($data['versi'] !== Privacy::VERSION) {
+        $data = $request->validate(['versi' => ['required', 'string', 'max:20'], 'versi_teks' => ['nullable', 'string', 'max:20']]);
+        if ($data['versi'] !== Privacy::version()) {
             throw new DomainConflict('PRIVACY_VERSION_OUTDATED', 'Kebijakan Privasi sudah diperbarui. Muat ulang lalu baca versi terbaru.');
         }
+        if (Privacy::version() === Privacy::FINANCE_VERSION && ($data['versi_teks'] ?? null) !== Privacy::FINANCE_VERSION) {
+            throw new DomainConflict('PRIVACY_CLIENT_UPDATE_REQUIRED', 'Perbarui aplikasi untuk membaca dan menyetujui Kebijakan Privasi terbaru.', 422);
+        }
         $akun = $request->user();
-        $akun->forceFill(['privasi_versi' => Privacy::VERSION, 'privasi_disetujui_at' => now()])->save();
-        Audit::record($akun, 'akun.privasi_disetujui', 'akun', $akun->id, ['versi' => Privacy::VERSION]);
+        $akun->forceFill(['privasi_versi' => Privacy::version(), 'privasi_disetujui_at' => now()])->save();
+        Audit::record($akun, 'akun.privasi_disetujui', 'akun', $akun->id, ['versi' => Privacy::version()]);
 
         return Api::data(Present::akun($akun->refresh()->load(Akun::PROFIL)));
     }

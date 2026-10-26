@@ -117,12 +117,12 @@ void main() {
         if (options.uri.path == '/api/v1/auth/privacy-consent') {
           sent = _body(options);
           return jsonBody(200, {
-            'data': {...akunJson(), 'privasi_versi': '2026-10-21', 'privasi_perlu_setuju': false},
+            'data': {...akunJson(), 'privasi_versi': '2026-10-25', 'privasi_perlu_setuju': false},
           });
         }
         return jsonBody(200, {'data': {}});
       }, storage: storage);
-      await container.read(sessionProvider.notifier).signIn('t', Akun({...akunJson(), 'privasi_versi': '2026-10-21', 'privasi_perlu_setuju': true}));
+      await container.read(sessionProvider.notifier).signIn('t', Akun({...akunJson(), 'privasi_versi': '2026-10-25', 'privasi_perlu_setuju': true}));
       await tester.pump();
       expect(container.read(sessionProvider).needsPrivacy, isTrue);
 
@@ -135,7 +135,7 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('Setuju dan lanjutkan'));
       await _step(tester);
-      expect(sent, {'versi': '2026-10-21'});
+      expect(sent, {'versi': '2026-10-25', 'versi_teks': '2026-10-25'});
       expect(container.read(sessionProvider).needsPrivacy, isFalse);
     });
 
@@ -145,6 +145,41 @@ void main() {
       expect(find.text('Setuju dan lanjutkan'), findsNothing);
       expect(find.textContaining('NIK dan nomor KK disimpan terenkripsi'), findsOneWidget);
     });
+
+    test('versi teks lokal dikenal dan isi lama tetap sesuai versi yang disetujui', () {
+      expect(privacyVersionFor(privacyTextVersion), privacyTextVersion);
+      expect(privacyVersionFor(legacyPrivacyTextVersion), legacyPrivacyTextVersion);
+      expect(privacyVersionFor('2099-01-01'), isNull);
+      expect(
+        privacyContentFor(legacyPrivacyTextVersion).expand((s) => s.$2).join(' '),
+        contains('Status iuran rumah lain dan kas RT hanya terlihat oleh pengurus.'),
+      );
+      expect(privacyContentFor(privacyTextVersion).expand((s) => s.$2).join(' '), contains('tanpa nama atau kode rumah'));
+    });
+
+    for (final version in [privacyTextVersion, '2099-01-01']) {
+      testWidgets('persetujuan versi $version hanya dikirim bila teks lokal tersedia', (tester) async {
+        Object? sent;
+        final container = await _pump(tester, const PrivacyPolicyPage(consent: true), (options) {
+          sent = _body(options);
+          return jsonBody(200, {
+            'data': {...akunJson(), 'privasi_versi': version, 'privasi_perlu_setuju': false},
+          });
+        });
+        await container.read(sessionProvider.notifier).signIn('t', Akun({...akunJson(), 'privasi_versi': version, 'privasi_perlu_setuju': true}));
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('privasi-setuju-centang')));
+        await tester.pump();
+        await tester.tap(find.text('Setuju dan lanjutkan'));
+        await _step(tester);
+        if (version == privacyTextVersion) {
+          expect(sent, {'versi': privacyTextVersion, 'versi_teks': privacyTextVersion});
+        } else {
+          expect(sent, isNull);
+          expect(find.textContaining('Perbarui aplikasi sebelum menyetujui'), findsOneWidget);
+        }
+      });
+    }
   });
 
   group('data kependudukan (NIK & KK)', () {

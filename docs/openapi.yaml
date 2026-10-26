@@ -2256,6 +2256,7 @@ paths:
               required: [versi]
               properties:
                 versi: {type: string, maxLength: 20}
+                versi_teks: {type: string, maxLength: 20, description: Versi lokal teks yang benar-benar ditampilkan. Wajib cocok untuk kebijakan M18.}
       responses:
         "200":
           $ref: "#/components/responses/Data"
@@ -3896,6 +3897,26 @@ paths:
           $ref: '#/components/responses/Data'
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/cash/summary:
+    get:
+      operationId: residentCashSummary
+      tags: [Finance]
+      summary: Ringkasan kas bulanan tanpa identitas untuk warga aktif
+      description: Memerlukan flag v2 dan persetujuan teks privasi M18. Allowlist agregat saja; tanpa rumah, nama, catatan, bukti atau transaksi individual. Pembalikan dihitung pada bulan postingnya.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: periode
+          in: query
+          schema: {type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$'}
+      responses:
+        "200":
+          description: Agregat kas bulanan. Cache-Control private, no-store.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ResidentCashEnvelope'}
+        default:
+          $ref: '#/components/responses/Error'
 security:
   - bearerAuth: []
   - cookieAuth: []
@@ -3974,6 +3995,24 @@ components:
           schema:
             $ref: "#/components/schemas/DataEnvelope"
   schemas:
+    ResidentCashEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        meta: {$ref: '#/components/schemas/Meta'}
+        data:
+          type: object
+          additionalProperties: false
+          required: [periode, saldo_awal, modal_awal, pemasukan, pengeluaran, koreksi, saldo_akhir]
+          properties:
+            periode: {type: string}
+            saldo_awal: {type: integer}
+            modal_awal: {type: integer, minimum: 0}
+            pemasukan: {type: integer, minimum: 0}
+            pengeluaran: {type: integer, minimum: 0}
+            koreksi: {type: integer}
+            saldo_akhir: {type: integer}
     M18DepositCorrectionInput:
       allOf:
         - $ref: '#/components/schemas/M18ReasonInput'
