@@ -3917,6 +3917,71 @@ paths:
               schema: {$ref: '#/components/schemas/ResidentCashEnvelope'}
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/admin/finance-reports:
+    get:
+      operationId: financeReports
+      tags: [Finance]
+      summary: Laporan kas dan posisi pelunasan bulanan atau tahunan
+      description: Khusus pengurus, flag v2 aktif. Pilih tahun kalender atau periode (saling eksklusif). Kas menurut tanggal posting; pelunasan adalah posisi saat laporan dibuat. Tahun 2000-2100.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: tahun
+          in: query
+          schema: {type: integer, minimum: 2000, maximum: 2100}
+        - name: periode
+          in: query
+          schema: {type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$'}
+      responses:
+        "200":
+          description: Snapshot konsisten, private/no-store.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FinanceReportEnvelope'}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/exports/keuangan.csv:
+    get:
+      operationId: financeReportCsv
+      tags: [Finance]
+      summary: Ekspor laporan keuangan tahunan CSV
+      description: Khusus pengurus, flag v2 aktif, satu tahun kalender. Total dari layanan laporan yang sama. Privat, no-store, diaudit. XLSX 14 sheet; file sementara dihapus setelah respons. Teks pengguna bukan formula.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: tahun
+          in: query
+          required: true
+          schema: {type: integer, minimum: 2000, maximum: 2100}
+      responses:
+        "200":
+          description: Berkas laporan privat.
+          content:
+            text/csv:
+              schema: {type: string, format: binary}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/exports/keuangan.xlsx:
+    get:
+      operationId: financeReportXlsx
+      tags: [Finance]
+      summary: Ekspor laporan keuangan tahunan XLSX
+      description: Khusus pengurus, flag v2 aktif, satu tahun kalender. Total dari layanan laporan yang sama. Privat, no-store, diaudit. XLSX 14 sheet; file sementara dihapus setelah respons. Teks pengguna bukan formula.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: tahun
+          in: query
+          required: true
+          schema: {type: integer, minimum: 2000, maximum: 2100}
+      responses:
+        "200":
+          description: Berkas laporan privat.
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema: {type: string, format: binary}
+        default:
+          $ref: '#/components/responses/Error'
 security:
   - bearerAuth: []
   - cookieAuth: []
@@ -3995,6 +4060,114 @@ components:
           schema:
             $ref: "#/components/schemas/DataEnvelope"
   schemas:
+    FinanceSettlement:
+      type: object
+      additionalProperties: false
+      required: [nominal_snapshot, nominal_efektif, terbayar, terbayar_titipan, keringanan, sisa]
+      properties:
+        nominal_snapshot: {type: integer, minimum: 0}
+        nominal_efektif: {type: integer, minimum: 0}
+        terbayar: {type: integer, minimum: 0}
+        terbayar_titipan: {type: integer, minimum: 0}
+        keringanan: {type: integer, minimum: 0}
+        sisa: {type: integer, minimum: 0}
+    FinanceReportHouse:
+      type: object
+      additionalProperties: false
+      required: [rumah_id, kode_rumah, rumah_arsip, periode, nominal_snapshot, nominal_efektif, terbayar, terbayar_titipan, keringanan, sisa, status, status_pelunasan, status_label]
+      properties:
+        rumah_id: {type: string, format: uuid}
+        kode_rumah: {type: string}
+        rumah_arsip: {type: boolean}
+        periode: {type: string}
+        nominal_snapshot: {type: integer, minimum: 0}
+        nominal_efektif: {type: integer, minimum: 0}
+        terbayar: {type: integer, minimum: 0}
+        terbayar_titipan: {type: integer, minimum: 0}
+        keringanan: {type: integer, minimum: 0}
+        sisa: {type: integer, minimum: 0}
+        status: {type: string, enum: [belum_bayar, lunas]}
+        status_pelunasan: {type: string, enum: [belum_bayar, kurang_bayar, lunas, lunas_keringanan]}
+        status_label: {type: string}
+    FinanceCashEntry:
+      type: object
+      additionalProperties: false
+      required: [id, periode, tanggal, jenis, sumber, kategori, nominal, keterangan, nomor_bukti, iuran, sumbangan, titipan, membalik_id]
+      properties:
+        id: {type: string, format: uuid}
+        periode: {type: string}
+        tanggal: {type: string, format: date}
+        jenis: {type: string, enum: [pemasukan, pengeluaran, saldo_awal, pembalikan]}
+        sumber: {type: string, enum: [iuran, lainnya]}
+        kategori: {type: string}
+        nominal: {type: integer}
+        keterangan: {type: string}
+        nomor_bukti: {type: [string, 'null']}
+        iuran: {type: integer}
+        sumbangan: {type: integer}
+        titipan: {type: integer}
+        membalik_id: {type: [string, 'null'], format: uuid}
+    FinanceReportMonth:
+      type: object
+      additionalProperties: false
+      required: [periode, kas, iuran_diterima, sumbangan_diterima, titipan_diterima, titipan_dipakai, tagihan, rumah, mutasi_kas]
+      properties:
+        tahun: {type: integer}
+        posisi_pelunasan: {type: string, format: date-time}
+        catatan: {type: string}
+        periode: {type: string}
+        kas: {$ref: '#/components/schemas/ResidentCashEnvelope/properties/data'}
+        iuran_diterima: {type: integer}
+        sumbangan_diterima: {type: integer}
+        titipan_diterima: {type: integer}
+        titipan_dipakai: {type: integer}
+        tagihan: {$ref: '#/components/schemas/FinanceSettlement'}
+        rumah:
+          type: array
+          items: {$ref: '#/components/schemas/FinanceReportHouse'}
+        mutasi_kas:
+          type: array
+          items: {$ref: '#/components/schemas/FinanceCashEntry'}
+    FinanceReportYear:
+      type: object
+      additionalProperties: false
+      required: [tahun, posisi_pelunasan, catatan, total, tagihan, saldo_titipan_saat_ini, bulan]
+      properties:
+        tahun: {type: integer}
+        posisi_pelunasan: {type: string, format: date-time}
+        catatan: {type: string}
+        total:
+          type: object
+          additionalProperties: false
+          required: [saldo_awal, saldo_akhir, modal_awal, pemasukan, pengeluaran, koreksi, iuran_diterima, sumbangan_diterima, titipan_diterima, titipan_dipakai]
+          properties:
+            saldo_awal: {type: integer}
+            saldo_akhir: {type: integer}
+            modal_awal: {type: integer}
+            pemasukan: {type: integer}
+            pengeluaran: {type: integer}
+            koreksi: {type: integer}
+            iuran_diterima: {type: integer}
+            sumbangan_diterima: {type: integer}
+            titipan_diterima: {type: integer}
+            titipan_dipakai: {type: integer}
+        tagihan: {$ref: '#/components/schemas/FinanceSettlement'}
+        saldo_titipan_saat_ini: {type: integer, minimum: 0}
+        bulan:
+          type: array
+          minItems: 12
+          maxItems: 12
+          items: {$ref: '#/components/schemas/FinanceReportMonth'}
+    FinanceReportEnvelope:
+      type: object
+      additionalProperties: false
+      required: [data, meta]
+      properties:
+        meta: {$ref: '#/components/schemas/Meta'}
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/FinanceReportYear'
+            - $ref: '#/components/schemas/FinanceReportMonth'
     ResidentCashEnvelope:
       type: object
       additionalProperties: false

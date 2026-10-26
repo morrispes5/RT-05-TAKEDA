@@ -11,6 +11,7 @@ use App\Http\Controllers\ContentController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\DuesConfirmationController;
 use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\FlexibleFinanceController;
 use App\Http\Controllers\HouseholdController;
 use App\Http\Controllers\ReportsController;
@@ -130,6 +131,9 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::get('dashboard', [OperationsController::class, 'dashboard']);
     Route::get('audit-logs', [OperationsController::class, 'auditLogs']);
     Route::get('exports/{jenis}', [OperationsController::class, 'export'])->whereIn('jenis', ['iuran', 'kas', 'rumah', 'pembayaran']);
+    Route::get('finance-reports', [FinanceReportController::class, 'show']);
+    Route::get('exports/keuangan.csv', [FinanceReportController::class, 'csv']);
+    Route::get('exports/keuangan.xlsx', [FinanceReportController::class, 'xlsx']);
 
     Route::get('registration-token', [ResidentsController::class, 'token']);
     Route::post('registration-token/rotate', [ResidentsController::class, 'rotateToken']);
