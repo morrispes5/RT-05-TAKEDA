@@ -7,6 +7,7 @@ use App\Domain\Services\Photo;
 use App\Http\Responses\Api;
 use App\Http\Responses\Present;
 use App\Models\KonfirmasiIuran;
+use App\Support\Idempotency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -72,6 +73,13 @@ class DuesConfirmationController extends Controller
             'status' => ['required', 'in:selesai,ditolak'],
             'catatan' => ['required_if:status,ditolak', 'nullable', 'string', 'max:300'],
         ]);
+        if (config('finance.v2')) {
+            return Idempotency::run($request, $request->user(), 'dues-confirmations.process', $data + ['id' => $id], function () use ($request, $id, $data) {
+                $k = DuesConfirmations::process($request->user(), $id, $data['status'], $data['catatan'] ?? null);
+
+                return Api::data(Present::konfirmasiIuran($k->load(['akun', 'rumah']), true));
+            });
+        }
         $k = DuesConfirmations::process($request->user(), $id, $data['status'], $data['catatan'] ?? null);
 
         return Api::data(Present::konfirmasiIuran($k->load(['akun', 'rumah']), true));

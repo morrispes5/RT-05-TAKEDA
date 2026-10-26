@@ -39,6 +39,7 @@ final class Reconciliation
             'kas_iuran_tanpa_pembayaran' => $count("SELECT k.id FROM transaksi_kas k WHERE k.sumber = 'iuran' AND k.jenis = 'pemasukan' AND k.pembayaran_id IS NULL"),
             'pembalikan_tidak_netral' => $count('SELECT r.id FROM transaksi_kas r JOIN transaksi_kas k ON k.id = r.membalik_id WHERE r.nominal <> -k.nominal'),
             'saldo_awal_ganda' => max(0, (int) DB::table('transaksi_kas')->where('jenis', 'saldo_awal')->count() - 1),
+            'konfirmasi_pembayaran_tidak_cocok' => (int) DB::table('rt05_konfirmasi_violations')->count(),
         ];
 
         foreach (DB::table('rt05_finance_violations')->selectRaw('jenis, count(*) AS jumlah')->groupBy('jenis')->get() as $violation) {

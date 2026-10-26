@@ -613,6 +613,25 @@ paths:
   /api/v1/admin/dues-payments:
     post:
       operationId: adminDuesPaymentsStore
+      description: Saat flag v2 aktif, versi_keuangan 2 dan fingerprint preview wajib; kurang/lebih wajib pilihan eksplisit. Flag nonaktif mempertahankan kontrak M12 nominal tepat. Idempotency-Key wajib.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/M18PaymentInput'
+                - type: object
+                  description: Kontrak M12 saat flag nonaktif.
+                  required: [periode, nominal, tanggal_bayar]
+                  not: {required: [versi_keuangan], properties: {versi_keuangan: {type: integer}}}
+                  properties:
+                    rumah_id: {type: string, format: uuid}
+                    periode: {type: array, minItems: 1, maxItems: 24, items: {type: string}}
+                    nominal: {type: integer, minimum: 1}
+                    tanggal_bayar: {type: string, format: date}
+                    alasan: {type: string, maxLength: 300}
+                    catatan: {type: [string, 'null'], maxLength: 500}
       tags:
         - Finance
       summary: Catat pembayaran iuran offline (sinkron, satu transaksi)
@@ -658,6 +677,25 @@ paths:
       - $ref: "#/components/parameters/IdempotencyKey"
     post:
       operationId: adminDuesPaymentsCorrect
+      description: Saat flag v2 aktif, versi_keuangan 2 dan fingerprint preview wajib; kurang/lebih wajib pilihan eksplisit. Flag nonaktif mempertahankan kontrak M12 nominal tepat. Idempotency-Key wajib.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/M18PaymentInput'
+                - type: object
+                  description: Kontrak M12 saat flag nonaktif.
+                  required: [periode, nominal, tanggal_bayar]
+                  not: {required: [versi_keuangan], properties: {versi_keuangan: {type: integer}}}
+                  properties:
+                    rumah_id: {type: string, format: uuid}
+                    periode: {type: array, minItems: 1, maxItems: 24, items: {type: string}}
+                    nominal: {type: integer, minimum: 1}
+                    tanggal_bayar: {type: string, format: date}
+                    alasan: {type: string, maxLength: 300}
+                    catatan: {type: [string, 'null'], maxLength: 500}
       tags:
         - Finance
       summary: Pembalikan + pengganti atomik
@@ -3403,6 +3441,461 @@ paths:
               schema: {type: string, format: binary}
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/admin/dues-payments/preview:
+    post:
+      operationId: financePreview
+      tags: [Finance]
+      summary: Pratinjau alokasi penerimaan
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18PreviewInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/dues-confirmations/{id}/approve:
+    post:
+      operationId: financeApprove
+      tags: [Finance]
+      summary: Setujui bukti dan catat penerimaan atomik
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18PaymentInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/houses/{id}/dues-rates:
+    get:
+      operationId: houseRates
+      tags: [Finance]
+      summary: Riwayat tarif khusus rumah
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      operationId: houseRateStore
+      tags: [Finance]
+      summary: Tetapkan tarif khusus atau kembali umum
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18RateInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/houses/{id}/dues-rates/{rateId}/correct:
+    post:
+      operationId: houseRateCorrect
+      tags: [Finance]
+      summary: Batalkan versi tarif dan catat pengganti
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - name: rateId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18RateInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/houses/{id}/deposits:
+    get:
+      operationId: houseDeposits
+      tags: [Finance]
+      summary: Saldo dan riwayat titipan rumah
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/deposit-usages:
+    post:
+      operationId: depositUse
+      tags: [Finance]
+      summary: Pakai titipan tanpa penerimaan kas baru
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18DepositInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/deposit-usages/{id}/reverse:
+    post:
+      operationId: depositReverse
+      tags: [Finance]
+      summary: Balik pemakaian titipan
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18ReasonInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/dues-charges/{id}/reliefs:
+    post:
+      operationId: reliefStore
+      tags: [Finance]
+      summary: Keringanan beralasan tanpa uang masuk
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18ReliefInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/dues-charges/{id}/adjustments:
+    post:
+      operationId: adjustmentStore
+      tags: [Finance]
+      summary: Koreksi nominal efektif tagihan
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18AdjustmentInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/dues-reliefs/{id}/reverse:
+    post:
+      operationId: reliefReverse
+      tags: [Finance]
+      summary: Balik keringanan mandiri
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18ReasonInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/dues-adjustments/{id}/reverse:
+    post:
+      operationId: adjustmentReverse
+      tags: [Finance]
+      summary: Balik koreksi tagihan
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18ReasonInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
+  /api/v1/admin/dues-rates/{id}/correct:
+    post:
+      operationId: commonRateCorrect
+      tags: [Finance]
+      summary: Koreksi atomik dengan pembalikan dan rekaman pengganti
+      description: Pengurus aktif, flag v2 aktif, versi_keuangan 2. Alasan wajib. Gagal pengganti membatalkan seluruh transaksi.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/M18ReliefInput'}
+      responses:
+        "201":
+          $ref: '#/components/responses/Data'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/deposit-usages/{id}/correct:
+    post:
+      operationId: depositCorrect
+      tags: [Finance]
+      summary: Koreksi atomik dengan pembalikan dan rekaman pengganti
+      description: Pengurus aktif, flag v2 aktif, versi_keuangan 2. Alasan wajib. Gagal pengganti membatalkan seluruh transaksi.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/M18DepositCorrectionInput'}
+      responses:
+        "201":
+          $ref: '#/components/responses/Data'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/dues-reliefs/{id}/correct:
+    post:
+      operationId: reliefCorrect
+      tags: [Finance]
+      summary: Koreksi atomik dengan pembalikan dan rekaman pengganti
+      description: Pengurus aktif, flag v2 aktif, versi_keuangan 2. Alasan wajib. Gagal pengganti membatalkan seluruh transaksi.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/M18ReliefInput'}
+      responses:
+        "201":
+          $ref: '#/components/responses/Data'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/dues-adjustments/{id}/correct:
+    post:
+      operationId: adjustmentCorrect
+      tags: [Finance]
+      summary: Koreksi atomik dengan pembalikan dan rekaman pengganti
+      description: Pengurus aktif, flag v2 aktif, versi_keuangan 2. Alasan wajib. Gagal pengganti membatalkan seluruh transaksi.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/M18AdjustmentInput'}
+      responses:
+        "201":
+          $ref: '#/components/responses/Data'
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/cash-transactions/{id}/correct:
+    post:
+      operationId: cashCorrect
+      tags: [Finance]
+      summary: Koreksi atomik dengan pembalikan dan rekaman pengganti
+      description: Pengurus aktif, flag v2 aktif, versi_keuangan 2. Alasan wajib. Gagal pengganti membatalkan seluruh transaksi.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/M18CashCorrectionInput'}
+      responses:
+        "201":
+          $ref: '#/components/responses/Data'
+        default:
+          $ref: '#/components/responses/Error'
 security:
   - bearerAuth: []
   - cookieAuth: []
@@ -3481,6 +3974,100 @@ components:
           schema:
             $ref: "#/components/schemas/DataEnvelope"
   schemas:
+    M18DepositCorrectionInput:
+      allOf:
+        - $ref: '#/components/schemas/M18ReasonInput'
+        - type: object
+          required: [periode, nominal, tanggal, fingerprint]
+          properties:
+            periode:
+              type: array
+              minItems: 1
+              maxItems: 24
+              uniqueItems: true
+              items: {type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$'}
+            nominal: {type: integer, minimum: 1, maximum: 1000000000}
+            tanggal: {type: string, format: date}
+            fingerprint: {type: string, pattern: '^[a-f0-9]{64}$'}
+    M18CashCorrectionInput:
+      allOf:
+        - $ref: '#/components/schemas/M18ReasonInput'
+        - type: object
+          required: [jenis, nominal, tanggal, kategori, keterangan]
+          properties:
+            jenis: {type: string, enum: [pemasukan, pengeluaran]}
+            nominal: {type: integer, minimum: 1, maximum: 1000000000}
+            tanggal: {type: string, format: date}
+            kategori: {type: string, maxLength: 60}
+            keterangan: {type: string, minLength: 5, maxLength: 500}
+            konfirmasi_saldo_negatif: {type: boolean}
+    M18ReasonInput:
+      type: object
+      required: [versi_keuangan, alasan]
+      properties:
+        versi_keuangan: {type: integer, const: 2}
+        alasan: {type: string, minLength: 5, maxLength: 300}
+    M18PreviewInput:
+      type: object
+      required: [versi_keuangan, rumah_id, periode, nominal]
+      properties:
+        versi_keuangan: {type: integer, const: 2}
+        rumah_id: {type: string, format: uuid}
+        periode:
+          type: array
+          minItems: 1
+          maxItems: 24
+          uniqueItems: true
+          items: {type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$'}
+        nominal: {type: integer, minimum: 1, maximum: 1000000000}
+    M18PaymentInput:
+      type: object
+      required: [versi_keuangan, periode, nominal, tanggal_bayar, fingerprint]
+      properties:
+        versi_keuangan: {type: integer, const: 2}
+        rumah_id: {type: string, format: uuid}
+        periode:
+          type: array
+          minItems: 1
+          maxItems: 24
+          uniqueItems: true
+          items: {type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$'}
+        nominal: {type: integer, minimum: 1, maximum: 1000000000}
+        tanggal_bayar: {type: string, format: date}
+        fingerprint: {type: string, pattern: '^[a-f0-9]{64}$'}
+        perlakuan_kurang: {type: [string, 'null'], enum: [kurang_bayar, keringanan, null]}
+        perlakuan_lebih: {type: [string, 'null'], enum: [sumbangan, titipan, null]}
+        alasan: {type: [string, 'null'], minLength: 5, maxLength: 300}
+    M18RateInput:
+      allOf:
+        - $ref: '#/components/schemas/M18ReasonInput'
+        - type: object
+          required: [mulai_periode, nominal]
+          properties:
+            mulai_periode: {type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$'}
+            nominal: {type: [integer, 'null'], minimum: 1000, maximum: 10000000}
+    M18DepositInput:
+      allOf:
+        - $ref: '#/components/schemas/M18PreviewInput'
+        - type: object
+          required: [tanggal, fingerprint]
+          properties:
+            tanggal: {type: string, format: date}
+            fingerprint: {type: string, pattern: '^[a-f0-9]{64}$'}
+    M18ReliefInput:
+      allOf:
+        - $ref: '#/components/schemas/M18ReasonInput'
+        - type: object
+          required: [nominal]
+          properties:
+            nominal: {type: integer, minimum: 1, maximum: 1000000000}
+    M18AdjustmentInput:
+      allOf:
+        - $ref: '#/components/schemas/M18ReasonInput'
+        - type: object
+          required: [delta]
+          properties:
+            delta: {type: integer, minimum: -10000000, maximum: 10000000, not: {const: 0}}
     NewPassword:
       type: string
       minLength: 8
@@ -3582,6 +4169,7 @@ components:
         nama: {type: string}
         email: {type: string, format: email}
         peran: {type: string, enum: [warga, pengurus]}
+        versi_keuangan: {type: integer, enum: [1, 2], description: Versi alur keuangan yang aktif di server.}
         super_admin: {type: boolean, description: 'ADR43 (M17): true hanya untuk pengurus aktif dengan email super admin; aplikasi menampilkan tombol ubah peran.'}
         jenis: {type: string, enum: [utama, tambahan]}
         status: {type: string, enum: [menunggu, aktif, nonaktif, diarsipkan]}
@@ -4361,6 +4949,8 @@ components:
       additionalProperties: false
       required: [id, nominal, mulai_periode, alasan, created_at]
       properties:
+        dibatalkan_at: {type: [string, 'null']}
+        menggantikan_id: {type: [string, 'null'], format: uuid}
         id: {type: string, format: uuid}
         nominal: {type: integer}
         mulai_periode: {type: string, pattern: '^\d{4}-\d{2}$'}
@@ -4386,6 +4976,10 @@ components:
       required: [periode, tarif, jumlah_rumah, lunas, belum_bayar, tunggakan_sebelumnya, rumah]
       properties:
         periode: {type: string}
+        terbayar: {type: integer, minimum: 0}
+        keringanan: {type: integer, minimum: 0}
+        sisa: {type: integer, minimum: 0}
+        catatan: {type: string}
         tarif: {type: [integer, 'null']}
         jumlah_rumah: {type: integer}
         lunas: {$ref: '#/components/schemas/DuesRecapCount'}
@@ -4398,6 +4992,27 @@ components:
             additionalProperties: false
             required: [rumah_id, kode_rumah, nominal, status, status_label, tanggal_bayar, bulan_tunggakan_sebelumnya]
             properties:
+              id: {type: string, format: uuid}
+              periode: {type: string}
+              nominal_snapshot: {type: integer, minimum: 0}
+              nominal_efektif: {type: integer, minimum: 0}
+              terbayar: {type: integer, minimum: 0}
+              terbayar_titipan: {type: integer, minimum: 0}
+              keringanan: {type: integer, minimum: 0}
+              sisa: {type: integer, minimum: 0}
+              jatuh_tempo: {type: string, format: date}
+              status_pelunasan: {type: string, enum: [belum_bayar, kurang_bayar, lunas, lunas_keringanan]}
+              pembayaran_id: {type: [string, 'null'], format: uuid}
+              alokasi:
+                type: array
+                items:
+                  type: object
+                  required: [pembayaran_id, penggunaan_titipan_id, nominal, dibatalkan_at]
+                  properties:
+                    pembayaran_id: {type: [string, 'null'], format: uuid}
+                    penggunaan_titipan_id: {type: [string, 'null'], format: uuid}
+                    nominal: {type: integer, minimum: 1}
+                    dibatalkan_at: {type: [string, 'null'], format: date-time}
               rumah_id: {type: string, format: uuid}
               kode_rumah: {type: string}
               nominal: {type: integer}
