@@ -53,8 +53,21 @@ final paymentsProvider = FutureProvider.autoDispose<List<Json>>(
 );
 
 // ─────────────────────────────────────────── Ringkasan
-class AdminHomePage extends ConsumerWidget {
+class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key, required this.goTab});
+  final void Function(int) goTab;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      const EmergencyEntry(),
+      Expanded(child: _AdminHomeContent(goTab: goTab)),
+    ],
+  );
+}
+
+class _AdminHomeContent extends ConsumerWidget {
+  const _AdminHomeContent({required this.goTab});
   final void Function(int) goTab;
 
   @override
@@ -96,7 +109,6 @@ class AdminHomePage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const EmergencyEntry(),
               // Dua kolom dengan tinggi mengikuti isi (bukan rasio tetap) agar aman pada skala teks besar.
               _TileRow(
                 _Tile('Rumah aktif', '${d['rumah_aktif']}', Icons.home_work_outlined, () => goTab(1)),

@@ -6,6 +6,9 @@
 transport Git ke origin; staging hanya jalur immutable yang sudah ada, dengan penerima sintetis. Beranda pengurus
 ditambah akses cepat panik, pilihan pin shortcut ke layar utama HP ditambahkan. Flutter **337/337**, analyze bersih,
 format 101/0 dan build debug ulang PASS. APK bertanda tangan/deploy/distribusi belum diklaim sebelum verifikasi.
+Penyempurnaan akses Home: tombol pengurus dipisahkan dari dashboard keuangan agar tetap tersedia saat dashboard
+gagal; regresi baru lulus. Flutter terbaru **338/338**, analyze bersih. Source PR #92 memakai SHA identik lokal
+melalui API, tanpa Git fetch/pull/push ke origin.
 
 **Eksekusi diotorisasi pemilik:** “okee gass lgsg aja eksekusi”. Branch `codex/m19-tombol-panik` di worktree
 `m17-verifikasi-1018`; tanpa fetch/pull/push/PR/deploy remote, checkout awal/MyRepublic tetap utuh.

@@ -57,6 +57,7 @@ Future<ProviderContainer> _pump(
   Widget page = const EmergencyPage(),
   bool admin = false,
   EmergencyPlatform platform = const NoEmergencyPlatform(),
+  bool settle = true,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -69,7 +70,13 @@ Future<ProviderContainer> _pump(
       child: MaterialApp(home: page),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
   return ProviderScope.containerOf(tester.element(find.byType(MaterialApp)));
 }
 
@@ -93,6 +100,22 @@ Future<void> _confirm(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('panic access on pengurus Home remains available when the finance dashboard fails', (tester) async {
+    await _pump(
+      tester,
+      FakeAdapter((o) {
+        if (o.uri.path.endsWith('/emergencies/status')) return jsonBody(200, {'data': _status});
+        return errorBody(503, 'SERVICE_UNAVAILABLE', 'Dashboard sementara tidak tersedia');
+      }),
+      page: Scaffold(body: AdminHomePage(goTab: (_) {})),
+      admin: true,
+      settle: false,
+    );
+    expect(find.text('Tombol panik'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('pengurus has panic shortcut directly on Home and it never submits automatically', (tester) async {
     var posts = 0;
     final base = apiHandler(me: () => akunJson(peran: 'pengurus'));
