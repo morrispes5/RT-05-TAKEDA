@@ -1,5 +1,19 @@
 # Koordinasi RT05 TAKEDA
 
+## Checkpoint 27 Oktober 2026 — M19 staging dan APK 1023 dirilis untuk uji
+
+Rilis uji diotorisasi pemilik (ADR45). PR #92–93 merged melalui API GitHub, commit/tree identik lokal,
+tanpa transport Git ke origin di PC. Staging `8d356e44` aktif restricted dua akun sintetis; enam layanan
+konsisten, runtime-smoke PASS, rekonsiliasi nol/Rp2.180.000. Backup/restore 19 lalu 20 tabel/view cocok,
+salinan terenkripsi Drive privat terverifikasi. Kandidat 1022 dibatalkan sebelum distribusi setelah bug tanggal
+privasi ditemukan di emulator. Flutter setelah fix 339/339, analyze/format bersih; signed **1023** success,
+27 Okt **11.37.23 WIB `/unduh` / 11.37.38 Drive ID tetap**, HTTPS kedua ABI dan Drive hash cocok.
+Home dua peran, pin, upgrade, consent dan FCM/tap teruji di emulator. Dua laporan uji selesai tanpa penalti.
+Gejala rendering lama dicatat, pengulangan dengan software normal; HP nyata tetap gate.
+Bukti/gate [RELEASE_1023.md](evidence/m19/RELEASE_1023.md).
+M19 tetap in_progress sampai uji HP nyata. Production dan checkout awal/MyRepublic tidak disentuh.
+Checkpoint implementasi lokal di bawah bersifat historis.
+
 ## Checkpoint 27 Oktober 2026 — implementasi lokal M19
 
 Pemilik meminta eksekusi langsung. Branch `codex/m19-tombol-panik`, worktree `m17-verifikasi-1018`.

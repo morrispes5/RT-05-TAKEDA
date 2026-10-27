@@ -2,7 +2,9 @@
 
 Tanggal: **27 Oktober 2026**. Branch `codex/m19-tombol-panik`, worktree `m17-verifikasi-1018`.
 Status milestone **in_progress**. Otorisasi eksekusi langsung setelah rencana; ADR43/45 dan [M19_PLAN.md](../../M19_PLAN.md).
-Tidak ada akses remote origin/fetch/pull/push, PR/merge/deploy, distribusi APK baru, atau broadcast warga asli.
+Pada checkpoint lokal ini tidak ada akses remote origin/fetch/pull/push, PR/merge/deploy, distribusi APK baru,
+atau broadcast warga asli. **Checkpoint rilis sesudahnya:** [RELEASE_1023.md](RELEASE_1023.md).
+Otorisasi rilis uji terbaru tercatat pada ADR45; angka/gate di bawah adalah bukti tahap lokal.
 
 ## Perubahan
 
