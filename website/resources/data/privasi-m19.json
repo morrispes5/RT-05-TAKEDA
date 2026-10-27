@@ -1,0 +1,65 @@
+{
+  "versi": "2026-10-27",
+  "label": "Versi 27 Oktober 2026",
+  "bagian": [
+    {
+      "judul": "Siapa pengelolanya",
+      "butir": [
+        "Aplikasi dan website RT05 TAKEDA dikelola oleh pengurus RT 05 RW 07 Taman Kedaung (Ketua RT: Agus Ferdiansyah). Pertanyaan atau permintaan tentang data pribadi bisa disampaikan ke pengurus RT, langsung, lewat WhatsApp Ketua RT yang tercantum di halaman Kontak website, atau lewat menu Aspirasi di aplikasi."
+      ]
+    },
+    {
+      "judul": "Data yang kami pakai",
+      "butir": [
+        "Untuk masuk: nama, email, dan kata sandi (kata sandi disimpan teracak, tidak bisa dibaca siapa pun).",
+        "Untuk administrasi rumah: alamat rumah (blok, jalan, nomor), anggota keluarga, dan hubungan keluarga.",
+        "Opsional: nomor WhatsApp, NIK, nomor Kartu Keluarga, dan tanggal lahir anggota keluarga. Boleh dikosongkan; pengurus juga dapat membantu mengisinya sesuai data RT. Tanggal lahir dipakai pengurus untuk menghitung kelompok umur warga (misalnya balita, remaja, dan lansia).",
+        "Laporan yang Anda kirim: pengaduan, aspirasi, usulan kegiatan, beserta foto atau dokumennya.",
+        "Iuran: tagihan rumah Anda, pembayaran, keringanan, sumbangan atau titipan yang dicatat pengurus, dan foto bukti transfer bila Anda mengirimnya.",
+        "Token perangkat untuk notifikasi, serta catatan siapa mengubah data dan kapan (untuk keamanan).",
+        "Kami tidak meminta rekening bank, lokasi GPS, atau kontak di HP Anda, dan tidak ada pembayaran online."
+      ]
+    },
+    {
+      "judul": "Siapa yang bisa melihat",
+      "butir": [
+        "Alamat rumah, NIK, nomor KK, nomor WhatsApp, dan tanggal lahir hanya dapat dilihat oleh pengurus RT dan keluarga Anda sendiri. Warga lain tidak bisa melihatnya, kecuali nama dan alamat rumah pelapor dalam laporan darurat tombol panik yang dikirim dengan konfirmasi pelapor.",
+        "NIK dan nomor KK disimpan terenkripsi dan di aplikasi hanya tampil tersamar (misalnya 3674••••••••0001).",
+        "Warga hanya melihat tagihan, pembayaran, keringanan, tunggakan, dan titipan rumahnya sendiri. Warga dapat melihat saldo serta ringkasan kas RT per bulan tanpa nama atau kode rumah. Status iuran rumah lain, rincian transaksi, catatan, dan bukti transfer hanya terlihat oleh pengurus.",
+        "Laporan yang disembunyikan identitasnya tidak menampilkan nama pelapor kepada warga lain, tetapi pengurus tetap dapat melihat pelapor untuk tindak lanjut.",
+        "Website publik hanya menampilkan artikel, dokumentasi, fasilitas, dan profil RT yang diterbitkan pengurus."
+      ]
+    },
+    {
+      "judul": "Data Anda tidak disebarkan",
+      "butir": [
+        "Data Anda hanya dipakai untuk keperluan layanan RT 05: administrasi warga, iuran, dan tindak lanjut laporan. Data tidak dijual. Khusus tombol panik, nama pelapor, rumah, dan jenis darurat dibagikan kepada semua warga dan pengurus aktif penerima yang telah menyetujui kebijakan ini; tidak ditampilkan di website publik.",
+        "Data disimpan di layanan database dan server yang dipakai aplikasi ini; notifikasi dikirim lewat Firebase Cloud Messaging (Google)."
+      ]
+    },
+    {
+      "judul": "Penyimpanan",
+      "butir": [
+        "Data tetap tersimpan selama Anda tercatat sebagai warga. Bila pindah atau meninggal, data diarsipkan dan tidak tampil lagi. 12 bulan kemudian nama, nomor WhatsApp, NIK, nomor KK, dan tanggal lahir dianonimkan otomatis. Catatan iuran dan kas tidak dihapus karena menjadi bukti keuangan RT.",
+        "Log teknis disimpan 14 hari, berkas ekspor 24 jam, dan notifikasi sekitar 12 bulan."
+      ]
+    },
+    {
+      "judul": "Hak Anda",
+      "butir": [
+        "Melihat dan memperbaiki data keluarga Anda (akun utama) atau meminta pengurus memperbaikinya.",
+        "Mengosongkan NIK, nomor KK, atau nomor WhatsApp kapan saja.",
+        "Meminta salinan data atau penonaktifan akun kepada pengurus.",
+        "Bila kebijakan ini berubah, aplikasi akan meminta persetujuan Anda lagi."
+      ]
+    },
+    {
+      "judul": "Tombol panik",
+      "butir": [
+        "Laporan darurat tidak anonim. Sebelum mengirim, Anda membaca ketentuan, memilih jenis darurat, lalu mengonfirmasi. Nama, alamat rumah, jenis, waktu, dan status kejadian dipakai untuk penanganan bersama. Tidak ada pengambilan lokasi GPS.",
+        "Pengurus mencatat hasil penanganan dan penilaian penyalahgunaan. Setelah tiga penyalahgunaan, tombol panik akun dinonaktifkan. Riwayat tetap disimpan untuk audit; identitas mengikuti kebijakan arsip dan anonimisasi yang sama.",
+        "Notifikasi memakai Firebase Cloud Messaging. Teks layar kunci tidak memuat nama atau alamat; detail hanya tersedia setelah masuk. Bunyi bergantung izin dan pengaturan perangkat. Tombol ini bukan pengganti 112, damkar, atau polisi."
+      ]
+    }
+  ]
+}
