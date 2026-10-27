@@ -34,7 +34,7 @@ Git root adalah folder `RT-05-TAKEDA/`, bukan folder induk `RT X TAKEDA`. Semua 
 
 ## Status tersimpan 20 Oktober 2026
 
-Angka ini hanya titik mulai historis, bukan urutan aktif. **Pembaruan 27 Okt: M17/M18 passed staging/emulator, M19 berikutnya sebelum M16 (ADR45).** Baca `docs/PROGRESS.md` untuk status hidup dan `docs/HANDOFF.md` untuk serah terima sesi terakhir.
+Angka ini hanya titik mulai historis, bukan urutan aktif. **Pembaruan 27 Okt sore: M17/M18 passed; M19 selesai dikode + diaudit (APK 1025), tinggal uji HP nyata (`docs/UJI_HP_M19.md`), lalu M16. Mulai dari HANDOFF bagian 0.** Baca `docs/PROGRESS.md` untuk status hidup dan `docs/HANDOFF.md` untuk serah terima sesi terakhir.
 
 M00–M15 **passed** untuk staging sintetis (M15 ditutup 22 Okt 2026 atas keputusan pemilik, ADR36; M15b permintaan Pak RT, ADR35, APK 1011). **M16 berikutnya**: production + sisa gate M15 yang dipindah (verifikasi developer Android, kontak/masa simpan privasi, DB cadangan, uji hosting Biznet, TalkBack, pemulihan foto/push). Status terkini dan pertanyaan untuk pemilik ada di `docs/HANDOFF.md`.
 
