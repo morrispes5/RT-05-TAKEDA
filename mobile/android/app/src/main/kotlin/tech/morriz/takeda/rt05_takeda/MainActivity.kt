@@ -41,6 +41,9 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Activity bisa dibuat ulang setelah sesi pemasangan di-commit: status PackageInstaller lalu tiba di sini,
+        // bukan onNewIntent. Kanal rt05/update sudah dibuat oleh super.onCreate (configureFlutterEngine).
+        if (savedInstanceState == null && intent?.action == installAction) installStatus(intent)
         capture(intent)
         val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
