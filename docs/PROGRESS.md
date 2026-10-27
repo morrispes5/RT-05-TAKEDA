@@ -10,6 +10,8 @@ penyalahgunaan append-only (migrasi `2026_10_28_000100`), jenis darurat wajib di
 kelompok perubahan + indeks (migrasi `2026_10_28_000200`; tes skala 16.404 ms → 33 ms), tes alarm mode shared
 30 penerima. Validasi: backend **435/435**, Flutter **341/341**, analyze/format/Pint/check-repo PASS.
 M19 tetap in_progress: gate HP nyata belum. Tiga keputusan pemilik baru di HANDOFF bagian 6.
+Lanjutan (PR #96, staging `613466b`): dashboard tanpa rumah arsip, jarak label panik. **APK 1025** dirilis Selasa 27 Okt
+13.38 WIB (`/unduh`) dan 13.39 WIB (Drive, ID tetap); 1024 tidak disebar. Uji HP nyata M19 memakai 1025.
 
 ## M19 — Tombol panik — 27 Oktober 2026: **in_progress (staging terbatas; menunggu HP nyata)**
 
