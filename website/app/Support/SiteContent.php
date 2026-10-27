@@ -107,7 +107,9 @@ class SiteContent
     /** Kebijakan Privasi publik; isi sama dengan aplikasi (mobile/lib/features/auth/privacy_policy.dart, ADR35). */
     public static function privacy(): array
     {
-        return json_decode(file_get_contents(resource_path('data/privasi.json')), true, flags: JSON_THROW_ON_ERROR);
+        $file = config('privacy.panic_enabled') ? 'privasi-m19.json' : 'privasi.json';
+
+        return json_decode(file_get_contents(resource_path('data/'.$file)), true, flags: JSON_THROW_ON_ERROR);
     }
 
     /**
