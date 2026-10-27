@@ -1,6 +1,22 @@
 # Progress — RT05 TAKEDA
 
-## M19 — Tombol panik — 27 Oktober 2026: **in_progress (perencanaan)**
+## M19 — Tombol panik — 27 Oktober 2026: **in_progress (implementasi lokal)**
+
+**Eksekusi diotorisasi pemilik:** “okee gass lgsg aja eksekusi”. Branch `codex/m19-tombol-panik` di worktree
+`m17-verifikasi-1018`; tanpa fetch/pull/push/PR/deploy remote, checkout awal/MyRepublic tetap utuh.
+DB/domain/API/kontrak, idempotensi/lock/trigger, pembatasan laju, penanganan/penyalahgunaan dan kendali fitur,
+outbox/inbox/FCM, privasi 27 Oktober, alur mobile tiga langkah + shortcut/kanal Android telah ditulis.
+Default deployment **nonaktif**, audience restricted kosong; tidak ada broadcast ke warga asli.
+
+Regresi awal menemukan dan memperbaiki status bawaan respons baru, fungsi trigger saat migration tes ulang,
+serta CHECK notifikasi yang harus mempertahankan bukti iuran M15b tanpa tagihan. Guard role segar dan cache
+idempotensi ID saja mencegah catatan pengurus/identitas lama terbuka. Status provider dipisahkan dari bukti HP.
+Hasil/gate akhir sesi: [LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md).
+Tes lokal final: backend **431/431, 4.518 assertions**, Flutter **335/335**, website **41/41, 549 assertions**;
+analyze/Pint/format 101/0, OpenAPI dan kontrak Compose PASS. Build Android lokal dicatat di bukti.
+M19 belum passed: belum staging, APK rilis, uji alarm HP nyata atau UAT. Rilis terakhir tetap APK 1021.
+
+### Riwayat perencanaan 27 Oktober
 
 Pemilik mengoreksi prioritas: **M17 → M18 → M19 → M16 → M20** (ADR45), tombol panik sebelum M16.
 Ketentuan Claude sudah ada di ADR43 butir 8 dan ROADMAP M19. Rencana rinci baru:

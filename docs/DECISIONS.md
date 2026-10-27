@@ -755,3 +755,7 @@ dokumentasi Claude karena akses `origin` berulang memunculkan permintaan kata sa
 4. Sesi lanjutan memakai dokumentasi dan Git lokal; **jangan fetch, pull, push, atau mengakses remote `origin`
    secara otomatis**. Otorisasi remote sebelumnya tidak dipakai sebagai alasan mengulang akses yang kini dilarang.
    Akses remote menunggu instruksi baru pemilik. Tidak mengubah credential helper, URL remote, atau autentikasi.
+
+**Eksekusi lokal 27 Okt:** pemilik kemudian meminta “okee gass lgsg aja eksekusi”. Implementasi M19 lokal
+diotorisasi; larangan origin tetap berlaku. Default teknis kandidat, tes dan gate ditulis di M19_PLAN bagian 7
+dan [LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md). Ini bukan penerimaan alarm HP nyata atau izin production.

@@ -1,6 +1,8 @@
 # Rencana M19 — Tombol panik
 
-Tanggal: **27 Oktober 2026**. Status: **perencanaan; belum diimplementasikan atau diuji**.
+Tanggal: **27 Oktober 2026**. Status: **implementasi lokal; belum penerimaan staging/HP nyata**.
+Pemilik meminta eksekusi langsung sesudah rencana dicatat. Hasil lokal dan gate tersisa:
+[LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md).
 Pemilik memprioritaskan M19 sesudah M18, sebelum M16 (ADR45). Ketentuan fitur berasal dari
 **ADR43 butir 8** dan **ROADMAP M19** yang sudah ditulis pada sesi Claude. Dokumen ini merinci
 pekerjaan dan bukti yang harus dikumpulkan; tidak menganggap rancangan teknis sebagai hasil uji.
@@ -66,7 +68,7 @@ Ketentuan bisnis pada bagian 1 tidak perlu ditanyakan ulang. Usulan berikut belu
 | --- | --- |
 | Laporan palsu dan penyalahgunaan | Jangan otomatis menyamakan keduanya. Catat penilaian penyalahgunaan dan alasan pengurus secara eksplisit agar salah ketuk tidak dihitung diam-diam |
 | Pemulihan akun setelah 3 penyalahgunaan | Belum ada keputusan; jangan membuat pemulihan otomatis atau mereset hitungan diam-diam |
-| Nomor batas laju dan durasi bunyi | Tentukan lewat uji, dokumentasikan bersama perilaku saat batas tercapai; tidak menebak kemampuan Android |
+| Nomor batas laju dan durasi bunyi | Kandidat lokal: 3 laporan akun/jam, 10 laporan RT/menit, satu laporan aktif per akun; alarm mengikuti bunyi kanal Android, tanpa loop atau bypass pengaturan HP. Evaluasi saat uji nyata |
 | Notifikasi layar kunci | Periksa pengaturan privasi dan izin perangkat; identitas lengkap tetap tersedia di detail yang terautentikasi |
 | Menonaktifkan fitur saat pengiriman berjalan | Definisikan nasib pekerjaan yang belum dikirim dan riwayat yang sudah tersimpan, lalu kunci dengan tes |
 | Retensi/audit | Selaraskan dengan kebijakan data yang berlaku; riwayat penanganan tidak dihapus untuk menyembunyikan penyalahgunaan |
@@ -102,3 +104,34 @@ Urutan aktif: **M17 → M18 → M19 → M16 → M20** (ADR45). Jadwal pindah VPS
 dari ADR43 tetap catatan rencana, tidak otomatis menjadi bukti kesiapan atau izin production. Gate M16 tetap berlaku.
 
 Sesi perencanaan ini bekerja dari dokumen lokal, tanpa fetch/pull/push atau akses remote `origin` sesuai instruksi pemilik.
+
+## 7. Default teknis kandidat lokal (27 Oktober)
+
+Ini pilihan implementasi terbatas untuk diuji, bukan tambahan keputusan bisnis pemilik:
+
+- `kejadian_darurat` menyimpan referensi akun/rumah, jenis, status, versi, penanganan dan penilaian penyalahgunaan.
+  Nama/alamat dibaca dari data master, bukan snapshot baru yang lolos anonimisasi. Penanganan terminal sekali;
+  salah penilaian belum punya jalur edit/reset otomatis. Alasan wajib dan hanya terlihat pengurus.
+- Semua warga/pengurus aktif penerima yang setuju privasi 27 Oktober masuk fanout. Staging memakai audience
+  restricted + allowlist UUID akun sintetis di env privat; allowlist kosong tidak bisa diaktifkan. Audience all
+  memerlukan konfigurasi operator secara eksplisit. Akun baru tidak menerima replay kejadian sebelum akun dibuat.
+- Detail warga: kejadian komunitas 24 jam terakhir sejak akun dibuat + riwayat sendiri; pengurus seluruh riwayat.
+  Tombol akun dinonaktifkan setelah 3 penilaian eksplisit, tetapi layanan lain/penerimaan tetap tersedia.
+  Penilaian menghasilkan peringatan inbox/push sistem, tanpa membunyikan alarm darurat baru.
+- Idempotency-Key melindungi kirim/penanganan/pengaturan. Cache kirim/penanganan hanya ID; respons replay
+  memuat detail terkini sesuai policy. Trigger mempertahankan laporan asal dan hasil terminal, termasuk saat SQL
+  salah mencoba mengubah/menghapusnya. Migration down menolak penghapusan jika riwayat sudah ada.
+- Event, inbox dan provider adalah status berbeda. Detail menampilkan antrean, diproses, gagal/sebagian gagal,
+  dilewati atau provider menerima. Provider menerima **bukan** bukti HP berbunyi. Fitur mati, laporan terminal,
+  atau usia lewat 10 menit menahan alarm yang belum dikirim. TTL provider memakai sisa jendela 10 menit;
+  pengiriman yang sudah diterima jaringan/provider tidak bisa ditarik kembali.
+- Teks privasi 27 Oktober khusus M19 menjelaskan penyebaran identitas darurat. API/worker/website harus memakai
+  flag yang sama. Teks 25/26 Oktober tetap tersedia; APK lama tidak dapat menyetujui versi baru tanpa teksnya.
+- Shortcut membuka langkah awal setelah sesi/privasi sah; tidak pernah mengirim sendiri. Kanal Android terpisah,
+  teks generik di layar kunci, ref UUID, bunyi sistem alarm dan getar, tanpa izin full-screen/override DND/lokasi.
+  Force-stop, izin, latar/terkunci dan suara tetap menunggu bukti HP nyata.
+
+Rujukan teknis primer: [kanal notifikasi Android](https://developer.android.com/develop/ui/compose/notifications/channels),
+[shortcut Android](https://developer.android.com/develop/ui/compose/system/shortcuts/creating-shortcuts), dan
+[payload FCM HTTP v1](https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidNotification).
+Ketentuan produk tetap mengikuti ADR43, bukan diturunkan dari dokumentasi platform.

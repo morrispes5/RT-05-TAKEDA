@@ -3,7 +3,7 @@
 ## Prioritas aktif — 27 Oktober 2026 (ADR45)
 
 Pemilik mendahulukan **M19 tombol panik sebelum M16**: M17 → M18 → **M19** → M16 → M20.
-M18 passed staging sintetis/emulator; M19 saat ini perencanaan, belum implementasi atau uji alarm.
+M18 passed staging sintetis/emulator; M19 kini implementasi lokal, belum penerimaan staging/HP nyata.
 Rencana rinci dari ketentuan Claude: [M19_PLAN.md](M19_PLAN.md). Gate production M16 tetap berlaku.
 
 ## Penyesuaian target deployment — 15 Oktober 2026
