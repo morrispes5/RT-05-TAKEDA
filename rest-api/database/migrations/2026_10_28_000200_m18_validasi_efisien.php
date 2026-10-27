@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Audit M18 (28 Okt): validasi ledger tetap penuh, tetapi tidak diulang untuk setiap baris.
+ * Audit M18 (27 Okt): validasi ledger tetap penuh, tetapi tidak diulang untuk setiap baris.
  *
  * Sebelumnya setiap baris yang berubah memicu pemindaian seluruh rt05_finance_violations saat commit, sehingga biaya
  * tumbuh kuadratik (300 rumah × 12 bulan ≈ 16 detik). Sekarang trigger statement rt05_keuangan_lock mereset penanda

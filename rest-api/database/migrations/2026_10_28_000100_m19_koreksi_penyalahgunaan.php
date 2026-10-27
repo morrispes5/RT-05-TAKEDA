@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Audit M19 (28 Okt): penanda penyalahgunaan yang keliru dapat dibatalkan pengurus tanpa mengubah riwayat darurat
+ * Audit M19 (27 Okt): penanda penyalahgunaan yang keliru dapat dibatalkan pengurus tanpa mengubah riwayat darurat
  * (baris kejadian tetap terkunci). Satu koreksi per laporan, wajib alasan, append-only. Aditif.
  */
 return new class extends Migration
