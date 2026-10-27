@@ -14,8 +14,14 @@ final class Privacy
 
     public const FINANCE_VERSION = '2026-10-26';
 
+    public const PANIC_VERSION = '2026-10-27';
+
     public static function version(): string
     {
+        if (config('panic.enabled')) {
+            return self::PANIC_VERSION;
+        }
+
         return config('finance.v2') ? self::FINANCE_VERSION : self::VERSION;
     }
 

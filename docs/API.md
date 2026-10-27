@@ -5,6 +5,29 @@ Desain ini digunakan untuk membuat docs/openapi.yaml di M02. Implementasi endpoi
 
 ## Konvensi
 
+### M19 — tombol panik (lokal, belum staging/APK rilis)
+
+GET `/emergencies/status`: deployment tersedia, fitur aktif, versi pengaturan, hitungan penyalahgunaan akun sendiri,
+versi ketentuan dan penanda uji terbatas. GET `/emergencies` berhalaman dan GET `/emergencies/{id}` memerlukan
+akun aktif dan teks privasi **2026-10-27**; deployment flag tetap wajib. Warga melihat kejadian 24 jam terakhir
+sejak akun dibuat serta riwayat sendiri; pengurus melihat seluruh riwayat. Audience restricted membatasi warga
+lain ke allowlist sintetis. Catatan pengurus/penilaian penyalahgunaan tidak dikirim ke warga.
+
+POST `/emergencies`: `jenis`, `konfirmasi: true`, `versi_ketentuan: 2026-10-27`, header UUID Idempotency-Key.
+Pelapor/rumah selalu ditentukan server. Satu laporan aktif per akun; niat ulang jenis sama mengembalikan laporan
+itu tanpa fanout baru, jenis berbeda 409. Batas DB awal 3 laporan per akun/jam dan 10 global/menit menghasilkan
+429; laporan aktif/retry tidak menghabiskan budget lagi. Hitungan tiga penyalahgunaan menghasilkan 403.
+
+POST `/admin/emergencies/{id}/resolve`: `versi`, `status: selesai|palsu`, `penyalahgunaan` boolean eksplisit,
+`alasan` 3–1000 karakter. Penyalahgunaan hanya pada status palsu; terminal sekali, versi basi 409. POST
+`/admin/emergencies/settings`: `versi`, `aktif` boolean. Keduanya pengurus aktif + Idempotency-Key. Cache hasil
+kirim/penanganan hanya ID mutasi; replay memuat detail terkini melalui policy, tanpa menyimpan nama/alamat lama.
+Semua respons M19 no-store. Mematikan fitur tidak menghapus laporan atau menarik push yang sudah diterima provider.
+
+Flag `RT05_PANIC_ENABLED=false` default. Audience default restricted dengan allowlist kosong (belum dapat diaktifkan).
+API, workers dan website harus memakai flag konsisten. Push hanya teks generik, ref UUID, kanal `rt05_darurat_v1`,
+tanpa nama/alamat di layar kunci; detail identitas melalui API. Inbox/outbox bukan bukti seluruh HP menerima alarm.
+
 ### M18 — endpoint keuangan fleksibel (flag nonaktif sampai rilis lengkap)
 
 `RT05_FINANCE_V2=false` mempertahankan kontrak pencatatan M12. Saat aktif, mutasi keuangan pengurus wajib

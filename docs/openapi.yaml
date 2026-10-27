@@ -3985,6 +3985,147 @@ paths:
               schema: {type: string, format: binary}
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/emergencies/status:
+    get:
+      operationId: emergencyStatus
+      tags: [Community]
+      summary: Ketersediaan tombol panik dan hitungan penyalahgunaan akun sendiri
+      x-status: implemented
+      x-milestone: M19
+      responses:
+        '200':
+          description: Status fitur, no-store. Memerlukan akun aktif.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EmergencyStatusEnvelope'}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/emergencies:
+    get:
+      operationId: emergencies
+      tags: [Community]
+      summary: Kejadian 24 jam terakhir dan riwayat sendiri; pengurus melihat semua
+      description: Memerlukan deployment M19 dan persetujuan teks privasi 27 Oktober. Penerima uji terbatas mengikuti allowlist. Identitas hanya di API terautentikasi, no-store.
+      x-status: implemented
+      x-milestone: M19
+      responses:
+        '200':
+          description: Daftar berhalaman.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EmergencyPage'}
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      operationId: createEmergency
+      tags: [Community]
+      summary: Konfirmasi laporan darurat dengan identitas dan rumah dari server
+      description: Tiga langkah pada client; konfirmasi dan versi ketentuan wajib. Satu laporan aktif per akun; key sama replay. Tiga penyalahgunaan menonaktifkan pengiriman. Batas DB 3 laporan per akun per jam dan 10 laporan global per menit, retry laporan aktif tidak menghabiskan budget. Inbox/outbox bukan bukti alarm diterima HP.
+      x-status: implemented
+      x-milestone: M19
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [jenis, konfirmasi, versi_ketentuan]
+              properties:
+                jenis: {type: string, enum: [kebakaran, kemalingan, penyerangan, lainnya]}
+                konfirmasi: {type: boolean, const: true}
+                versi_ketentuan: {type: string, const: '2026-10-27'}
+      responses:
+        '201':
+          description: Laporan tersimpan atau laporan aktif yang sama; pengiriman asinkron.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EmergencyEnvelope'}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/emergencies/{id}:
+    get:
+      operationId: emergencyDetail
+      tags: [Community]
+      summary: Detail darurat beridentitas untuk penerima yang berhak
+      x-status: implemented
+      x-milestone: M19
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        '200':
+          description: Identitas, rumah, jenis dan status; catatan penanganan hanya pengurus.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EmergencyEnvelope'}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/emergencies/settings:
+    post:
+      operationId: configureEmergencies
+      tags: [Community]
+      summary: Pengurus mengaktifkan atau menonaktifkan fitur dengan versi
+      description: Deployment flag dan audience tetap diperlukan; pengaturan database tidak dapat melewati gate server. Menonaktifkan menahan fanout/push yang belum dikirim; jaringan yang sudah menerima tidak dapat ditarik kembali.
+      x-status: implemented
+      x-milestone: M19
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [versi, aktif]
+              properties:
+                versi: {type: integer, minimum: 1}
+                aktif: {type: boolean}
+      responses:
+        '200':
+          description: Status dan versi pengaturan baru.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EmergencyStatusEnvelope'}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/admin/emergencies/{id}/resolve:
+    post:
+      operationId: resolveEmergency
+      tags: [Community]
+      summary: Pengurus menandai selesai atau palsu dan menilai penyalahgunaan secara eksplisit
+      description: Alasan wajib. Penyalahgunaan hanya boleh pada status palsu. Terminal sekali; versi basi 409. Replay key tidak menggandakan hitungan. Tidak ada reset atau buka ulang otomatis.
+      x-status: implemented
+      x-milestone: M19
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [versi, status, penyalahgunaan, alasan]
+              properties:
+                versi: {type: integer, minimum: 1}
+                status: {type: string, enum: [selesai, palsu]}
+                penyalahgunaan: {type: boolean}
+                alasan: {type: string, minLength: 3, maxLength: 1000}
+      responses:
+        '200':
+          description: Laporan setelah ditangani.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EmergencyEnvelope'}
+        default:
+          $ref: '#/components/responses/Error'
 security:
   - bearerAuth: []
   - cookieAuth: []
@@ -4063,6 +4204,56 @@ components:
           schema:
             $ref: "#/components/schemas/DataEnvelope"
   schemas:
+    Emergency:
+      type: object
+      additionalProperties: false
+      required: [id, jenis, status, versi, pelapor, rumah, created_at, selesai_at]
+      properties:
+        id: {type: string, format: uuid}
+        jenis: {type: string, enum: [kebakaran, kemalingan, penyerangan, lainnya]}
+        status: {type: string, enum: [aktif, selesai, palsu]}
+        versi: {type: integer, minimum: 1}
+        pelapor: {type: [string, 'null']}
+        rumah: {type: [string, 'null']}
+        created_at: {type: string, format: date-time}
+        selesai_at: {type: [string, 'null'], format: date-time}
+        penyalahgunaan: {type: boolean}
+        catatan_pengurus: {type: [string, 'null']}
+        pemberitahuan:
+          type: string
+          enum: [belum_diketahui, antrean, diproses, gagal, sebagian_gagal, dilewati, provider_menerima]
+          description: Status pada detail dan hasil mutasi; provider_menerima bukan bukti HP menerima atau berbunyi.
+    EmergencyEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data: {$ref: '#/components/schemas/Emergency'}
+        meta: {$ref: '#/components/schemas/Meta'}
+    EmergencyPage:
+      type: object
+      required: [data, meta, links]
+      properties:
+        data:
+          type: array
+          items: {$ref: '#/components/schemas/Emergency'}
+        meta: {type: object}
+        links: {type: object}
+    EmergencyStatusEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+          additionalProperties: false
+          required: [tersedia, aktif, versi, penyalahgunaan, versi_ketentuan, uji_terbatas]
+          properties:
+            tersedia: {type: boolean}
+            aktif: {type: boolean}
+            versi: {type: integer, minimum: 1}
+            penyalahgunaan: {type: integer, minimum: 0}
+            versi_ketentuan: {type: string, const: '2026-10-27'}
+            uji_terbatas: {type: boolean}
+        meta: {$ref: '#/components/schemas/Meta'}
     FinanceSettlement:
       type: object
       additionalProperties: false
