@@ -325,4 +325,26 @@ class M18FinanceDomainTest extends TestCase
             $this->assertSame('IDEMPOTENCY_KEY_REUSED', $e->errorCode);
         }
     }
+
+    /** Audit M18: validasi sekali per kelompok perubahan tidak boleh meloloskan perubahan sesudah pemeriksaan pertama. */
+    public function test_ledger_check_runs_again_for_changes_made_after_a_passing_check(): void
+    {
+        $house = $this->house();
+        $actor = $this->pengurus();
+        $bad = fn () => DB::table('transaksi_kas')->insert(['id' => (string) Str::uuid(), 'jenis' => 'pemasukan', 'sumber' => 'iuran',
+            'kategori' => 'Penerimaan iuran', 'nominal' => 1000, 'tanggal' => '2026-10-25', 'keterangan' => 'Tanpa pembayaran',
+            'dicatat_oleh_id' => $actor->id]);
+        // Pemeriksaan pertama lulus, lalu perubahan tidak sah sesudahnya di transaksi yang sama tetap ditolak.
+        $this->rejectSql(function () use ($house, $actor, $bad) {
+            $this->pay($actor, $house, 75000);
+            DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+            DB::statement('SET CONSTRAINTS ALL DEFERRED');
+            $bad();
+        });
+        // Perubahan tidak sah diikuti perubahan sah: pemeriksaan melihat keadaan akhir dan tetap menolak.
+        $this->rejectSql(function () use ($house, $actor, $bad) {
+            $bad();
+            $this->pay($actor, $house, 75000, null, 'sumbangan');
+        });
+    }
 }

@@ -35,6 +35,8 @@ final class Notifications
             'pengaduan.dibuat' => self::toPengurus($event, 'pengaduan', ['pengaduan_id' => $id], 'Pengaduan baru', 'Ada pengaduan baru yang perlu ditindaklanjuti.'),
             'darurat.dibuat' => self::emergency($event),
             'darurat.ditangani' => self::emergencyResolution($event),
+            'darurat.penyalahgunaan_dibatalkan' => ($e = KejadianDarurat::find($id)) && self::send($event, [$e->pelapor_id], 'sistem', [],
+                'Penanda penyalahgunaan dibatalkan', 'Pengurus membatalkan penanda penyalahgunaan pada salah satu laporan darurat Anda. Hitungan penyalahgunaan sudah diperbarui.'),
             'pengaduan.status_berubah' => ($p = Pengaduan::find($id)) && self::send($event, [$p->pelapor_id], 'pengaduan', ['pengaduan_id' => $id],
                 'Status pengaduan diperbarui', 'Pengaduan "'.Str::limit($p->judul, 60).'" kini berstatus '.self::label(self::eventStatus($event, $p->status)).'.'),
             'aspirasi.dibuat' => self::toPengurus($event, 'aspirasi', ['aspirasi_id' => $id], 'Aspirasi baru', 'Ada aspirasi baru dari warga.'),

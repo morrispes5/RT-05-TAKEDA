@@ -53,16 +53,19 @@ final class Emergencies
         if (! config('panic.enabled')) {
             throw new DomainConflict('PANIC_UNAVAILABLE', 'Tombol panik belum tersedia di server ini.', 403);
         }
-        if ($actor->privasi_versi !== Privacy::PANIC_VERSION) {
+        if (! Privacy::atLeast($actor->privasi_versi, Privacy::PANIC_VERSION)) {
             throw new DomainConflict('PRIVACY_CONSENT_REQUIRED', 'Baca dan setujui Kebijakan Privasi terbaru terlebih dahulu.', 403);
         }
 
         return $actor;
     }
 
+    /** Penyalahgunaan yang sudah dibatalkan pengurus (koreksi_penyalahgunaan_darurat) tidak dihitung. */
     public static function misuseCount(string $actor): int
     {
-        return KejadianDarurat::where('pelapor_id', $actor)->where('penyalahgunaan', true)->count();
+        return KejadianDarurat::where('pelapor_id', $actor)->where('penyalahgunaan', true)
+            ->whereNotExists(fn ($q) => $q->from('koreksi_penyalahgunaan_darurat')->whereColumn('kejadian_darurat_id', 'kejadian_darurat.id'))
+            ->count();
     }
 
     public static function create(Akun $actor, string $kind): KejadianDarurat
@@ -125,6 +128,35 @@ final class Emergencies
         });
     }
 
+    /** Audit M19: batalkan penanda penyalahgunaan yang keliru. Riwayat kejadian tidak diubah; koreksi append-only. */
+    public static function correctMisuse(Akun $actor, string $id, string $reason): KejadianDarurat
+    {
+        return DB::transaction(function () use ($actor, $id, $reason) {
+            self::lock();
+            $actor = self::authorize($actor, true);
+            if (mb_strlen(trim($reason)) < 5 || mb_strlen(trim($reason)) > 300) {
+                throw new DomainConflict('PANIC_INVALID_CORRECTION', 'Alasan pembatalan wajib 5–300 karakter.', 422);
+            }
+            $e = KejadianDarurat::whereKey($id)->lockForUpdate()->firstOrFail();
+            if ($e->status !== 'palsu' || ! $e->penyalahgunaan) {
+                throw new DomainConflict('PANIC_NOT_MISUSE', 'Laporan ini tidak ditandai penyalahgunaan.', 422);
+            }
+            if (self::misuseCorrected($id)) {
+                throw new DomainConflict('PANIC_MISUSE_ALREADY_CORRECTED', 'Penanda penyalahgunaan laporan ini sudah dibatalkan.');
+            }
+            DB::table('koreksi_penyalahgunaan_darurat')->insert(['kejadian_darurat_id' => $id, 'dicatat_oleh_id' => $actor->id, 'alasan' => trim($reason)]);
+            Audit::record($actor, 'darurat.penyalahgunaan_dibatalkan', 'kejadian_darurat', $id, []);
+            Outbox::record('darurat.penyalahgunaan_dibatalkan', 'kejadian_darurat', $id);
+
+            return $e;
+        });
+    }
+
+    public static function misuseCorrected(string $id): bool
+    {
+        return DB::table('koreksi_penyalahgunaan_darurat')->where('kejadian_darurat_id', $id)->exists();
+    }
+
     public static function configure(Akun $actor, int $version, bool $active): object
     {
         return DB::transaction(function () use ($actor, $version, $active) {
@@ -153,7 +185,12 @@ final class Emergencies
 
     public static function recipients(OutboxEvent $event): array
     {
-        $q = Akun::where('status', 'aktif')->where('privasi_versi', Privacy::PANIC_VERSION)->where('created_at', '<=', $event->created_at);
+        // Audit M19: minimal versi persetujuan (bukan sama persis) dan pelapor tidak menerima alarm laporannya sendiri.
+        $q = Akun::where('status', 'aktif')->where('privasi_versi', '>=', Privacy::PANIC_VERSION)->where('created_at', '<=', $event->created_at);
+        $reporter = KejadianDarurat::whereKey($event->aggregate_id)->value('pelapor_id');
+        if ($reporter !== null) {
+            $q->whereKeyNot($reporter);
+        }
         if (config('panic.audience') !== 'all') {
             $q->whereIn('id', config('panic.recipient_ids', []));
         }
@@ -170,7 +207,8 @@ final class Emergencies
             'pelapor' => $a?->nama, 'rumah' => $h?->alamat(), 'created_at' => $e->created_at->toIso8601String(),
             'selesai_at' => $e->selesai_at?->toIso8601String(),
             // Residents receive no misuse count, operator identity, or free-form assessment notes.
-            ...($admin ? ['penyalahgunaan' => $e->penyalahgunaan, 'catatan_pengurus' => $e->catatan_pengurus] : [])];
+            ...($admin ? ['penyalahgunaan' => $e->penyalahgunaan, 'catatan_pengurus' => $e->catatan_pengurus,
+                'penyalahgunaan_dibatalkan' => $e->penyalahgunaan && self::misuseCorrected($e->id)] : [])];
     }
 
     /** Delivery to the provider is not proof of sound or receipt on a device. */

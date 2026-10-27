@@ -127,7 +127,8 @@ class M19EmergencyTest extends TestCase
         $out = OutboxEvent::where('type', 'darurat.dibuat')->where('aggregate_id', $e->id)->firstOrFail();
         (new ProcessOutboxEvent($out->id))->handle();
         (new ProcessOutboxEvent($out->id))->handle();
-        $this->assertSame(2, Notifikasi::where('event_id', $out->id)->count());
+        // Audit M19: pelapor tidak menerima alarm laporannya sendiri; pengurus menerima tepat sekali.
+        $this->assertSame([$admin->id], Notifikasi::where('event_id', $out->id)->pluck('penerima_id')->all());
         $this->assertSame(0, Notifikasi::whereIn('penerima_id', [$old->id, $pending->id])->where('jenis', 'darurat')->count());
         $serialized = Notifikasi::where('event_id', $out->id)->get()->toJson().json_encode($out->safe_payload);
         $this->assertStringNotContainsString($a->nama, $serialized);
@@ -139,11 +140,12 @@ class M19EmergencyTest extends TestCase
     {
         $a = $this->consent($this->warga('panic8'));
         $b = $this->consent($this->warga('panic9'));
-        config(['panic.audience' => 'restricted', 'panic.recipient_ids' => [$a->id]]);
+        $c = $this->consent($this->warga('panic9c'));
+        config(['panic.audience' => 'restricted', 'panic.recipient_ids' => [$a->id, $c->id]]);
         $e = Emergencies::create($a, 'kemalingan');
         $out = OutboxEvent::where('aggregate_id', $e->id)->firstOrFail();
         (new ProcessOutboxEvent($out->id))->handle();
-        $this->assertSame([$a->id], Notifikasi::where('event_id', $out->id)->pluck('penerima_id')->all());
+        $this->assertSame([$c->id], Notifikasi::where('event_id', $out->id)->pluck('penerima_id')->all());
         $this->as($b)->getJson('/api/v1/emergencies/'.$e->id)->assertNotFound();
         config(['panic.recipient_ids' => []]);
         $this->send($b)->assertForbidden();
@@ -324,6 +326,7 @@ class M19EmergencyTest extends TestCase
     public function test_api_distinguishes_queue_provider_failure_and_provider_acceptance_from_device_receipt(): void
     {
         $a = $this->consent($this->warga('panic19'));
+        $this->consent($this->warga('panic19b')); // penerima (pelapor tidak menerima alarmnya sendiri)
         $res = $this->send($a)->assertCreated()->assertJsonPath('data.pemberitahuan', 'antrean');
         $id = $res->json('data.id');
         $event = OutboxEvent::where('aggregate_id', $id)->where('type', 'darurat.dibuat')->firstOrFail();
@@ -333,5 +336,62 @@ class M19EmergencyTest extends TestCase
         $this->getJson('/api/v1/emergencies/'.$id)->assertOk()->assertJsonPath('data.pemberitahuan', 'gagal');
         DB::table('notifikasi')->where('event_id', $event->id)->update(['push_status' => 'terkirim']);
         $this->getJson('/api/v1/emergencies/'.$id)->assertOk()->assertJsonPath('data.pemberitahuan', 'provider_menerima');
+    }
+
+    public function test_newer_privacy_consent_keeps_panic_working_and_receiving(): void
+    {
+        // Audit M19: versi privasi berikutnya tidak boleh diam-diam mematikan tombol panik.
+        $this->assertTrue(Privacy::atLeast('2026-12-01', Privacy::PANIC_VERSION));
+        $this->assertTrue(Privacy::atLeast(Privacy::PANIC_VERSION, Privacy::PANIC_VERSION));
+        $this->assertFalse(Privacy::atLeast('2026-10-26', Privacy::PANIC_VERSION));
+        $this->assertFalse(Privacy::atLeast(null, Privacy::PANIC_VERSION));
+        $this->assertFalse(Privacy::atLeast('bukan-versi', Privacy::PANIC_VERSION));
+
+        $a = $this->warga('panicv1');
+        $a->forceFill(['privasi_versi' => '2026-12-01', 'privasi_disetujui_at' => now()])->save();
+        $b = $this->warga('panicv2');
+        $b->forceFill(['privasi_versi' => '2026-12-01', 'privasi_disetujui_at' => now()])->save();
+        $old = $this->warga('panicv3');
+        $old->forceFill(['privasi_versi' => '2026-10-26', 'privasi_disetujui_at' => now()])->save();
+        $id = $this->send($a)->assertCreated()->json('data.id');
+        $out = OutboxEvent::where('type', 'darurat.dibuat')->where('aggregate_id', $id)->firstOrFail();
+        (new ProcessOutboxEvent($out->id))->handle();
+        $this->assertSame([$b->id], Notifikasi::where('event_id', $out->id)->pluck('penerima_id')->all());
+        $this->send($old)->assertForbidden()->assertJsonPath('error.code', 'PRIVACY_CONSENT_REQUIRED');
+    }
+
+    public function test_admin_can_cancel_a_mistaken_misuse_mark_once_and_the_sender_is_unblocked(): void
+    {
+        $a = $this->consent($this->warga('panicm1'));
+        $admin = $this->consent($this->pengurus());
+        config(['panic.account_hourly_limit' => 10]);
+        $ids = [];
+        for ($i = 0; $i < 3; $i++) {
+            $ids[] = $id = Emergencies::create($a, 'lainnya')->id;
+            $this->resolve($admin, $id, true, 'palsu')->assertOk();
+        }
+        $this->send($a)->assertForbidden()->assertJsonPath('error.code', 'PANIC_ACCOUNT_DISABLED');
+        $correct = fn (Akun $who, string $id, string $reason = 'Salah tandai, laporan ternyata benar') => $this->as($who)
+            ->withHeader('Idempotency-Key', (string) Str::uuid())->postJson("/api/v1/admin/emergencies/$id/misuse-correction", ['alasan' => $reason]);
+
+        $correct($a, $ids[0])->assertForbidden();
+        $correct($admin, $ids[0], 'abc')->assertStatus(422);
+        $correct($admin, $ids[0])->assertOk()->assertJsonPath('data.penyalahgunaan', true)->assertJsonPath('data.penyalahgunaan_dibatalkan', true);
+        $correct($admin, $ids[0])->assertConflict()->assertJsonPath('error.code', 'PANIC_MISUSE_ALREADY_CORRECTED');
+        $this->assertSame(2, Emergencies::misuseCount($a->id));
+        $this->as($a)->getJson('/api/v1/emergencies/status')->assertJsonPath('data.penyalahgunaan', 2);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'darurat.penyalahgunaan_dibatalkan', 'entity_id' => $ids[0]]);
+        $out = OutboxEvent::where('type', 'darurat.penyalahgunaan_dibatalkan')->where('aggregate_id', $ids[0])->firstOrFail();
+        (new ProcessOutboxEvent($out->id))->handle();
+        $this->assertSame([$a->id], Notifikasi::where('event_id', $out->id)->pluck('penerima_id')->all());
+        $this->send($a)->assertCreated();
+
+        // Laporan yang tidak ditandai penyalahgunaan tidak bisa "dikoreksi"; riwayat koreksi tidak bisa diubah.
+        $plain = $this->consent($this->warga('panicm2'));
+        $pid = Emergencies::create($plain, 'kebakaran')->id;
+        $this->resolve($admin, $pid, false, 'selesai')->assertOk();
+        $correct($admin, $pid)->assertStatus(422)->assertJsonPath('error.code', 'PANIC_NOT_MISUSE');
+        $this->expectException(QueryException::class);
+        DB::table('koreksi_penyalahgunaan_darurat')->where('kejadian_darurat_id', $ids[0])->update(['alasan' => 'diubah diam-diam']);
     }
 }

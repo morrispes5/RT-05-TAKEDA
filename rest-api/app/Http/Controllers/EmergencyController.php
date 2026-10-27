@@ -76,6 +76,17 @@ class EmergencyController extends Controller
         return $this->hydrate($r, $receipt);
     }
 
+    public function correctMisuse(Request $r, string $id): JsonResponse
+    {
+        Emergencies::authorize($r->user(), true);
+        $d = $r->validate(['alasan' => ['required', 'string', 'min:5', 'max:300']]);
+
+        $receipt = Idempotency::run($r, $r->user(), 'darurat.koreksi.'.$id, $d,
+            fn () => Api::data(['id' => Emergencies::correctMisuse($r->user(), $id, $d['alasan'])->id]));
+
+        return $this->hydrate($r, $receipt);
+    }
+
     /** Cache only the mutation reference. Replays must not preserve identities after anonymisation. */
     private function hydrate(Request $r, JsonResponse $receipt): JsonResponse
     {

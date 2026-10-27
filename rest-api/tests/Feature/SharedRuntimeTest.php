@@ -2,14 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Community\Emergencies;
 use App\Domain\Community\Push\PushGateway;
 use App\Support\Heartbeat;
+use App\Support\Privacy;
 use App\Support\SharedHosting;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Tests\Support\CommittedData;
 use Tests\Support\Fixtures;
 use Tests\TestCase;
@@ -215,6 +218,65 @@ class SharedRuntimeTest extends TestCase
             Http::assertSent(fn ($r) => str_contains($r->url(), 'fcm.googleapis.com/v1/projects/rt05-uji/messages:send'));
             $this->assertFalse(SharedHosting::backlog());
         } finally {
+            $this->purgeCommittedData();
+        }
+    }
+
+    /**
+     * Audit M19: di shared hosting alarm panik tidak boleh menunggu cron. Semua penerima (di sini 30 akun berperangkat)
+     * menerima push alarm setelah respons, dalam satu siklus permintaan, sebelum batas umur alarm 10 menit.
+     */
+    public function test_panic_alarm_reaches_all_recipients_after_the_response_without_cron(): void
+    {
+        $this->markCommittedData();
+        $setting = DB::table('system_settings')->where('key', 'darurat.fitur')->first();
+        try {
+            config(['panic.enabled' => true, 'panic.audience' => 'all']);
+            DB::table('system_settings')->where('key', 'darurat.fitur')->update(['value' => '{"aktif":true}']);
+            $cnf = dirname(PHP_BINARY).'/extras/ssl/openssl.cnf';
+            $opts = ['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA] + (is_file($cnf) && ! getenv('OPENSSL_CONF') ? ['config' => $cnf] : []);
+            openssl_pkey_export(openssl_pkey_new($opts), $pem, null, $opts);
+            config(['rt05.push.fcm.credentials_base64' => base64_encode(json_encode([
+                'type' => 'service_account', 'project_id' => 'rt05-uji', 'client_email' => 'push@rt05-uji.iam.gserviceaccount.com', 'private_key' => $pem,
+            ]))]);
+            $this->app->forgetInstance(PushGateway::class);
+            Http::fake([
+                'oauth2.googleapis.com/*' => Http::response(['access_token' => 'akses-uji', 'expires_in' => 3600]),
+                'fcm.googleapis.com/*' => Http::response(['name' => 'projects/rt05-uji/messages/1']),
+            ]);
+            $tag = bin2hex(random_bytes(2));
+            $recipients = [];
+            for ($i = 1; $i <= 30; $i++) {
+                $w = $this->warga("sp$tag-$i");
+                $w->forceFill(['privasi_versi' => Privacy::PANIC_VERSION, 'privasi_disetujui_at' => now()])->save();
+                $this->withToken($w->createToken('android')->plainTextToken)
+                    ->putJson("/api/v1/devices/hp-panic-$tag-$i", ['fcm_token' => "fcm-panic-$tag-$i".str_repeat('Ab1', 12), 'platform' => 'android'])->assertOk();
+                $this->app['auth']->forgetGuards();
+                $recipients[] = $w->id;
+            }
+            $reporter = $this->warga("sp$tag-p");
+            $reporter->forceFill(['privasi_versi' => Privacy::PANIC_VERSION, 'privasi_disetujui_at' => now()])->save();
+
+            $kernel = $this->app->make(Kernel::class);
+            $request = Request::create('/api/v1/emergencies', 'POST', [], [], [], ['CONTENT_TYPE' => 'application/json'],
+                json_encode(['jenis' => 'kebakaran', 'konfirmasi' => true, 'versi_ketentuan' => Emergencies::TERMS]));
+            $request->headers->set('Accept', 'application/json');
+            $request->headers->set('Idempotency-Key', (string) Str::uuid());
+            $request->headers->set('Authorization', 'Bearer '.$reporter->createToken('android')->plainTextToken);
+            $started = microtime(true);
+            $response = $kernel->handle($request);
+            $this->assertSame(201, $response->getStatusCode(), (string) $response->getContent());
+            $kernel->terminate($request, $response);
+
+            $this->assertLessThan(60, microtime(true) - $started);
+            $sent = DB::table('notifikasi')->whereIn('penerima_id', $recipients)->where('jenis', 'darurat')->pluck('push_status', 'penerima_id');
+            $this->assertCount(30, $sent);
+            $this->assertSame(['terkirim'], $sent->unique()->values()->all());
+            $this->assertSame(0, DB::table('notifikasi')->where('penerima_id', $reporter->id)->where('jenis', 'darurat')->count());
+            Http::assertSent(fn ($r) => str_contains($r->url(), 'fcm.googleapis.com') && str_contains((string) $r->body(), 'rt05_darurat_v1'));
+            $this->assertFalse(SharedHosting::backlog());
+        } finally {
+            DB::table('system_settings')->where('key', 'darurat.fitur')->update(['value' => $setting->value]);
             $this->purgeCommittedData();
         }
     }

@@ -8,6 +8,14 @@ Kolom: `jenis` kebakaran/kemalingan/penyerangan/lainnya; `status` aktif/selesai/
 penyalahgunaan hanya pada status palsu. Unique parsial satu kejadian aktif per akun. Trigger melarang DELETE,
 perubahan identitas/rumah/jenis/waktu asal, buka ulang, edit hasil terminal, dan transisi versi yang tidak berurutan.
 
+`koreksi_penyalahgunaan_darurat` (audit 28 Okt): UUID; FK unik `kejadian_darurat_id → kejadian_darurat`,
+`dicatat_oleh_id → akun` (RESTRICT); `alasan` 5–300 karakter; `created_at`. Append-only (trigger `rt05_immutable_row`).
+Penyalahgunaan yang punya koreksi tidak dihitung pada batas tiga kali; baris kejadian asal tetap tidak berubah.
+
+Indeks audit M18 (28 Okt): `alokasi_pembayaran(pembayaran_id)`, `(penggunaan_titipan_id)`, `(tagihan_id)`,
+`keringanan_iuran(pembayaran_id)`, `mutasi_titipan(pembayaran_id)`, `(penggunaan_titipan_id)`, `(membalik_id)`,
+`transaksi_kas(membalik_id)`. Validasi `rt05_finance_violations` berjalan sekali per kelompok perubahan.
+
 `notifikasi.kejadian_darurat_id` FK nullable menambah konteks jenis `darurat`; CHECK tetap tepat satu konteks
 sesuai jenis. `system_settings['darurat.fitur']` menyimpan `aktif`, default false, dengan versi dan audit.
 Tidak ada snapshot nama/alamat di outbox, push, audit atau cache idempotensi M19. Detail memuat identitas

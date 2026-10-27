@@ -4092,6 +4092,37 @@ paths:
               schema: {$ref: '#/components/schemas/EmergencyStatusEnvelope'}
         default:
           $ref: '#/components/responses/Error'
+  /api/v1/admin/emergencies/{id}/misuse-correction:
+    post:
+      operationId: correctEmergencyMisuse
+      tags: [Community]
+      summary: Pengurus membatalkan penanda penyalahgunaan yang keliru
+      description: Audit M19. Hanya laporan berstatus palsu dengan penyalahgunaan=true; satu koreksi per laporan (append-only, alasan 5–300 karakter). Riwayat kejadian tidak diubah; hitungan penyalahgunaan pelapor berkurang dan pelapor diberi notifikasi sistem. Bukan pengurus 403; bukan penyalahgunaan 422 PANIC_NOT_MISUSE; sudah dikoreksi 409 PANIC_MISUSE_ALREADY_CORRECTED.
+      x-status: implemented
+      x-milestone: M19
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [alasan]
+              properties:
+                alasan: {type: string, minLength: 5, maxLength: 300}
+      responses:
+        '200':
+          description: Laporan setelah koreksi.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EmergencyEnvelope'}
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/emergencies/{id}/resolve:
     post:
       operationId: resolveEmergency
@@ -4219,6 +4250,7 @@ components:
         selesai_at: {type: [string, 'null'], format: date-time}
         penyalahgunaan: {type: boolean}
         catatan_pengurus: {type: [string, 'null']}
+        penyalahgunaan_dibatalkan: {type: boolean, description: 'Khusus pengurus. true bila penanda penyalahgunaan dibatalkan lewat misuse-correction (tidak dihitung).'}
         pemberitahuan:
           type: string
           enum: [belum_diketahui, antrean, diproses, gagal, sebagian_gagal, dilewati, provider_menerima]
