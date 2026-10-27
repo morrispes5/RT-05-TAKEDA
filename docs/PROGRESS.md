@@ -1,6 +1,6 @@
 # Progress — RT05 TAKEDA
 
-## M19 — Tombol panik — 27 Oktober 2026: **in_progress (implementasi lokal)**
+## M19 — Tombol panik — 27 Oktober 2026: **in_progress (staging terbatas; menunggu HP nyata)**
 
 **Gate rilis 27 Oktober:** PR #92 merged menjadi `e9c5f5e`; CI source 10/10, staging immutable berhasil,
 backup terenkripsi sebelum migrasi berhasil direstore (19 tabel/view cocok) dan salinan privat Drive terverifikasi.
@@ -8,7 +8,20 @@ Fitur staging aktif **restricted untuk dua akun sintetis**, bukan warga asli; re
 APK signed 1022 berhasil dibangun dan upgrade emulator tanpa uninstall, tetapi **dibatalkan sebelum distribusi**:
 emulator menemukan tanggal footer privasi masih 26 Oktober meski isi/kontrak sudah 27 Oktober.
 Footer diperbaiki dan ditambah tes widget yang memeriksa tanggal serta payload persetujuan versi 27 Oktober.
-Rilis pengganti menunggu CI, artifact signed dan uji emulator; tautan publik masih 1021 pada tahap ini.
+PR #93 merged `8d356e44` setelah CI 7/7; tree identik source `873074a5`. Flutter **339/339**,
+format 101/0 dan analyze bersih. Staging diperbarui ke SHA tersebut; runtime-smoke dan enam layanan PASS,
+rekonsiliasi tetap **0 masalah / Rp2.180.000**. Workflow signed run `40448591468` / nomor 23 success:
+**1023 (3023/2023) dirilis Selasa 27 Okt, `/unduh` 11.37.23 WIB, Drive 11.37.38 WIB (ID tetap)**.
+Kedua ABI HTTPS dan unduh balik Drive byte/hash cocok artifact; sertifikat rilis tetap. Upgrade in-place,
+consent tanggal benar, Home kedua peran, pin launcher, FCM foreground/background dan tap detail teruji di emulator.
+Dua laporan sintetis selesai, retry satu rekaman, penalti nol, fitur restricted dipulihkan. Gejala tampilan hitam/beku
+pada renderer lama dicatat; buka ulang, intent/shortcut dan notifikasi ulang lulus. Restart AVD tanpa wipe dengan
+renderer software memulihkan sesi pengurus, Home dan pergantian akun normal; akar penyebab belum dipastikan.
+Uji HP nyata wajib mengulang login/resume/tap serta bunyi/getar; **M19 belum passed**.
+Backup pasca-migrasi direstore, **20 tabel/view cocok**,
+salinan terenkripsi Drive privat terverifikasi. Bukti rilis: [RELEASE_1023.md](evidence/m19/RELEASE_1023.md).
+
+### Riwayat implementasi lokal (sebelum rilis)
 
 **Rilis uji diminta pemilik:** lanjut publikasi build terbaru ke unduh/Drive untuk uji HP. API GitHub dipakai tanpa
 transport Git ke origin; staging hanya jalur immutable yang sudah ada, dengan penerima sintetis. Beranda pengurus

@@ -1,8 +1,9 @@
 # Rencana M19 — Tombol panik
 
-Tanggal: **27 Oktober 2026**. Status: **implementasi lokal; belum penerimaan staging/HP nyata**.
-Pemilik meminta eksekusi langsung sesudah rencana dicatat. Hasil lokal dan gate tersisa:
-[LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md).
+Tanggal: **27 Oktober 2026**. Status: **staging terbatas; menunggu penerimaan HP nyata**.
+Pemilik meminta eksekusi dan rilis uji sesudah rencana dicatat. Hasil lokal:
+[LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md); checkpoint rilis dan gate tersisa:
+[RELEASE_1023.md](evidence/m19/RELEASE_1023.md).
 Pemilik memprioritaskan M19 sesudah M18, sebelum M16 (ADR45). Ketentuan fitur berasal dari
 **ADR43 butir 8** dan **ROADMAP M19** yang sudah ditulis pada sesi Claude. Dokumen ini merinci
 pekerjaan dan bukti yang harus dikumpulkan; tidak menganggap rancangan teknis sebagai hasil uji.
