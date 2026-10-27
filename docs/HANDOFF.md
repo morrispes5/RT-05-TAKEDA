@@ -4,7 +4,44 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **27 Oktober 2026** (M19 staging terbatas, PR #92–93 merged; APK 1023 sudah di unduh/Drive 11.37 WIB. Gate HP nyata terbuka; emulator dan PostgreSQL lokal berhenti).
+Terakhir diperbarui: **Selasa 27 Oktober 2026 sore** (audit Claude M17–M19, PR #95–#98, staging `613466b`, APK 1025 di unduh/Drive 13.38–13.39 WIB; berikutnya uji HP nyata M19). **Baca bagian 0 dulu.**
+
+## 0. MULAI DI SINI — status Selasa 27 Oktober 2026 sore (Claude)
+
+Bagian ini mengungguli catatan lebih lama di bawah bila bertentangan.
+
+**Posisi:** M17 passed, M18 passed (staging + emulator), **M19 tombol panik selesai dikode + diaudit, tinggal uji HP
+nyata**. Urutan berikutnya (ADR45): **uji HP M19 → tutup M19 → M16 production (Biznet) → M20 iPhone PWA**.
+
+| Hal | Nilai |
+| --- | --- |
+| `main` / staging | `main` memuat PR #95–#98; staging immutable **`613466b`** (health ready, rekonsiliasi 0 masalah, saldo Rp2.180.000) |
+| APK terbaru | **1025 / 1.0.0** (3025/2025), Selasa 27 Okt: `/unduh` 13.38 WIB, Drive 13.39 WIB, ID tetap `1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr`. 1024 tidak disebar |
+| Tes terakhir | backend 436/436, Flutter 341/341, website 41/41, analyze/format/Pint/check-repo PASS |
+| Audit | [evidence/m19/AUDIT_2026-10-27.md](evidence/m19/AUDIT_2026-10-27.md) — temuan + perbaikan M17–M19 |
+| Tombol panik staging | Aktif **restricted** dua akun uji (`uji.m19.warga@`, `uji.m19.pengurus@contoh.test`; sandi di Desktop pemilik `RT05-akun-uji-M19-1023.txt`) |
+| Hosting production | Pemilik memutuskan beli **Biznet NEO Web Hosting Personal Large** (promo Rp399 rb, kode `PROMONWHLARGE`). Biznet tidak menjamin port 5432 tertulis; langkah pertama setelah beli = `infra/shared/cek-hosting.php` (RUNBOOK_PRODUCTION 1a). Domain resmi belum diputuskan |
+| Neon | Staging di project `raspy-sky-23605923` branch `br-holy-bread-b300uftg`; pemakaian ±68/100 CU-jam bulan ini (reset 1 Nov) — hindari uji berat sampai 1 Nov. Production wajib project Neon terpisah |
+
+**Tugas sesi berikutnya (urut):**
+1. **Uji HP nyata M19** bersama pemilik: [UJI_HP_M19.md](UJI_HP_M19.md). HP asli pemilik = penerima (akun warga uji);
+   pengirim = HP kedua atau emulator yang dijalankan agent (akun pengurus uji). Catat hasil ke `docs/evidence/m19/`.
+2. Tanyakan keputusan A–C (bagian 6) setelah pemilik mencoba bunyi alarm. Kerjakan perubahan bila diminta, rilis satu APK.
+3. Tutup M19 di PROGRESS/HANDOFF bila baris kritis lulus. Bersihkan laporan uji di staging (selesai, tanpa penalti).
+4. **Saat pemilik bilang "udah beli" Biznet:** buat role Neon uji sementara (hanya CONNECT, buat lewat SQL, bukan API —
+   role API menjadi neon_superuser), tulis `rt05-cek.ini` ke Desktop pemilik, pandu unggah + jalankan
+   `cek-hosting.php`, hapus role setelah hasil diterima. Gagal koneksi Neon → production pindah ke VPS.
+5. Lalu M16 sesuai [M16_PLAN.md](M16_PLAN.md) + [RUNBOOK_PRODUCTION.md](RUNBOOK_PRODUCTION.md) (flag `RT05_FINANCE_V2=true`,
+   panik nonaktif sampai M19 passed, cron tiap 1 menit, project Neon production baru, data asli hanya di production).
+
+**Pekerjaan GitHub yang menunggu pemilik** (ditolak pemeriksa izin agent): tutup issue #47 (sudah beres di kode),
+tutup PR draft #26 (basi), tambahkan ringkasan jawaban Biznet di issue #57.
+
+**Catatan proses:** sesi Claude 27 Okt memakai `git push`/`gh pr`/merge ke origin untuk PR #77–#98 (perintah pemilik
+"lu aja yang beresin"). ADR45 sebelumnya meminta tanpa transport Git ke origin; **tanyakan pemilik** bila ragu sebelum push.
+Commit tanpa trailer Co-Authored-By (`-c user.name=morrispes5 -c user.email=morrispes5@gmail.com`). Pemilik ingin setiap
+APK yang disebar dicatat lengkap (build, hari, tanggal, jam WIB, link, isi) dan Drive + `/unduh` diperbarui; perbaikan
+dikumpulkan, jangan satu APK per bug.
 
 ## 1. Cara mulai sesi baru
 
