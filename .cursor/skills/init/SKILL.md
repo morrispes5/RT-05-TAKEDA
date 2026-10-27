@@ -14,6 +14,7 @@ Git root adalah folder `RT-05-TAKEDA/`, bukan folder induk `RT X TAKEDA`. Semua 
 ## Langkah
 
 1. `git status -sb`, `git branch --show-current`, dan `git rev-parse --show-toplevel`. Jangan reset, force-push, atau commit kecuali diminta.
+   Instruksi pemilik 27 Okt (ADR45): gunakan dokumentasi/Git lokal; jangan fetch/pull/push atau mengakses remote `origin` otomatis.
 2. Baca berurutan: `AGENTS.md`, `README.md`, `docs/PRD.md`, `docs/BUSINESS_RULES.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, `docs/PROGRESS.md`, `docs/COORDINATION.md`, `docs/HANDOFF.md`.
 3. Baca dokumen domain milestone yang sedang dikerjakan (tabel di bawah). Jangan membuka milestone berikutnya.
 4. Jika percakapan ini sudah membaca berkas itu dan `docs/PROGRESS.md` tidak berubah, baca ulang hanya `docs/PROGRESS.md`, `docs/COORDINATION.md`, `docs/HANDOFF.md`, dan dokumen milestone aktif.
@@ -21,7 +22,7 @@ Git root adalah folder `RT-05-TAKEDA/`, bukan folder induk `RT X TAKEDA`. Semua 
 
 ## Yang tidak berubah
 
-- Produk: RT05 TAKEDA, singkatan Taman Kedaung. Ketua: Agus Ferdiansyah. Bendahara Mas Wirawan (ADR43). Sekretaris belum dipublikasikan. **Milestone lanjutan (ADR43, 25 Okt 2026): M17 penyesuaian rapat → M18 keuangan fleksibel → M16 production + beta 8 Nov → M19 tombol panik → M20 iPhone (PWA).** Jangan mengarang nama, kontak, tahun kegiatan, jumlah warga, atau fakta RT.
+- Produk: RT05 TAKEDA, singkatan Taman Kedaung. Ketua: Agus Ferdiansyah. Bendahara Mas Wirawan (ADR43). Sekretaris belum dipublikasikan. **Urutan aktif (ADR45, 27 Okt 2026): M17 penyesuaian rapat → M18 keuangan fleksibel → M19 tombol panik → M16 production → M20 iPhone (PWA).** Rencana M19 ada di `docs/M19_PLAN.md`; ketentuan fitur ADR43 tetap berlaku. Jangan mengarang nama, kontak, tahun kegiatan, jumlah warga, atau fakta RT.
 - Website publik tanpa akun. Login web hanya CMS Artikel dan Dokumentasi. Desain diterima: navy/kuning/sky, logo gapura, font, foto asli, layout. Jangan ganti dengan desain generik.
 - Warga, rumah, keluarga, pengaduan, aspirasi, agenda, iuran, kas, token, dan notifikasi dilayani mobile.
 - Iuran Rp75.000 per rumah per bulan, dibayar offline, dicatat pengurus. Tidak ada tombol bayar, dompet, QRIS, checkout, atau webhook pembayaran. Nominal tagihan adalah snapshot periode; tarif baru tidak mengubah tagihan lama.
@@ -33,7 +34,7 @@ Git root adalah folder `RT-05-TAKEDA/`, bukan folder induk `RT X TAKEDA`. Semua 
 
 ## Status tersimpan 20 Oktober 2026
 
-Angka ini hanya titik mulai. Baca `docs/PROGRESS.md` untuk status hidup dan `docs/HANDOFF.md` untuk serah terima sesi terakhir.
+Angka ini hanya titik mulai historis, bukan urutan aktif. **Pembaruan 27 Okt: M17/M18 passed staging/emulator, M19 berikutnya sebelum M16 (ADR45).** Baca `docs/PROGRESS.md` untuk status hidup dan `docs/HANDOFF.md` untuk serah terima sesi terakhir.
 
 M00–M15 **passed** untuk staging sintetis (M15 ditutup 22 Okt 2026 atas keputusan pemilik, ADR36; M15b permintaan Pak RT, ADR35, APK 1011). **M16 berikutnya**: production + sisa gate M15 yang dipindah (verifikasi developer Android, kontak/masa simpan privasi, DB cadangan, uji hosting Biznet, TalkBack, pemulihan foto/push). Status terkini dan pertanyaan untuk pemilik ada di `docs/HANDOFF.md`.
 
@@ -52,6 +53,7 @@ Kerjakan hanya milestone yang pemilik buka, plus prasyarat yang sudah passed. Ja
 | M14 | CMS website memakai API | `docs/FRONTEND.md`, `docs/ARCHITECTURE.md`, `docs/website/FRONTEND_HANDOFF.md` |
 | M15 | UAT, keamanan, APK kandidat | `docs/TESTING.md`, `docs/SECURITY.md`, `docs/UAT_M15.md`, `docs/HANDOFF.md` |
 | M16 | Production `takeda.morriz.tech`, backup, handover | `docs/DEPLOYMENT.md` |
+| M19 | Tombol panik, didahulukan sebelum M16 (ADR45) | `docs/M19_PLAN.md`, ADR43 butir 8, `docs/ROADMAP.md` M19 |
 
 M10 bergantung pada M07, M03, serta laporan M08/M09. M11 bergantung pada M07. M12 bergantung pada M11 dan M03.
 

@@ -25,7 +25,7 @@ class PushTap {
   final String? title;
   final String? body;
 
-  static const refTypes = {'pengumuman', 'agenda', 'pengaduan', 'aspirasi', 'usulan_kegiatan', 'tagihan'};
+  static const refTypes = {'pengumuman', 'agenda', 'pengaduan', 'aspirasi', 'usulan_kegiatan', 'tagihan', 'kejadian_darurat'};
   static final _uuid = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
 
   static bool isUuid(Object? v) => v is String && _uuid.hasMatch(v);

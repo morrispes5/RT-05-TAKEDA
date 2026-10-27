@@ -11,10 +11,12 @@ import 'account_access.dart';
 /// Local text versions must match the content actually displayed before consent.
 const legacyPrivacyTextVersion = '2026-10-25';
 const privacyTextVersion = '2026-10-26';
+const panicPrivacyTextVersion = '2026-10-27';
 
 String? privacyVersionFor(String? server) => switch (server) {
   legacyPrivacyTextVersion => legacyPrivacyTextVersion,
   privacyTextVersion => privacyTextVersion,
+  panicPrivacyTextVersion => panicPrivacyTextVersion,
   _ => null,
 };
 const privacySections = <(String, List<String>)>[
@@ -71,7 +73,39 @@ const privacySections = <(String, List<String>)>[
   ),
 ];
 
-List<(String, List<String>)> privacyContentFor(String version) => version == legacyPrivacyTextVersion
+List<(String, List<String>)> privacyContentFor(String version) {
+  if (version == panicPrivacyTextVersion) {
+    return [
+      for (final section in privacySections)
+        (
+          section.$1,
+          [
+            for (final item in section.$2)
+              item
+                  .replaceAll(
+                    'Warga lain tidak bisa melihatnya.',
+                    'Warga lain tidak bisa melihatnya, kecuali nama dan alamat rumah pelapor dalam laporan darurat tombol panik yang dikirim dengan konfirmasi pelapor.',
+                  )
+                  .replaceAll(
+                    'Data tidak dijual dan tidak dibagikan ke pihak lain di luar pengurus.',
+                    'Data tidak dijual. Khusus tombol panik, nama pelapor, rumah, dan jenis darurat dibagikan kepada semua warga dan pengurus aktif penerima yang telah menyetujui kebijakan ini; tidak ditampilkan di website publik.',
+                  ),
+          ],
+        ),
+      (
+        'Tombol panik',
+        [
+          'Laporan darurat tidak anonim. Sebelum mengirim, Anda membaca ketentuan, memilih jenis darurat, lalu mengonfirmasi. Nama, alamat rumah, jenis, waktu, dan status kejadian dipakai untuk penanganan bersama. Tidak ada pengambilan lokasi GPS.',
+          'Pengurus mencatat hasil penanganan dan penilaian penyalahgunaan. Setelah tiga penyalahgunaan, tombol panik akun dinonaktifkan. Riwayat tetap disimpan untuk audit; identitas mengikuti kebijakan arsip dan anonimisasi yang sama.',
+          'Notifikasi memakai Firebase Cloud Messaging. Teks layar kunci tidak memuat nama atau alamat; detail hanya tersedia setelah masuk. Bunyi bergantung izin dan pengaturan perangkat. Tombol ini bukan pengganti 112, damkar, atau polisi.',
+        ],
+      ),
+    ];
+  }
+  return _financePrivacyContentFor(version);
+}
+
+List<(String, List<String>)> _financePrivacyContentFor(String version) => version == legacyPrivacyTextVersion
     ? [
         for (final section in privacySections)
           (

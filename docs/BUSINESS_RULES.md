@@ -1,5 +1,17 @@
 # Aturan bisnis — RT05 TAKEDA
 
+## M19 — tombol panik (ADR43/45)
+
+- Tidak anonim; setelah tiga langkah konfirmasi, nama/rumah/jenis darurat tersedia bagi warga/pengurus aktif penerima
+  yang menyetujui kebijakan M19. Tidak ada GPS, panggilan otomatis atau integrasi instansi.
+- Pengurus setara menangani selesai/palsu. Penilaian penyalahgunaan dipilih secara eksplisit dengan alasan;
+  palsu tidak otomatis dihitung sebagai penyalahgunaan. Tiga penilaian menonaktifkan pengiriman akun itu,
+  tanpa menghalangi penerimaan darurat atau layanan lain. Belum ada pemulihan/reset hitungan otomatis.
+- Fitur dapat dimatikan pengurus; gate deployment tidak dapat dilewati pengaturan database. Retry/klik ganda
+  tidak menggandakan kejadian, inbox, atau hitungan. Riwayat tidak dihapus atau ditulis ulang diam-diam.
+- Bunyi mengikuti izin/pengaturan HP; harus diuji nyata. Tombol ini bukan pengganti 112/damkar/polisi.
+- Default teknis dan batas uji tercatat di [M19_PLAN.md](M19_PLAN.md). Belum dinyatakan passed.
+
 Kode BR dipakai pada API, tes, issue, dan kriteria milestone. Bagian A mempertahankan kebutuhan proyek; bagian B adalah batas implementasi v1 untuk detail yang belum diputuskan dalam percakapan.
 
 ## A. Kebutuhan yang dipertahankan

@@ -98,9 +98,9 @@ final class FcmGateway implements PushGateway
             'data' => array_map('strval', $m->data),
             'android' => [
                 'priority' => 'HIGH',
-                'ttl' => '86400s',
+                'ttl' => $m->alarm ? max(1, min(600, $m->alarmTtlSeconds)).'s' : '86400s',
                 'collapse_key' => $m->tag,
-                'notification' => ['tag' => $m->tag],
+                'notification' => ['tag' => $m->tag] + ($m->alarm ? ['channel_id' => 'rt05_darurat_v1', 'icon' => 'ic_emergency', 'visibility' => 'PRIVATE', 'notification_priority' => 'PRIORITY_MAX', 'default_vibrate_timings' => true] : []),
             ],
         ];
     }

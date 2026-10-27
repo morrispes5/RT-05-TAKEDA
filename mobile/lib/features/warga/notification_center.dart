@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
 import '../../core/api.dart';
+import '../../core/emergency_platform.dart';
 import '../../core/models.dart';
 import '../../core/push.dart';
 import '../../core/session.dart';
 import '../../core/widgets.dart';
 import 'activity_proposals.dart';
+import 'emergencies.dart';
 import 'providers.dart';
 import 'warga_pages.dart';
 
@@ -23,6 +25,7 @@ void openReference(BuildContext context, {required String? type, required String
     'pengaduan' => ReportDetailPage(aspirasi: false, id: id!, admin: admin),
     'aspirasi' => ReportDetailPage(aspirasi: true, id: id!, admin: admin),
     'usulan_kegiatan' => ActivityProposalDetailPage(id: id!, admin: admin),
+    'kejadian_darurat' => EmergencyDetailPage(id: id!),
     'tagihan' => Scaffold(
       appBar: AppBar(title: const Text('Iuran')),
       body: const DuesPage(),
@@ -60,6 +63,9 @@ Future<void> handlePushTap(GoRouter router, WidgetRef ref, PushTap tap) async {
 /// Push di depan layar: Android tidak menampilkan notifikasi sistem, jadi tampilkan alert info.
 void showForegroundPush(GoRouter router, WidgetRef ref, PushTap tap) {
   if (!ref.read(sessionProvider).readyForServices) return;
+  if (tap.refType == 'kejadian_darurat' && PushTap.isUuid(tap.refId)) {
+    ref.read(emergencyPlatformProvider).alarm(tap.refId!, tap.notifikasiId);
+  }
   ref.invalidate(notificationsProvider);
   final context = router.routerDelegate.navigatorKey.currentContext;
   if (context == null || !context.mounted) return;

@@ -1,5 +1,12 @@
 # Kebijakan Privasi — RT05 TAKEDA
 
+**M19 (27 Oktober):** saat `RT05_PANIC_ENABLED=true`, API meminta teks 2026-10-27 dan website menggunakan
+`website/resources/data/privasi-m19.json`. Aplikasi membawa teks itu tanpa mengubah teks 25/26 Oktober yang
+sudah disetujui. Tambahan mencakup nama/rumah/jenis laporan darurat ke semua warga/pengurus aktif penerima,
+konfirmasi sebelum kirim, audit penanganan/penyalahgunaan, tanpa GPS dan tanpa identitas di push/layar kunci.
+Teks lengkap tambahan di bagian Tombol panik pada JSON tersebut dan `privacyContentFor(panicPrivacyTextVersion)`
+di aplikasi. Flag default nonaktif; kebijakan 26 Oktober di bawah tetap baseline M18.
+
 Versi **2026-10-26** (ADR44/M18; aktif bersama flag keuangan v2). Teks ini sama dengan yang tampil di aplikasi (`mobile/lib/features/auth/privacy_policy.dart`)
 dan disetujui warga setelah masuk. Bila isinya berubah, naikkan versi aktif `App\Support\Privacy::version()` di rest-api agar warga
 diminta setuju lagi.

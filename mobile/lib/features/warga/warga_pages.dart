@@ -24,6 +24,7 @@ import '../household/family_page.dart';
 import 'activity_proposals.dart';
 import 'app_about.dart';
 import 'dues_proof.dart';
+import 'emergencies.dart';
 import 'notification_center.dart';
 import 'providers.dart';
 import 'report_actions.dart';
@@ -51,6 +52,7 @@ class WargaHomePage extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           _Hero(name: akun.nama, kode: akun.kodeRumah, alamat: akun.alamat),
+          const EmergencyEntry(),
           const SizedBox(height: 16),
           SectionCard(
             title: 'Iuran bulan ini',

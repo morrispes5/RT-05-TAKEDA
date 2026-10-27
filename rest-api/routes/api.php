@@ -10,6 +10,7 @@ use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\DuesConfirmationController;
+use App\Http\Controllers\EmergencyController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\FlexibleFinanceController;
@@ -105,6 +106,10 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
     Route::get('activity-proposals/{id}/documents/{documentId}', [ActivityProposalController::class, 'document'])->whereUuid(['id', 'documentId']);
     Route::post('activity-proposals/{id}/documents/{documentId}/link', [ActivityProposalController::class, 'documentLink'])->whereUuid(['id', 'documentId']);
 
+    Route::get('emergencies/status', [EmergencyController::class, 'status']);
+    Route::get('emergencies', [EmergencyController::class, 'index']);
+    Route::get('emergencies/{id}', [EmergencyController::class, 'show'])->whereUuid('id');
+    Route::post('emergencies', [EmergencyController::class, 'store']);
     Route::get('agendas', [CommunityController::class, 'agendas']);
     Route::get('agendas/{id}', [CommunityController::class, 'agenda'])->whereUuid('id');
     Route::get('agendas/{id}/calendar', [CommunityController::class, 'agendaCalendar'])->whereUuid('id');
@@ -130,6 +135,8 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
 Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(function () {
     Route::get('dashboard', [OperationsController::class, 'dashboard']);
     Route::get('audit-logs', [OperationsController::class, 'auditLogs']);
+    Route::post('emergencies/settings', [EmergencyController::class, 'configure']);
+    Route::post('emergencies/{id}/resolve', [EmergencyController::class, 'resolve'])->whereUuid('id');
     Route::get('exports/{jenis}', [OperationsController::class, 'export'])->whereIn('jenis', ['iuran', 'kas', 'rumah', 'pembayaran']);
     Route::get('finance-reports', [FinanceReportController::class, 'show']);
     Route::get('exports/keuangan.csv', [FinanceReportController::class, 'csv']);
