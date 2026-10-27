@@ -5,7 +5,10 @@ namespace App\Domain\Community;
 use App\Domain\Community\Push\PushGateway;
 use App\Domain\Community\Push\PushMessage;
 use App\Domain\Community\Push\PushResult;
+use App\Models\Akun;
+use App\Models\KejadianDarurat;
 use App\Models\PerangkatPush;
+use App\Support\Privacy;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -22,7 +25,7 @@ final class PushDelivery
     /** Jenis tanpa kolom preferensi (status usulan, sistem) selalu di-push. */
     public const PREFERENCE = ['pengumuman' => 'pengumuman', 'agenda' => 'agenda', 'pengaduan' => 'pengaduan', 'aspirasi' => 'aspirasi', 'iuran' => 'iuran'];
 
-    private const REFS = ['pengumuman_id', 'agenda_id', 'pengaduan_id', 'aspirasi_id', 'tagihan_id', 'usulan_kegiatan_id'];
+    private const REFS = ['pengumuman_id', 'agenda_id', 'pengaduan_id', 'aspirasi_id', 'tagihan_id', 'usulan_kegiatan_id', 'kejadian_darurat_id'];
 
     /** @return 'done'|'retry'|'more' */
     public static function deliver(string $eventId, PushGateway $gateway, ?float $deadline = null): string
@@ -83,6 +86,19 @@ final class PushDelivery
         $messages = [];
         $broken = [];
         foreach ($rows as $n) {
+            $alarmTtl = 600;
+            if ($n->jenis === 'darurat') {
+                Emergencies::lock();
+                $e = KejadianDarurat::find($n->kejadian_darurat_id);
+                $a = Akun::find($n->penerima_id);
+                if (! $e || ! Emergencies::alarmEligible($e) || ! $a?->isAktif() || $a->privasi_versi !== Privacy::PANIC_VERSION
+                    || (config('panic.audience') !== 'all' && ! in_array($n->penerima_id, config('panic.recipient_ids', []), true))) {
+                    $status[$n->id] = 'dilewati';
+
+                    continue;
+                }
+                $alarmTtl = max(1, (int) floor(config('panic.alarm_age_minutes') * 60 - $e->created_at->diffInSeconds(now())));
+            }
             $column = self::PREFERENCE[$n->jenis] ?? null;
             if ($column && isset($prefs[$n->penerima_id]) && ! $prefs[$n->penerima_id]->{$column}) {
                 $status[$n->id] = 'dilewati';
@@ -97,7 +113,7 @@ final class PushDelivery
 
                     continue;
                 }
-                $messages[$n->id.'|'.$d->id] = new PushMessage($token, $n->judul, $n->isi, self::data($n), 'rt05-'.$n->id);
+                $messages[$n->id.'|'.$d->id] = new PushMessage($token, $n->judul, $n->isi, self::data($n), 'rt05-'.$n->id, $n->jenis === 'darurat', $alarmTtl);
             }
             if (! collect(array_keys($messages))->contains(fn ($k) => str_starts_with($k, $n->id.'|'))) {
                 $status[$n->id] = 'dilewati';

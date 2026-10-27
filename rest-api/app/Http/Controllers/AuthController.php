@@ -276,7 +276,7 @@ class AuthController extends Controller
         if ($data['versi'] !== Privacy::version()) {
             throw new DomainConflict('PRIVACY_VERSION_OUTDATED', 'Kebijakan Privasi sudah diperbarui. Muat ulang lalu baca versi terbaru.');
         }
-        if (Privacy::version() === Privacy::FINANCE_VERSION && ($data['versi_teks'] ?? null) !== Privacy::FINANCE_VERSION) {
+        if (Privacy::version() !== Privacy::VERSION && ($data['versi_teks'] ?? null) !== Privacy::version()) {
             throw new DomainConflict('PRIVACY_CLIENT_UPDATE_REQUIRED', 'Perbarui aplikasi untuk membaca dan menyetujui Kebijakan Privasi terbaru.', 422);
         }
         $akun = $request->user();

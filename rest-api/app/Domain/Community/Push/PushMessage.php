@@ -16,5 +16,7 @@ final readonly class PushMessage
         public array $data,
         // Notifikasi Android dengan tag sama menggantikan yang lama: retry tidak menumpuk duplikat.
         public string $tag,
+        public bool $alarm = false,
+        public int $alarmTtlSeconds = 600,
     ) {}
 }

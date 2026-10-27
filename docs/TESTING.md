@@ -1,5 +1,21 @@
 # Strategi pengujian dan UAT
 
+## M19 — tombol panik
+
+Backend: `php artisan test --filter="M19|OpenApiContractTest" --compact`, kemudian suite penuh, Pint dan lint OpenAPI.
+PostgreSQL lokal 54329 saja. Tes proses independen memeriksa satu laporan dari key sama/berbeda dan dua pengurus
+menilai penyalahgunaan ketiga. Tes alur mencakup konfirmasi, jenis/terms, sesi/status/privasi, fitur mati, rumah
+belum tertaut, pembatasan laju DB, fanout restricted, event basi/ditutup, penundaan push, idempotensi dan identitas.
+
+Mobile: `flutter test test/m19_emergencies_test.dart`, suite penuh, analyze/format dan build Android. Uji Batal di
+dua langkah, tidak ada POST sebelum konfirmasi akhir, retry timeout mempertahankan body/key, respons akun lama
+tidak membuka detail dan tampilan 320px skala 2. Website menguji kebijakan 27 Oktober hanya saat flag M19 aktif;
+setelah perubahan sumber jalankan build:preview. Daftar gate staging/HP nyata di [M19_PLAN.md](M19_PLAN.md).
+
+**HP nyata tetap wajib:** suara saat terkunci/latar/depan/ditutup, force-stop terpisah, izin ditolak, kanal dimatikan,
+pengaturan perangkat, keterlambatan jaringan, ketukan notifikasi, shortcut, tindakan pengurus. Catat kegagalan dan
+keterbatasan per perangkat. Emulator/widget/build bukan bukti bunyi nyata; jangan broadcast uji ke warga asli.
+
 ## Prinsip
 
 Uji aturan dan alur nyata, bukan tes yang hanya menyalin implementasi. Perubahan dokumen cukup diperiksa konsistensi/link; tidak memerlukan aplikasi dibangun. Implementasi keuangan, izin, worker recovery, serta migration wajib diuji perilaku.

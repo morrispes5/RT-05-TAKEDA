@@ -1,5 +1,23 @@
 # ERD dan kamus data rancangan v1
 
+## M19 — kejadian darurat (implementasi lokal, belum deploy)
+
+`kejadian_darurat`: UUID; FK `pelapor_id → akun`, `rumah_id → rumah`, `ditangani_oleh_id → akun` (RESTRICT).
+Kolom: `jenis` kebakaran/kemalingan/penyerangan/lainnya; `status` aktif/selesai/palsu; `penyalahgunaan` boolean;
+`catatan_pengurus`, `selesai_at`, `versi >= 1`, `created_at`. CHECK mengikat penanganan, alasan dan waktu;
+penyalahgunaan hanya pada status palsu. Unique parsial satu kejadian aktif per akun. Trigger melarang DELETE,
+perubahan identitas/rumah/jenis/waktu asal, buka ulang, edit hasil terminal, dan transisi versi yang tidak berurutan.
+
+`notifikasi.kejadian_darurat_id` FK nullable menambah konteks jenis `darurat`; CHECK tetap tepat satu konteks
+sesuai jenis. `system_settings['darurat.fitur']` menyimpan `aktif`, default false, dengan versi dan audit.
+Tidak ada snapshot nama/alamat di outbox, push, audit atau cache idempotensi M19. Detail memuat identitas
+lewat referensi akun/rumah sehingga anonimisasi akun yang sudah ada tetap berlaku. Rumah adalah rumah saat
+laporan dibuat; tampilan alamat/nama mengikuti data master terkini. Jangan menganggapnya snapshot alamat historis.
+
+Satu advisory lock transaksi M19 mengurutkan kirim, penanganan dan perubahan pengaturan; akun dikunci NO KEY UPDATE
+agar kompatibel dengan FK idempotensi. Nominal/ledger M18 tidak diubah. Migration down menolak jika riwayat ada.
+Jangan rollback ke APK/API tanpa M19 setelah aktif tanpa memeriksa notifikasi jenis baru. Rincian: [M19_PLAN.md](M19_PLAN.md).
+
 Rancangan ini melengkapi kebutuhan dalam paket, bukan salinan ERD lama yang belum tersedia. Tabel infrastruktur Laravel boleh menggunakan bentuk framework resmi. Agent membuat migration bertahap per milestone, tidak membuat seluruh schema spekulatif pada M01.
 
 ## Tambahan ledger M18 (implementasi lokal, belum aktivasi staging)
