@@ -17,7 +17,7 @@ trait CommittedData
     /** Tabel anak lebih dulu agar FK RESTRICT tidak menolak penghapusan. */
     private const COMMITTED_TABLES = [
         'perangkat_push', 'personal_access_tokens', 'password_reset_tokens', 'notifikasi', 'preferensi_notifikasi', 'pengumuman',
-        'kejadian_darurat', 'permohonan_akun', 'audit_logs', 'outbox_events', 'token_registrasi', 'tautan_akun', 'keanggotaan_keluarga', 'riwayat_transaksi_kas', 'transaksi_kas',
+        'koreksi_penyalahgunaan_darurat', 'kejadian_darurat', 'permohonan_akun', 'audit_logs', 'outbox_events', 'token_registrasi', 'tautan_akun', 'keanggotaan_keluarga', 'riwayat_transaksi_kas', 'transaksi_kas',
         'konfirmasi_iuran', 'mutasi_titipan', 'keringanan_iuran', 'penyesuaian_tagihan', 'alokasi_pembayaran', 'penggunaan_titipan', 'pembayaran_iuran', 'idempotency_requests',
         'tagihan_iuran', 'tarif_rumah', 'akun',
         'penghunian', 'warga', 'keluarga', 'rumah',
@@ -37,6 +37,7 @@ trait CommittedData
     {
         DB::connection('pgsql_migrations')->transaction(function ($db) {
             $db->statement('ALTER TABLE kejadian_darurat DISABLE TRIGGER kejadian_darurat_immutable');
+            $db->statement('ALTER TABLE koreksi_penyalahgunaan_darurat DISABLE TRIGGER koreksi_penyalahgunaan_darurat_immutable');
             foreach (['tarif_rumah', 'keringanan_iuran', 'penggunaan_titipan', 'mutasi_titipan', 'penyesuaian_tagihan'] as $table) {
                 $db->statement("ALTER TABLE $table DISABLE TRIGGER {$table}_m18_immutable");
             }
@@ -53,6 +54,7 @@ trait CommittedData
             // Drain deferred ledger/FK checks before ALTER TABLE restores immutable triggers.
             $db->statement('SET CONSTRAINTS ALL IMMEDIATE');
             $db->statement('ALTER TABLE kejadian_darurat ENABLE TRIGGER kejadian_darurat_immutable');
+            $db->statement('ALTER TABLE koreksi_penyalahgunaan_darurat ENABLE TRIGGER koreksi_penyalahgunaan_darurat_immutable');
             $db->statement('ALTER TABLE pembayaran_iuran ENABLE TRIGGER pembayaran_iuran_terkunci');
             $db->statement('ALTER TABLE alokasi_pembayaran ENABLE TRIGGER alokasi_pembayaran_terkunci');
             $db->statement('ALTER TABLE riwayat_transaksi_kas ENABLE TRIGGER riwayat_transaksi_kas_immutable');

@@ -137,6 +137,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::get('audit-logs', [OperationsController::class, 'auditLogs']);
     Route::post('emergencies/settings', [EmergencyController::class, 'configure']);
     Route::post('emergencies/{id}/resolve', [EmergencyController::class, 'resolve'])->whereUuid('id');
+    Route::post('emergencies/{id}/misuse-correction', [EmergencyController::class, 'correctMisuse'])->whereUuid('id');
     Route::get('exports/{jenis}', [OperationsController::class, 'export'])->whereIn('jenis', ['iuran', 'kas', 'rumah', 'pembayaran']);
     Route::get('finance-reports', [FinanceReportController::class, 'show']);
     Route::get('exports/keuangan.csv', [FinanceReportController::class, 'csv']);

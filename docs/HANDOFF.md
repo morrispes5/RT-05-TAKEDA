@@ -176,6 +176,9 @@ belum dikonfirmasi; jalankan preflight `SHARED_HOSTING.md` sebelum membeli).
 
 ## 5. Bug dan temuan terbuka
 
+**Audit M17–M19 (28 Okt, Claude):** temuan dan perbaikan di [AUDIT_2026-10-28.md](evidence/m19/AUDIT_2026-10-28.md).
+Sisa terbuka: kuota Neon staging (pantau sampai 1 Nov), tiga keputusan pemilik (bagian 6), uji HP nyata M19.
+
 M19: footer privasi 26/27 Okt fixed PR #93, regresi widget dan layar 1023 lulus. Pada renderer emulator lama
 `swiftshader_indirect`, pernah tampak hitam saat tap notifikasi dan beku saat pergantian akun. Pengulangan
 notifikasi riil/background dan intent/shortcut lulus; restart AVD yang sama dengan `-gpu software -no-snapshot`
@@ -224,6 +227,13 @@ Pemilik sudah mengotorisasi perbaikan; tidak perlu meminta ulang persetujuan pat
 Rilis M19 sudah diotorisasi dan dilaksanakan tanpa transport Git ke origin di PC; jangan menanyakan ulang distribusi
 1023. Dua akun HP uji dan catatan kuota ada di Desktop privat `RT05-akun-uji-M19-1023.txt`. Belum ada pertanyaan bisnis
 baru; yang diperlukan berikutnya bukti HP nyata, bukan pengulangan persetujuan implementasi.
+
+**Keputusan baru dari audit 28 Okt (tombol panik):**
+A. Warga yang belum membuka aplikasi versi baru (belum menyetujui privasi panik) **tidak menerima alarm**. Diterima
+   apa adanya, atau perlu pengingat/hitungan "warga siap menerima alarm" untuk pengurus?
+B. Isi push darurat sengaja umum (tanpa jenis/rumah di layar kunci). Tetap begitu, atau tampilkan jenis kejadian?
+C. Bunyi alarm Android satu kali seperti notifikasi alarm. Cukup, atau dibuat berulang sampai ditekan (insistent)?
+   Putuskan setelah mencoba di HP nyata.
 
 1. ~~Temuan E~~ — dijawab 20 Okt: foto asli tidak menggantikan SVG; sudah diperbaiki (PR #55).
 2. Hasil uji tim dengan APK **1009** (dan sisa 1008): poin mana berhasil/gagal? (Untuk dicatat sebagai bukti, bukan dikarang.)
