@@ -25,6 +25,15 @@ final class Privacy
         return config('finance.v2') ? self::FINANCE_VERSION : self::VERSION;
     }
 
+    /**
+     * Audit M19: fitur yang mensyaratkan persetujuan versi tertentu memakai "minimal versi", bukan sama persis, agar
+     * pembaruan kebijakan berikutnya tidak diam-diam mematikan fitur itu. Versi berformat YYYY-MM-DD (urut leksikal).
+     */
+    public static function atLeast(?string $version, string $minimum): bool
+    {
+        return is_string($version) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $version) === 1 && strcmp($version, $minimum) >= 0;
+    }
+
     public static function needsConsent(Akun $akun): bool
     {
         return $akun->privasi_versi !== self::version();

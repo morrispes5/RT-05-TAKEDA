@@ -64,7 +64,7 @@ class EmergencyPage extends ConsumerStatefulWidget {
 class _EmergencyPageState extends ConsumerState<EmergencyPage> {
   late final String? _owner = ref.read(sessionProvider).akun?.id;
   int _step = 0;
-  String _kind = 'kebakaran';
+  String? _kind;
   bool _read = false;
   bool _busy = false;
   Json? _pending;
@@ -79,7 +79,7 @@ class _EmergencyPageState extends ConsumerState<EmergencyPage> {
   Future<void> _send() async {
     final s = ref.read(sessionProvider);
     final epoch = ref.read(sessionProvider.notifier).epoch;
-    if (!_current(s, epoch) || _busy) return;
+    if (!_current(s, epoch) || _busy || _kind == null) return;
     _pending ??= {'jenis': _kind, 'konfirmasi': true, 'versi_ketentuan': emergencyTermsVersion};
     setState(() {
       _busy = true;
@@ -177,6 +177,7 @@ class _EmergencyPageState extends ConsumerState<EmergencyPage> {
                         onPressed: () => setState(() {
                           _step = 1;
                           _read = false;
+                          _kind = null;
                         }),
                         icon: const Icon(Icons.emergency_outlined),
                         label: const Text('Mulai laporan darurat'),
@@ -187,11 +188,13 @@ class _EmergencyPageState extends ConsumerState<EmergencyPage> {
                         'Nama dan rumah Anda beserta jenis darurat akan terlihat oleh semua warga dan pengurus penerima. Laporan tidak anonim. Penyalahgunaan diberi peringatan; tiga kali membuat tombol akun dinonaktifkan.',
                       ),
                       DropdownButtonFormField<String>(
+                        key: const ValueKey('jenis-darurat'),
                         initialValue: _kind,
                         isExpanded: true,
-                        decoration: const InputDecoration(labelText: 'Jenis darurat'),
+                        hint: const Text('Pilih jenis darurat'),
+                        decoration: const InputDecoration(labelText: 'Jenis darurat (wajib dipilih)'),
                         items: [for (final e in emergencyKinds.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
-                        onChanged: (v) => setState(() => _kind = v!),
+                        onChanged: (v) => setState(() => _kind = v),
                       ),
                       CheckboxListTile(
                         contentPadding: EdgeInsets.zero,
@@ -199,7 +202,7 @@ class _EmergencyPageState extends ConsumerState<EmergencyPage> {
                         title: const Text('Saya memahami ketentuan dan penyebaran identitas laporan darurat.'),
                         onChanged: (v) => setState(() => _read = v == true),
                       ),
-                      FilledButton(onPressed: _read ? () => setState(() => _step = 2) : null, child: const Text('Lanjut ke konfirmasi')),
+                      FilledButton(onPressed: _read && _kind != null ? () => setState(() => _step = 2) : null, child: const Text('Lanjut ke konfirmasi')),
                       TextButton(onPressed: () => setState(() => _step = 0), child: const Text('Batal')),
                     ],
                     if (_step == 2) ...[
@@ -275,9 +278,13 @@ class _EmergencyDetailPageState extends ConsumerState<EmergencyDetailPage> {
   bool _misuse = false;
   Json? _pending;
   String? _error;
+  final _correctionReason = TextEditingController();
+  final _correctionKey = _key();
+  Json? _correctionPending;
   @override
   void dispose() {
     _reason.dispose();
+    _correctionReason.dispose();
     super.dispose();
   }
 
@@ -312,6 +319,45 @@ class _EmergencyDetailPageState extends ConsumerState<EmergencyDetailPage> {
     }
   }
 
+  /// Audit M19: pengurus membatalkan penanda penyalahgunaan yang keliru (append-only, sekali per laporan).
+  Future<void> _correctMisuse() async {
+    final s = ref.read(sessionProvider);
+    final epoch = ref.read(sessionProvider.notifier).epoch;
+    bool current() => mounted && ref.read(sessionProvider.notifier).isCurrentActive(s, epoch: epoch);
+    if (!current()) return;
+    if (_correctionReason.text.trim().length < 5) {
+      setState(() => _error = 'Isi alasan pembatalan, minimal lima karakter.');
+      return;
+    }
+    _correctionPending ??= {'alasan': _correctionReason.text.trim()};
+    setState(() => _error = null);
+    try {
+      final updated = await ref
+          .read(apiProvider)
+          .post(
+            '/admin/emergencies/${widget.id}/misuse-correction',
+            data: _correctionPending,
+            idempotencyKey: _correctionKey,
+            bearer: s.token,
+            sessionEpoch: epoch,
+          );
+      if (!current()) return;
+      setState(() {
+        _correctionPending = null;
+        _detail = Future.value(updated);
+      });
+      if (!mounted) return;
+      showMessage(context, 'Penanda penyalahgunaan dibatalkan. Pelapor diberi tahu.');
+    } on ApiException catch (error) {
+      if (!current()) return;
+      if (error.status > 0 && error.status < 500) _correctionPending = null;
+      setState(() {
+        _error = error.display;
+        if (error.isConflict) _detail = ref.read(apiProvider).get('/emergencies/${widget.id}');
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = ref.watch(sessionProvider);
@@ -335,6 +381,25 @@ class _EmergencyDetailPageState extends ConsumerState<EmergencyDetailPage> {
               const SizedBox(height: 12),
               const Text(emergencyWarning),
               if (e['catatan_pengurus'] != null) Text('Catatan pengurus: ${e['catatan_pengurus']}'),
+              if (s.pengurus && e['penyalahgunaan'] == true && e['penyalahgunaan_dibatalkan'] == true)
+                const Text('Penanda penyalahgunaan sudah dibatalkan; tidak dihitung pada akun pelapor.'),
+              if (s.pengurus && e['status'] == 'palsu' && e['penyalahgunaan'] == true && e['penyalahgunaan_dibatalkan'] != true) ...[
+                const SizedBox(height: 12),
+                const Text('Salah menandai penyalahgunaan? Batalkan penandanya. Riwayat laporan tidak berubah.'),
+                TextField(
+                  key: const ValueKey('alasan-batal-penyalahgunaan'),
+                  controller: _correctionReason,
+                  enabled: _correctionPending == null,
+                  maxLength: 300,
+                  decoration: const InputDecoration(labelText: 'Alasan pembatalan (wajib)'),
+                ),
+                if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
+                BusyButton(
+                  label: _correctionPending == null ? 'Batalkan penanda penyalahgunaan' : 'Coba ulang pembatalan',
+                  outlined: true,
+                  onPressed: _correctMisuse,
+                ),
+              ],
               if (s.pengurus && e['status'] == 'aktif') ...[
                 DropdownButtonFormField<String>(
                   initialValue: _status,

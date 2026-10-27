@@ -95,8 +95,24 @@ Future<void> _tap(WidgetTester tester, String label) async {
 
 Future<void> _confirm(WidgetTester tester) async {
   await _tap(tester, 'Mulai laporan darurat');
+  await _chooseKind(tester, 'Kebakaran');
   await _tap(tester, 'Saya memahami ketentuan dan penyebaran identitas laporan darurat.');
   await _tap(tester, 'Lanjut ke konfirmasi');
+}
+
+/// Audit M19: jenis darurat tidak punya pilihan bawaan; warga memilih sendiri.
+Future<void> _chooseKind(WidgetTester tester, String label) async {
+  final field = find.byKey(const ValueKey('jenis-darurat'));
+  await tester.ensureVisible(field);
+  await tester.pump();
+  await tester.tap(field);
+  for (var i = 0; i < 6; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  await tester.tap(find.text(label).last);
+  for (var i = 0; i < 6; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
 }
 
 void main() {
@@ -345,5 +361,55 @@ void main() {
     await _confirm(tester);
     expect(tester.takeException(), isNull);
     expect(find.text('Kirim laporan darurat ini?'), findsOneWidget);
+  });
+
+  testWidgets('jenis darurat wajib dipilih sendiri sebelum lanjut ke konfirmasi (audit M19)', (tester) async {
+    final sent = <RequestOptions>[];
+    await _pump(
+      tester,
+      FakeAdapter((o) {
+        if (o.method == 'POST') sent.add(o);
+        return jsonBody(200, {'data': o.uri.path.endsWith('/status') ? _status : _report});
+      }),
+    );
+    await _tap(tester, 'Mulai laporan darurat');
+    await _tap(tester, 'Saya memahami ketentuan dan penyebaran identitas laporan darurat.');
+    final next = find.widgetWithText(FilledButton, 'Lanjut ke konfirmasi');
+    expect(tester.widget<FilledButton>(next).onPressed, isNull);
+    await _chooseKind(tester, 'Kemalingan');
+    expect(tester.widget<FilledButton>(next).onPressed, isNotNull);
+    await _tap(tester, 'Lanjut ke konfirmasi');
+    await _tap(tester, 'Ya, kirim laporan');
+    expect(sent, hasLength(1));
+    expect((sent.single.data as Map)['jenis'], 'kemalingan');
+  });
+
+  testWidgets('pengurus membatalkan penanda penyalahgunaan yang keliru dengan alasan (audit M19)', (tester) async {
+    final sent = <RequestOptions>[];
+    final misuse = {..._report, 'status': 'palsu', 'penyalahgunaan': true, 'penyalahgunaan_dibatalkan': false, 'catatan_pengurus': 'Sintetis'};
+    await _pump(
+      tester,
+      FakeAdapter((o) {
+        if (o.method == 'POST') {
+          sent.add(o);
+          return jsonBody(200, {
+            'data': {...misuse, 'penyalahgunaan_dibatalkan': true},
+          });
+        }
+        return jsonBody(200, {'data': misuse});
+      }),
+      page: const EmergencyDetailPage(id: _id),
+      admin: true,
+    );
+    await _tap(tester, 'Batalkan penanda penyalahgunaan');
+    expect(sent, isEmpty);
+    expect(find.text('Isi alasan pembatalan, minimal lima karakter.'), findsOneWidget);
+    await tester.enterText(find.byKey(const ValueKey('alasan-batal-penyalahgunaan')), 'Laporan ternyata benar');
+    await _tap(tester, 'Batalkan penanda penyalahgunaan');
+    expect(sent, hasLength(1));
+    expect(sent.single.uri.path, endsWith('/admin/emergencies/$_id/misuse-correction'));
+    expect((sent.single.data as Map)['alasan'], 'Laporan ternyata benar');
+    expect(find.text('Penanda penyalahgunaan sudah dibatalkan; tidak dihitung pada akun pelapor.'), findsOneWidget);
+    expect(find.text('Batalkan penanda penyalahgunaan'), findsNothing);
   });
 }
