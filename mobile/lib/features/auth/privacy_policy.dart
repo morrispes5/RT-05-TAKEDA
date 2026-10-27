@@ -211,10 +211,11 @@ class _PrivacyPolicyPageState extends ConsumerState<PrivacyPolicyPage> {
                   ),
                 ),
               ),
-            Text(
-              version == legacyPrivacyTextVersion ? 'Versi 25 Oktober 2026.' : 'Versi 26 Oktober 2026.',
-              style: const TextStyle(color: Brand.muted, fontSize: 13),
-            ),
+            Text(switch (version ?? privacyTextVersion) {
+              legacyPrivacyTextVersion => 'Versi 25 Oktober 2026.',
+              panicPrivacyTextVersion => 'Versi 27 Oktober 2026.',
+              _ => 'Versi 26 Oktober 2026.',
+            }, style: const TextStyle(color: Brand.muted, fontSize: 13)),
             if (widget.consent && version == null) const Text('Kebijakan server lebih baru. Perbarui aplikasi sebelum menyetujui.'),
             if (widget.consent) ...[
               const SizedBox(height: 12),
