@@ -37,6 +37,26 @@ Salin teks ini ke live chat atau tiket sales Biznet Gio:
 Konsekuensi: migrasi dan perintah operator dijalankan dari mesin operator/CI ke Neon (bukan di hosting); perintah sekali
 jalan di hosting lewat cron sementara; struktur folder mengikuti butir 4 bagian 2.
 
+## 1a. Keputusan beli dan cek pertama setelah membeli (27 Okt 2026)
+
+Biznet menjawab pertanyaan port 5432 tiga kali dengan kalimat yang sama: koneksi keluar **tidak dibatasi**, tetapi
+mereka tidak mengatur port khusus (dan menyarankan Neo Dedicated Hosting untuk "custom outgoing"). Tidak ada jaminan
+tertulis. **Pemilik memilih membeli NEO Web Hosting Personal Large** (promo Rp399.000, kode `PROMONWHLARGE`; cek PPN di
+checkout) dengan risiko terburuk biaya hangus, lalu pindah ke VPS bila koneksi Neon gagal.
+
+Saat checkout, domain gratis biasanya dipilih langsung. Domain resmi belum diputuskan (ADR43: awal November); bila
+checkout memaksa memilih domain sekarang, tanyakan dulu ke Biznet apakah domain gratis bisa diklaim belakangan.
+
+**Langkah pertama setelah membeli, sebelum menyiapkan apa pun:**
+1. Agent membuat role uji Neon sementara (hanya `CONNECT`, tanpa akses tabel) dan berkas `rt05-cek.ini` di Desktop
+   pemilik (bukan Git/chat).
+2. Pemilik mengunggah `rt05-cek.ini` ke folder home **di luar** `public_html`, dan `infra/shared/cek-hosting.php` ke
+   `public_html` dengan nama acak (mis. `cek-7f3a.php`), lalu membukanya sekali di browser dan menyimpan hasilnya.
+3. Hasil wajib OK: PHP ≥ 8.3, `pdo_pgsql`, GD WebP, **TCP keluar Neon 5432**, **PDO PostgreSQL ke Neon (TLS)**, HTTPS ke
+   FCM 443, folder home dapat ditulis. Catat juga `finish_request`, `max_execution_time`, dan latensi.
+4. Hapus kedua berkas dari hosting; agent menghapus role uji Neon.
+5. Bila koneksi Neon GAGAL: hentikan setup shared, production pindah ke VPS (`infra/compose.production.yml`).
+
 ## 2. Setup production (Fase C, setelah membeli)
 
 1. **Domain (K1):** domain gratis paket diarahkan ke hosting. Catat registrant dan tanggal perpanjangan.
