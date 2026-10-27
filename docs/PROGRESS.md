@@ -1,5 +1,10 @@
 # Progress — RT05 TAKEDA
 
+## Berikutnya — 27 Oktober 2026 sore
+
+Uji HP nyata M19 dengan APK 1025: [UJI_HP_M19.md](UJI_HP_M19.md). Setelah pemilik membeli Biznet: cek koneksi
+`infra/shared/cek-hosting.php` (RUNBOOK_PRODUCTION 1a), lalu M16. Ringkasan serah terima: HANDOFF bagian 0.
+
 ## Audit M17–M19 sebelum M16 — 27 Oktober 2026 (Claude)
 
 Diminta pemilik setelah sesi GPT menyelesaikan M17–M19. Ringkasan dan tabel lengkap:
