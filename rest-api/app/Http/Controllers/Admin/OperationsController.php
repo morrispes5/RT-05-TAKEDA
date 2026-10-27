@@ -37,10 +37,11 @@ class OperationsController extends Controller
             'permohonan_menunggu' => PermohonanAkun::where('status', 'diajukan')->count(),
             'pengaduan' => Pengaduan::whereNull('archived_at')->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status'),
             'aspirasi' => Aspirasi::whereNull('archived_at')->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status'),
+            // Audit 27 Okt: angka kerja harian hanya rumah aktif; tagihan rumah arsip tetap ada di rekap/laporan ledger.
             'iuran_bulan_ini' => [
                 'periode' => substr($period, 0, 7),
-                'lunas' => TagihanIuran::where('periode', $period)->where('status', 'lunas')->count(),
-                'belum_bayar' => TagihanIuran::where('periode', $period)->where('status', 'belum_bayar')->count(),
+                'lunas' => TagihanIuran::where('periode', $period)->where('status', 'lunas')->whereHas('rumah', fn ($q) => $q->whereNull('archived_at'))->count(),
+                'belum_bayar' => TagihanIuran::where('periode', $period)->where('status', 'belum_bayar')->whereHas('rumah', fn ($q) => $q->whereNull('archived_at'))->count(),
             ],
             'saldo_kas' => Dues::balance(),
         ]);
