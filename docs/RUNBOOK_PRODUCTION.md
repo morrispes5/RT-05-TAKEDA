@@ -23,6 +23,20 @@ Salin teks ini ke live chat atau tiket sales Biznet Gio:
 
 **Jangan membeli** bila jawaban butir 1–3 "tidak". Simpan tangkapan layar jawaban sebagai bukti preflight.
 
+**Jawaban Biznet (tiket #737856, 25–26 Okt 2026, dicatat audit 28 Okt):**
+1. PHP sampai 8.4, `pdo_pgsql` tersedia; **tidak ada CLI/Terminal/SSH**; database bawaan MySQL/MariaDB (tidak dipakai,
+   database tetap Neon).
+2. Koneksi keluar tidak dibatasi, tetapi Biznet tidak membuka port khusus. Port 5432 ke Neon **belum dikonfirmasi
+   tertulis** (pertanyaan lanjutan dikirim 26 Okt). Jangan membeli sebelum terjawab: layanan tanpa refund.
+3. Cron cPanel tersedia; panduan KB memakai `/usr/local/bin/php` dan templat tiap 1 menit. Batas waktu proses tidak dijawab.
+4. Batas CPU/entry process tidak disebut angkanya (dilihat persen di statistik cPanel).
+5. Document root domain utama **terkunci di `public_html`**; addon domain boleh ke subfolder di dalam `public_html`.
+6. Harga dari CS Rp679.320; pemilik memakai promo situs Rp399.000 (kode `PROMONWHLARGE`, cek PPN di checkout).
+   Perpanjangan mengikuti daftar harga; **tanpa refund**.
+
+Konsekuensi: migrasi dan perintah operator dijalankan dari mesin operator/CI ke Neon (bukan di hosting); perintah sekali
+jalan di hosting lewat cron sementara; struktur folder mengikuti butir 4 bagian 2.
+
 ## 2. Setup production (Fase C, setelah membeli)
 
 1. **Domain (K1):** domain gratis paket diarahkan ke hosting. Catat registrant dan tanggal perpanjangan.
@@ -32,14 +46,22 @@ Salin teks ini ke live chat atau tiket sales Biznet Gio:
 3. **Build di mesin operator/CI** (bukan di hosting): `composer install --no-dev --optimize-autoloader` untuk rest-api dan
    website, `npm.cmd run build` untuk website. Unggah tanpa `.env`, `node_modules`, `tests`, atau `storage/logs` lama.
 4. **Struktur folder hosting** (di luar document root kecuali `public`):
-   `~/rt05/rest-api`, `~/rt05/website`, document root → `~/rt05/website/public` dengan `index-api.php` sesuai
-   `infra/shared/public-htaccess.example`.
+   `~/rt05/rest-api`, `~/rt05/website` disimpan di folder home **di luar `public_html`**. Karena document root Biznet
+   terkunci di `public_html`, isi `website/public` (termasuk `index-api.php` sesuai `infra/shared/public-htaccess.example`)
+   disalin ke `public_html` dan jalur `require` di `index.php`/`index-api.php` diarahkan ke `../rt05/website` dan
+   `../rt05/rest-api`. Jangan menaruh `.env`, `vendor`, atau `storage` di dalam `public_html`. Pastikan dulu File Manager
+   mengizinkan folder home di luar `public_html`.
 5. **Env privat:** API = `rest-api/.env.example` + overlay `infra/shared/api.env.example`. Website = `website/.env.example` +
    overlay `infra/shared/web.env.example` (`RT05_SEARCH_INDEXING=true`, `APP_URL` domain production). APP_KEY website dan
    API berbeda. Isi secret (APP_KEY, DATABASE_URL, mail, FCM) langsung di hosting, tidak di Git atau chat.
+   Flag fitur (audit 28 Okt): `RT05_FINANCE_V2=true` sejak awal (M18 passed, APK 1021+ memakainya; jangan dimatikan lagi
+   setelah transaksi v2 pertama). `RT05_PANIC_ENABLED=false` sampai gate HP nyata M19 lulus dan pemilik menyetujui; lalu
+   `true` + `RT05_PANIC_AUDIENCE=all`.
 6. **Migrasi** dari mesin operator dengan URL direct role migrator: `php artisan migrate --force`, lalu grant runtime.
    Jangan pernah `migrate:fresh`, `db:wipe`, atau seed tes di production.
-7. **Cron:** satu baris `*/15 * * * * cd ~/rt05/rest-api && php artisan rt05:shared-tick >> ~/rt05/cron.log 2>&1`.
+7. **Cron tiap 1 menit** (audit M19): `* * * * * cd ~/rt05/rest-api && /usr/local/bin/php artisan rt05:shared-tick >> ~/rt05/cron.log 2>&1`.
+   Tick idle tidak membuka Neon. Alarm panik yang gagal terkirim setelah respons dicoba lagi menit berikutnya; dengan
+   cron 15 menit alarm bisa melewati batas umur 10 menit dan tidak lagi berbunyi.
 8. `php artisan config:cache` dan `route:cache` di kedua aplikasi setelah env lengkap.
 9. **Admin pertama (K5):** `php artisan rt05:pengurus buat <email-asli-pengurus> --nama="<nama>"` (perintah operator tanpa
    kata sandi bawaan, DEPLOYMENT.md). Kata sandi diatur sendiri oleh pengurus lewat reset, tidak dikirim lewat chat.
