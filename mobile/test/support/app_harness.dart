@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rt05_takeda/app/config.dart';
 import 'package:rt05_takeda/core/health.dart';
@@ -15,6 +16,7 @@ Future<FakeAdapter> pumpApp(
   required FakeHandler handler,
   String flavor = 'staging',
   bool settle = true,
+  List<Override> overrides = const [],
 }) async {
   final adapter = FakeAdapter(handler);
   await tester.pumpWidget(
@@ -23,6 +25,7 @@ Future<FakeAdapter> pumpApp(
         appConfigProvider.overrideWithValue(AppConfig.parse(flavor: flavor, apiBaseUrl: 'https://api.example.test')),
         tokenStorageProvider.overrideWithValue(storage),
         httpAdapterProvider.overrideWithValue(adapter),
+        ...overrides,
       ],
       child: const Rt05App(),
     ),

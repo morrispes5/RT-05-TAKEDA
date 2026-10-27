@@ -112,6 +112,12 @@ M10: Firebase diinisialisasi dari `--dart-define` `FIREBASE_API_KEY`, `FIREBASE_
 
 APK release signed dari CI atau mesin developer. Signing keystore/password disimpan secret di luar repo, backup aman. Generate checksum, version code/name, minimum version, dan release notes. Distribusi awal melalui HTTPS download page pada VPS; install diuji HP nyata.
 
+ADR46: aplikasi Android memperbarui diri dari `/unduh/versi.json` situs yang sama. Pop-up "Versi baru tersedia" sekali per
+aplikasi dibuka dan tombol **Perbarui sekarang** di kartu Tentang aplikasi mengunduh APK sesuai ABI ke cache aplikasi;
+kanal `rt05/update` (MainActivity) mencocokkan SHA-256, nama paket, dan versionCode lalu membuka `PackageInstaller`.
+Android tetap meminta izin "sumber ini" sekali dan konfirmasi Install. APK yang sudah terpasang dihapus dari cache saat
+aplikasi dibuka. Di luar Android atau tanpa berkas sah, aplikasi kembali ke tautan halaman unduh resmi.
+
 VPS menjalankan backend dan menyediakan file distribusi, bukan menjalankan Flutter application milik warga. iOS/Play Store dapat menjadi milestone lanjutan setelah v1 tanpa mengubah database/API.
 
 ## Pengujian

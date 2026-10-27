@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **Selasa 27 Oktober 2026 sore** (audit Claude M17–M19, PR #95–#98, staging `613466b`, APK 1025 di unduh/Drive 13.38–13.39 WIB; berikutnya uji HP nyata M19). **Baca bagian 0 dulu.**
+Terakhir diperbarui: **Selasa 27 Oktober 2026 malam** (ADR46 pembaruan dari dalam aplikasi; sebelumnya sore: audit Claude M17–M19, PR #95–#98, staging `613466b`, APK 1025 di unduh/Drive 13.38–13.39 WIB; berikutnya uji HP nyata M19). **Baca bagian 0 dulu.**
 
 ## 0. MULAI DI SINI — status Selasa 27 Oktober 2026 sore (Claude)
 
@@ -33,6 +33,11 @@ nyata**. Urutan berikutnya (ADR45): **uji HP M19 → tutup M19 → M16 productio
    `cek-hosting.php`, hapus role setelah hasil diterima. Gagal koneksi Neon → production pindah ke VPS.
 5. Lalu M16 sesuai [M16_PLAN.md](M16_PLAN.md) + [RUNBOOK_PRODUCTION.md](RUNBOOK_PRODUCTION.md) (flag `RT05_FINANCE_V2=true`,
    panik nonaktif sampai M19 passed, cron tiap 1 menit, project Neon production baru, data asli hanya di production).
+
+**Sesi Claude 27 Okt malam:** pemilik menguji APK 1025 di HP sendiri (**jangan pakai emulator di PC**), revisi menyusul.
+Fitur **pembaruan APK dari dalam aplikasi** (ADR46) dikode di `codex/m19-update-dalam-aplikasi`, Flutter 351/351; rilis
+digabung dengan revisi uji HP dalam satu APK. Warga ≤1025 unduh ulang manual sekali. PR #100 (catatan MyRepublic 18 Okt
+yang tertinggal) menunggu merge oleh pemilik. Merge PR dan menutup PR #26 ditolak pemeriksa izin agent.
 
 **Pekerjaan GitHub yang menunggu pemilik** (ditolak pemeriksa izin agent): tutup issue #47 (sudah beres di kode),
 tutup PR draft #26 (basi), tambahkan ringkasan jawaban Biznet di issue #57.

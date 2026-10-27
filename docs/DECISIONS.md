@@ -765,3 +765,26 @@ terbaru agar diuji di HP, serta memastikan shortcut ada di Home. Jalur teknis ri
 publikasi kode/PR/CI/build bertanda tangan dan jalur staging Hostinger yang sudah ada; **tidak menjalankan transport
 Git ke origin di PC atau mengubah autentikasi Git**. Sertifikat APK lama dipertahankan. API M19 ikut dipasang di staging,
 audience uji dibatasi akun sintetis; tidak production atau broadcast warga asli. Gate HP nyata tetap terbuka.
+
+### ADR46 — Pembaruan APK dari dalam aplikasi
+
+Tanggal: **27 Oktober 2026**. Status: **diputuskan oleh pemilik**.
+
+Pemilik bertanya apakah aplikasi bisa memperbarui diri "kayak Claude Code dan Codex": ada tombol versi terbaru lalu
+langsung terpasang. Jawaban pemilik atas penjelasan batas Android: “Gas, kerjain fitur update APK dari dalam aplikasi.
+Rilisnya digabung sama revisi hasil uji HP aku nanti.”
+
+1. Sumber tetap `/unduh/versi.json` di situs resmi yang sama dengan API (M16). Aplikasi hanya menerima berkas
+   `/unduh/*.apk` relatif dengan SHA-256 64 heksa; entri lain diabaikan dan kembali ke tautan halaman unduh resmi.
+2. Android memilih APK sesuai ABI HP (urutan `Build.SUPPORTED_ABIS`), mengunduh ke cache aplikasi
+   (`cache/pembaruan`), lalu **sebelum** sesi pemasangan: SHA-256 harus sama dengan `versi.json`, paket harus
+   `tech.morriz.takeda`, dan versionCode lebih tinggi dari yang terpasang. Gagal = berkas dihapus, tidak dipasang.
+3. Pemasangan memakai `PackageInstaller` dengan izin `REQUEST_INSTALL_PACKAGES`. Android tetap meminta izin
+   "Izinkan dari sumber ini" sekali dan konfirmasi **Install** setiap pembaruan; aplikasi di luar Play Store tidak bisa
+   memasang diam-diam. Tanda tangan tetap kunci rilis ADR31; APK bertanda tangan lain ditolak Android.
+4. Pop-up "Versi baru tersedia" muncul sekali setiap aplikasi dibuka, hanya bila shell tampil paling atas (tidak
+   menutupi halaman darurat/notifikasi). Tombol **Perbarui sekarang** tetap ada di kartu Tentang aplikasi; tautan
+   halaman unduh resmi tetap sebagai cadangan. Tidak ada pembaruan wajib atau pemblokiran versi lama.
+5. Warga yang memasang APK sebelum fitur ini (≤1025) memperbarui manual sekali dari Drive/`/unduh`; sesudahnya lewat
+   tombol. Fitur ini dirilis bersama revisi uji HP M19 dalam satu APK, bukan rilis tersendiri. Penerimaan alur
+   unduh-pasang di HP nyata memerlukan dua build berurutan yang sama-sama memuat fitur ini.
