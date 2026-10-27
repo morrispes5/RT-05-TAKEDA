@@ -130,6 +130,9 @@ Ini pilihan implementasi terbatas untuk diuji, bukan tambahan keputusan bisnis p
 - Shortcut membuka langkah awal setelah sesi/privasi sah; tidak pernah mengirim sendiri. Kanal Android terpisah,
   teks generik di layar kunci, ref UUID, bunyi sistem alarm dan getar, tanpa izin full-screen/override DND/lokasi.
   Force-stop, izin, latar/terkunci dan suara tetap menunggu bukti HP nyata.
+- Penegasan Home 27 Okt: akses cepat ada di Beranda warga **dan pengurus**. Selain tekan lama ikon Android,
+  ada tombol meminta launcher menambahkan shortcut ke layar utama HP. Pengguna mengonfirmasi dialog Android;
+  permintaan diterima bukan bukti shortcut sudah dipasang. Tetap membuka langkah awal, bukan langsung mengirim.
 
 Rujukan teknis primer: [kanal notifikasi Android](https://developer.android.com/develop/ui/compose/notifications/channels),
 [shortcut Android](https://developer.android.com/develop/ui/compose/system/shortcuts/creating-shortcuts), dan

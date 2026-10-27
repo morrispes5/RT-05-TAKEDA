@@ -8,6 +8,7 @@ abstract interface class EmergencyPlatform {
   Future<Map<String, dynamic>?> initialLaunch();
   Future<void> alarm(String id, String? notificationId);
   Future<void> settings();
+  Future<bool> pinShortcut();
 }
 
 class NoEmergencyPlatform implements EmergencyPlatform {
@@ -20,6 +21,8 @@ class NoEmergencyPlatform implements EmergencyPlatform {
   Future<void> alarm(String id, String? notificationId) async {}
   @override
   Future<void> settings() async {}
+  @override
+  Future<bool> pinShortcut() async => false;
 }
 
 class NativeEmergencyPlatform implements EmergencyPlatform {
@@ -33,6 +36,17 @@ class NativeEmergencyPlatform implements EmergencyPlatform {
   }
   static const _channel = MethodChannel('rt05/emergency');
   final _launches = StreamController<Map<String, dynamic>>.broadcast();
+  @override
+  Future<bool> pinShortcut() async {
+    try {
+      return await _channel.invokeMethod<bool>('pinShortcut') ?? false;
+    } on PlatformException {
+      return false;
+    } on MissingPluginException {
+      return false;
+    }
+  }
+
   @override
   Stream<Map<String, dynamic>> get launches => _launches.stream;
   @override

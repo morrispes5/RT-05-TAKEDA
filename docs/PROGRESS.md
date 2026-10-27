@@ -2,6 +2,11 @@
 
 ## M19 — Tombol panik — 27 Oktober 2026: **in_progress (implementasi lokal)**
 
+**Rilis uji diminta pemilik:** lanjut publikasi build terbaru ke unduh/Drive untuk uji HP. API GitHub dipakai tanpa
+transport Git ke origin; staging hanya jalur immutable yang sudah ada, dengan penerima sintetis. Beranda pengurus
+ditambah akses cepat panik, pilihan pin shortcut ke layar utama HP ditambahkan. Flutter **337/337**, analyze bersih,
+format 101/0 dan build debug ulang PASS. APK bertanda tangan/deploy/distribusi belum diklaim sebelum verifikasi.
+
 **Eksekusi diotorisasi pemilik:** “okee gass lgsg aja eksekusi”. Branch `codex/m19-tombol-panik` di worktree
 `m17-verifikasi-1018`; tanpa fetch/pull/push/PR/deploy remote, checkout awal/MyRepublic tetap utuh.
 DB/domain/API/kontrak, idempotensi/lock/trigger, pembatasan laju, penanganan/penyalahgunaan dan kendali fitur,

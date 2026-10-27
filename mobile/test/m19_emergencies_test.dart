@@ -12,6 +12,7 @@ import 'package:rt05_takeda/core/push.dart';
 import 'package:rt05_takeda/core/session.dart';
 import 'package:rt05_takeda/features/auth/privacy_policy.dart';
 import 'package:rt05_takeda/features/warga/emergencies.dart';
+import 'package:rt05_takeda/features/pengurus/pengurus_pages.dart';
 import 'package:rt05_takeda/main.dart';
 
 import 'support/fakes.dart';
@@ -37,16 +38,32 @@ class _Shortcut extends NoEmergencyPlatform {
   Future<Map<String, dynamic>?> initialLaunch() async => {'type': 'shortcut'};
 }
 
+class _PinShortcut extends NoEmergencyPlatform {
+  int requests = 0;
+  @override
+  Future<bool> pinShortcut() async {
+    requests++;
+    return true;
+  }
+}
+
 const _id = '00000000-0000-4000-8000-000000000019';
 final _report = {'id': _id, 'jenis': 'kebakaran', 'status': 'aktif', 'versi': 1, 'pelapor': 'Pelapor sintetis', 'rumah': 'Rumah sintetis'};
 final _status = {'tersedia': true, 'aktif': true, 'versi': 1, 'penyalahgunaan': 0, 'versi_ketentuan': emergencyTermsVersion, 'uji_terbatas': true};
 
-Future<ProviderContainer> _pump(WidgetTester tester, FakeAdapter adapter, {Widget page = const EmergencyPage(), bool admin = false}) async {
+Future<ProviderContainer> _pump(
+  WidgetTester tester,
+  FakeAdapter adapter, {
+  Widget page = const EmergencyPage(),
+  bool admin = false,
+  EmergencyPlatform platform = const NoEmergencyPlatform(),
+}) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         appConfigProvider.overrideWithValue(AppConfig.parse(flavor: 'staging', apiBaseUrl: 'https://api.example.test')),
         httpAdapterProvider.overrideWithValue(adapter),
+        emergencyPlatformProvider.overrideWithValue(platform),
         sessionProvider.overrideWith(admin ? _AdminSession.new : _Session.new),
       ],
       child: MaterialApp(home: page),
@@ -76,6 +93,42 @@ Future<void> _confirm(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('pengurus has panic shortcut directly on Home and it never submits automatically', (tester) async {
+    var posts = 0;
+    final base = apiHandler(me: () => akunJson(peran: 'pengurus'));
+    await _pump(
+      tester,
+      FakeAdapter((o) {
+        if (o.method == 'POST') posts++;
+        if (o.uri.path.endsWith('/emergencies/status')) return jsonBody(200, {'data': _status});
+        return base(o);
+      }),
+      page: Scaffold(body: AdminHomePage(goTab: (_) {})),
+      admin: true,
+    );
+    expect(find.text('Tombol panik'), findsOneWidget);
+    await _tap(tester, 'Tombol panik');
+    expect(find.text('Mulai laporan darurat'), findsOneWidget);
+    expect(posts, 0);
+  });
+
+  testWidgets('pin shortcut requests launcher confirmation without sending an emergency', (tester) async {
+    final platform = _PinShortcut();
+    var posts = 0;
+    await _pump(
+      tester,
+      FakeAdapter((o) {
+        if (o.method == 'POST') posts++;
+        return jsonBody(200, {'data': _status});
+      }),
+      platform: platform,
+    );
+    await _tap(tester, 'Tambahkan shortcut di layar utama HP');
+    expect(platform.requests, 1);
+    expect(posts, 0);
+    expect(find.textContaining('Konfirmasi penambahan shortcut'), findsOneWidget);
+  });
+
   testWidgets('Android shortcut waits for restored session and new privacy consent, then opens only step one', (tester) async {
     var needsPrivacy = true;
     final posts = <RequestOptions>[];
