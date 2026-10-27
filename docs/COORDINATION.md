@@ -1,5 +1,14 @@
 # Koordinasi RT05 TAKEDA
 
+## Checkpoint 27 Oktober 2026 — implementasi lokal M19
+
+Pemilik meminta eksekusi langsung. Branch `codex/m19-tombol-panik`, worktree `m17-verifikasi-1018`.
+DB/domain/API, kontrak/ERD, notifikasi, privasi 27 Oktober, mobile/shortcut/kanal alarm ditulis; fitur default
+nonaktif dan audience restricted. Bukti akhir: [LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md).
+M19 belum passed; staging/HP nyata/APK rilis belum dilakukan. Tidak ada fetch/pull/push, akses origin atau
+perubahan production; rilis aktual terakhir tetap 1021. Checkout awal/MyRepublic dipertahankan.
+Status/perencanaan di checkpoint sebelumnya bersifat historis.
+
 ## Checkpoint 27 Oktober 2026 — M19 didahulukan; kerja lokal
 
 Instruksi terbaru pemilik (ADR45): **M17 → M18 → M19 tombol panik → M16 → M20**.
