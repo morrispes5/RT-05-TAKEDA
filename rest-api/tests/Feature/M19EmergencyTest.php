@@ -228,6 +228,7 @@ class M19EmergencyTest extends TestCase
     {
         $p = FcmGateway::payload(new PushMessage('synthetic', 'Darurat', 'Buka aplikasi', [], 'rt05-unique', true));
         $this->assertSame('rt05_darurat_v1', $p['android']['notification']['channel_id']);
+        $this->assertSame('ic_emergency', $p['android']['notification']['icon']);
         $this->assertSame('PRIVATE', $p['android']['notification']['visibility']);
         $this->assertSame('600s', $p['android']['ttl']);
         $late = FcmGateway::payload(new PushMessage('synthetic', 'Darurat', 'Buka aplikasi', [], 'rt05-late', true, 20));
