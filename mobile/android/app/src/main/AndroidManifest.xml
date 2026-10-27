@@ -2,6 +2,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- M19: izin normal untuk getar kanal darurat; tidak melewati pengaturan pengguna. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- ADR46: pembaruan dari dalam aplikasi. Android tetap meminta izin "sumber ini" sekali dan konfirmasi Install;
+         APK hanya dari /unduh situs resmi, SHA-256 dicocokkan dengan versi.json sebelum dipasang. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Kamera lampiran pengaduan (M08). Dideklarasikan agar izin runtime diminta image_picker
          dan penolakan dapat ditangani; galeri memakai photo picker Android tanpa izin penyimpanan. -->
     <uses-permission android:name="android.permission.CAMERA" />

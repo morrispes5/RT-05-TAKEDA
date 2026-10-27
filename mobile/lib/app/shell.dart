@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/app_update_platform.dart';
 import '../core/session.dart';
 import '../core/widgets.dart';
 import '../features/pengurus/pengurus_pages.dart';
+import '../features/warga/app_about.dart';
 import '../features/warga/providers.dart';
 import '../features/warga/warga_pages.dart';
 import 'theme.dart';
@@ -36,8 +38,21 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     super.dispose();
   }
 
+  // ADR46: tawarkan pembaruan sekali per aplikasi dibuka, hanya saat shell tampil paling atas
+  // (tidak menutupi halaman darurat/notifikasi yang dibuka dari push atau shortcut).
+  void _offerUpdate(AppRelease? release) {
+    final offer = ref.read(updateOfferProvider);
+    if (offer.shown || release == null || release.berkas.isEmpty || !isNewerRelease(release, ref.read(installedBuildProvider))) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || offer.shown || ModalRoute.of(context)?.isCurrent != true) return;
+      offer.shown = true;
+      showAppUpdateDialog(context, release);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (ref.read(appUpdatePlatformProvider).supported) ref.listen(latestReleaseProvider, (_, next) => _offerUpdate(next.value));
     final session = ref.watch(sessionProvider);
     // Sesi berakhir/keluar: router berpindah ke login pada frame berikutnya; jangan bangun tab
     // yang membaca data akun pada frame peralihan ini.
