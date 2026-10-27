@@ -26,6 +26,7 @@ import '../household/census_providers.dart';
 import '../household/paged_list.dart';
 import '../warga/activity_proposal_actions.dart' show jakartaWallToUtc;
 import '../warga/activity_proposals.dart';
+import '../warga/emergencies.dart';
 import '../warga/providers.dart';
 import '../warga/warga_pages.dart';
 
@@ -1035,6 +1036,7 @@ class MoreAdminPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) => ListView(
     padding: const EdgeInsets.all(16),
     children: [
+      const EmergencyEntry(),
       SectionCard(
         title: 'Komunitas',
         child: Column(

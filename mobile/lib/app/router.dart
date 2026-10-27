@@ -8,6 +8,7 @@ import '../core/session.dart';
 import '../features/auth/auth_pages.dart';
 import '../features/auth/privacy_policy.dart';
 import '../features/warga/warga_pages.dart';
+import '../features/warga/emergencies.dart';
 import 'shell.dart';
 import 'startup.dart';
 
@@ -21,9 +22,10 @@ abstract final class Routes {
   static const home = '/home';
   static const notifications = '/notifications';
   static const privacy = '/privacy';
+  static const emergency = '/emergency';
 
   static const guest = {login, register, forgot};
-  static const all = {splash, login, register, forgot, pending, home, notifications, privacy};
+  static const all = {splash, login, register, forgot, pending, home, notifications, privacy, emergency};
 }
 
 /// Guard sesi murni (diuji langsung):
@@ -71,6 +73,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => HomeShell(key: ValueKey(ref.read(sessionProvider).akun?.id)),
       ),
       GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsPage()),
+      GoRoute(path: Routes.emergency, builder: (_, _) => const EmergencyPage()),
       GoRoute(path: Routes.privacy, builder: (_, _) => const PrivacyPolicyPage(consent: true)),
     ],
   );
