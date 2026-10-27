@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- M19: izin normal untuk getar kanal darurat; tidak melewati pengaturan pengguna. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Kamera lampiran pengaduan (M08). Dideklarasikan agar izin runtime diminta image_picker
          dan penolakan dapat ditangani; galeri memakai photo picker Android tanpa izin penyimpanan. -->
     <uses-permission android:name="android.permission.CAMERA" />

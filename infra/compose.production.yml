@@ -32,6 +32,9 @@ services:
       APP_TIMEZONE: UTC
       # M18 opt-in bersama API, worker dan scheduler; tidak aktif hanya karena kode dideploy.
       RT05_FINANCE_V2: ${RT05_FINANCE_V2:-false}
+      RT05_PANIC_ENABLED: ${RT05_PANIC_ENABLED:-false}
+      RT05_PANIC_AUDIENCE: ${RT05_PANIC_AUDIENCE:-restricted}
+      RT05_PANIC_RECIPIENT_IDS: ${RT05_PANIC_RECIPIENT_IDS:-}
       DB_CONNECTION: pgsql
       DATABASE_URL: ${DATABASE_URL}
       DB_SSLMODE: verify-full
@@ -155,6 +158,7 @@ services:
     restart: unless-stopped
     environment:
       APP_NAME: "RT 05 Takeda"
+      RT05_PANIC_ENABLED: ${RT05_PANIC_ENABLED:-false}
       APP_ENV: ${APP_ENV:-production}
       FRANKENPHP_CONFIG: ${RT05_WEB_FRANKENPHP_CONFIG:-num_threads 8}
       APP_KEY: ${WEB_APP_KEY}

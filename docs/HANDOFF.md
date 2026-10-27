@@ -4,16 +4,17 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **27 Oktober 2026** (PR #90 merged, staging `b6e1c4b`, APK 1021 teruji dan disebar; 413 backend/326 Flutter/40 website, CI source 9/9).
+Terakhir diperbarui: **27 Oktober 2026** (M19 implementasi lokal; backend/mobile/privasi/shortcut/alarm ditulis, gate staging/HP tetap terbuka. Kerja lokal tanpa origin; rilis terakhir APK 1021).
 
 ## 1. Cara mulai sesi baru
 
-1. Ikuti skill init (`.cursor/skills/init/SKILL.md`): `git status -sb`, `git fetch`, baca AGENTS → README → PRD →
+1. Ikuti skill init (`.cursor/skills/init/SKILL.md`): `git status -sb`, baca AGENTS → README → PRD →
    BUSINESS_RULES → ARCHITECTURE → ROADMAP → PROGRESS → COORDINATION → **dokumen ini**.
-2. Bandingkan branch lokal dengan `origin/main` sebelum kerja. Pemilik juga memakai agent lain (Codex, Cursor Cloud); branch
-   lokal bisa basi dan checkout ini kadang dipakai bersama (lihat bagian 9).
+2. **Instruksi pemilik 27 Okt (ADR45): jangan fetch/pull/push atau mengakses remote `origin` otomatis.**
+   Lanjut dari dokumen dan Git lokal. Catat bahwa status remote tidak dicek ulang; jangan memicu permintaan kata sandi.
+   Checkout bisa dipakai bersama (lihat bagian 9); jangan menimpa perubahan sesi lain.
 3. Pemilik berkomunikasi dalam Bahasa Indonesia santai. Jawab dalam Bahasa Indonesia, ringkas, tanpa jargon berlebihan.
-4. Kerjakan satu milestone yang dibuka pemilik. **M17 passed (25 Okt, gate emulator diterima pemilik)**; **M18 passed staging sintetis/emulator, APK 1021 perbaikan QA**, kemudian M16 production sesuai ADR43. Catatan permintaan pemilik juga ada di `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
+4. Kerjakan satu milestone yang dibuka pemilik. **M17 passed (25 Okt, gate emulator diterima pemilik)**; **M18 passed staging sintetis/emulator, APK 1021 perbaikan QA**; berikutnya **M19 tombol panik sebelum M16** (ADR45). Baca [M19_PLAN.md](M19_PLAN.md). Catatan permintaan pemilik juga ada di `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
 
 ## 2. Snapshot status (27 Okt 2026)
 
@@ -21,7 +22,12 @@ Rilis terbaru: [RELEASE_1021.md](evidence/m18/RELEASE_1021.md). PR #90 merged `b
 CI 9/9; staging memakai SHA merge dan APK 1021 sudah di Drive ID tetap serta unduh resmi. Backend 413/413,
 Flutter 326/326, website 40/40, kontrak/lint/hygiene lulus. Upgrade 1020 tanpa uninstall, cicilan dan dialog diuji
 di emulator; saldo uji pulih, rekonsiliasi nol. Uji baca 20 pengguna: 895/895 expected, P95 710 ms.
-Emulator/PG lokal berhenti. Bukti kode: [QA_FIXES.md](evidence/m18/QA_FIXES.md). Berikutnya gate M16.
+Emulator/PG lokal berhenti. Bukti kode: [QA_FIXES.md](evidence/m18/QA_FIXES.md).
+Prioritas terbaru: **M19 implementasi lokal**, belum bukti alarm HP nyata. Branch `codex/m19-tombol-panik`;
+rencana [M19_PLAN.md](M19_PLAN.md), bukti/gate [LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md).
+Flag server default false; audience restricted, allowlist kosong. Jangan aktifkan atau broadcast ke warga asli.
+Tes lokal M19 final: backend **431/431 (4.518 assertions)**, Flutter **335/335**, website **41/41 (549 assertions)**;
+analyze/format 101/0, Pint, OpenAPI dan pemeriksaan Compose PASS. Status build/gate lanjutan ada di bukti M19.
 
 Audit sebelum patch pada `codex/m18-qa-audit`: [QA_REVIEW.md](evidence/m18/QA_REVIEW.md).
 Backend 406, website 40, Flutter 308 PASS; tujuh PoC mereproduksi lima bug. Dua security medium, satu security low,
@@ -30,7 +36,7 @@ Cakupan manual parsial, 141 file unik dibaca penuh; bukan klaim semua 1.069 file
 
 | Hal | Nilai |
 | --- | --- |
-| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 passed (staging sintetis + emulator, APK 1021)**, M16 Fase A in_progress |
+| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 passed (staging sintetis + emulator, APK 1021)**; **M19 in_progress (implementasi lokal), didahulukan sebelum M16**. Bukti Fase A M16 tetap tersimpan |
 | Kode implementasi M18 terbaru | `b6e1c4b` merge PR #90 perbaikan QA, CI source 9/9. Baseline M18 sebelumnya `afe4ebb` PR #88 |
 | API M18 merged | `ee18f55` PR #84, CI 5/5 PASS pada head `672f447`. Termasuk staging/APK 1020 |
 | Mobile pengurus merged | `c68a7a1` PR #85, CI 7/7 PASS; rilis M18 terpadu 1020 sudah diuji/distribusikan |
@@ -253,6 +259,9 @@ Jangan mengubah sharing, klien OAuth, kuota cloud atau konfigurasi akun untuk me
 
 ## 9. Aturan kerja pemilik dan jebakan
 
+- **27 Okt, ADR45:** jangan fetch/pull/push atau mengakses remote `origin` otomatis. Kerja dari dokumentasi lokal;
+  jangan mengubah credential helper/URL remote atau meminta kata sandi. Akses remote menunggu instruksi baru pemilik.
+
 - Commit sebagai `morrispes5 <morrispes5@gmail.com>`, **tanpa trailer Co-Authored-By dan tanpa footer PR** (instruksi pemilik).
   Branch `codex/mNN-topik`; jangan force-push; repo tidak memakai auto-merge.
 - Folder induk `RT X TAKEDA` juga repo Git milik pemilik (RT-05-TAKEDA sebagai gitlink). Jangan commit di induk.
@@ -276,11 +285,12 @@ Jangan mengubah sharing, klien OAuth, kuota cloud atau konfigurasi akun untuk me
 
 ## 10. Langkah berikutnya yang disarankan
 
-**Baca ADR43 dulu (25 Okt 2026).** Setelah rapat RT 24 Okt ada milestone lanjutan, dikerjakan bertahap:
-1. **M17** penyesuaian rapat (kecil) → 2. **M18** keuangan fleksibel (kritis, tes skenario rapat wajib) →
-3. 2 Nov pindah VPS staging (`RUNBOOK_PRODUCTION.md` bagian 7) → 4. **M16** production setelah domain diputuskan awal Nov,
-lalu **soft launch beta 8 Nov** (data asli hanya di production) → 5. **M19** tombol panik → 6. **M20** iPhone (PWA).
-Rilis penuh paling lambat awal 2027. Perbaikan APK kecil dikumpulkan per rilis (jangan rilis APK tiap bug).
+**Baca ADR45 (27 Okt) dan ADR43 butir 8.** Pemilik memprioritaskan tombol panik:
+**M17 → M18 → M19 → M16 → M20**. Rencana M19 ada di [M19_PLAN.md](M19_PLAN.md); implementasi lokal sudah ditulis,
+tetapi belum penerimaan staging/HP nyata. Bukti dan langkah lanjutan di [LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md).
+Jadwal ADR43: pindah VPS staging 2 Nov (`RUNBOOK_PRODUCTION.md` bagian 7), target beta 8 Nov dan rilis penuh
+paling lambat awal 2027 tetap rencana yang perlu dinilai terhadap hasil M19. Data asli hanya di production;
+perubahan urutan tidak menghapus gate M16. Perbaikan APK kecil dikumpulkan per rilis (jangan rilis APK tiap bug).
 
 **M17 passed (25 Okt)** dengan penerimaan emulator oleh pemilik. **M18 passed (26 Okt)** untuk staging sintetis
 + emulator; bukti lengkap di [STAGING_ACCEPTANCE.md](evidence/m18/STAGING_ACCEPTANCE.md), APK 1020 sudah di
@@ -288,8 +298,11 @@ Drive ID tetap dan unduh resmi (14.28 WIB). Titipan manual, keringanan bukan uan
 flag v2 hanya staging. Jangan mengulang rencana/migrasi M18 atau rollback ke kode M17.
 
 QA-S1–S3/QA-F1–F3 fixed dan dirilis sebagai APK 1021; staging dan emulator lulus, fixture dibalik/diarsipkan.
-Berikutnya persiapan/penerimaan M16, uji HP nyata/UAT mitra dan pindah VPS staging 2 Nov sesuai ADR43/runbook.
-Jangan menganggap hasil emulator sebagai HP nyata atau izin deploy production. Daftar gate M16 di PROGRESS tetap berlaku.
+Berikutnya **M19**: selesaikan review kandidat lokal, build bertanda tangan dan staging sintetis setelah ada instruksi
+baru untuk akses remote. Larangan origin tetap berlaku; jangan menyiasatinya lewat connector/remote lain untuk push/PR.
+Kemudian verifikasi shortcut, alur pengurus/warga dan alarm dari HP nyata sesuai matriks di plan.
+Alarm layar kunci/aplikasi ditutup wajib dibuktikan di HP nyata. Jangan menganggap hasil emulator sebagai HP nyata
+atau izin deploy production. UAT mitra dan daftar gate M16 di PROGRESS tetap berlaku sesudah M19.
 
 ## 11. Air Bersih KSM — aplikasi terpisah, menu khusus pengurus (ADR41, 24 Okt 2026; menggantikan ADR40)
 

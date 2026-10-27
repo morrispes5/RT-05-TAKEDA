@@ -1,5 +1,44 @@
 # Progress — RT05 TAKEDA
 
+## M19 — Tombol panik — 27 Oktober 2026: **in_progress (implementasi lokal)**
+
+**Rilis uji diminta pemilik:** lanjut publikasi build terbaru ke unduh/Drive untuk uji HP. API GitHub dipakai tanpa
+transport Git ke origin; staging hanya jalur immutable yang sudah ada, dengan penerima sintetis. Beranda pengurus
+ditambah akses cepat panik, pilihan pin shortcut ke layar utama HP ditambahkan. Flutter **337/337**, analyze bersih,
+format 101/0 dan build debug ulang PASS. APK bertanda tangan/deploy/distribusi belum diklaim sebelum verifikasi.
+Penyempurnaan akses Home: tombol pengurus dipisahkan dari dashboard keuangan agar tetap tersedia saat dashboard
+gagal; regresi baru lulus. Flutter terbaru **338/338**, analyze bersih. Source PR #92 memakai SHA identik lokal
+melalui API, tanpa Git fetch/pull/push ke origin.
+
+**Eksekusi diotorisasi pemilik:** “okee gass lgsg aja eksekusi”. Branch `codex/m19-tombol-panik` di worktree
+`m17-verifikasi-1018`; tanpa fetch/pull/push/PR/deploy remote, checkout awal/MyRepublic tetap utuh.
+DB/domain/API/kontrak, idempotensi/lock/trigger, pembatasan laju, penanganan/penyalahgunaan dan kendali fitur,
+outbox/inbox/FCM, privasi 27 Oktober, alur mobile tiga langkah + shortcut/kanal Android telah ditulis.
+Default deployment **nonaktif**, audience restricted kosong; tidak ada broadcast ke warga asli.
+
+Regresi awal menemukan dan memperbaiki status bawaan respons baru, fungsi trigger saat migration tes ulang,
+serta CHECK notifikasi yang harus mempertahankan bukti iuran M15b tanpa tagihan. Guard role segar dan cache
+idempotensi ID saja mencegah catatan pengurus/identitas lama terbuka. Status provider dipisahkan dari bukti HP.
+Hasil/gate akhir sesi: [LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md).
+Tes lokal final: backend **431/431, 4.518 assertions**, Flutter **335/335**, website **41/41, 549 assertions**;
+analyze/Pint/format 101/0, OpenAPI dan kontrak Compose PASS. Build Android lokal dicatat di bukti.
+M19 belum passed: belum staging, APK rilis, uji alarm HP nyata atau UAT. Rilis terakhir tetap APK 1021.
+
+### Riwayat perencanaan 27 Oktober
+
+Pemilik mengoreksi prioritas: **M17 → M18 → M19 → M16 → M20** (ADR45), tombol panik sebelum M16.
+Ketentuan Claude sudah ada di ADR43 butir 8 dan ROADMAP M19. Rencana rinci baru:
+[M19_PLAN.md](M19_PLAN.md), memisahkan ketentuan yang diputuskan, rancangan teknis, rincian terbuka dan matriks uji.
+ROADMAP, HANDOFF, COORDINATION dan skill init diselaraskan. Sesi memakai branch lokal
+`codex/m19-rencana-panik` di worktree `m17-verifikasi-1018`; checkout awal/MyRepublic tidak disentuh.
+Instruksi terbaru: jangan fetch/pull/push atau mengakses remote `origin` otomatis; lanjut dari dokumentasi lokal.
+
+Belum ada kode, migrasi, perubahan API, deploy, APK atau tes runtime M19. Alarm di HP nyata tetap gate;
+angka tes M18 di bawah adalah riwayat baseline. Validasi dokumentasi: `node infra/scripts/check-repo.mjs`
+**PASS (1.079 berkas)** dan `git diff --check` **PASS**. Perubahan sesi ini hanya tujuh berkas dokumentasi;
+tidak ada fetch/pull/push, PR atau merge remote setelah instruksi kerja lokal.
+Berikutnya inspeksi kode auth/privasi/inbox/outbox/FCM dan rincian teknis M19 sesuai plan; gate M16 tetap berlaku.
+
 ## M18 — Keuangan fleksibel — 26 Oktober 2026: **passed (staging sintetis + emulator)**
 
 **Rilis QA 27 Okt selesai:** PR #90 merged `b6e1c4b`, CI source 9/9; staging deploy immutable SHA yang sama,
@@ -46,7 +85,7 @@ Backup setelah v2 + restore terisolasi memeriksa **19 tabel/view**, cocok semua 
 Emulator dan PostgreSQL lokal dihentikan; AVD/data tidak dihapus. Kedua APK dan metadata terakhir disebar di `/unduh`
 **Senin 26 Okt 14.28 WIB** dan Drive **14.28 WIB**, ID file tetap. Ini satu build M18 yang disebar; 1019 dibatalkan.
 Jangan rollback M17 atau menonaktifkan v2 setelah transaksi v2. Production dan UAT HP nyata belum diklaim.
-Berikutnya persiapan M16/UAT mitra dan pindah VPS staging 2 Nov sesuai ADR43; tidak dijalankan otomatis di sesi M18.
+Saat penutupan M18, berikutnya direncanakan M16/UAT mitra dan pindah VPS staging 2 Nov; **prioritas terbaru ADR45 mendahulukan M19**.
 Catatan implementasi bertahap di bawah adalah riwayat pada tahap masing-masing.
 
 Prasyarat M17 ditutup lewat [PR #81](https://github.com/morrispes5/RT-05-TAKEDA/pull/81), merge `0f3b251`,

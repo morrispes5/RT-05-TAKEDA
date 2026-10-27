@@ -1,4 +1,10 @@
-# Roadmap eksekusi — M00 sampai M16
+# Roadmap eksekusi — M00 sampai M20
+
+## Prioritas aktif — 27 Oktober 2026 (ADR45)
+
+Pemilik mendahulukan **M19 tombol panik sebelum M16**: M17 → M18 → **M19** → M16 → M20.
+M18 passed staging sintetis/emulator; M19 kini implementasi lokal, belum penerimaan staging/HP nyata.
+Rencana rinci dari ketentuan Claude: [M19_PLAN.md](M19_PLAN.md). Gate production M16 tetap berlaku.
 
 ## Penyesuaian target deployment — 15 Oktober 2026
 
@@ -386,6 +392,8 @@ uang yang benar-benar diterima; rekonsiliasi diperluas; saldo kas + ringkasan bu
 75 rb + 25 rb; bayar lebih); rekonsiliasi 0 masalah; tidak ada edit diam-diam (koreksi = pembalikan); uji bendahara di staging.
 
 ## M19 — Tombol panik (uji coba, ADR43 butir 8)
+
+**Prioritas:** berikutnya setelah M18, sebelum M16 (ADR45). **Rencana:** [M19_PLAN.md](M19_PLAN.md).
 
 **Scope:** shortcut Android; aktivasi 3 langkah; kirim ke semua warga + pengurus dengan identitas pelapor, rumah, jenis
 darurat; notifikasi bergaya alarm (Android); pengurus menandai selesai/palsu; peringatan + nonaktif setelah 3 penyalahgunaan;

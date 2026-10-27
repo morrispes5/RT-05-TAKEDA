@@ -7,6 +7,7 @@ use App\Models\Agenda;
 use App\Models\Akun;
 use App\Models\AlokasiPembayaran;
 use App\Models\Aspirasi;
+use App\Models\KejadianDarurat;
 use App\Models\KonfirmasiIuran;
 use App\Models\OutboxEvent;
 use App\Models\Pengaduan;
@@ -32,6 +33,8 @@ final class Notifications
         $id = $event->aggregate_id;
         match ($event->type) {
             'pengaduan.dibuat' => self::toPengurus($event, 'pengaduan', ['pengaduan_id' => $id], 'Pengaduan baru', 'Ada pengaduan baru yang perlu ditindaklanjuti.'),
+            'darurat.dibuat' => self::emergency($event),
+            'darurat.ditangani' => self::emergencyResolution($event),
             'pengaduan.status_berubah' => ($p = Pengaduan::find($id)) && self::send($event, [$p->pelapor_id], 'pengaduan', ['pengaduan_id' => $id],
                 'Status pengaduan diperbarui', 'Pengaduan "'.Str::limit($p->judul, 60).'" kini berstatus '.self::label(self::eventStatus($event, $p->status)).'.'),
             'aspirasi.dibuat' => self::toPengurus($event, 'aspirasi', ['aspirasi_id' => $id], 'Aspirasi baru', 'Ada aspirasi baru dari warga.'),
@@ -78,6 +81,31 @@ final class Notifications
      * Status saat transisi terjadi (payload event), bukan status terkini: event yang diproses
      * terlambat setelah beberapa transisi tetap memberi tahu langkah masing-masing.
      */
+    private static function emergency(OutboxEvent $event): bool
+    {
+        Emergencies::lock();
+        $e = KejadianDarurat::find($event->aggregate_id);
+        if (! $e || ! Emergencies::alarmEligible($e)) {
+            return false;
+        }
+
+        return self::send($event, Emergencies::recipients($event), 'darurat', ['kejadian_darurat_id' => $e->id],
+            'Darurat RT05 TAKEDA', 'Ada laporan darurat warga. Buka aplikasi untuk melihat jenis kejadian dan rumah pelapor.');
+    }
+
+    private static function emergencyResolution(OutboxEvent $event): bool
+    {
+        $e = KejadianDarurat::find($event->aggregate_id);
+        if (! $e) {
+            return false;
+        }
+
+        return self::send($event, [$e->pelapor_id], 'sistem', [],
+            $e->penyalahgunaan ? 'Peringatan tombol panik' : 'Laporan darurat ditangani',
+            $e->penyalahgunaan ? 'Pengurus mencatat penyalahgunaan pada laporan Anda. Setelah tiga penyalahgunaan tombol panik akun dinonaktifkan. Periksa hitungan di menu Tombol panik atau hubungi pengurus.'
+                : 'Pengurus sudah memperbarui penanganan laporan darurat Anda. Buka menu Tombol panik untuk melihat statusnya.');
+    }
+
     private static function eventStatus(OutboxEvent $event, string $current): string
     {
         return (string) ($event->safe_payload['status'] ?? $current);

@@ -1,5 +1,23 @@
 # Koordinasi RT05 TAKEDA
 
+## Checkpoint 27 Oktober 2026 — implementasi lokal M19
+
+Pemilik meminta eksekusi langsung. Branch `codex/m19-tombol-panik`, worktree `m17-verifikasi-1018`.
+DB/domain/API, kontrak/ERD, notifikasi, privasi 27 Oktober, mobile/shortcut/kanal alarm ditulis; fitur default
+nonaktif dan audience restricted. Bukti akhir: [LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md).
+M19 belum passed; staging/HP nyata/APK rilis belum dilakukan. Tidak ada fetch/pull/push, akses origin atau
+perubahan production; rilis aktual terakhir tetap 1021. Checkout awal/MyRepublic dipertahankan.
+Status/perencanaan di checkpoint sebelumnya bersifat historis.
+
+## Checkpoint 27 Oktober 2026 — M19 didahulukan; kerja lokal
+
+Instruksi terbaru pemilik (ADR45): **M17 → M18 → M19 tombol panik → M16 → M20**.
+Rencana M19 dari ketentuan Claude ada di [M19_PLAN.md](M19_PLAN.md); belum kode atau uji alarm.
+Branch lokal `codex/m19-rencana-panik`, worktree `m17-verifikasi-1018`; checkout awal/MyRepublic tetap utuh.
+Jangan fetch/pull/push atau mengakses remote `origin` otomatis: pemilik meminta berfokus pada dokumentasi lokal
+karena akses remote memunculkan permintaan kata sandi. Tidak mengubah pengaturan Git/auth.
+Catatan urutan M16 berikutnya di checkpoint terdahulu adalah historis; ikuti PROGRESS/ADR45.
+
 ## Checkpoint 27 Oktober 2026 — perbaikan QA dirilis
 
 PR #90 merged `b6e1c4b`, staging memakai SHA tersebut; v2 aktif, runtime-smoke/reconciliation PASS.
@@ -7,7 +25,7 @@ Source backend 413/413, Flutter 326/326, website 40/40, CI 9/9. APK 1021 (3021/2
 Drive ID tetap 27 Okt 00.07 WIB dan `/unduh` 00.12 WIB; upgrade 1020 tanpa uninstall teruji, cicilan Rp25.000 benar.
 Fixture QA dibalik/diarsipkan, baseline kas pulih; backup/restore 19 tabel/view cocok dan encrypted offsite privat.
 Emulator/PG lokal berhenti. Bukti [RELEASE_1021.md](evidence/m18/RELEASE_1021.md). Checkout awal/MyRepublic utuh.
-M18 passed staging/emulator; berikutnya gate M16, bukan deploy production otomatis.
+M18 passed staging/emulator; prioritas terbaru mendahulukan M19 (ADR45), gate M16 tetap berlaku sesudahnya.
 
 ## Checkpoint 26 Oktober 2026 — M18 passed staging/emulator
 

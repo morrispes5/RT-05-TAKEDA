@@ -9,6 +9,7 @@ import 'app/router.dart';
 import 'app/startup.dart';
 import 'app/theme.dart';
 import 'core/api.dart';
+import 'core/emergency_platform.dart';
 import 'core/push.dart';
 import 'core/session.dart';
 import 'features/warga/notification_center.dart';
@@ -24,7 +25,16 @@ Future<void> main() async {
   }
   // Tanpa konfigurasi Firebase (dev/CI) → NoPushClient: aplikasi tetap jalan dengan inbox saja.
   final push = await FirebasePushClient.create();
-  runApp(ProviderScope(overrides: [appConfigProvider.overrideWithValue(config), pushClientProvider.overrideWithValue(push)], child: const Rt05App()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        appConfigProvider.overrideWithValue(config),
+        pushClientProvider.overrideWithValue(push),
+        emergencyPlatformProvider.overrideWithValue(NativeEmergencyPlatform()),
+      ],
+      child: const Rt05App(),
+    ),
+  );
 }
 
 const appLocale = Locale('id', 'ID');
@@ -42,10 +52,42 @@ class _Rt05AppState extends ConsumerState<Rt05App> {
     // Health /health/live + pemulihan sesi (token divalidasi ulang ke /auth/me; status & peran dari server).
     Future.microtask(() => bootstrap(ref));
     _initPush();
+    _initEmergency();
   }
 
   final _subs = <StreamSubscription<Object?>>[];
   PushTap? _waitingTap;
+  Map<String, dynamic>? _waitingEmergency;
+
+  void _initEmergency() {
+    final platform = ref.read(emergencyPlatformProvider);
+    void open(Map<String, dynamic> action) {
+      if (!ref.read(sessionProvider).readyForServices) {
+        _waitingEmergency = action;
+        return;
+      }
+      final router = ref.read(routerProvider);
+      if (action['type'] == 'shortcut') {
+        router.go(Routes.home);
+        router.push(Routes.emergency);
+      } else if (action['type'] == 'emergency' && PushTap.isUuid(action['id'])) {
+        handlePushTap(router, ref, PushTap(refType: 'kejadian_darurat', refId: action['id'] as String));
+      }
+    }
+
+    _subs.add(platform.launches.listen(open));
+    platform.initialLaunch().then((a) {
+      if (mounted && a != null) open(a);
+    });
+    ref.listenManual(sessionProvider, (prev, next) {
+      if (prev?.akun != null && prev!.akun?.id != next.akun?.id) _waitingEmergency = null;
+      final waiting = _waitingEmergency;
+      if (next.readyForServices && waiting != null) {
+        _waitingEmergency = null;
+        open(waiting);
+      }
+    });
+  }
 
   /// Push M10: foreground → alert info; ketukan (latar belakang/tertutup) → inbox lalu detail via API.
   /// Ketukan sebelum sesi pulih disimpan dan dibuka setelah sesi aktif tervalidasi server.

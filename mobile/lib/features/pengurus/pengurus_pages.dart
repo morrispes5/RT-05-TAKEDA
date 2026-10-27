@@ -26,6 +26,7 @@ import '../household/census_providers.dart';
 import '../household/paged_list.dart';
 import '../warga/activity_proposal_actions.dart' show jakartaWallToUtc;
 import '../warga/activity_proposals.dart';
+import '../warga/emergencies.dart';
 import '../warga/providers.dart';
 import '../warga/warga_pages.dart';
 
@@ -52,8 +53,21 @@ final paymentsProvider = FutureProvider.autoDispose<List<Json>>(
 );
 
 // ─────────────────────────────────────────── Ringkasan
-class AdminHomePage extends ConsumerWidget {
+class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key, required this.goTab});
+  final void Function(int) goTab;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      const EmergencyEntry(),
+      Expanded(child: _AdminHomeContent(goTab: goTab)),
+    ],
+  );
+}
+
+class _AdminHomeContent extends ConsumerWidget {
+  const _AdminHomeContent({required this.goTab});
   final void Function(int) goTab;
 
   @override
@@ -1035,6 +1049,7 @@ class MoreAdminPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) => ListView(
     padding: const EdgeInsets.all(16),
     children: [
+      const EmergencyEntry(),
       SectionCard(
         title: 'Komunitas',
         child: Column(

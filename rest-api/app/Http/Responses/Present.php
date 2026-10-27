@@ -416,7 +416,7 @@ final class Present
 
     public static function notifikasi(Notifikasi $n): array
     {
-        $ref = collect(['pengumuman_id', 'agenda_id', 'pengaduan_id', 'aspirasi_id', 'tagihan_id', 'usulan_kegiatan_id'])
+        $ref = collect(['pengumuman_id', 'agenda_id', 'pengaduan_id', 'aspirasi_id', 'tagihan_id', 'usulan_kegiatan_id', 'kejadian_darurat_id'])
             ->first(fn ($k) => $n->{$k} !== null);
 
         return [
