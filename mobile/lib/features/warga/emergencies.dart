@@ -139,6 +139,22 @@ class _EmergencyPageState extends ConsumerState<EmergencyPage> {
           children: [
             const Text(emergencyWarning),
             TextButton(onPressed: () => ref.read(emergencyPlatformProvider).settings(), child: const Text('Periksa izin dan bunyi darurat di HP')),
+            BusyButton(
+              label: 'Tambahkan shortcut di layar utama HP',
+              outlined: true,
+              onPressed: () async {
+                final started = ref.read(sessionProvider);
+                final epoch = ref.read(sessionProvider.notifier).epoch;
+                final requested = await ref.read(emergencyPlatformProvider).pinShortcut();
+                if (!context.mounted || !ref.read(sessionProvider.notifier).isCurrentActive(started, epoch: epoch)) return;
+                showMessage(
+                  context,
+                  requested
+                      ? 'Permintaan dikirim. Konfirmasi penambahan shortcut di layar HP.'
+                      : 'Launcher HP belum mendukung penambahan ini. Gunakan Tombol panik di Beranda aplikasi.',
+                );
+              },
+            ),
             const SizedBox(height: 16),
             AsyncView(
               value: ref.watch(emergencyStatusProvider),

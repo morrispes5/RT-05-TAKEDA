@@ -759,3 +759,9 @@ dokumentasi Claude karena akses `origin` berulang memunculkan permintaan kata sa
 **Eksekusi lokal 27 Okt:** pemilik kemudian meminta “okee gass lgsg aja eksekusi”. Implementasi M19 lokal
 diotorisasi; larangan origin tetap berlaku. Default teknis kandidat, tes dan gate ditulis di M19_PLAN bagian 7
 dan [LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md). Ini bukan penerimaan alarm HP nyata atau izin production.
+
+**Rilis uji 27 Okt:** pemilik kemudian meminta memakai Hostinger/Chrome/plugin untuk memperbarui unduhan ke build
+terbaru agar diuji di HP, serta memastikan shortcut ada di Home. Jalur teknis rilis menggunakan API GitHub untuk
+publikasi kode/PR/CI/build bertanda tangan dan jalur staging Hostinger yang sudah ada; **tidak menjalankan transport
+Git ke origin di PC atau mengubah autentikasi Git**. Sertifikat APK lama dipertahankan. API M19 ikut dipasang di staging,
+audience uji dibatasi akun sintetis; tidak production atau broadcast warga asli. Gate HP nyata tetap terbuka.

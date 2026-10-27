@@ -96,6 +96,7 @@ class AdminHomePage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              const EmergencyEntry(),
               // Dua kolom dengan tinggi mengikuti isi (bukan rasio tetap) agar aman pada skala teks besar.
               _TileRow(
                 _Tile('Rumah aktif', '${d['rumah_aktif']}', Icons.home_work_outlined, () => goTab(1)),

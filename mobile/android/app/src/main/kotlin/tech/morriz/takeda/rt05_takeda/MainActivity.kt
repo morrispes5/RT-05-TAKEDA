@@ -25,6 +25,13 @@ class MainActivity : FlutterActivity() {
     private val channelId = "rt05_darurat_v1"
     private val shortcutAction = "tech.morriz.takeda.PANIC"
 
+    private fun panicShortcut(): ShortcutInfo = ShortcutInfo.Builder(this, "rt05_panic")
+        .setShortLabel("Tombol panik")
+        .setLongLabel("Buka laporan darurat RT05")
+        .setIcon(Icon.createWithResource(this, applicationInfo.icon))
+        .setIntent(Intent(this, MainActivity::class.java).setAction(shortcutAction))
+        .build()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         capture(intent)
@@ -39,13 +46,7 @@ class MainActivity : FlutterActivity() {
             manager.createNotificationChannel(alarms)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            val shortcut = ShortcutInfo.Builder(this, "rt05_panic")
-                .setShortLabel("Tombol panik")
-                .setLongLabel("Buka laporan darurat RT05")
-                .setIcon(Icon.createWithResource(this, applicationInfo.icon))
-                .setIntent(Intent(this, MainActivity::class.java).setAction(shortcutAction))
-                .build()
-            getSystemService(ShortcutManager::class.java).addDynamicShortcuts(listOf(shortcut))
+            getSystemService(ShortcutManager::class.java).addDynamicShortcuts(listOf(panicShortcut()))
         }
     }
 
@@ -68,6 +69,13 @@ class MainActivity : FlutterActivity() {
             setMethodCallHandler { call, result ->
                 when (call.method) {
                     "takeLaunch" -> { val action = pendingLaunch; pendingLaunch = null; result.success(action) }
+                    "pinShortcut" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            val manager = getSystemService(ShortcutManager::class.java)
+                            try { result.success(manager.isRequestPinShortcutSupported && manager.requestPinShortcut(panicShortcut(), null)) }
+                            catch (_: RuntimeException) { result.success(false) }
+                        } else result.success(false)
+                    }
                     "alarm" -> {
                         val id = call.argument<String>("id")
                         if (id == null || !id.matches(Regex("[0-9a-fA-F-]{36}"))) { result.error("INVALID_ID", "Invalid reference", null) }
