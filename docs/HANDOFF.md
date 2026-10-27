@@ -4,30 +4,47 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **27 Oktober 2026** (M19 implementasi lokal; backend/mobile/privasi/shortcut/alarm ditulis, gate staging/HP tetap terbuka. Kerja lokal tanpa origin; rilis terakhir APK 1021).
+Terakhir diperbarui: **27 Oktober 2026** (M19 staging terbatas, PR #92–93 merged; APK 1023 sudah di unduh/Drive 11.37 WIB. Gate HP nyata terbuka; emulator dan PostgreSQL lokal berhenti).
 
 ## 1. Cara mulai sesi baru
 
 1. Ikuti skill init (`.cursor/skills/init/SKILL.md`): `git status -sb`, baca AGENTS → README → PRD →
    BUSINESS_RULES → ARCHITECTURE → ROADMAP → PROGRESS → COORDINATION → **dokumen ini**.
 2. **Instruksi pemilik 27 Okt (ADR45): jangan fetch/pull/push atau mengakses remote `origin` otomatis.**
-   Lanjut dari dokumen dan Git lokal. Catat bahwa status remote tidak dicek ulang; jangan memicu permintaan kata sandi.
+   Rilis uji kemudian diotorisasi: API GitHub untuk kode/PR/CI dan jalur staging Hostinger lama boleh dipakai (ADR45).
+   Tetap tanpa transport Git ke origin di PC; jangan memicu permintaan kata sandi atau mengubah autentikasi.
    Checkout bisa dipakai bersama (lihat bagian 9); jangan menimpa perubahan sesi lain.
 3. Pemilik berkomunikasi dalam Bahasa Indonesia santai. Jawab dalam Bahasa Indonesia, ringkas, tanpa jargon berlebihan.
 4. Kerjakan satu milestone yang dibuka pemilik. **M17 passed (25 Okt, gate emulator diterima pemilik)**; **M18 passed staging sintetis/emulator, APK 1021 perbaikan QA**; berikutnya **M19 tombol panik sebelum M16** (ADR45). Baca [M19_PLAN.md](M19_PLAN.md). Catatan permintaan pemilik juga ada di `../CATATAN_PERMINTAAN_PAK_RT.md` (folder induk, di luar repo).
 
 ## 2. Snapshot status (27 Okt 2026)
 
-Rilis terbaru: [RELEASE_1021.md](evidence/m18/RELEASE_1021.md). PR #90 merged `b6e1c4b` dari source `ab108b6`,
+**Checkpoint M19 terbaru:** PR #92 (source `7c05f89e`, CI 10/10) dan #93 (source `873074a5`, CI 7/7) merged.
+Staging kini **`8d356e44abd9cd959022e729313665394e80f078`**, runtime-smoke PASS; panic aktif **restricted**,
+dua akun sintetis saja. API/3 worker/scheduler/web konsisten, finance v2 tetap aktif, rekonsiliasi nol masalah,
+saldo Rp2.180.000. Backup sebelum/pasca migrasi direstore (19 lalu 20 tabel/view cocok), salinan terenkripsi
+Drive privat terverifikasi. Kandidat 1022 dibatalkan sebelum distribusi karena label tanggal privasi; footer diperbaiki,
+Flutter terbaru **339/339**, analyze/format bersih. Signed 1023 run `40448591468` success, build selesai 11.21.11 WIB;
+**`/unduh` 11.37.23, Drive 11.37.38 WIB (Selasa 27 Okt)**. Kedua ABI HTTPS dan binary Drive cocok ukuran/hash;
+sertifikat tetap. Upgrade in-place, consent, Home dua peran, pin launcher, FCM foreground/background dan tap detail teruji.
+Dua laporan uji selesai tanpa penalti; fitur restricted aktif, bukan broadcast warga asli. Gejala renderer lama dicatat,
+pengulangan software tanpa wipe normal. Akun uji dipertahankan untuk pemilik; device emulator sudah logout (0 perangkat),
+consent hanya dua akun sintetis direset agar HP membaca 27 Oktober lagi. Emulator/PG berhenti, pgdata tidak dihapus.
+Bukti/gate diperbarui di [RELEASE_1023.md](evidence/m19/RELEASE_1023.md); M19 tetap in_progress sampai bukti HP nyata.
+Kredensial hanya di direktori privat operator dan catatan Desktop, bukan Git.
+
+Snapshot rilis publik sebelumnya (1021):
+
+Rilis M18 sebelumnya: [RELEASE_1021.md](evidence/m18/RELEASE_1021.md). PR #90 merged `b6e1c4b` dari source `ab108b6`,
 CI 9/9; staging memakai SHA merge dan APK 1021 sudah di Drive ID tetap serta unduh resmi. Backend 413/413,
 Flutter 326/326, website 40/40, kontrak/lint/hygiene lulus. Upgrade 1020 tanpa uninstall, cicilan dan dialog diuji
 di emulator; saldo uji pulih, rekonsiliasi nol. Uji baca 20 pengguna: 895/895 expected, P95 710 ms.
 Emulator/PG lokal berhenti. Bukti kode: [QA_FIXES.md](evidence/m18/QA_FIXES.md).
-Prioritas terbaru: **M19 implementasi lokal**, belum bukti alarm HP nyata. Branch `codex/m19-tombol-panik`;
-rencana [M19_PLAN.md](M19_PLAN.md), bukti/gate [LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md).
-Flag server default false; audience restricted, allowlist kosong. Jangan aktifkan atau broadcast ke warga asli.
-Tes lokal M19 final: backend **431/431 (4.518 assertions)**, Flutter **335/335**, website **41/41 (549 assertions)**;
-analyze/format 101/0, Pint, OpenAPI dan pemeriksaan Compose PASS. Status build/gate lanjutan ada di bukti M19.
+Prioritas terbaru: **M19 uji HP nyata**; rencana [M19_PLAN.md](M19_PLAN.md), bukti lokal historis
+[LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md), bukti rilis [RELEASE_1023.md](evidence/m19/RELEASE_1023.md).
+Kode tetap default false; staging override restricted dua akun sintetis. Jangan memperluas audience otomatis.
+Tes M19: backend **431/431 (4.518 assertions)**, Flutter terbaru **339/339**, website **41/41 (549 assertions)**;
+analyze/format 101/0, Pint, OpenAPI dan pemeriksaan Compose PASS. Bukan bukti bunyi/getar HP nyata.
 
 Audit sebelum patch pada `codex/m18-qa-audit`: [QA_REVIEW.md](evidence/m18/QA_REVIEW.md).
 Backend 406, website 40, Flutter 308 PASS; tujuh PoC mereproduksi lima bug. Dua security medium, satu security low,
@@ -36,14 +53,14 @@ Cakupan manual parsial, 141 file unik dibaca penuh; bukan klaim semua 1.069 file
 
 | Hal | Nilai |
 | --- | --- |
-| Milestone | M00–M15/M15b passed; **M17 passed** setelah verifikasi ulang dan emulator; **M18 passed (staging sintetis + emulator, APK 1021)**; **M19 in_progress (implementasi lokal), didahulukan sebelum M16**. Bukti Fase A M16 tetap tersimpan |
+| Milestone | M00–M15/M15b passed; **M17 passed**; **M18 passed (staging sintetis + emulator)**; **M19 in_progress (staging/APK 1023 tersedia, menunggu HP nyata), didahulukan sebelum M16** |
 | Kode implementasi M18 terbaru | `b6e1c4b` merge PR #90 perbaikan QA, CI source 9/9. Baseline M18 sebelumnya `afe4ebb` PR #88 |
 | API M18 merged | `ee18f55` PR #84, CI 5/5 PASS pada head `672f447`. Termasuk staging/APK 1020 |
 | Mobile pengurus merged | `c68a7a1` PR #85, CI 7/7 PASS; rilis M18 terpadu 1020 sudah diuji/distribusikan |
 | `main` setelah penutupan M17 | `0f3b251` (PR #81 merged, pemeriksaan 3/3 sukses); baseline aplikasi `cd4a21f`, tree identik `c91192f` |
-| Staging | Immutable `b6e1c4b`, v2 aktif hanya staging; runtime-smoke, heartbeat/pooled/direct/AOF lulus, rekonsiliasi nol. Patch tidak mengubah skema. Jangan rollback kode M17/flag off setelah transaksi v2 |
+| Staging | Immutable `8d356e44`, v2 aktif; M19 restricted dua akun uji, privasi 27 Okt. Runtime-smoke/enam layanan PASS; rekonsiliasi nol/Rp2.180.000. Jangan rollback kode M17/flag v2 off setelah transaksi v2 |
 | Website Vercel | Preview statis dari `website/preview/`; `/aplikasi` menaut ke halaman unduh staging. Tidak diuji ulang sesi ini |
-| APK uji tim | **1021 / 1.0.0**, kode `b6e1c4b`, Senin 26 Okt build 19.48.25; Selasa 27 Okt Drive 00.07.29, `/unduh` 00.12.04 WIB. Kedua APK/metadata HTTP dan binary Drive cocok hash artifact; ID Drive tetap |
+| APK uji tim | **1023 / 1.0.0**, kode `8d356e44`, Selasa 27 Okt build 11.21.11; `/unduh` 11.37.23 dan Drive 11.37.38 WIB. Kedua ABI HTTPS dan binary Drive hash cocok, ID tetap |
 | Link APK | https://drive.google.com/file/d/1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr/view (ID tetap). https://takeda-staging.morriz.tech/aplikasi |
 | Bukti M17 | [VERIFICATION_1018.md](evidence/m17/VERIFICATION_1018.md): backend 358, website 40, Flutter 293, staging dan emulator lulus. Bukan bukti HP nyata |
 | PR lain | #26 `cursor/cloud-agent-notes-0d43` masih terbuka pada pemeriksaan sesi ini; tidak disentuh |
@@ -86,12 +103,18 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | 1019 | — | `6b44763` | **Dibatalkan** | **Tidak disebar** | Kandidat awal M18, dihentikan untuk menyamakan ringkasan kas pengurus dengan laporan | Bukan rilis tim |
 | **1020** (1.0.0) | **3020 / 2020** | `afe4ebb` | **Senin 26 Okt 14.11.44** | **26 Okt 14.28.29 `/unduh` + metadata terakhir; Drive 14.28 WIB, ID tetap** | M18: tarif rumah, parsial/keringanan, sumbangan/titipan manual, bukti terkoreksi, pembalikan, kas warga, laporan Excel 14 sheet, privasi 26 Okt | **Lulus staging + emulator**, upgrade in-place 1018, pengurus/warga/Excel teruji. HP nyata/UAT mitra di M16 |
 | **1021** (1.0.0) | **3021 / 2021** | `b6e1c4b` | **Senin 26 Okt 19.48.25** | **Selasa 27 Okt Drive 00.07.29; `/unduh` + metadata terakhir 00.12.04 WIB, ID tetap** | Perbaikan lima temuan QA: auth, dokumen/sesi, push/consent, nominal sisa cicilan; copy pembalikan | **Lulus staging + emulator**, upgrade 1020 tanpa uninstall/sesi hilang; saran25000, hash unduh/Drive cocok; fixture dibalik/arsip, rekonsiliasi nol. HP nyata/UAT mitra di M16 |
+| 1022 | 3022 / 2022 | `e9c5f5e` | **Selasa 27 Okt 10.53.47** | **Tidak disebar**, kandidat privat/emulator | M19 awal, footer privasi masih 26 Okt meski isi 27 Okt; dibatalkan sebelum distribusi | Bug tanggal diperbaiki PR #93 |
+| **1023** (1.0.0) | **3023 / 2023** | `8d356e44` | **Selasa 27 Okt 11.21.11** | **Selasa 27 Okt `/unduh` + metadata terakhir 11.37.23; Drive 11.37.38 WIB, ID tetap** | M19: Tombol panik di Home warga/pengurus, tiga langkah, pin shortcut/tekan lama ikon, kanal alarm/FCM, penanganan/penyalahgunaan, privasi 27 Okt | **Staging restricted dua akun uji + emulator**; hash/sertifikat/upgrade/consent/Home/pin/FCM/tap terverifikasi. HP nyata belum passed; gejala renderer dan gate dicatat di RELEASE_1023 |
 
 Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
 
 APK 32-bit (`armeabi-v7a`) sudah dibangun sejak 1006 tetapi sebelum 20 Okt malam hanya arm64 yang dibagikan; HP 32-bit milik anggota tim gagal memasang arm64 ("Aplikasi tidak terinstal"). Varian 32-bit 1008 dan 1009 disajikan di `/unduh`; hasil pasang di HP 32-bit baru dilaporkan berhasil mengunduh, bukan hasil uji fitur.
 
 ## 3. Yang sudah selesai di M15 (ringkas; rincian di PROGRESS dan [evidence/m15/REPORT.md](evidence/m15/REPORT.md))
+
+Pembaruan sesudah M15: M19 staging restricted dan APK 1023 sudah dirilis untuk uji (27 Okt 11.37 WIB),
+Home/shortcut/FCM/tap teruji di emulator. Rincian validasi 431 backend / 339 Flutter / 41 website dan limit:
+[RELEASE_1023.md](evidence/m19/RELEASE_1023.md). Riwayat M15 berikut tetap dipertahankan.
 
 - **APK rilis kunci tetap** (ADR31): workflow `Mobile release APK` (dispatch), split per ABI (arm64 ±22 MB), sertifikat
   diverifikasi `apksigner` di CI. Kunci hanya di GitHub environment `release` + Drive pribadi pemilik (tidak ada salinan lokal).
@@ -114,6 +137,10 @@ APK 32-bit (`armeabi-v7a`) sudah dibangun sejak 1006 tetapi sebelum 20 Okt malam
     diperluas (C16–C20: Pulihkan → draf, tidak langsung tampil di website, arsipkan lagi) dan dijalankan ke staging `9d9cf07`: **21/21 PASS**.
 
 ## 4. Sisa gate M15 — dipindah ke M16 (ADR36, 22 Okt 2026)
+
+**Gate M19 yang didahulukan:** APK 1023 tersedia, tetapi bunyi/getar, layar terkunci/aplikasi ditutup,
+izin/DND, login/pergantian akun dan tap/resume wajib diuji di HP nyata. Checklist di [M19_PLAN.md](M19_PLAN.md)
+dan [RELEASE_1023.md](evidence/m19/RELEASE_1023.md). Ini tidak menutup gate M16 di bawah.
 
 Gate ROADMAP M15: semua alur kritis lulus, tidak ada blocker high/critical, target UAT tercatat, provider nyata bekerja,
 APK bertanda tangan terpasang. **Jangan menandai passed tanpa bukti nyata. Jangan mengarang hasil UAT/survei.**
@@ -148,6 +175,12 @@ Pemilik minta dituntun untuk keenamnya setelah M15b selesai. Hosting production:
 belum dikonfirmasi; jalankan preflight `SHARED_HOSTING.md` sebelum membeli).
 
 ## 5. Bug dan temuan terbuka
+
+M19: footer privasi 26/27 Okt fixed PR #93, regresi widget dan layar 1023 lulus. Pada renderer emulator lama
+`swiftshader_indirect`, pernah tampak hitam saat tap notifikasi dan beku saat pergantian akun. Pengulangan
+notifikasi riil/background dan intent/shortcut lulus; restart AVD yang sama dengan `-gpu software -no-snapshot`
+memulihkan sesi pengurus, Home, logout/login warga normal. Akar penyebab belum dipastikan; bukan klaim patch aplikasi
+atau bukti HP nyata. Ulangi skenario ini di HP. Rincian dan gambar di RELEASE_1023.
 
 M18: seluruh gate uang staging/emulator lulus, tidak ada blocker keuangan yang ditemukan pada cakupan uji.
 Audit QA 26 Okt menemukan lima bug baru; laporan QA dan tabel berikut melengkapi hasil penerimaan sebelumnya.
@@ -188,6 +221,10 @@ Daftar berikut adalah histori gate M15/M16, bukan permintaan mengulang jawaban M
 Audit QA 26 Okt tidak menambah pertanyaan bisnis; perbaikan teknis berikutnya ada di laporan QA.
 Pemilik sudah mengotorisasi perbaikan; tidak perlu meminta ulang persetujuan patch yang sama.
 
+Rilis M19 sudah diotorisasi dan dilaksanakan tanpa transport Git ke origin di PC; jangan menanyakan ulang distribusi
+1023. Dua akun HP uji dan catatan kuota ada di Desktop privat `RT05-akun-uji-M19-1023.txt`. Belum ada pertanyaan bisnis
+baru; yang diperlukan berikutnya bukti HP nyata, bukan pengulangan persetujuan implementasi.
+
 1. ~~Temuan E~~ — dijawab 20 Okt: foto asli tidak menggantikan SVG; sudah diperbaiki (PR #55).
 2. Hasil uji tim dengan APK **1009** (dan sisa 1008): poin mana berhasil/gagal? (Untuk dicatat sebagai bukti, bukan dikarang.)
 3. Privacy notice: nomor/email kontak dan masa simpan data yang dipakai?
@@ -198,7 +235,7 @@ Pemilik sudah mengotorisasi perbaikan; tidak perlu meminta ulang persetujuan pat
 8. Vercel perlu ekspor konten berkala dari API agar artikel baru ikut tampil saat VPS mati?
 9. Boleh menghapus APK lama di `/unduh` staging? Aktifkan Dependabot?
 10. Latihan PostgreSQL cadangan (ADR29) tetap di M15 atau digeser ke M16?
-11. **Selesai:** APK terbaru 1021 sudah di Drive ID tetap dan `/unduh`; rclone terkena kuota shared-client, connector binary-update sukses. Jangan tanyakan ulang distribusi lama.
+11. **Selesai:** APK terbaru **1023** sudah di Drive ID tetap dan `/unduh`; connector binary-update dan unduh balik hash cocok. Jangan tanyakan ulang distribusi lama.
 12. Aturan minimal 10 karakter pada isi artikel/album: dipertahankan atau dilonggarkan (angka berapa)?
 14. Kebijakan Privasi: kontak resmi (nomor/email), masa simpan data setelah warga pindah, batas waktu tanggapan?
 15. Impor NIK/KK dari Excel RT: perlu? (Belum dibuat; butuh keputusan dan dasar persetujuan warga.)
@@ -286,8 +323,8 @@ Jangan mengubah sharing, klien OAuth, kuota cloud atau konfigurasi akun untuk me
 ## 10. Langkah berikutnya yang disarankan
 
 **Baca ADR45 (27 Okt) dan ADR43 butir 8.** Pemilik memprioritaskan tombol panik:
-**M17 → M18 → M19 → M16 → M20**. Rencana M19 ada di [M19_PLAN.md](M19_PLAN.md); implementasi lokal sudah ditulis,
-tetapi belum penerimaan staging/HP nyata. Bukti dan langkah lanjutan di [LOCAL_IMPLEMENTATION.md](evidence/m19/LOCAL_IMPLEMENTATION.md).
+**M17 → M18 → M19 → M16 → M20**. M19 sudah di staging restricted dan APK 1023; belum penerimaan HP nyata.
+Rencana di [M19_PLAN.md](M19_PLAN.md), bukti/limit di [RELEASE_1023.md](evidence/m19/RELEASE_1023.md).
 Jadwal ADR43: pindah VPS staging 2 Nov (`RUNBOOK_PRODUCTION.md` bagian 7), target beta 8 Nov dan rilis penuh
 paling lambat awal 2027 tetap rencana yang perlu dinilai terhadap hasil M19. Data asli hanya di production;
 perubahan urutan tidak menghapus gate M16. Perbaikan APK kecil dikumpulkan per rilis (jangan rilis APK tiap bug).
@@ -298,9 +335,9 @@ Drive ID tetap dan unduh resmi (14.28 WIB). Titipan manual, keringanan bukan uan
 flag v2 hanya staging. Jangan mengulang rencana/migrasi M18 atau rollback ke kode M17.
 
 QA-S1–S3/QA-F1–F3 fixed dan dirilis sebagai APK 1021; staging dan emulator lulus, fixture dibalik/diarsipkan.
-Berikutnya **M19**: selesaikan review kandidat lokal, build bertanda tangan dan staging sintetis setelah ada instruksi
-baru untuk akses remote. Larangan origin tetap berlaku; jangan menyiasatinya lewat connector/remote lain untuk push/PR.
-Kemudian verifikasi shortcut, alur pengurus/warga dan alarm dari HP nyata sesuai matriks di plan.
+Berikutnya **M19**: uji dua HP memakai dua akun sintetis, ulangi shortcut, login, tap/resume dan alarm sesuai matriks.
+API GitHub dan jalur staging lama diotorisasi untuk rilis 1023 (ADR45); tetap tanpa transport Git origin di PC.
+Tidak ada persetujuan untuk broadcast warga asli, perubahan production atau perubahan autentikasi Git.
 Alarm layar kunci/aplikasi ditutup wajib dibuktikan di HP nyata. Jangan menganggap hasil emulator sebagai HP nyata
 atau izin deploy production. UAT mitra dan daftar gate M16 di PROGRESS tetap berlaku sesudah M19.
 
