@@ -1,9 +1,9 @@
 # Progress — RT05 TAKEDA
 
-## Audit M17–M19 sebelum M16 — 28 Oktober 2026 (Claude)
+## Audit M17–M19 sebelum M16 — 27 Oktober 2026 (Claude)
 
 Diminta pemilik setelah sesi GPT menyelesaikan M17–M19. Ringkasan dan tabel lengkap:
-[AUDIT_2026-10-28.md](evidence/m19/AUDIT_2026-10-28.md). Baseline `7d3187c` hijau (backend 431, Flutter 339, website 41).
+[AUDIT_2026-10-27.md](evidence/m19/AUDIT_2026-10-27.md). Baseline `7d3187c` hijau (backend 431, Flutter 339, website 41).
 Branch `codex/m19-audit-perbaikan` memperbaiki: flag M18/M19 + cron 1 menit di template/runbook production shared,
 panik memakai **minimal** versi privasi (bukan sama persis), pelapor tidak menerima alarm sendiri, pembatalan penanda
 penyalahgunaan append-only (migrasi `2026_10_28_000100`), jenis darurat wajib dipilih, validasi ledger sekali per

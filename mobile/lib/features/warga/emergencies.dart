@@ -187,6 +187,7 @@ class _EmergencyPageState extends ConsumerState<EmergencyPage> {
                       const Text(
                         'Nama dan rumah Anda beserta jenis darurat akan terlihat oleh semua warga dan pengurus penerima. Laporan tidak anonim. Penyalahgunaan diberi peringatan; tiga kali membuat tombol akun dinonaktifkan.',
                       ),
+                      const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         key: const ValueKey('jenis-darurat'),
                         initialValue: _kind,

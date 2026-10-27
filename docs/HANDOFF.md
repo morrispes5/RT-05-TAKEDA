@@ -176,7 +176,7 @@ belum dikonfirmasi; jalankan preflight `SHARED_HOSTING.md` sebelum membeli).
 
 ## 5. Bug dan temuan terbuka
 
-**Audit M17–M19 (28 Okt, Claude):** temuan dan perbaikan di [AUDIT_2026-10-28.md](evidence/m19/AUDIT_2026-10-28.md).
+**Audit M17–M19 (27 Okt, Claude):** temuan dan perbaikan di [AUDIT_2026-10-27.md](evidence/m19/AUDIT_2026-10-27.md).
 Sisa terbuka: kuota Neon staging (pantau sampai 1 Nov), tiga keputusan pemilik (bagian 6), uji HP nyata M19.
 
 M19: footer privasi 26/27 Okt fixed PR #93, regresi widget dan layar 1023 lulus. Pada renderer emulator lama
@@ -228,7 +228,7 @@ Rilis M19 sudah diotorisasi dan dilaksanakan tanpa transport Git ke origin di PC
 1023. Dua akun HP uji dan catatan kuota ada di Desktop privat `RT05-akun-uji-M19-1023.txt`. Belum ada pertanyaan bisnis
 baru; yang diperlukan berikutnya bukti HP nyata, bukan pengulangan persetujuan implementasi.
 
-**Keputusan baru dari audit 28 Okt (tombol panik):**
+**Keputusan baru dari audit 27 Okt (tombol panik):**
 A. Warga yang belum membuka aplikasi versi baru (belum menyetujui privasi panik) **tidak menerima alarm**. Diterima
    apa adanya, atau perlu pengingat/hitungan "warga siap menerima alarm" untuk pengurus?
 B. Isi push darurat sengaja umum (tanpa jenis/rumah di layar kunci). Tetap begitu, atau tampilkan jenis kejadian?
