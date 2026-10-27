@@ -2,6 +2,14 @@
 
 ## M19 — Tombol panik — 27 Oktober 2026: **in_progress (implementasi lokal)**
 
+**Gate rilis 27 Oktober:** PR #92 merged menjadi `e9c5f5e`; CI source 10/10, staging immutable berhasil,
+backup terenkripsi sebelum migrasi berhasil direstore (19 tabel/view cocok) dan salinan privat Drive terverifikasi.
+Fitur staging aktif **restricted untuk dua akun sintetis**, bukan warga asli; rekonsiliasi tetap nol masalah.
+APK signed 1022 berhasil dibangun dan upgrade emulator tanpa uninstall, tetapi **dibatalkan sebelum distribusi**:
+emulator menemukan tanggal footer privasi masih 26 Oktober meski isi/kontrak sudah 27 Oktober.
+Footer diperbaiki dan ditambah tes widget yang memeriksa tanggal serta payload persetujuan versi 27 Oktober.
+Rilis pengganti menunggu CI, artifact signed dan uji emulator; tautan publik masih 1021 pada tahap ini.
+
 **Rilis uji diminta pemilik:** lanjut publikasi build terbaru ke unduh/Drive untuk uji HP. API GitHub dipakai tanpa
 transport Git ke origin; staging hanya jalur immutable yang sudah ada, dengan penerima sintetis. Beranda pengurus
 ditambah akses cepat panik, pilihan pin shortcut ke layar utama HP ditambahkan. Flutter **337/337**, analyze bersih,

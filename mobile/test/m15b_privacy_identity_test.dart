@@ -139,6 +139,28 @@ void main() {
       expect(container.read(sessionProvider).needsPrivacy, isFalse);
     });
 
+    testWidgets('tanggal kebijakan panik cocok dengan isi dan versi persetujuan', (tester) async {
+      Object? sent;
+      final container = await _pump(tester, const PrivacyPolicyPage(consent: true), (options) {
+        sent = _body(options);
+        return jsonBody(200, {
+          'data': {...akunJson(), 'privasi_versi': panicPrivacyTextVersion, 'privasi_perlu_setuju': false},
+        });
+      });
+      await container.read(sessionProvider.notifier).signIn('t', Akun({...akunJson(), 'privasi_versi': panicPrivacyTextVersion, 'privasi_perlu_setuju': true}));
+      await tester.pump();
+      await tester.scrollUntilVisible(find.text('Versi 27 Oktober 2026.'), 500, scrollable: find.byType(Scrollable).first);
+      expect(find.text('Versi 26 Oktober 2026.'), findsNothing);
+      await tester.ensureVisible(find.byKey(const ValueKey('privasi-setuju-centang')));
+      await tester.tap(find.byKey(const ValueKey('privasi-setuju-centang')));
+      await tester.pump();
+      await tester.ensureVisible(find.text('Setuju dan lanjutkan'));
+      await tester.tap(find.text('Setuju dan lanjutkan'));
+      await _step(tester);
+      expect(sent, {'versi': panicPrivacyTextVersion, 'versi_teks': panicPrivacyTextVersion});
+      expect(container.read(sessionProvider).needsPrivacy, isFalse);
+    });
+
     testWidgets('mode baca saja tanpa tombol setuju', (tester) async {
       await _pump(tester, const PrivacyPolicyPage(), (_) => jsonBody(200, {'data': {}}));
       expect(find.text('Kebijakan Privasi'), findsOneWidget);
