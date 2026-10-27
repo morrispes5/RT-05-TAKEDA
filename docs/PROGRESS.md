@@ -654,6 +654,37 @@ Gate ROADMAP M14: auth/CSRF/role deny ✓; draft isolation ✓; live server uplo
 baseline navigasi/desain website (14 tes + `test:preview`) ✓. Keterbatasan: bukan production/UAT warga (M15),
 shared hosting belum diuji, login UI staging dengan kata sandi tidak diketik agent (alur UI diperagakan pada stack lokal).
 
+## Diagnosis jaringan MyRepublic — 18 Oktober 2026: **penyebab jalur dipersempit; perbaikan permanen belum**
+
+Perluasan keluhan pemilik: portofolio PC `morriztech.cloud` juga gagal, bukan
+hanya HP. Domain mengarah ke IP VPS RT05 yang sama, tanpa AAAA. Uji IPv4
+Check-Host baru sekitar 23.58 WIB dari Jakarta/Singapura/Jerman: portofolio
+3/3 HTTP 200 dan RT05 `/health/live` 3/3 HTTP 200, semuanya ke `187.77.113.136`.
+PC rumah tetap IPv4 timeout; portofolio dipaksa IPv6 HTTP 200. Diagnosis kuat
+ke jalur koneksi rumah ↔ Hostinger, lokasi operator penyebab belum pasti.
+Percobaan WireGuard tidak berhasil; override dihapus, WARP kembali MASQUE
+Connected/healthy. Pemilik meminta diagnosis ISP diutamakan, Cloudflare cadangan.
+
+Pemeriksaan langsung dari PC pemilik dan SSH/panel Hostinger baca-saja:
+WARP PC aktif, IPv4 ke staging timeout (juga tanpa WARP dengan DNS dilewati),
+IPv6 melalui WARP `/health/live` dan `/health/ready` HTTP 200. Kontrol internet
+umum IPv4 HTTP 200; DNS A/AAAA benar. Delapan container ber-healthcheck sehat,
+gateway berjalan, HTTPS VPS sendiri IPv4/IPv6 normal. UFW inactive, tidak ada
+aturan tambahan DOCKER-USER; panel Hostinger menunjukkan 0 firewall rule.
+WARP diputus sementara untuk isolasi jaringan lalu dipulihkan dan diverifikasi
+Connected/healthy serta `warp=on`. Bukan bukti lokasi persis gangguan di ISP/transit.
+
+Pemilik menyatakan Wi-Fi rumah MyRepublic gagal, internet kafe berjalan, WARP
+belum terpasang di HP. Uji WARP HP dan pemulihan jalur ISP masih menunggu hasil;
+tidak mengklaim aplikasi HP sudah pulih. Tidak ada perubahan konfigurasi hosting,
+DNS, database, atau kode aplikasi. Bukti, perintah, draf laporan ISP dan kandidat
+proxy Cloudflare: [NETWORK_MYREPUBLIC.md](evidence/m14/NETWORK_MYREPUBLIC.md).
+File perubahan hanya laporan tersebut dan PROGRESS; validasi dokumentasi
+`node infra/scripts/check-repo.mjs` OK (895 berkas), `git diff --check` bersih.
+M14 website tetap tahap aktif; diagnosis ini tidak menaikkan gate M14/M15/M16.
+Catatan ini tertinggal tanpa commit di checkout lokal sejak 18 Okt; dimasukkan ke `main` apa adanya pada 27 Okt 2026
+(branch `codex/m14-catatan-myrepublic`) sebagai riwayat. Staging kini diakses lewat WARP + AAAA (HANDOFF bagian 8).
+
 ## ADR29 — PostgreSQL cadangan aktif-pasif — 18 Oktober 2026: **keputusan dicatat; implementasi belum**
 
 Pemilik meminta evaluasi deployment shared hosting untuk 100–200 pengguna dan anggaran ≤Rp500.000/tahun. Hasil evaluasi: storage
