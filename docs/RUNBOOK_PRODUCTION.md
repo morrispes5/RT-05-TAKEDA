@@ -23,7 +23,7 @@ Salin teks ini ke live chat atau tiket sales Biznet Gio:
 
 **Jangan membeli** bila jawaban butir 1–3 "tidak". Simpan tangkapan layar jawaban sebagai bukti preflight.
 
-**Jawaban Biznet (tiket #737856, 25–26 Okt 2026, dicatat audit 28 Okt):**
+**Jawaban Biznet (tiket #737856, 25–26 Okt 2026, dicatat audit 27 Okt):**
 1. PHP sampai 8.4, `pdo_pgsql` tersedia; **tidak ada CLI/Terminal/SSH**; database bawaan MySQL/MariaDB (tidak dipakai,
    database tetap Neon).
 2. Koneksi keluar tidak dibatasi, tetapi Biznet tidak membuka port khusus. Port 5432 ke Neon **belum dikonfirmasi
@@ -54,7 +54,7 @@ jalan di hosting lewat cron sementara; struktur folder mengikuti butir 4 bagian 
 5. **Env privat:** API = `rest-api/.env.example` + overlay `infra/shared/api.env.example`. Website = `website/.env.example` +
    overlay `infra/shared/web.env.example` (`RT05_SEARCH_INDEXING=true`, `APP_URL` domain production). APP_KEY website dan
    API berbeda. Isi secret (APP_KEY, DATABASE_URL, mail, FCM) langsung di hosting, tidak di Git atau chat.
-   Flag fitur (audit 28 Okt): `RT05_FINANCE_V2=true` sejak awal (M18 passed, APK 1021+ memakainya; jangan dimatikan lagi
+   Flag fitur (audit 27 Okt): `RT05_FINANCE_V2=true` sejak awal (M18 passed, APK 1021+ memakainya; jangan dimatikan lagi
    setelah transaksi v2 pertama). `RT05_PANIC_ENABLED=false` sampai gate HP nyata M19 lulus dan pemilik menyetujui; lalu
    `true` + `RT05_PANIC_AUDIENCE=all`.
 6. **Migrasi** dari mesin operator dengan URL direct role migrator: `php artisan migrate --force`, lalu grant runtime.
