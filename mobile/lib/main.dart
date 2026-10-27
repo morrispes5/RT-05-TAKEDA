@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -9,6 +10,7 @@ import 'app/router.dart';
 import 'app/startup.dart';
 import 'app/theme.dart';
 import 'core/api.dart';
+import 'core/app_update_platform.dart';
 import 'core/emergency_platform.dart';
 import 'core/push.dart';
 import 'core/session.dart';
@@ -31,6 +33,7 @@ Future<void> main() async {
         appConfigProvider.overrideWithValue(config),
         pushClientProvider.overrideWithValue(push),
         emergencyPlatformProvider.overrideWithValue(NativeEmergencyPlatform()),
+        if (Platform.isAndroid) appUpdatePlatformProvider.overrideWithValue(NativeAppUpdatePlatform()),
       ],
       child: const Rt05App(),
     ),

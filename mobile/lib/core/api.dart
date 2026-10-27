@@ -113,6 +113,18 @@ class Api {
     (b) => b,
   );
 
+  /// ADR46: unduh APK pembaruan dari /unduh situs resmi ke [savePath], tanpa token.
+  Future<void> downloadPublic(String path, String savePath, {ProgressCallback? onProgress, CancelToken? cancel}) => _wrap(
+    () => _dio.download(
+      '$_base$path',
+      savePath,
+      onReceiveProgress: onProgress,
+      cancelToken: cancel,
+      options: Options(extra: {'public': true}, receiveTimeout: const Duration(seconds: 60)),
+    ),
+    (_) {},
+  );
+
   /// Mengembalikan `data` dari envelope.
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) => _wrap(() => _dio.get(path, queryParameters: query), (b) => (b as Map)['data']);
 

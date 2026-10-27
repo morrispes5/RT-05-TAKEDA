@@ -2,8 +2,29 @@
 
 ## Berikutnya — 27 Oktober 2026 sore
 
-Uji HP nyata M19 dengan APK 1025: [UJI_HP_M19.md](UJI_HP_M19.md). Setelah pemilik membeli Biznet: cek koneksi
+Uji HP nyata M19 dengan APK 1025: [UJI_HP_M19.md](UJI_HP_M19.md). APK berikutnya menggabungkan revisi uji HP dengan
+pembaruan dari dalam aplikasi (ADR46, branch `codex/m19-update-dalam-aplikasi`). Setelah pemilik membeli Biznet: cek koneksi
 `infra/shared/cek-hosting.php` (RUNBOOK_PRODUCTION 1a), lalu M16. Ringkasan serah terima: HANDOFF bagian 0.
+
+## Pembaruan APK dari dalam aplikasi (ADR46) — 27 Oktober 2026 malam: **kode + tes lokal; menunggu CI dan rilis bersama revisi uji HP**
+
+Permintaan pemilik: tombol versi baru yang langsung memasang APK, seperti Claude Code/Codex. Branch
+`codex/m19-update-dalam-aplikasi` (worktree terpisah; checkout utama tidak disentuh).
+
+- Android (`MainActivity.kt`, kanal `rt05/update`): ABI HP, folder `cache/pembaruan`, izin "sumber ini"
+  (`REQUEST_INSTALL_PACKAGES`), cek SHA-256 + nama paket + versionCode lebih tinggi, lalu `PackageInstaller`
+  (konfirmasi Install tetap dari Android). APK yang sudah terpasang/lebih lama dihapus dari cache saat aplikasi dibuka.
+- Flutter: `core/app_update_platform.dart`, `Api.downloadPublic`, `features/warga/app_about.dart` (model berkas
+  `versi.json`, dialog unduh/izin/pasang/gagal, tombol **Perbarui sekarang**), pop-up sekali per aplikasi dibuka di
+  `app/shell.dart` (hanya bila shell paling atas). Tanpa dukungan platform/berkas sah → tautan halaman unduh resmi.
+- Tes: `test/m19_app_update_test.dart` (10 kasus: ABI 64/32-bit, SHA-256 diteruskan, izin lalu Pasang tanpa unduh
+  ulang, HASH → unduh ulang, unduhan gagal, dibatalkan, berkas tidak sah diabaikan, pop-up sekali / tidak muncul bila
+  terbaru). `pumpApp` menerima override tambahan.
+- Perintah (dari `mobile/`): `dart format --set-exit-if-changed lib test` 103/0, `flutter analyze` bersih,
+  `flutter test` **351/351**. Dari root: `node infra/scripts/check-repo.mjs` OK, `git diff --check` bersih.
+- Belum terbukti: kompilasi Kotlin (CI `mobile.yml` build debug), dan alur unduh-pasang di HP nyata. Uji HP butuh dua
+  build berurutan yang sama-sama memuat fitur ini (mis. 1026 dipasang manual, lalu 1027 lewat tombol). Emulator tidak
+  dipakai atas permintaan pemilik. Rilis APK digabung dengan revisi uji HP M19.
 
 ## Audit M17–M19 sebelum M16 — 27 Oktober 2026 (Claude)
 
