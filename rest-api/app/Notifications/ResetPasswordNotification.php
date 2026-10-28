@@ -12,12 +12,8 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Email reset kata sandi (M06). Diantrekan pada antrean default setelah commit; payload antrean
- * dienkripsi (ShouldBeEncrypted) agar token tidak tersimpan polos di Redis atau failed_jobs.
- *
- * Tautan HTTPS ke GET /reset-password milik API. Token dan email berada di fragment URL (#),
- * yang tidak dikirim browser ke server, sehingga tidak masuk log proxy/API. Email yang sama
- * memuat kode untuk ditempel di aplikasi Android (tanpa App Links terverifikasi).
+ * Email reset kata sandi RT05 TAKEDA.
+ * Diantrekan setelah commit dan payload dienkripsi agar token tidak tersimpan polos.
  */
 class ResetPasswordNotification extends Notification implements ShouldBeEncrypted, ShouldQueue, ShouldQueueAfterCommit
 {
@@ -35,13 +31,6 @@ class ResetPasswordNotification extends Notification implements ShouldBeEncrypte
         return ['mail'];
     }
 
-    /**
-     * Dievaluasi di job antrean sebelum transport dipanggil. Di SEMUA environment (termasuk
-     * local yang dapat terhubung ke Neon dev): mailer yang memakai transport log, langsung atau
-     * di dalam failover/roundrobin, akan menulis isi email (berisi token) ke log, sehingga email
-     * tidak dikirim. Tautan wajib HTTPS kecuali local/testing (URL sintetis). Peringatan tanpa
-     * token/email; respons lupa password tetap 202 generik dan transaksi tidak terpengaruh.
-     */
     public function shouldSend(object $notifiable, string $channel): bool
     {
         if ($reason = self::blockedReason()) {
@@ -53,10 +42,6 @@ class ResetPasswordNotification extends Notification implements ShouldBeEncrypte
         return true;
     }
 
-    /**
-     * Alasan email reset pasti tidak terkirim dengan konfigurasi saat ini, atau null. Tanpa token
-     * atau email, aman untuk log dan output CLI. Dipakai shouldSend dan bootstrap operator.
-     */
     public static function blockedReason(): ?string
     {
         if (self::mailerUses((string) config('mail.default'), ['log'])) {
@@ -69,12 +54,6 @@ class ResetPasswordNotification extends Notification implements ShouldBeEncrypte
         return null;
     }
 
-    /**
-     * True bila mailer, atau salah satu mailer failover/roundrobin di dalamnya, memakai salah satu
-     * [transports]. Mailer tidak dikenal atau terlalu bersarang juga true (fail closed).
-     *
-     * @param  list<string>  $transports
-     */
     public static function mailerUses(string $mailer, array $transports, int $depth = 0): bool
     {
         $config = config("mail.mailers.$mailer");
@@ -101,20 +80,22 @@ class ResetPasswordNotification extends Notification implements ShouldBeEncrypte
         $minutes = (int) config('auth.passwords.akun.expire', 60);
 
         return (new MailMessage)
-            ->subject('Reset kata sandi RT05 TAKEDA')
+            ->subject('Reset Kata Sandi - RT05 TAKEDA')
             ->greeting('Halo '.$notifiable->nama.',')
-            ->line('Kami menerima permintaan reset kata sandi untuk akun RT05 TAKEDA Anda.')
-            ->action('Atur kata sandi baru', self::url($this->token, $notifiable->email))
-            ->line('Di aplikasi Android, buka "Lupa kata sandi", masukkan email Anda, lalu tempel kode berikut:')
-            ->line($this->token)
-            ->line("Tautan dan kode berlaku $minutes menit dan hanya dapat dipakai sekali.")
-            ->line('Abaikan email ini jika Anda tidak meminta reset. Kata sandi Anda tidak berubah.')
-            ->salutation('Pengurus RT 05 Taman Kedaung');
+            ->line('Kami menerima permintaan untuk mereset kata sandi akun RT05 TAKEDA Anda.')
+            ->action('Reset Kata Sandi', self::url($this->token, $notifiable->email))
+            ->line('Jika Anda menggunakan aplikasi Android, salin kode berikut dan tempel di halaman Lupa Kata Sandi:')
+            ->line('**'.$this->token.'**')
+            ->line("Kode dan tautan hanya berlaku selama $minutes menit dan hanya dapat digunakan satu kali.")
+            ->line('Jika Anda tidak meminta reset kata sandi, abaikan email ini. Kata sandi Anda tetap aman.')
+            ->salutation('Salam, Pengurus RT 05 Taman Kedaung');
     }
 
-    /** https://<APP_URL>/reset-password#token=...&email=... (fragment, bukan query). */
     public static function url(string $token, string $email): string
     {
-        return rtrim((string) config('app.url'), '/').'/reset-password#'.http_build_query(['token' => $token, 'email' => $email], '', '&', PHP_QUERY_RFC3986);
+        return rtrim((string) config('app.url'), '/').'/reset-password#'.http_build_query([
+            'token' => $token,
+            'email' => $email,
+        ], '', '&', PHP_QUERY_RFC3986);
     }
 }
