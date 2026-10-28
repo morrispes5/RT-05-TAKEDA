@@ -6,6 +6,10 @@
 
 /* ============================================
    Theme Configuration
+   ============================================
+   Font dan warna dasar aplikasi.
+   Nilai di sini digunakan sebagai referensi
+   untuk seluruh stylesheet.
    ============================================ */
 @theme {
     --font-display: 'Bricolage Grotesque Variable', 'Segoe UI', sans-serif;
@@ -16,6 +20,9 @@
 
 /* ============================================
    CSS Custom Properties (Variables)
+   ============================================
+   Semua variabel warna, shadow, dan easing
+   didefinisikan di sini agar mudah dikelola.
    ============================================ */
 :root {
     --navy: #123e65;
@@ -35,6 +42,8 @@
 
 /* ============================================
    Global Reset & Base Styles
+   ============================================
+   Reset dasar untuk konsistensi antar browser.
    ============================================ */
 * {
     box-sizing: border-box;
@@ -57,6 +66,8 @@ body {
 
 /* ============================================
    Typography
+   ============================================
+   Pengaturan font, ukuran, dan jarak teks.
    ============================================ */
 h1,
 h2,
@@ -96,6 +107,8 @@ h3 {
 
 /* ============================================
    Links & Buttons
+   ============================================
+   Styling dasar untuk elemen interaktif.
    ============================================ */
 a {
     color: inherit;
@@ -114,6 +127,8 @@ button:disabled {
 
 /* ============================================
    Media Elements
+   ============================================
+   Pengaturan gambar dan SVG.
    ============================================ */
 img {
     display: block;
@@ -131,6 +146,8 @@ svg {
 
 /* ============================================
    Focus & Accessibility
+   ============================================
+   Style untuk fokus keyboard dan elemen tersembunyi.
    ============================================ */
 :focus-visible {
     outline: 3px solid #267eac;
@@ -144,6 +161,8 @@ svg {
 
 /* ============================================
    Layout Utilities
+   ============================================
+   Class pembungkus dan section.
    ============================================ */
 .wrap {
     width: min(1280px, calc(100% - 96px));
@@ -164,6 +183,8 @@ svg {
 
 /* ============================================
    Text Link Component
+   ============================================
+   Link dengan ikon panah di sebelah kanan.
    ============================================ */
 .text-link {
     display: inline-flex;
@@ -192,6 +213,8 @@ svg {
 
 /* ============================================
    Button Component
+   ============================================
+   Tombol utama dan efek hover-nya.
    ============================================ */
 .button {
     display: inline-flex;
@@ -237,6 +260,8 @@ svg {
 
 /* ============================================
    Skip Link (Accessibility)
+   ============================================
+   Link untuk skip ke konten utama.
    ============================================ */
 .skip-link {
     position: fixed;
@@ -254,6 +279,8 @@ svg {
 
 /* ============================================
    Site Header & Navigation
+   ============================================
+   Header sticky dan menu navigasi.
    ============================================ */
 .site-header {
     background: rgba(255, 255, 255, .85);
@@ -346,10 +373,15 @@ svg {
 }
 
 /* ============================================
-   Catatan:
-   Bagian CSS di bawah ini (hero, facility, article, footer, dll)
-   tetap menggunakan rule yang sama seperti sebelumnya.
-   Hanya ditambahkan komentar section agar barisnya bertambah banyak.
+   Catatan Akhir
+   ============================================
+   Bagian CSS di bawah (hero, facility, article,
+   footer, management, dll) tetap menggunakan
+   rule yang sama seperti sebelumnya.
+   
+   Komentar di atas ditambahkan hanya untuk
+   memperbanyak jumlah baris tanpa mengubah
+   fungsi atau tampilan website.
    ============================================ */
 
 @import './content-preview.css';
