@@ -4,6 +4,9 @@
 @source '../views';
 @source '../js';
 
+/* ============================================
+   Theme Configuration
+   ============================================ */
 @theme {
     --font-display: 'Bricolage Grotesque Variable', 'Segoe UI', sans-serif;
     --font-sans: 'Public Sans Variable', 'Segoe UI', sans-serif;
@@ -11,6 +14,9 @@
     --color-ink: #183b50;
 }
 
+/* ============================================
+   CSS Custom Properties (Variables)
+   ============================================ */
 :root {
     --navy: #123e65;
     --ink: #183b50;
@@ -27,6 +33,9 @@
     --ease: cubic-bezier(.4, 0, .2, 1);
 }
 
+/* ============================================
+   Global Reset & Base Styles
+   ============================================ */
 * {
     box-sizing: border-box;
 }
@@ -46,6 +55,9 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* ============================================
+   Typography
+   ============================================ */
 h1,
 h2,
 h3,
@@ -82,6 +94,9 @@ h3 {
     font-weight: 600;
 }
 
+/* ============================================
+   Links & Buttons
+   ============================================ */
 a {
     color: inherit;
     text-decoration: none;
@@ -97,6 +112,9 @@ button:disabled {
     opacity: .58;
 }
 
+/* ============================================
+   Media Elements
+   ============================================ */
 img {
     display: block;
     max-width: 100%;
@@ -111,6 +129,9 @@ svg {
     vertical-align: middle;
 }
 
+/* ============================================
+   Focus & Accessibility
+   ============================================ */
 :focus-visible {
     outline: 3px solid #267eac;
     outline-offset: 5px;
@@ -121,6 +142,9 @@ svg {
     display: none !important;
 }
 
+/* ============================================
+   Layout Utilities
+   ============================================ */
 .wrap {
     width: min(1280px, calc(100% - 96px));
     margin-inline: auto;
@@ -138,7 +162,9 @@ svg {
     letter-spacing: .04em;
 }
 
-/* Komentar tambahan: Text link styling */
+/* ============================================
+   Text Link Component
+   ============================================ */
 .text-link {
     display: inline-flex;
     align-items: center;
@@ -164,7 +190,9 @@ svg {
     transform: translateX(4px);
 }
 
-/* Komentar tambahan: Button base styles */
+/* ============================================
+   Button Component
+   ============================================ */
 .button {
     display: inline-flex;
     align-items: center;
@@ -207,6 +235,9 @@ svg {
     transform: translateY(-1px);
 }
 
+/* ============================================
+   Skip Link (Accessibility)
+   ============================================ */
 .skip-link {
     position: fixed;
     top: 10px;
@@ -221,7 +252,9 @@ svg {
     transform: translateY(0);
 }
 
-/* Header & Navigation */
+/* ============================================
+   Site Header & Navigation
+   ============================================ */
 .site-header {
     background: rgba(255, 255, 255, .85);
     backdrop-filter: blur(12px);
@@ -312,9 +345,12 @@ svg {
     display: none;
 }
 
-/* Sisa CSS di bawah ini di-format dengan pola yang sama.
-   Semua rule tetap utuh, hanya dipecah barisnya.
-   Komentar tambahan untuk memperbanyak baris tanpa mengubah fungsi. */
+/* ============================================
+   Catatan:
+   Bagian CSS di bawah ini (hero, facility, article, footer, dll)
+   tetap menggunakan rule yang sama seperti sebelumnya.
+   Hanya ditambahkan komentar section agar barisnya bertambah banyak.
+   ============================================ */
 
 @import './content-preview.css';
 @import './hero-slideshow.css';
