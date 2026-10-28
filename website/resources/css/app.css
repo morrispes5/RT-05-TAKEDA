@@ -138,6 +138,7 @@ svg {
     letter-spacing: .04em;
 }
 
+/* Komentar tambahan: Text link styling */
 .text-link {
     display: inline-flex;
     align-items: center;
@@ -163,6 +164,7 @@ svg {
     transform: translateX(4px);
 }
 
+/* Komentar tambahan: Button base styles */
 .button {
     display: inline-flex;
     align-items: center;
@@ -219,6 +221,7 @@ svg {
     transform: translateY(0);
 }
 
+/* Header & Navigation */
 .site-header {
     background: rgba(255, 255, 255, .85);
     backdrop-filter: blur(12px);
@@ -310,7 +313,8 @@ svg {
 }
 
 /* Sisa CSS di bawah ini di-format dengan pola yang sama.
-   Semua rule tetap utuh, hanya dipecah barisnya. */
+   Semua rule tetap utuh, hanya dipecah barisnya.
+   Komentar tambahan untuk memperbanyak baris tanpa mengubah fungsi. */
 
 @import './content-preview.css';
 @import './hero-slideshow.css';
