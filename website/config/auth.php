@@ -13,6 +13,10 @@ return [
     | reset "broker" for your application. You may change these values
     | as required, but they're a perfect start for most applications.
     |
+    | Catatan: Konfigurasi default ini digunakan sebagai titik awal.
+    | Perubahan di sini akan memengaruhi guard dan broker yang dipakai
+    | secara global oleh aplikasi Laravel.
+    |
     */
 
     'defaults' => [
@@ -34,6 +38,11 @@ return [
     | system used by the application. Typically, Eloquent is utilized.
     |
     | Supported: "session"
+    |
+    | Penjelasan tambahan:
+    | - Guard "web" menggunakan session driver.
+    | - Provider yang digunakan adalah "users".
+    | - Jangan mengubah driver kecuali memang diperlukan.
     |
     */
 
@@ -58,6 +67,10 @@ return [
     | be assigned to any extra authentication guards you have defined.
     |
     | Supported: "database", "eloquent"
+    |
+    | Catatan implementasi:
+    | Provider "users" menggunakan model User secara default.
+    | Model dapat diganti melalui environment variable AUTH_MODEL.
     |
     */
 
@@ -90,6 +103,11 @@ return [
     | generating more password reset tokens. This prevents the user from
     | quickly generating a very large amount of password reset tokens.
     |
+    | Informasi tambahan:
+    | - Token berlaku selama 60 menit.
+    | - User harus menunggu 60 detik sebelum bisa meminta token baru.
+    | - Tabel penyimpanan token dapat diubah melalui environment variable.
+    |
     */
 
     'passwords' => [
@@ -109,6 +127,9 @@ return [
     | Here you may define the number of seconds before a password confirmation
     | window expires and users are asked to re-enter their password via the
     | confirmation screen. By default, the timeout lasts for three hours.
+    |
+    | Default timeout adalah 10800 detik (3 jam).
+    | Nilai ini dapat disesuaikan melalui AUTH_PASSWORD_TIMEOUT.
     |
     */
 
