@@ -827,3 +827,20 @@ Rincian: [M18_IMPOR_BUKU_LAMA.md](M18_IMPOR_BUKU_LAMA.md).
    Pelaksanaan production memerlukan izin pemilik; uji dahulu pada branch Neon salinan.
 5. Koreksi per bulan lewat aplikasi: pembatalan pelunasan buku lama dengan alasan (append-only).
 6. Pekerjaan ini digabung di branch PR #103 (M19R) atas instruksi pemilik 29 Okt agar merge bersama.
+
+### ADR50 — Alarm darurat berdering seperti panggilan
+
+Tanggal: **29 Oktober 2026**. Status: **diputuskan pemilik** ("semua warga dan pengurus dapat semacam telepon berkelanjutan").
+Mengubah sebagian ADR43 butir 8 (bunyi alarm sekali lewat kanal notifikasi).
+
+1. Push alarm (`jenis darurat`) dikirim **data-only** prioritas tinggi dengan `alarm=1`. Penerima Android aplikasi
+   (`EmergencyAlarmReceiver`) menampilkan notifikasi kanal baru `rt05_darurat_v2` yang **berdering berulang**
+   (FLAG_INSISTENT) sampai dibuka, diusap, atau 10 menit (umur alarm). Berlaku juga saat aplikasi tertutup.
+2. Saat HP terkunci/layar mati: **layar alarm penuh** generik ("DARURAT di RT 05", tombol Buka detail / Matikan bunyi).
+   Detail nama/rumah hanya di aplikasi setelah HP dibuka kuncinya (privasi layar kunci tetap).
+3. Izin: notifikasi (Android 13+, diminta aplikasi) dan **notifikasi layar penuh** (Android 14+, diizinkan pengguna di
+   pengaturan). Beranda menampilkan kartu "Izinkan alarm darurat" bila salah satunya belum aktif. Tanpa izin layar penuh,
+   alarm tetap berdering sebagai notifikasi.
+4. Pembatalan oleh pelapor mengirim `alarm_selesai=<id kejadian>` sehingga dering di HP penerima berhenti.
+5. APK lama (≤ build sebelum ADR50) tidak membunyikan alarm data-only saat aplikasi tertutup: semua penguji/warga wajib
+   memasang APK terbaru. Penerima tetap bergantung pada pengaturan baterai/OEM HP; uji di HP nyata tim.

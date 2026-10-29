@@ -63,12 +63,17 @@ Future<void> handlePushTap(GoRouter router, WidgetRef ref, PushTap tap) async {
 /// Push di depan layar: Android tidak menampilkan notifikasi sistem, jadi tampilkan alert info.
 void showForegroundPush(GoRouter router, WidgetRef ref, PushTap tap) {
   if (!ref.read(sessionProvider).readyForServices) return;
-  if (tap.refType == 'kejadian_darurat' && PushTap.isUuid(tap.refId)) {
+  // ADR50: push alarm baru sudah berdering lewat penerima Android; jalur ini hanya untuk push alarm lama.
+  if (tap.refType == 'kejadian_darurat' && PushTap.isUuid(tap.refId) && !tap.alarm) {
     ref.read(emergencyPlatformProvider).alarm(tap.refId!, tap.notifikasiId);
   }
   ref.invalidate(notificationsProvider);
   final context = router.routerDelegate.navigatorKey.currentContext;
   if (context == null || !context.mounted) return;
+  if (tap.alarm) {
+    showMessage(context, 'Ada laporan darurat warga. Buka notifikasi untuk melihat detail.', kind: AlertKind.warning, title: 'DARURAT di RT 05');
+    return;
+  }
   showMessage(context, tap.body ?? 'Ada notifikasi baru di kotak masuk.', kind: AlertKind.info, title: tap.title ?? 'Notifikasi baru');
 }
 

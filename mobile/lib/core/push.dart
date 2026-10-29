@@ -17,13 +17,16 @@ enum PushPermission { granted, denied, notDetermined, unavailable }
 /// Isi data push yang dipercaya hanya sebagai petunjuk navigasi: jenis dari daftar tetap dan ID UUID.
 /// Detail selalu dimuat ulang dari API sehingga tautan basi/tidak berhak berakhir di pesan aman.
 class PushTap {
-  const PushTap({this.notifikasiId, this.refType, this.refId, this.title, this.body});
+  const PushTap({this.notifikasiId, this.refType, this.refId, this.title, this.body, this.alarm = false});
 
   final String? notifikasiId;
   final String? refType;
   final String? refId;
   final String? title;
   final String? body;
+
+  /// ADR50: push alarm data-only; dering sudah ditangani penerima Android, aplikasi tidak membunyikan ulang.
+  final bool alarm;
 
   static const refTypes = {'pengumuman', 'agenda', 'pengaduan', 'aspirasi', 'usulan_kegiatan', 'tagihan', 'kejadian_darurat'};
   static final _uuid = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
@@ -41,6 +44,7 @@ class PushTap {
       refId: valid ? id as String : null,
       title: title,
       body: body,
+      alarm: data['alarm'] == '1',
     );
   }
 }

@@ -6,6 +6,7 @@ use App\Domain\Community\Emergencies;
 use App\Domain\Community\Push\FcmGateway;
 use App\Domain\Community\Push\PushGateway;
 use App\Domain\Community\Push\PushMessage;
+use App\Domain\Community\Push\PushResult;
 use App\Domain\Community\PushDelivery;
 use App\Jobs\ProcessOutboxEvent;
 use App\Models\Akun;
@@ -228,17 +229,20 @@ class M19EmergencyTest extends TestCase
         $this->send($a)->assertCreated();
     }
 
-    public function test_alarm_payload_uses_separate_channel_short_lifetime_and_private_visibility(): void
+    public function test_alarm_payload_is_data_only_high_priority_with_short_lifetime(): void
     {
-        $p = FcmGateway::payload(new PushMessage('synthetic', 'Darurat', 'Buka aplikasi', [], 'rt05-unique', true));
-        $this->assertSame('rt05_darurat_v1', $p['android']['notification']['channel_id']);
-        $this->assertSame('ic_emergency', $p['android']['notification']['icon']);
-        $this->assertSame('PRIVATE', $p['android']['notification']['visibility']);
+        $p = FcmGateway::payload(new PushMessage('synthetic', 'Darurat', 'Buka aplikasi', ['ref_type' => 'kejadian_darurat'], 'rt05-unique', true));
+        // ADR50: tanpa blok notification sehingga penerima Android sendiri yang membunyikan alarm berulang + layar penuh.
+        $this->assertArrayNotHasKey('notification', $p);
+        $this->assertArrayNotHasKey('notification', $p['android']);
+        $this->assertSame(['ref_type' => 'kejadian_darurat', 'alarm' => '1'], $p['data']);
+        $this->assertSame('HIGH', $p['android']['priority']);
         $this->assertSame('600s', $p['android']['ttl']);
         $late = FcmGateway::payload(new PushMessage('synthetic', 'Darurat', 'Buka aplikasi', [], 'rt05-late', true, 20));
         $this->assertSame('20s', $late['android']['ttl']);
         $normal = FcmGateway::payload(new PushMessage('synthetic', 'Info', 'Buka aplikasi', [], 'normal'));
-        $this->assertArrayNotHasKey('channel_id', $normal['android']['notification']);
+        $this->assertSame(['tag' => 'normal'], $normal['android']['notification']);
+        $this->assertArrayNotHasKey('alarm', $normal['data']);
         $this->assertSame('86400s', $normal['android']['ttl']);
     }
 
@@ -446,6 +450,32 @@ class M19EmergencyTest extends TestCase
         $this->assertSame(['sistem'], Notifikasi::where('event_id', $out->id)->distinct()->pluck('jenis')->all());
         $this->assertSame(0, Notifikasi::where('event_id', $out->id)->whereNotNull('kejadian_darurat_id')->count());
         $this->assertStringNotContainsString($a->nama, Notifikasi::where('event_id', $out->id)->get()->toJson());
+        // ADR50: push pembatalan membawa ID kejadian agar dering alarm di HP penerima berhenti.
+        $gateway = new class implements PushGateway
+        {
+            public array $sent = [];
+
+            public function configured(): bool
+            {
+                return true;
+            }
+
+            public function send(array $messages): array
+            {
+                $this->sent = array_merge($this->sent, array_values($messages));
+
+                return array_map(fn () => PushResult::Sent, $messages);
+            }
+        };
+        $this->app['auth']->forgetGuards();
+        $this->withToken($b->createToken('android')->plainTextToken)
+            ->putJson('/api/v1/devices/uji-batal-0001', ['fcm_token' => 'fcm-uji_batal:'.str_repeat('A1b2', 10), 'platform' => 'android'])->assertSuccessful();
+        PushDelivery::deliver($out->id, $gateway);
+        $this->assertNotEmpty($gateway->sent);
+        foreach ($gateway->sent as $message) {
+            $this->assertSame($id, $message->data['alarm_selesai']);
+            $this->assertFalse($message->alarm);
+        }
         $this->as($admin)->getJson("/api/v1/emergencies/$id")->assertOk()->assertJsonPath('data.status', 'dibatalkan_pelapor');
         $this->send($a)->assertCreated();
     }

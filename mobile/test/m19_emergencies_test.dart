@@ -46,6 +46,17 @@ class _PinShortcut extends NoEmergencyPlatform {
   }
 }
 
+class _NotReady extends NoEmergencyPlatform {
+  int fullScreenRequests = 0;
+  int settingsRequests = 0;
+  @override
+  Future<AlarmReadiness> readiness() async => const AlarmReadiness(notifications: false, fullScreen: false);
+  @override
+  Future<void> fullScreenSettings() async => fullScreenRequests++;
+  @override
+  Future<void> settings() async => settingsRequests++;
+}
+
 const _id = '00000000-0000-4000-8000-000000000019';
 final _report = {'id': _id, 'jenis': 'kebakaran', 'status': 'aktif', 'versi': 1, 'pelapor': 'Pelapor sintetis', 'rumah': 'Rumah sintetis'};
 final _status = {'tersedia': true, 'aktif': true, 'versi': 1, 'penyalahgunaan': 0, 'versi_ketentuan': emergencyTermsVersion, 'uji_terbatas': true};
@@ -147,6 +158,36 @@ void main() {
     expect(find.byType(FloatingActionButton), findsNothing);
     expect(find.text('Laporan darurat'), findsNothing);
     expect(find.text('Tombol panik belum tersedia di server ini.'), findsNothing);
+  });
+
+  testWidgets('ADR50: Beranda meminta izin notifikasi dan layar penuh agar alarm bisa berdering', (tester) async {
+    final platform = _NotReady();
+    FakeAdapter adapter() => FakeAdapter((o) {
+      if (o.uri.path.endsWith('/emergencies/status')) return jsonBody(200, {'data': _status});
+      if (o.uri.path.endsWith('/emergencies')) return jsonBody(200, {'data': [], 'meta': {}});
+      return errorBody(404, 'NOT_FOUND', '-');
+    });
+    await _pump(
+      tester,
+      adapter(),
+      page: const Scaffold(body: SingleChildScrollView(child: EmergencyHomeSection())),
+      platform: platform,
+    );
+    expect(find.text('Izinkan alarm darurat'), findsOneWidget);
+    await tester.tap(find.text('Izinkan layar penuh'));
+    await tester.tap(find.text('Buka pengaturan notifikasi'));
+    expect(platform.fullScreenRequests, 1);
+    expect(platform.settingsRequests, 1);
+
+    // ProviderScope baru (izin sudah diberikan): kartu tidak tampil lagi.
+    await tester.pumpWidget(const SizedBox());
+    await _pump(
+      tester,
+      adapter(),
+      page: const Scaffold(body: SingleChildScrollView(child: EmergencyHomeSection())),
+    );
+    expect(find.text('Izinkan alarm darurat'), findsNothing);
+    expect(find.text('Laporan darurat'), findsOneWidget);
   });
 
   testWidgets('pengurus has panic shortcut directly on Home and it never submits automatically', (tester) async {

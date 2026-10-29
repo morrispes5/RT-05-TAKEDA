@@ -9,6 +9,17 @@ abstract interface class EmergencyPlatform {
   Future<void> alarm(String id, String? notificationId);
   Future<void> settings();
   Future<bool> pinShortcut();
+
+  /// ADR50: izin yang dibutuhkan alarm berdering — notifikasi (kanal alarm aktif) dan layar penuh (Android 14+).
+  Future<AlarmReadiness> readiness();
+  Future<void> fullScreenSettings();
+}
+
+class AlarmReadiness {
+  const AlarmReadiness({this.notifications = true, this.fullScreen = true});
+  final bool notifications;
+  final bool fullScreen;
+  bool get ready => notifications && fullScreen;
 }
 
 class NoEmergencyPlatform implements EmergencyPlatform {
@@ -23,6 +34,10 @@ class NoEmergencyPlatform implements EmergencyPlatform {
   Future<void> settings() async {}
   @override
   Future<bool> pinShortcut() async => false;
+  @override
+  Future<AlarmReadiness> readiness() async => const AlarmReadiness();
+  @override
+  Future<void> fullScreenSettings() async {}
 }
 
 class NativeEmergencyPlatform implements EmergencyPlatform {
@@ -66,6 +81,29 @@ class NativeEmergencyPlatform implements EmergencyPlatform {
       await _channel.invokeMethod<void>('alarm', {'id': id, 'notification_id': notificationId});
     } on PlatformException {
       /* Inbox remains available. */
+    } on MissingPluginException {
+      /* Non-Android host. */
+    }
+  }
+
+  @override
+  Future<AlarmReadiness> readiness() async {
+    try {
+      final map = await _channel.invokeMapMethod<String, dynamic>('readiness') ?? const {};
+      return AlarmReadiness(notifications: map['notifikasi'] != false, fullScreen: map['layar_penuh'] != false);
+    } on PlatformException {
+      return const AlarmReadiness();
+    } on MissingPluginException {
+      return const AlarmReadiness();
+    }
+  }
+
+  @override
+  Future<void> fullScreenSettings() async {
+    try {
+      await _channel.invokeMethod<void>('fullScreenSettings');
+    } on PlatformException {
+      /* Settings may be unavailable on this device. */
     } on MissingPluginException {
       /* Non-Android host. */
     }
