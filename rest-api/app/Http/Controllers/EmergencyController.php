@@ -55,11 +55,33 @@ class EmergencyController extends Controller
     public function store(Request $r): JsonResponse
     {
         Emergencies::authorize($r->user());
-        $d = $r->validate(['jenis' => ['required', Rule::in(Emergencies::KINDS)], 'konfirmasi' => ['required', 'accepted'],
-            'versi_ketentuan' => ['required', Rule::in([Emergencies::TERMS])]]);
+        $d = $r->validate(['jenis' => ['nullable', Rule::in(Emergencies::KINDS)], 'konfirmasi' => ['required', 'accepted'],
+            'versi_ketentuan' => ['required', Rule::in(Emergencies::ACCEPTED_TERMS)]]);
 
         $receipt = Idempotency::run($r, $r->user(), 'darurat.buat', $d,
-            fn () => Api::data(['id' => Emergencies::create($r->user(), $d['jenis'])->id], 201));
+            fn () => Api::data(['id' => Emergencies::create($r->user(), $d['jenis'] ?? null)->id], 201));
+
+        return $this->hydrate($r, $receipt);
+    }
+
+    public function setKind(Request $r, string $id): JsonResponse
+    {
+        Emergencies::authorize($r->user());
+        $d = $r->validate(['versi' => ['required', 'integer', 'min:1'], 'jenis' => ['required', Rule::in(Emergencies::KINDS)]]);
+
+        $receipt = Idempotency::run($r, $r->user(), 'darurat.jenis.'.$id, $d,
+            fn () => Api::data(['id' => Emergencies::setKind($r->user(), $id, $d['versi'], $d['jenis'])->id]));
+
+        return $this->hydrate($r, $receipt);
+    }
+
+    public function cancel(Request $r, string $id): JsonResponse
+    {
+        Emergencies::authorize($r->user());
+        $d = $r->validate(['versi' => ['required', 'integer', 'min:1']]);
+
+        $receipt = Idempotency::run($r, $r->user(), 'darurat.batal.'.$id, $d,
+            fn () => Api::data(['id' => Emergencies::cancelByReporter($r->user(), $id, $d['versi'])->id]));
 
         return $this->hydrate($r, $receipt);
     }

@@ -110,6 +110,8 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
     Route::get('emergencies', [EmergencyController::class, 'index']);
     Route::get('emergencies/{id}', [EmergencyController::class, 'show'])->whereUuid('id');
     Route::post('emergencies', [EmergencyController::class, 'store']);
+    Route::post('emergencies/{id}/jenis', [EmergencyController::class, 'setKind'])->whereUuid('id');
+    Route::post('emergencies/{id}/cancel', [EmergencyController::class, 'cancel'])->whereUuid('id');
     Route::get('agendas', [CommunityController::class, 'agendas']);
     Route::get('agendas/{id}', [CommunityController::class, 'agenda'])->whereUuid('id');
     Route::get('agendas/{id}/calendar', [CommunityController::class, 'agendaCalendar'])->whereUuid('id');

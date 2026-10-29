@@ -1,5 +1,19 @@
 # Progress — RT05 TAKEDA
 
+## M19R — revisi Tombol Panik (ADR48) — 29 Oktober 2026
+
+Branch `cursor1530` (bukan `main`). Brief pemilik: FAB kanan bawah, halaman ketentuan bergaya privasi, geser
+untuk menyalakan, jenis opsional setelah alarm, batal pelapor, toggle pengurus pindah ke Lainnya.
+
+- ADR48 + BUSINESS_RULES/M19_PLAN/ROADMAP/API/ERD/OpenAPI.
+- Backend: `jenis` nullable, `versi_ketentuan` 2026-10-29 (2026-10-27 tetap diterima), POST `/emergencies/{id}/jenis`
+  dan `/cancel`, status `dibatalkan_pelapor`, judul notifikasi `DARURAT di RT 05` tanpa nama di payload push.
+- Mobile: FAB di Beranda/Ringkasan, slider + sentinel, layar alarm merah, riwayat otomatis, `EmergencyAdminSettings`
+  di Lainnya pengurus.
+- Mockup Stitch proyek `1565323018345407688` (Beranda+FAB, ketentuan+slider, alarm menyala, riwayat) dipakai sebagai
+  referensi visual. Beranda aplikasi tetap layout RT05 yang sudah diterima; Stitch tidak mengganti home.
+- Belum passed: uji HP nyata (M19R-12). PHP dan Flutter tidak di PATH mesin ini, jadi tes otomatis belum dijalankan di sini.
+
 ## Website: tautan Maps footer + alamat Profil (ADR47) — 29 Oktober 2026
 
 Instruksi pemilik: klik "Taman Kedaung, Ciputat" di footer membuka Google Maps

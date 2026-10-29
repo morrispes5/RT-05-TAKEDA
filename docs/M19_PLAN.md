@@ -13,8 +13,8 @@ pekerjaan dan bukti yang harus dikumpulkan; tidak menganggap rancangan teknis se
 | Bagian | Perilaku |
 | --- | --- |
 | Akses Android | Tombol panik di aplikasi dan shortcut Android |
-| Aktivasi | Tiga langkah: tekan → baca ketentuan dan pilih jenis darurat → konfirmasi Ya/Batal |
-| Jenis | Kebakaran, kemalingan, penyerangan, darurat serius lain |
+| Aktivasi | Tiga langkah (ADR48): tekan FAB → scroll ketentuan → geser untuk menyalakan / Batal |
+| Jenis | Opsional setelah alarm: kebakaran, kemalingan, penyerangan, darurat serius lain |
 | Penerima | Semua warga dan pengurus; pengujian hanya memakai penerima sintetis |
 | Identitas | Tidak anonim: nama pelapor, rumah, jenis darurat |
 | Pemberitahuan | Notifikasi bergaya alarm Android, mengikuti izin pengguna; kemampuan nyata dibuktikan di HP |

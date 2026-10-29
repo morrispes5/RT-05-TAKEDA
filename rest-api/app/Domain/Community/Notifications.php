@@ -35,6 +35,7 @@ final class Notifications
             'pengaduan.dibuat' => self::toPengurus($event, 'pengaduan', ['pengaduan_id' => $id], 'Pengaduan baru', 'Ada pengaduan baru yang perlu ditindaklanjuti.'),
             'darurat.dibuat' => self::emergency($event),
             'darurat.ditangani' => self::emergencyResolution($event),
+            'darurat.dibatalkan_pelapor' => self::emergencyCancelled($event),
             'darurat.penyalahgunaan_dibatalkan' => ($e = KejadianDarurat::find($id)) && self::send($event, [$e->pelapor_id], 'sistem', [],
                 'Penanda penyalahgunaan dibatalkan', 'Pengurus membatalkan penanda penyalahgunaan pada salah satu laporan darurat Anda. Hitungan penyalahgunaan sudah diperbarui.'),
             'pengaduan.status_berubah' => ($p = Pengaduan::find($id)) && self::send($event, [$p->pelapor_id], 'pengaduan', ['pengaduan_id' => $id],
@@ -92,7 +93,18 @@ final class Notifications
         }
 
         return self::send($event, Emergencies::recipients($event), 'darurat', ['kejadian_darurat_id' => $e->id],
-            'Darurat RT05 TAKEDA', 'Ada laporan darurat warga. Buka aplikasi untuk melihat jenis kejadian dan rumah pelapor.');
+            Emergencies::alarmTitle(), Emergencies::alarmBody($e->jenis));
+    }
+
+    private static function emergencyCancelled(OutboxEvent $event): bool
+    {
+        $e = KejadianDarurat::find($event->aggregate_id);
+        if (! $e) {
+            return false;
+        }
+
+        return self::send($event, Emergencies::recipients($event), 'darurat', ['kejadian_darurat_id' => $e->id],
+            'Alarm dibatalkan', Emergencies::cancelNoticeBody());
     }
 
     private static function emergencyResolution(OutboxEvent $event): bool

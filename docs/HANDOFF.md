@@ -4,11 +4,15 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **Kamis 29 Oktober 2026** (ADR47 tautan Maps footer + alamat Profil; sebelumnya 27 Okt malam ADR46). **Baca bagian 0 dulu.**
+Terakhir diperbarui: **Kamis 29 Oktober 2026** (M19R Tombol Panik di `cursor1530`; sebelumnya ADR47 Maps). **Baca bagian 0 dulu.**
 
 ## 0. MULAI DI SINI — status Selasa 27 Oktober 2026 sore (Claude)
 
 Bagian ini mengungguli catatan lebih lama di bawah bila bertentangan.
+
+**Sesi 29 Oktober 2026 sore (M19R, branch `cursor1530`):** revisi Tombol Panik sesuai brief M19R/ADR48. Jangan merge
+ke `main` sebelum ditinjau. FAB hanya Beranda; ketentuan + slider; jenis opsional; batal pelapor; toggle di Lainnya.
+Pertanyaan terbuka pemilik: arti "semua keluarga"; FAB semua tab vs Beranda; ikon sirine vs SOS.
 
 **Sesi 29 Oktober 2026 (website, ADR47):** footer "Taman Kedaung, Ciputat" membuka peta Google
 `https://maps.app.goo.gl/jzVGMiRRp8nV5otd7`. Alamat Perum Taman Kedaung, 15445, dan 7 gang (termasuk Mawar 12A/13)

@@ -67,7 +67,7 @@ class M19EmergencyTest extends TestCase
         $this->send($a, $key)->assertCreated()->assertHeader('Idempotent-Replayed', 'true')->assertJsonPath('data.id', $id);
         $this->send($a)->assertCreated()->assertJsonPath('data.id', $id);
         $this->send($a, $key, ['jenis' => 'kemalingan'])->assertStatus(409)->assertJsonPath('error.code', 'IDEMPOTENCY_KEY_REUSED');
-        $this->send($a, null, ['jenis' => 'kemalingan'])->assertStatus(409);
+        $this->send($a, null, ['jenis' => 'kemalingan'])->assertStatus(409)->assertJsonPath('error.code', 'PANIC_ALREADY_ACTIVE');
         $this->assertSame(1, KejadianDarurat::count());
         $this->assertSame(1, OutboxEvent::where('type', 'darurat.dibuat')->count());
         $this->assertSame(1, DB::table('audit_logs')->where('action', 'darurat.dibuat')->count());
@@ -129,6 +129,8 @@ class M19EmergencyTest extends TestCase
         (new ProcessOutboxEvent($out->id))->handle();
         // Audit M19: pelapor tidak menerima alarm laporannya sendiri; pengurus menerima tepat sekali.
         $this->assertSame([$admin->id], Notifikasi::where('event_id', $out->id)->pluck('penerima_id')->all());
+        $this->assertSame('DARURAT di RT 05', Notifikasi::where('event_id', $out->id)->value('judul'));
+        $this->assertStringNotContainsString('null', (string) Notifikasi::where('event_id', $out->id)->value('isi'));
         $this->assertSame(0, Notifikasi::whereIn('penerima_id', [$old->id, $pending->id])->where('jenis', 'darurat')->count());
         $serialized = Notifikasi::where('event_id', $out->id)->get()->toJson().json_encode($out->safe_payload);
         $this->assertStringNotContainsString($a->nama, $serialized);
@@ -393,5 +395,55 @@ class M19EmergencyTest extends TestCase
         $correct($admin, $pid)->assertStatus(422)->assertJsonPath('error.code', 'PANIC_NOT_MISUSE');
         $this->expectException(QueryException::class);
         DB::table('koreksi_penyalahgunaan_darurat')->where('kejadian_darurat_id', $ids[0])->update(['alasan' => 'diubah diam-diam']);
+    }
+
+    public function test_report_can_be_created_without_kind_and_filled_later_only_by_the_reporter(): void
+    {
+        $a = $this->consent($this->warga('panicr1'));
+        $b = $this->consent($this->warga('panicr2'));
+        $res = $this->as($a)->withHeader('Idempotency-Key', (string) Str::uuid())->postJson('/api/v1/emergencies', [
+            'konfirmasi' => true, 'versi_ketentuan' => Emergencies::TERMS,
+        ])->assertCreated();
+        $this->assertNull($res->json('data.jenis'));
+        $id = $res->json('data.id');
+        $this->as($a)->withHeader('Idempotency-Key', (string) Str::uuid())->postJson('/api/v1/emergencies', [
+            'konfirmasi' => true, 'versi_ketentuan' => '2026-10-27',
+        ])->assertCreated()->assertJsonPath('data.id', $id);
+        $this->as($b)->withHeader('Idempotency-Key', (string) Str::uuid())
+            ->postJson("/api/v1/emergencies/$id/jenis", ['versi' => 1, 'jenis' => 'kebakaran'])->assertForbidden();
+        $key = (string) Str::uuid();
+        $this->as($a)->withHeader('Idempotency-Key', $key)
+            ->postJson("/api/v1/emergencies/$id/jenis", ['versi' => 1, 'jenis' => 'kebakaran'])
+            ->assertOk()->assertJsonPath('data.jenis', 'kebakaran')->assertJsonPath('data.versi', 2);
+        $this->postJson("/api/v1/emergencies/$id/jenis", ['versi' => 1, 'jenis' => 'kebakaran'])
+            ->assertOk()->assertHeader('Idempotent-Replayed', 'true');
+        $this->withHeader('Idempotency-Key', (string) Str::uuid())
+            ->postJson("/api/v1/emergencies/$id/jenis", ['versi' => 2, 'jenis' => 'kemalingan'])
+            ->assertOk()->assertJsonPath('data.jenis', 'kemalingan');
+    }
+
+    public function test_reporter_can_cancel_an_active_alarm_without_misuse_and_others_cannot(): void
+    {
+        $a = $this->consent($this->warga('panicc1'));
+        $b = $this->consent($this->warga('panicc2'));
+        $admin = $this->consent($this->pengurus());
+        $id = $this->as($a)->withHeader('Idempotency-Key', (string) Str::uuid())->postJson('/api/v1/emergencies', [
+            'konfirmasi' => true, 'versi_ketentuan' => Emergencies::TERMS,
+        ])->assertCreated()->json('data.id');
+        $this->as($b)->withHeader('Idempotency-Key', (string) Str::uuid())
+            ->postJson("/api/v1/emergencies/$id/cancel", ['versi' => 1])->assertForbidden();
+        $key = (string) Str::uuid();
+        $this->as($a)->withHeader('Idempotency-Key', $key)
+            ->postJson("/api/v1/emergencies/$id/cancel", ['versi' => 1])
+            ->assertOk()->assertJsonPath('data.status', 'dibatalkan_pelapor');
+        $this->postJson("/api/v1/emergencies/$id/cancel", ['versi' => 1])
+            ->assertOk()->assertHeader('Idempotent-Replayed', 'true');
+        $this->assertSame(0, Emergencies::misuseCount($a->id));
+        $out = OutboxEvent::where('type', 'darurat.dibatalkan_pelapor')->where('aggregate_id', $id)->firstOrFail();
+        (new ProcessOutboxEvent($out->id))->handle();
+        $this->assertNotEmpty(Notifikasi::where('event_id', $out->id)->pluck('penerima_id')->all());
+        $this->assertStringNotContainsString($a->nama, Notifikasi::where('event_id', $out->id)->get()->toJson());
+        $this->as($admin)->getJson("/api/v1/emergencies/$id")->assertOk()->assertJsonPath('data.status', 'dibatalkan_pelapor');
+        $this->send($a)->assertCreated();
     }
 }

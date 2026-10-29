@@ -8,6 +8,7 @@ import '../core/session.dart';
 import '../core/widgets.dart';
 import '../features/pengurus/pengurus_pages.dart';
 import '../features/warga/app_about.dart';
+import '../features/warga/emergencies.dart';
 import '../features/warga/providers.dart';
 import '../features/warga/warga_pages.dart';
 import 'theme.dart';
@@ -115,6 +116,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           ],
         ),
         body: IndexedStack(index: _index, children: [for (final t in tabs) t.$3]),
+        floatingActionButton: _index == 0 ? const EmergencyFab() : null,
         // Label navigasi dibatasi 1,3× agar lima tab tetap muat di layar sempit; isi halaman tetap mengikuti skala sistem.
         bottomNavigationBar: MediaQuery.withClampedTextScaling(
           maxScaleFactor: 1.3,

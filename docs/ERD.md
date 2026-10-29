@@ -3,10 +3,11 @@
 ## M19 — kejadian darurat (implementasi lokal, belum deploy)
 
 `kejadian_darurat`: UUID; FK `pelapor_id → akun`, `rumah_id → rumah`, `ditangani_oleh_id → akun` (RESTRICT).
-Kolom: `jenis` kebakaran/kemalingan/penyerangan/lainnya; `status` aktif/selesai/palsu; `penyalahgunaan` boolean;
+Kolom: `jenis` kebakaran/kemalingan/penyerangan/lainnya **atau NULL** (ADR48, dilengkapi pelapor setelah alarm);
+`status` aktif/selesai/palsu/dibatalkan_pelapor; `penyalahgunaan` boolean;
 `catatan_pengurus`, `selesai_at`, `versi >= 1`, `created_at`. CHECK mengikat penanganan, alasan dan waktu;
-penyalahgunaan hanya pada status palsu. Unique parsial satu kejadian aktif per akun. Trigger melarang DELETE,
-perubahan identitas/rumah/jenis/waktu asal, buka ulang, edit hasil terminal, dan transisi versi yang tidak berurutan.
+penyalahgunaan hanya pada status palsu. Unique parsial satu kejadian aktif per akun. Trigger melarang DELETE, perubahan identitas/rumah/waktu asal, buka ulang, edit hasil terminal, dan transisi versi yang
+tidak berurutan. Jenis boleh diisi/diubah selama status masih aktif (M19R).
 
 `koreksi_penyalahgunaan_darurat` (audit 27 Okt): UUID; FK unik `kejadian_darurat_id → kejadian_darurat`,
 `dicatat_oleh_id → akun` (RESTRICT); `alasan` 5–300 karakter; `created_at`. Append-only (trigger `rt05_immutable_row`).

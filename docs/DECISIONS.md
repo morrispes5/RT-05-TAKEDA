@@ -799,3 +799,15 @@ Tanggal: **29 Oktober 2026**. Status: **diputuskan oleh pemilik**.
    Kel. Kedaung, Kec. Pamulang, Kota Tangerang Selatan **15445**; gang Mawar 8, 9, 10, 11, 12, **12A/13**, dan 14.
    Penulisan publik **RT 05 RW 07**, bukan 005/007.
 3. Halaman Kontak menambah kode pos dan tautan peta yang sama pada baris Lingkungan; daftar gang tidak diulang di situ.
+
+### ADR48 — Revisi alur Tombol Panik (M19R)
+
+Tanggal: **29 Oktober 2026**. Status: **diputuskan oleh pemilik** (brief M19R). Mengubah sebagian ADR43 butir 8 dan audit 27 Oktober.
+
+1. Aktivasi tetap tiga langkah: tekan FAB → baca ketentuan (wajib scroll sampai bawah) → konfirmasi dengan **geser slider**. Bukan dropdown jenis + Ya/Batal.
+2. **Jenis darurat tidak wajib** sebelum alarm menyala. Pelapor boleh mengisi chip opsional setelahnya. APK lama yang masih mengirim `jenis` tetap diterima.
+3. FAB merah 56dp hanya di tab Beranda/Ringkasan (bukan di navbar, bukan di semua tab). Ikon sirine. Saat fitur/akun nonaktif, FAB abu-abu tetap tampil.
+4. Toggle pengurus aktif/nonaktif pindah ke Lainnya, bukan di halaman ketentuan.
+5. Pelapor dapat membatalkan alarm aktif (`dibatalkan_pelapor`); tidak dihitung penyalahgunaan. Riwayat tidak dihapus.
+6. Judul notifikasi penerima: **"DARURAT di RT 05"**. Isi push tetap generik tanpa nama/rumah di layar kunci (aturan M19); identitas hanya lewat API terautentikasi. Jenis disebut di isi hanya jika sudah terisi saat fanout.
+7. Belum diputuskan pemilik: arti "semua keluarga"; FAB di semua tab; ikon SOS vs sirine (default sirine).

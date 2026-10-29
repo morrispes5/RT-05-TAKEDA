@@ -15,7 +15,10 @@ use Illuminate\Support\Facades\DB;
 /** M19: one lock order for creation, disabling and assessment; no external I/O in these transactions. */
 final class Emergencies
 {
-    public const TERMS = '2026-10-27';
+    public const TERMS = '2026-10-29';
+
+    /** APK lama (M19) tetap diterima; client baru mengirim TERMS. */
+    public const ACCEPTED_TERMS = ['2026-10-27', '2026-10-29'];
 
     public const KINDS = ['kebakaran', 'kemalingan', 'penyerangan', 'lainnya'];
 
@@ -68,12 +71,14 @@ final class Emergencies
             ->count();
     }
 
-    public static function create(Akun $actor, string $kind): KejadianDarurat
+    public static function create(Akun $actor, ?string $kind = null): KejadianDarurat
     {
+        $kind = $kind === '' ? null : $kind;
+
         return DB::transaction(function () use ($actor, $kind) {
             self::lock();
             $actor = self::authorize($actor);
-            if (! in_array($kind, self::KINDS, true)) {
+            if ($kind !== null && ! in_array($kind, self::KINDS, true)) {
                 throw new DomainConflict('PANIC_INVALID_KIND', 'Jenis darurat tidak valid.', 422);
             }
             if (! self::enabled()) {
@@ -84,7 +89,7 @@ final class Emergencies
             }
             $active = KejadianDarurat::where('pelapor_id', $actor->id)->where('status', 'aktif')->first();
             if ($active) {
-                if ($active->jenis !== $kind) {
+                if ($kind !== null && $active->jenis !== null && $active->jenis !== $kind) {
                     throw new DomainConflict('PANIC_ALREADY_ACTIVE', 'Laporan darurat Anda sebelumnya masih aktif. Buka laporan itu.');
                 }
 
@@ -104,6 +109,80 @@ final class Emergencies
 
             return $e->refresh();
         });
+    }
+
+    public static function setKind(Akun $actor, string $id, int $version, string $kind): KejadianDarurat
+    {
+        return DB::transaction(function () use ($actor, $id, $version, $kind) {
+            self::lock();
+            $actor = self::authorize($actor);
+            if (! in_array($kind, self::KINDS, true)) {
+                throw new DomainConflict('PANIC_INVALID_KIND', 'Jenis darurat tidak valid.', 422);
+            }
+            $e = KejadianDarurat::whereKey($id)->lockForUpdate()->firstOrFail();
+            if ($e->pelapor_id !== $actor->id) {
+                throw new AuthorizationException('Akses darurat tidak diizinkan.');
+            }
+            if ($e->status !== 'aktif' || $e->versi !== $version) {
+                throw new DomainConflict('VERSION_CONFLICT', 'Laporan sudah berubah. Muat ulang sebelum melanjutkan.');
+            }
+            if ($e->jenis === $kind) {
+                return $e;
+            }
+            $e->forceFill(['jenis' => $kind, 'versi' => $version + 1])->save();
+            Audit::record($actor, 'darurat.jenis_diubah', 'kejadian_darurat', $id, ['jenis' => $kind]);
+
+            return $e->refresh();
+        });
+    }
+
+    public static function cancelByReporter(Akun $actor, string $id, int $version): KejadianDarurat
+    {
+        return DB::transaction(function () use ($actor, $id, $version) {
+            self::lock();
+            $actor = self::authorize($actor);
+            $e = KejadianDarurat::whereKey($id)->lockForUpdate()->firstOrFail();
+            if ($e->pelapor_id !== $actor->id) {
+                throw new AuthorizationException('Akses darurat tidak diizinkan.');
+            }
+            if ($e->status !== 'aktif' || $e->versi !== $version) {
+                throw new DomainConflict('VERSION_CONFLICT', 'Laporan sudah berubah. Muat ulang sebelum melanjutkan.');
+            }
+            $e->forceFill([
+                'status' => 'dibatalkan_pelapor',
+                'ditangani_oleh_id' => $actor->id,
+                'catatan_pengurus' => 'Dibatalkan pelapor',
+                'selesai_at' => now(),
+                'versi' => $version + 1,
+            ])->save();
+            Audit::record($actor, 'darurat.dibatalkan_pelapor', 'kejadian_darurat', $id, []);
+            Outbox::record('darurat.dibatalkan_pelapor', 'kejadian_darurat', $id);
+
+            return $e->refresh();
+        });
+    }
+
+    public static function alarmTitle(): string
+    {
+        return 'DARURAT di RT 05';
+    }
+
+    public static function alarmBody(?string $kind): string
+    {
+        $label = match ($kind) {
+            'kebakaran' => ' Kebakaran.',
+            'kemalingan' => ' Kemalingan.',
+            'penyerangan' => ' Penyerangan.',
+            'lainnya' => ' Darurat serius lain.',
+            default => '',
+        };
+
+        return 'Ada laporan darurat. Buka aplikasi untuk melihat pelapor dan rumah.'.$label;
+    }
+
+    public static function cancelNoticeBody(): string
+    {
+        return 'Alarm dibatalkan oleh pelapor. Buka aplikasi untuk status terkini.';
     }
 
     public static function resolve(Akun $actor, string $id, int $version, string $status, bool $misuse, string $reason): KejadianDarurat

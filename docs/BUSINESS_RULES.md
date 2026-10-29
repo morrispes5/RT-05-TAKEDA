@@ -1,9 +1,10 @@
 # Aturan bisnis — RT05 TAKEDA
 
-## M19 — tombol panik (ADR43/45)
+## M19 — tombol panik (ADR43/45/48)
 
-- Tidak anonim; setelah tiga langkah konfirmasi, nama/rumah/jenis darurat tersedia bagi warga/pengurus aktif penerima
-  yang menyetujui kebijakan M19. Tidak ada GPS, panggilan otomatis atau integrasi instansi.
+- Tidak anonim; setelah tiga langkah (tekan FAB → baca ketentuan sampai bawah → geser), nama/rumah dan jenis
+  darurat (bila diisi) tersedia bagi warga/pengurus aktif penerima yang menyetujui kebijakan M19. Jenis tidak wajib
+  sebelum alarm. Tidak ada GPS, panggilan otomatis atau integrasi instansi.
 - Pengurus setara menangani selesai/palsu. Penilaian penyalahgunaan dipilih secara eksplisit dengan alasan;
   palsu tidak otomatis dihitung sebagai penyalahgunaan. Tiga penilaian menonaktifkan pengiriman akun itu,
   tanpa menghalangi penerimaan darurat atau layanan lain. Belum ada pemulihan/reset hitungan otomatis.
