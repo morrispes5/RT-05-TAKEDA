@@ -1,5 +1,19 @@
 # Progress — RT05 TAKEDA
 
+## Pemulihan perubahan 28 Oktober (Natanael) — 29 Oktober 2026
+
+Instruksi pemilik: rapikan semua perubahan 51 commit Natanael (28 Okt 07.10–08.31 UTC), riwayat dan kontributor tetap
+ada (perbaikan lewat commit baru, tanpa rewrite/force-push).
+- Net nol (diubah lalu dikembalikan sendiri): `MainActivity.kt` (±19.000 baris churn), ikon launcher, `bootstrap/providers.php`.
+- Dikembalikan ke versi sebelum 28 Okt: `ResetPasswordNotification.php` (komentar keamanan dan teks email M06) beserta
+  `M06PasswordResetTest`, `website/config/auth.php` (komentar AI), `website/scripts/package-frontend.ps1` (format saja),
+  `app.css` (±40 rb karakter; menu HP, Area Pengurus, artikel, fasilitas), `home.blade.php`, `aplikasi.blade.php`.
+- `profil.blade.php` dan `content-preview.css` = versi sebelum 28 Okt + perubahan sah Raihan (ADR47, alamat + peta,
+  gaya footer). Teks Profil PR #102 tetap. Preview statis diekspor ulang dari sumber (bukan edit manual).
+- Bukti lokal: Pint PASS; `npm run test:preview` PASS (24 rute × 360/390/768/1024/1440 tanpa overflow, a11y, gambar,
+  hero, CMS); website `php artisan test` 40/42 (2 sisanya membaca `../rest-api` dan `../mobile` yang tidak ada di folder uji
+  terpisah; dijalankan di CI).
+
 ## M19 — alarm berdering seperti panggilan (ADR50) — 29 Oktober 2026
 
 Permintaan pemilik setelah merge PR #103: semua warga dan pengurus menerima "telepon berkelanjutan" saat Tombol Panik.

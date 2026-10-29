@@ -116,8 +116,7 @@ class M06PasswordResetTest extends TestCase
             $this->assertStringStartsWith('https://takeda-staging.morriz.tech/reset-password#token=', $url);
             $this->assertStringNotContainsString('?', $url, 'Token/email tidak boleh di query string (masuk log).');
             $this->assertStringContainsString('email='.rawurlencode($akun->email), $url);
-            // 28 Okt: kode ditampilkan tebal (**kode**) di barisnya sendiri; tetap utuh untuk disalin ke Android.
-            $this->assertContains('**'.$n->token.'**', array_merge($mail->introLines, $mail->outroLines), 'Kode dapat disalin ke Android.');
+            $this->assertContains($n->token, $mail->introLines + $mail->outroLines, 'Kode dapat disalin ke Android.');
             $this->assertSame(64, strlen($n->token));
 
             return true;
@@ -133,7 +132,7 @@ class M06PasswordResetTest extends TestCase
         $this->assertCount(1, $messages);
         $html = $messages[0]->getOriginalMessage()->getHtmlBody();
         $this->assertStringContainsString('https://takeda-staging.morriz.tech/reset-password#token=', $html);
-        $this->assertSame('Reset Kata Sandi - RT05 TAKEDA', $messages[0]->getOriginalMessage()->getSubject());
+        $this->assertStringContainsString('Reset kata sandi RT05 TAKEDA', $messages[0]->getOriginalMessage()->getSubject());
     }
 
     public function test_reset_succeeds_once_revokes_access_and_is_audited_without_secret(): void
