@@ -91,6 +91,16 @@ final class FcmGateway implements PushGateway
     /** @return array<string, mixed> */
     public static function payload(PushMessage $m): array
     {
+        if ($m->alarm) {
+            // ADR50: alarm darurat data-only. Penerima Android (EmergencyAlarmReceiver) yang menampilkan notifikasi
+            // berdering berulang + layar penuh walau aplikasi tertutup; notifikasi sistem FCM hanya berbunyi sekali.
+            return [
+                'token' => $m->token,
+                'data' => array_map('strval', $m->data) + ['alarm' => '1'],
+                'android' => ['priority' => 'HIGH', 'ttl' => max(1, min(600, $m->alarmTtlSeconds)).'s', 'collapse_key' => $m->tag],
+            ];
+        }
+
         return [
             'token' => $m->token,
             'notification' => ['title' => $m->title, 'body' => $m->body],
@@ -98,9 +108,9 @@ final class FcmGateway implements PushGateway
             'data' => array_map('strval', $m->data),
             'android' => [
                 'priority' => 'HIGH',
-                'ttl' => $m->alarm ? max(1, min(600, $m->alarmTtlSeconds)).'s' : '86400s',
+                'ttl' => '86400s',
                 'collapse_key' => $m->tag,
-                'notification' => ['tag' => $m->tag] + ($m->alarm ? ['channel_id' => 'rt05_darurat_v1', 'icon' => 'ic_emergency', 'visibility' => 'PRIVATE', 'notification_priority' => 'PRIORITY_MAX', 'default_vibrate_timings' => true] : []),
+                'notification' => ['tag' => $m->tag],
             ],
         ];
     }

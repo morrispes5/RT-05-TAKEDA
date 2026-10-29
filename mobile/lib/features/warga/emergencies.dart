@@ -157,7 +157,71 @@ class EmergencyHomeSection extends ConsumerWidget {
     if (!open) return const SizedBox.shrink();
     return const Padding(
       padding: EdgeInsets.only(top: 16),
-      child: SectionCard(title: 'Laporan darurat', child: EmergencyHistorySection()),
+      child: Column(
+        children: [
+          AlarmReadinessCard(),
+          SectionCard(title: 'Laporan darurat', child: EmergencyHistorySection()),
+        ],
+      ),
+    );
+  }
+}
+
+final alarmReadinessProvider = FutureProvider.autoDispose<AlarmReadiness>((ref) => ref.read(emergencyPlatformProvider).readiness());
+
+/// ADR50: alarm darurat hanya bisa berdering bila izin notifikasi dan layar penuh diberikan. Kartu hilang bila sudah siap.
+class AlarmReadinessCard extends ConsumerStatefulWidget {
+  const AlarmReadinessCard({super.key});
+
+  @override
+  ConsumerState<AlarmReadinessCard> createState() => _AlarmReadinessCardState();
+}
+
+class _AlarmReadinessCardState extends ConsumerState<AlarmReadinessCard> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Kembali dari pengaturan HP: periksa ulang izin.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) ref.invalidate(alarmReadinessProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final readiness = ref.watch(alarmReadinessProvider).asData?.value;
+    if (readiness == null || readiness.ready) return const SizedBox.shrink();
+    final platform = ref.read(emergencyPlatformProvider);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SectionCard(
+        title: 'Izinkan alarm darurat',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Agar HP ini berdering seperti panggilan saat ada warga menekan Tombol Panik, izinkan:'),
+            if (!readiness.notifications) ...[
+              const SizedBox(height: 8),
+              const Text('• Notifikasi dan kanal "Alarm darurat RT05" (bunyi aktif).'),
+              TextButton(onPressed: platform.settings, child: const Text('Buka pengaturan notifikasi')),
+            ],
+            if (!readiness.fullScreen) ...[
+              const SizedBox(height: 8),
+              const Text('• Notifikasi layar penuh (Android 14 ke atas).'),
+              TextButton(onPressed: platform.fullScreenSettings, child: const Text('Izinkan layar penuh')),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

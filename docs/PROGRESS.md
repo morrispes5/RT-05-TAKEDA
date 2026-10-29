@@ -1,5 +1,18 @@
 # Progress — RT05 TAKEDA
 
+## M19 — alarm berdering seperti panggilan (ADR50) — 29 Oktober 2026
+
+Permintaan pemilik setelah merge PR #103: semua warga dan pengurus menerima "telepon berkelanjutan" saat Tombol Panik.
+- Server: push `darurat` data-only (`alarm=1`, prioritas tinggi, TTL sisa umur alarm); pembatalan pelapor membawa
+  `alarm_selesai`. Tes M19/M10/SharedRuntime diperbarui (40/40).
+- Android: `EmergencyAlarm` (kanal `rt05_darurat_v2`, FLAG_INSISTENT, batas 10 menit, tag per kejadian),
+  `EmergencyAlarmReceiver` (aktif walau aplikasi tertutup), `EmergencyAlarmActivity` (layar penuh di atas layar kunci,
+  teks generik), izin `USE_FULL_SCREEN_INTENT`. Flutter: kartu "Izinkan alarm darurat", tanpa dering ganda di depan layar.
+- Bukti lokal: backend 450/451 lalu satu-satunya gagal (`M13ContentTest`, salinan `profil.json` API tidak ikut PR #102) diperbaiki
+  dan lulus 7/7; Flutter **354/354**, `flutter analyze` bersih, Pint PASS. Tes website `AirBersihLinkTest` (merah sejak CSS
+  diformat ulang 28 Okt) kini menerima CSS multi-baris. Kompilasi Kotlin dibuktikan oleh build APK di CI.
+- Belum: uji HP nyata (Android 13/14/15, HP terkunci, aplikasi ditutup, mode hemat baterai) oleh tim.
+
 ## M18 lanjutan — impor rekap iuran bendahara "buku lama" (ADR49) — 29 Oktober 2026
 
 Instruksi pemilik: data Excel bendahara (rekap iuran 2024–2026 + laporan keuangan 2024) dipakai untuk M18, dikerjakan di

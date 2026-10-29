@@ -10,6 +10,10 @@ Terakhir diperbarui: **Kamis 29 Oktober 2026** (M19R Tombol Panik di `cursor1530
 
 Bagian ini mengungguli catatan lebih lama di bawah bila bertentangan.
 
+**Sesi 29 Oktober 2026 malam (lanjutan):** PR #103 dan #102 di-merge atas perintah pemilik. ADR50: alarm darurat
+berdering terus seperti panggilan (data-only FCM + `EmergencyAlarmReceiver` + layar alarm penuh + kartu izin di Beranda).
+Belum diuji di HP nyata (pemilik melarang emulator di PC; tim yang menguji). APK lama tidak berdering saat aplikasi tertutup.
+
 **Sesi 29 Oktober 2026 malam (M18 lanjutan, ADR49, branch `codex/m19r-audit` / PR #103):** pemilik memberi Excel
 rekap iuran bendahara (2024–2026 + laporan keuangan 2024; berisi NIK/KK/nama, **jangan masuk Git**). Dibuat impor
 "lunas di buku lama" tanpa kas: `php artisan rt05:impor-buku-lama` (cek → terapkan dengan `--sidik-jari`), pembatalan

@@ -82,6 +82,10 @@ final class PushDelivery
         $prefs = DB::table('preferensi_notifikasi')->whereIn('akun_id', $recipients)->get()->keyBy('akun_id');
         $devices = self::devices($recipients);
 
+        // ADR50: pemberitahuan "alarm dibatalkan" membawa ID kejadian agar HP penerima menghentikan dering alarmnya.
+        $cancelled = DB::table('outbox_events')->whereIn('id', $rows->where('jenis', 'sistem')->pluck('event_id')->unique()->values()->all())
+            ->where('type', 'darurat.dibatalkan_pelapor')->pluck('aggregate_id', 'id');
+
         $status = [];
         $messages = [];
         $broken = [];
@@ -113,7 +117,9 @@ final class PushDelivery
 
                     continue;
                 }
-                $messages[$n->id.'|'.$d->id] = new PushMessage($token, $n->judul, $n->isi, self::data($n), 'rt05-'.$n->id, $n->jenis === 'darurat', $alarmTtl);
+                $messages[$n->id.'|'.$d->id] = new PushMessage($token, $n->judul, $n->isi,
+                    self::data($n) + (isset($cancelled[$n->event_id]) ? ['alarm_selesai' => (string) $cancelled[$n->event_id]] : []),
+                    'rt05-'.$n->id, $n->jenis === 'darurat', $alarmTtl);
             }
             if (! collect(array_keys($messages))->contains(fn ($k) => str_starts_with($k, $n->id.'|'))) {
                 $status[$n->id] = 'dilewati';

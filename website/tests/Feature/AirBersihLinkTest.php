@@ -53,7 +53,8 @@ class AirBersihLinkTest extends TestCase
         $this->assertNotFalse($reveal);
         $this->assertGreaterThan($check, $reveal);
         $this->assertSame(1, substr_count($js, 'data-air-bersih-ksm'));
-        $this->assertStringContainsString('.cms-nav a[hidden]{display:none}', file_get_contents(resource_path('css/content-preview.css')));
+        // CSS diformat ulang 28 Okt (multi-baris); aturannya tetap wajib ada.
+        $this->assertMatchesRegularExpression('/\.cms-nav a\[hidden\]\s*\{\s*display:\s*none;?\s*\}/', file_get_contents(resource_path('css/content-preview.css')));
     }
 
     public function test_url_follows_config(): void

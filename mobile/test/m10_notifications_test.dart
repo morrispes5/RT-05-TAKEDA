@@ -86,6 +86,8 @@ void main() {
   test('data push hanya dipercaya untuk jenis tetap dan ID UUID', () {
     final ok = PushTap.fromData({'notifikasi_id': _agendaId, 'jenis': 'agenda', 'ref_type': 'agenda', 'ref_id': _agendaId});
     expect([ok.refType, ok.refId, ok.notifikasiId], ['agenda', _agendaId, _agendaId]);
+    expect(ok.alarm, isFalse);
+    expect(PushTap.fromData({'jenis': 'darurat', 'ref_type': 'kejadian_darurat', 'ref_id': _agendaId, 'alarm': '1'}).alarm, isTrue);
     final forged = PushTap.fromData({'notifikasi_id': '../x', 'ref_type': 'akun', 'ref_id': _agendaId});
     expect([forged.refType, forged.refId, forged.notifikasiId], [null, null, null]);
     final badId = PushTap.fromData({'ref_type': 'pengaduan', 'ref_id': '1 OR 1=1'});

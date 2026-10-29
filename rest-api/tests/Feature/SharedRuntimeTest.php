@@ -273,7 +273,7 @@ class SharedRuntimeTest extends TestCase
             $this->assertCount(30, $sent);
             $this->assertSame(['terkirim'], $sent->unique()->values()->all());
             $this->assertSame(0, DB::table('notifikasi')->where('penerima_id', $reporter->id)->where('jenis', 'darurat')->count());
-            Http::assertSent(fn ($r) => str_contains($r->url(), 'fcm.googleapis.com') && str_contains((string) $r->body(), 'rt05_darurat_v1'));
+            Http::assertSent(fn ($r) => str_contains($r->url(), 'fcm.googleapis.com') && str_contains((string) $r->body(), '"alarm":"1"'));
             $this->assertFalse(SharedHosting::backlog());
         } finally {
             DB::table('system_settings')->where('key', 'darurat.fitur')->update(['value' => $setting->value]);
