@@ -10,6 +10,13 @@ Terakhir diperbarui: **Kamis 29 Oktober 2026** (M19R Tombol Panik di `cursor1530
 
 Bagian ini mengungguli catatan lebih lama di bawah bila bertentangan.
 
+**Rilis 29 Okt 21.37 WIB:** APK **1027** di `/unduh` + Drive (ID tetap). Staging immutable **`3384bf9`** (rekonsiliasi 0
+masalah, saldo uji Rp2.180.000). **Panik staging dibuka untuk semua akun** (`RT05_PANIC_AUDIENCE=all`; cadangan env lama
+`/root/.rt05/.env.staging.bak-20261029-adr50`). **Temuan terbuka:** `website/resources/css/app.css` di `main` menyusut
+±40 rb → ±5 rb karakter sejak commit 28 Okt (Natanael: "udah terubah", "benerin css", "ganti"); menu HP, sidebar pengurus,
+dan tata letak bacaan hilang di sumber. Preview statis yang ter-commit masih build lama sehingga situs live aman; **jangan
+`build:preview` sebelum CSS dipulihkan** (Website verification merah karena ini). Data iuran asli hanya untuk production.
+
 **Sesi 29 Oktober 2026 malam (lanjutan):** PR #103 dan #102 di-merge atas perintah pemilik. ADR50: alarm darurat
 berdering terus seperti panggilan (data-only FCM + `EmergencyAlarmReceiver` + layar alarm penuh + kartu izin di Beranda).
 Belum diuji di HP nyata (pemilik melarang emulator di PC; tim yang menguji). APK lama tidak berdering saat aplikasi tertutup.
@@ -173,6 +180,7 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | **1023** (1.0.0) | **3023 / 2023** | `8d356e44` | **Selasa 27 Okt 11.21.11** | **Selasa 27 Okt `/unduh` + metadata terakhir 11.37.23; Drive 11.37.38 WIB, ID tetap** | M19: Tombol panik di Home warga/pengurus, tiga langkah, pin shortcut/tekan lama ikon, kanal alarm/FCM, penanganan/penyalahgunaan, privasi 27 Okt | **Staging restricted dua akun uji + emulator**; hash/sertifikat/upgrade/consent/Home/pin/FCM/tap terverifikasi. HP nyata belum passed; gejala renderer dan gate dicatat di RELEASE_1023 |
 | 1024 | 3024 / 2024 | `4b36e55` | Selasa 27 Okt ±13.07 | **Tidak disebar** (emulator) | Perbaikan audit M19 tahap 1; emulator menemukan dashboard menghitung rumah arsip + label menempel | Diperbaiki PR #96 |
 | **1025** (1.0.0) | 3025 / 2025 | `613466b` | **Selasa 27 Okt 13.36** | **Selasa 27 Okt `/unduh` + `versi.json` 13.38; Drive 13.39 WIB, ID tetap** | Audit M17–M19: jenis darurat wajib dipilih, pembatalan penanda penyalahgunaan, pelapor tidak menerima alarm sendiri, dashboard tanpa rumah arsip (server: minimal versi privasi panik, validasi ledger cepat) | Diuji Claude di emulator (upgrade 3023→3025, dashboard 7/10, layar panik); HP nyata M19 belum |
+| **1027** (1.0.0) | **3027 / 2027** | `3384bf9` | **Kamis 29 Okt 21.35.25** | **Kamis 29 Okt `/unduh` + `versi.json` 21.37.07; Drive 21.37 WIB, ID tetap `1G3YAst…`** | M19R Tombol Panik (ketentuan + geser, jenis opsional, batal pelapor) + ADR50 alarm berdering seperti panggilan (data-only FCM, layar penuh, kartu izin) + ADR46 pembaruan dari dalam aplikasi + ADR49 Lunas (buku lama). Sertifikat = kunci rilis tetap; SHA-256 arm64 `68b0bb9c…`, v7a `905ac687…`. Pengguna 1025 pasang manual sekali | Menunggu uji HP nyata tim (emulator dilarang pemilik). Run #26 bukan rilis, jadi tidak ada 1026 |
 
 Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
 
