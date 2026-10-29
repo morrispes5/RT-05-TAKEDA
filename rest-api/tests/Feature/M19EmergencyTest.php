@@ -442,6 +442,9 @@ class M19EmergencyTest extends TestCase
         $out = OutboxEvent::where('type', 'darurat.dibatalkan_pelapor')->where('aggregate_id', $id)->firstOrFail();
         (new ProcessOutboxEvent($out->id))->handle();
         $this->assertNotEmpty(Notifikasi::where('event_id', $out->id)->pluck('penerima_id')->all());
+        // Pembatalan bukan alarm: tidak boleh dilewati PushDelivery atau membunyikan sirine di HP penerima.
+        $this->assertSame(['sistem'], Notifikasi::where('event_id', $out->id)->distinct()->pluck('jenis')->all());
+        $this->assertSame(0, Notifikasi::where('event_id', $out->id)->whereNotNull('kejadian_darurat_id')->count());
         $this->assertStringNotContainsString($a->nama, Notifikasi::where('event_id', $out->id)->get()->toJson());
         $this->as($admin)->getJson("/api/v1/emergencies/$id")->assertOk()->assertJsonPath('data.status', 'dibatalkan_pelapor');
         $this->send($a)->assertCreated();

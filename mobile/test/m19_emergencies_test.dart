@@ -12,7 +12,6 @@ import 'package:rt05_takeda/core/push.dart';
 import 'package:rt05_takeda/core/session.dart';
 import 'package:rt05_takeda/features/auth/privacy_policy.dart';
 import 'package:rt05_takeda/features/warga/emergencies.dart';
-import 'package:rt05_takeda/features/pengurus/pengurus_pages.dart';
 import 'package:rt05_takeda/main.dart';
 
 import 'support/fakes.dart';
@@ -125,9 +124,29 @@ void main() {
       settle: false,
     );
     expect(find.byType(EmergencyFab), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
     expect(find.text('Tombol panik'), findsNothing);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('server tanpa gerbang rilis panik: tanpa FAB dan tanpa riwayat di Beranda', (tester) async {
+    await _pump(
+      tester,
+      FakeAdapter((o) {
+        if (o.uri.path.endsWith('/emergencies/status')) {
+          return jsonBody(200, {
+            'data': {..._status, 'tersedia': false},
+          });
+        }
+        if (o.uri.path.endsWith('/emergencies')) return errorBody(403, 'PANIC_UNAVAILABLE', 'Tombol panik belum tersedia di server ini.');
+        return errorBody(404, 'NOT_FOUND', '-');
+      }),
+      page: const Scaffold(floatingActionButton: EmergencyFab(), body: EmergencyHomeSection()),
+    );
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.text('Laporan darurat'), findsNothing);
+    expect(find.text('Tombol panik belum tersedia di server ini.'), findsNothing);
   });
 
   testWidgets('pengurus has panic shortcut directly on Home and it never submits automatically', (tester) async {
@@ -369,9 +388,13 @@ void main() {
               'data': {..._report, 'jenis': 'kemalingan', 'versi': 2},
             });
           }
-          return jsonBody(201, {'data': {..._report, 'jenis': null}});
+          return jsonBody(201, {
+            'data': {..._report, 'jenis': null},
+          });
         }
-        return jsonBody(200, {'data': o.uri.path.endsWith('/status') ? _status : {..._report, 'jenis': null}});
+        return jsonBody(200, {
+          'data': o.uri.path.endsWith('/status') ? _status : {..._report, 'jenis': null},
+        });
       }),
     );
     await _arm(tester);

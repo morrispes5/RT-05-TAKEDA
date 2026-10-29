@@ -13,6 +13,8 @@ Bagian ini mengungguli catatan lebih lama di bawah bila bertentangan.
 **Sesi 29 Oktober 2026 sore (M19R, branch `cursor1530`):** revisi Tombol Panik sesuai brief M19R/ADR48. Jangan merge
 ke `main` sebelum ditinjau. FAB hanya Beranda; ketentuan + slider; jenis opsional; batal pelapor; toggle di Lainnya.
 Pertanyaan terbuka pemilik: arti "semua keluarga"; FAB semua tab vs Beranda; ikon sirine vs SOS.
+Audit Claude Code 29 Okt malam: 3 bug diperbaiki (push pembatalan, FAB/riwayat tanpa gerbang rilis, Ringkasan
+pengurus tanpa alarm aktif). Lihat PROGRESS bagian M19R.
 
 **Sesi 29 Oktober 2026 (website, ADR47):** footer "Taman Kedaung, Ciputat" membuka peta Google
 `https://maps.app.goo.gl/jzVGMiRRp8nV5otd7`. Alamat Perum Taman Kedaung, 15445, dan 7 gang (termasuk Mawar 12A/13)

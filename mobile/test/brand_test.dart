@@ -77,7 +77,8 @@ void main() {
         ('line', Brand.line),
         ('yellow', Brand.yellow),
       ]) {
-        expect(css, contains('--$name:${hex(color)}'), reason: name);
+        // app.css diformat ulang 28 Okt (`--navy: #123e65;`): spasi setelah titik dua tidak mengubah token.
+        expect(css, matches(RegExp('--$name:\\s*${hex(color)}\\b')), reason: name);
       }
     });
 

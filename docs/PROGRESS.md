@@ -14,6 +14,24 @@ untuk menyalakan, jenis opsional setelah alarm, batal pelapor, toggle pengurus p
   referensi visual. Beranda aplikasi tetap layout RT05 yang sudah diterima; Stitch tidak mengganti home.
 - Belum passed: uji HP nyata (M19R-12). PHP dan Flutter tidak di PATH mesin ini, jadi tes otomatis belum dijalankan di sini.
 
+**Audit Claude Code (29 Okt malam) sebelum merge.** Perbaikan di atas commit `7813990`:
+
+- Notifikasi pembatalan memakai jenis `darurat`, sehingga `PushDelivery` melewatinya (alarm tidak lagi aktif) dan
+  push pembatalan tidak pernah sampai ke HP. Selain itu, ref `kejadian_darurat` membunyikan sirine di HP yang sedang
+  membuka aplikasi. Sekarang `sistem` tanpa ref; tes M19 memastikan jenis dan ref ini.
+- FAB dan riwayat Beranda tampil walau gerbang rilis server `RT05_PANIC_ENABLED` mati. Akibatnya semua warga melihat
+  FAB abu-abu, dan Beranda menampilkan galat 403 `PANIC_UNAVAILABLE`. Riwayat yang ada di atas kartu Iuran juga
+  menggagalkan 6 tes alur Beranda. Sekarang keduanya hanya tampil bila `tersedia`; FAB abu-abu tetap untuk fitur yang
+  dimatikan pengurus atau akun yang diblokir. Ada tes baru untuk server tanpa gerbang.
+- Ringkasan pengurus kehilangan akses ke alarm aktif (`EmergencyEntry` dihapus). Riwayat darurat kini dipasang
+  kembali di Ringkasan pengurus.
+- Lint `TickerMode.of` deprecated dan import tak terpakai di tes diperbaiki. `brand_test` di `main` sudah merah
+  sejak `app.css` diformat ulang (28 Okt, `--navy: #123e65`); tes kini menerima spasi.
+- Bukti lokal: `flutter analyze` bersih; `flutter test` 352/352; `php artisan test --filter=M19` 22/22 (206 assertion)
+  di Postgres 17 lokal; suite backend penuh
+  436/438. Dua yang gagal ada di `M06PasswordResetTest` (subjek dan kode salin di email reset). Keduanya sudah merah di
+  `main` sejak `f75a756` (28 Okt, ubah notifikasi reset), di luar M19R, dan dibiarkan untuk keputusan pemilik.
+
 ## Website: tautan Maps footer + alamat Profil (ADR47) — 29 Oktober 2026
 
 Instruksi pemilik: klik "Taman Kedaung, Ciputat" di footer membuka Google Maps

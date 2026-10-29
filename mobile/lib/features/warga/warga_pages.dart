@@ -53,8 +53,7 @@ class WargaHomePage extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
         children: [
           _Hero(name: akun.nama, kode: akun.kodeRumah, alamat: akun.alamat),
-          const SizedBox(height: 16),
-          const SectionCard(title: 'Laporan darurat', child: EmergencyHistorySection()),
+          const EmergencyHomeSection(),
           const SizedBox(height: 16),
           SectionCard(
             title: 'Iuran bulan ini',

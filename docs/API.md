@@ -17,7 +17,8 @@ POST `/emergencies`: `konfirmasi: true`, `versi_ketentuan: 2026-10-29` (APK lama
 opsional, header UUID Idempotency-Key. Pelapor/rumah selalu ditentukan server. Satu laporan aktif per akun; niat ulang
 mengembalikan laporan itu tanpa fanout baru, jenis berbeda pada laporan yang sudah berjenis 409. POST
 `/emergencies/{id}/jenis` pelapor mengisi chip setelah alarm. POST `/emergencies/{id}/cancel` pelapor membatalkan
-alarm aktif (`dibatalkan_pelapor`, bukan penyalahgunaan). Batas DB awal 3 laporan per akun/jam dan 10 global/menit
+alarm aktif (`dibatalkan_pelapor`, bukan penyalahgunaan); penerima mendapat notifikasi biasa `sistem` tanpa ref, bukan
+alarm kedua. Batas DB awal 3 laporan per akun/jam dan 10 global/menit
 menghasilkan 429; laporan aktif/retry tidak menghabiskan budget lagi. Hitungan tiga penyalahgunaan menghasilkan 403.
 
 POST `/admin/emergencies/{id}/resolve`: `versi`, `status: selesai|palsu`, `penyalahgunaan` boolean eksplisit,

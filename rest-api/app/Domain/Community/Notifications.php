@@ -103,7 +103,9 @@ final class Notifications
             return false;
         }
 
-        return self::send($event, Emergencies::recipients($event), 'darurat', ['kejadian_darurat_id' => $e->id],
+        // Bukan 'darurat': PushDelivery melewati alarm yang tidak aktif, dan ref kejadian_darurat membunyikan sirine
+        // di HP yang sedang membuka aplikasi. Pemberitahuan biasa tanpa ref.
+        return self::send($event, Emergencies::recipients($event), 'sistem', [],
             'Alarm dibatalkan', Emergencies::cancelNoticeBody());
     }
 

@@ -122,10 +122,10 @@ class EmergencyFab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final muted = ref.watch(emergencyStatusProvider).maybeWhen(
-      data: (s) => s['tersedia'] != true || s['aktif'] != true || (s['penyalahgunaan'] as num? ?? 0) >= 3,
-      orElse: () => false,
-    );
+    final status = ref.watch(emergencyStatusProvider).asData?.value;
+    // Gerbang rilis server (RT05_PANIC_ENABLED) belum dibuka: tidak ada FAB sama sekali, bukan FAB abu-abu.
+    if (status == null || status['tersedia'] != true) return const SizedBox.shrink();
+    final muted = status['aktif'] != true || (status['penyalahgunaan'] as num? ?? 0) >= 3;
     return Semantics(
       button: true,
       label: 'Tombol panik. Buka ketentuan dan nyalakan alarm darurat.',
@@ -146,6 +146,22 @@ class EmergencyFab extends ConsumerWidget {
   }
 }
 
+/// Beranda warga dan pengurus: riwayat hanya tampil setelah gerbang rilis server terbuka,
+/// agar server tanpa M19 tidak menampilkan galat 403 di Beranda.
+class EmergencyHomeSection extends ConsumerWidget {
+  const EmergencyHomeSection({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final open = ref.watch(emergencyStatusProvider).asData?.value['tersedia'] == true;
+    if (!open) return const SizedBox.shrink();
+    return const Padding(
+      padding: EdgeInsets.only(top: 16),
+      child: SectionCard(title: 'Laporan darurat', child: EmergencyHistorySection()),
+    );
+  }
+}
+
 class EmergencyHistorySection extends ConsumerWidget {
   const EmergencyHistorySection({super.key});
 
@@ -160,11 +176,7 @@ class EmergencyHistorySection extends ConsumerWidget {
           child: Text('Belum ada laporan darurat. Semoga tetap begitu.', style: TextStyle(color: Brand.muted)),
         );
       }
-      return Column(
-        children: [
-          for (final row in rows) _HistoryTile(row: row),
-        ],
-      );
+      return Column(children: [for (final row in rows) _HistoryTile(row: row)]);
     },
   );
 }
@@ -186,7 +198,10 @@ class _HistoryTile extends StatelessWidget {
         decoration: BoxDecoration(color: emergencyStatusColor(status).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Text(emergencyStatusBadge(status), style: TextStyle(color: emergencyStatusColor(status), fontSize: 12, fontWeight: FontWeight.w600)),
+          child: Text(
+            emergencyStatusBadge(status),
+            style: TextStyle(color: emergencyStatusColor(status), fontSize: 12, fontWeight: FontWeight.w600),
+          ),
         ),
       ),
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EmergencyDetailPage(id: '${row['id']}'))),
@@ -441,23 +456,13 @@ class _EmergencyPageState extends ConsumerState<EmergencyPage> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            LinearProgressIndicator(
-                              value: _progress,
-                              minHeight: 4,
-                              backgroundColor: Brand.skyDeep,
-                              color: Brand.navy,
-                            ),
+                            LinearProgressIndicator(value: _progress, minHeight: 4, backgroundColor: Brand.skyDeep, color: Brand.navy),
                             const SizedBox(height: 12),
                             if (_error != null) Text(_error!, style: const TextStyle(color: Brand.danger, height: 1.4)),
                             if (_pending != null && _error != null)
                               BusyButton(label: 'Coba kirim ulang', onPressed: _send)
                             else
-                              EmergencyArmSlider(
-                                unlocked: _seenSentinel,
-                                busy: _busy,
-                                onArmed: _send,
-                                onTalkBack: _talkBackArm,
-                              ),
+                              EmergencyArmSlider(unlocked: _seenSentinel, busy: _busy, onArmed: _send, onTalkBack: _talkBackArm),
                             TextButton(onPressed: _busy ? null : () => Navigator.maybePop(context), child: const Text('Batal')),
                           ],
                         ),
@@ -484,9 +489,17 @@ class _HeroSiren extends StatelessWidget {
       children: [
         _PulseSiren(),
         SizedBox(height: 12),
-        Text('Baca dulu sebelum menyalakan.', textAlign: TextAlign.center, style: TextStyle(fontFamily: Brand.fontDisplay, fontWeight: FontWeight.w700, fontSize: 20, color: Brand.navyDeep)),
+        Text(
+          'Baca dulu sebelum menyalakan.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontFamily: Brand.fontDisplay, fontWeight: FontWeight.w700, fontSize: 20, color: Brand.navyDeep),
+        ),
         SizedBox(height: 6),
-        Text('Alarm ini akan didengar seluruh warga. Pastikan Anda memahami ketentuannya.', textAlign: TextAlign.center, style: TextStyle(color: Brand.muted, height: 1.45)),
+        Text(
+          'Alarm ini akan didengar seluruh warga. Pastikan Anda memahami ketentuannya.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Brand.muted, height: 1.45),
+        ),
       ],
     ),
   );
@@ -517,7 +530,7 @@ class _PulseSirenState extends State<_PulseSiren> with SingleTickerProviderState
 
   @override
   Widget build(BuildContext context) {
-    final reduce = MediaQuery.of(context).disableAnimations || !TickerMode.of(context);
+    final reduce = MediaQuery.of(context).disableAnimations || !TickerMode.valuesOf(context).enabled;
     const icon = Icon(Icons.emergency, color: Brand.danger, size: 36);
     if (reduce) {
       return Container(
@@ -537,8 +550,7 @@ class _PulseSirenState extends State<_PulseSiren> with SingleTickerProviderState
           return Stack(
             alignment: Alignment.center,
             children: [
-              for (final shift in [0.0, 0.5])
-                _ring(((_c.value + shift) % 1.0)),
+              for (final shift in [0.0, 0.5]) _ring(((_c.value + shift) % 1.0)),
               Container(
                 width: 64,
                 height: 64,
@@ -556,7 +568,10 @@ class _PulseSirenState extends State<_PulseSiren> with SingleTickerProviderState
   Widget _ring(double t) => Container(
     width: 64 + 32 * t,
     height: 64 + 32 * t,
-    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Brand.danger.withValues(alpha: (1 - t) * 0.45), width: 2)),
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      border: Border.all(color: Brand.danger.withValues(alpha: (1 - t) * 0.45), width: 2),
+    ),
   );
 }
 
@@ -571,7 +586,11 @@ class _TermsCard extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     clipBehavior: Clip.antiAlias,
     child: Container(
-      decoration: dangerEdge ? const BoxDecoration(border: Border(left: BorderSide(color: Brand.danger, width: 4))) : null,
+      decoration: dangerEdge
+          ? const BoxDecoration(
+              border: Border(left: BorderSide(color: Brand.danger, width: 4)),
+            )
+          : null,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -677,9 +696,7 @@ class _EmergencyArmSliderState extends State<EmergencyArmSlider> {
           final travel = max(width - 56, 1.0);
           return GestureDetector(
             key: const ValueKey('geser-aktifkan'),
-            onHorizontalDragUpdate: !unlocked
-                ? null
-                : (d) => setState(() => _value = (_value + d.delta.dx / travel).clamp(0.0, 1.0)),
+            onHorizontalDragUpdate: !unlocked ? null : (d) => setState(() => _value = (_value + d.delta.dx / travel).clamp(0.0, 1.0)),
             onHorizontalDragEnd: !unlocked
                 ? null
                 : (_) async {
@@ -694,16 +711,15 @@ class _EmergencyArmSliderState extends State<EmergencyArmSlider> {
             child: AnimatedContainer(
               duration: MediaQuery.of(context).disableAnimations ? Duration.zero : const Duration(milliseconds: 200),
               height: 56,
-              decoration: BoxDecoration(
-                color: widget.unlocked ? Brand.dangerBg : const Color(0xFFE8EEF2),
-                borderRadius: BorderRadius.circular(28),
-              ),
+              decoration: BoxDecoration(color: widget.unlocked ? Brand.dangerBg : const Color(0xFFE8EEF2), borderRadius: BorderRadius.circular(28)),
               child: Stack(
                 alignment: Alignment.centerLeft,
                 children: [
                   FractionallySizedBox(
                     widthFactor: _value,
-                    child: Container(decoration: BoxDecoration(color: Brand.danger.withValues(alpha: 0.35), borderRadius: BorderRadius.circular(28))),
+                    child: Container(
+                      decoration: BoxDecoration(color: Brand.danger.withValues(alpha: 0.35), borderRadius: BorderRadius.circular(28)),
+                    ),
                   ),
                   Center(
                     child: widget.busy
@@ -712,7 +728,10 @@ class _EmergencyArmSliderState extends State<EmergencyArmSlider> {
                             children: [
                               SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Brand.danger)),
                               SizedBox(width: 8),
-                              Text('Menyalakan…', style: TextStyle(color: Brand.navyDeep, fontWeight: FontWeight.w600)),
+                              Text(
+                                'Menyalakan…',
+                                style: TextStyle(color: Brand.navyDeep, fontWeight: FontWeight.w600),
+                              ),
                             ],
                           )
                         : Text(
@@ -725,10 +744,7 @@ class _EmergencyArmSliderState extends State<EmergencyArmSlider> {
                     child: Container(
                       width: 48,
                       height: 48,
-                      decoration: BoxDecoration(
-                        color: widget.unlocked ? Brand.danger : Brand.muted,
-                        shape: BoxShape.circle,
-                      ),
+                      decoration: BoxDecoration(color: widget.unlocked ? Brand.danger : Brand.muted, shape: BoxShape.circle),
                       child: Icon(widget.unlocked ? Icons.emergency : Icons.lock, color: Colors.white),
                     ),
                   ),
@@ -762,13 +778,9 @@ class _EmergencyAlarmPageState extends ConsumerState<EmergencyAlarmPage> {
     if (!mounted || !ref.read(sessionProvider.notifier).isCurrentActive(s, epoch: epoch) || _busy) return;
     setState(() => _busy = true);
     try {
-      final updated = await ref.read(apiProvider).post(
-        '/emergencies/${widget.id}/jenis',
-        data: {'versi': e['versi'], 'jenis': kind},
-        idempotencyKey: _kindKey,
-        bearer: s.token,
-        sessionEpoch: epoch,
-      );
+      final updated = await ref
+          .read(apiProvider)
+          .post('/emergencies/${widget.id}/jenis', data: {'versi': e['versi'], 'jenis': kind}, idempotencyKey: _kindKey, bearer: s.token, sessionEpoch: epoch);
       if (!mounted || !ref.read(sessionProvider.notifier).isCurrentActive(s, epoch: epoch)) return;
       setState(() {
         _kindKey = _key();
@@ -804,13 +816,9 @@ class _EmergencyAlarmPageState extends ConsumerState<EmergencyAlarmPage> {
     final s = ref.read(sessionProvider);
     final epoch = ref.read(sessionProvider.notifier).epoch;
     try {
-      await ref.read(apiProvider).post(
-        '/emergencies/${widget.id}/cancel',
-        data: {'versi': e['versi']},
-        idempotencyKey: _cancelKey,
-        bearer: s.token,
-        sessionEpoch: epoch,
-      );
+      await ref
+          .read(apiProvider)
+          .post('/emergencies/${widget.id}/cancel', data: {'versi': e['versi']}, idempotencyKey: _cancelKey, bearer: s.token, sessionEpoch: epoch);
       if (!mounted || !ref.read(sessionProvider.notifier).isCurrentActive(s, epoch: epoch)) return;
       ref.invalidate(emergencyHistoryProvider);
       Navigator.of(context).popUntil((r) => r.isFirst);
@@ -842,9 +850,17 @@ class _EmergencyAlarmPageState extends ConsumerState<EmergencyAlarmPage> {
             children: [
               const _PulseSiren(),
               const SizedBox(height: 16),
-              const Text('Alarm darurat menyala', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontFamily: Brand.fontDisplay, fontWeight: FontWeight.w700, fontSize: 24)),
+              const Text(
+                'Alarm darurat menyala',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white, fontFamily: Brand.fontDisplay, fontWeight: FontWeight.w700, fontSize: 24),
+              ),
               const SizedBox(height: 8),
-              const Text('Laporan diterima server. Pemberitahuan sedang dikirim ke warga dan pengurus.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, height: 1.45)),
+              const Text(
+                'Laporan diterima server. Pemberitahuan sedang dikirim ke warga dan pengurus.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white, height: 1.45),
+              ),
               const SizedBox(height: 16),
               Card(
                 child: Padding(
@@ -852,7 +868,10 @@ class _EmergencyAlarmPageState extends ConsumerState<EmergencyAlarmPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('IDENTITAS TERKIRIM', style: TextStyle(color: Brand.danger, fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 0.4)),
+                      const Text(
+                        'IDENTITAS TERKIRIM',
+                        style: TextStyle(color: Brand.danger, fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 0.4),
+                      ),
                       const SizedBox(height: 8),
                       Text('Pelapor: ${e['pelapor']}\nRumah: ${e['rumah']}', style: const TextStyle(height: 1.45)),
                     ],
@@ -860,7 +879,10 @@ class _EmergencyAlarmPageState extends ConsumerState<EmergencyAlarmPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text('Bantu tetangga lebih siap', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+              const Text(
+                'Bantu tetangga lebih siap',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -878,7 +900,10 @@ class _EmergencyAlarmPageState extends ConsumerState<EmergencyAlarmPage> {
               const SizedBox(height: 20),
               if (e['status'] == 'aktif')
                 OutlinedButton(
-                  style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white),
+                  ),
                   onPressed: () => _cancel(e),
                   child: const Text('Salah pencet? Batalkan alarm'),
                 ),

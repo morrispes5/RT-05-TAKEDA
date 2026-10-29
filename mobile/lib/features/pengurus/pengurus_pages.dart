@@ -69,7 +69,10 @@ class _AdminHomeContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final d = ref.watch(dashboardProvider);
     return RefreshIndicator(
-      onRefresh: () async => ref.invalidate(dashboardProvider),
+      onRefresh: () async {
+        ref.invalidate(dashboardProvider);
+        ref.invalidate(emergencyHistoryProvider);
+      },
       child: AsyncView(
         value: d,
         onRetry: () => ref.invalidate(dashboardProvider),
@@ -103,6 +106,8 @@ class _AdminHomeContent extends ConsumerWidget {
                   ],
                 ),
               ),
+              // Pengurus perlu melihat alarm aktif di Ringkasan untuk menanganinya.
+              const EmergencyHomeSection(),
               const SizedBox(height: 16),
               // Dua kolom dengan tinggi mengikuti isi (bukan rasio tetap) agar aman pada skala teks besar.
               _TileRow(
