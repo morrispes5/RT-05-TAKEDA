@@ -46,6 +46,18 @@ class PublicWebsiteTest extends TestCase
         }
     }
 
+    public function test_footer_and_profil_use_maps_link_and_published_address(): void
+    {
+        $maps = SiteContent::mapsUrl();
+        $this->get('/')->assertOk()->assertSee($maps, false)->assertSee('Taman Kedaung, Ciputat');
+        $this->get('/profil')->assertOk()
+            ->assertSee('Perum Taman Kedaung')
+            ->assertSee('15445')
+            ->assertSee('Mawar 12A/13')
+            ->assertSee($maps, false);
+        $this->get('/kontak')->assertOk()->assertSee($maps, false)->assertSee('15445');
+    }
+
     public function test_profile_has_confirmed_chairman_and_anonymous_officers(): void
     {
         // ADR43: bendahara Mas Wirawan boleh dipublikasikan; sekretaris tetap anonim.

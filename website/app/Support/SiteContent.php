@@ -68,6 +68,12 @@ class SiteContent
         return implode('-', array_filter([substr($local, 0, 4), substr($local, 4, 4), substr($local, 8)]));
     }
 
+    /** Peta lingkungan RT 05 Taman Kedaung (tautannya dari pengurus, ADR47). */
+    public static function mapsUrl(): string
+    {
+        return 'https://maps.app.goo.gl/jzVGMiRRp8nV5otd7';
+    }
+
     /** Profil RT05 terbit: wilayah, ringkasan, tentang (paragraf), pengurus[]. */
     public static function profile(): array
     {

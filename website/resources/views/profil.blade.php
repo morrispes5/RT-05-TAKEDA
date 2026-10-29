@@ -24,6 +24,29 @@
         <span>Jalan lingkungan RT 05</span>
     </div>
 
+    {{-- Alamat lingkungan (ADR47): fakta tetap di halaman, bukan di CMS tentang. --}}
+    <section class="wrap section intro-grid">
+        <div>
+            <p class="section-label">Alamat lingkungan</p>
+            <h2>RT 05 RW 07<br>Perum Taman Kedaung.</h2>
+        </div>
+
+        <div class="intro-copy">
+            <p>
+                Kel. Kedaung, Kec. Pamulang<br>
+                Kota Tangerang Selatan 15445
+            </p>
+
+            <p>
+                Lingkungan ini terdiri dari 7 gang/jalan: Mawar 8, Mawar 9, Mawar 10, Mawar 11, Mawar 12, Mawar 12A/13, dan Mawar 14.
+            </p>
+
+            <x-tautan-maps class="text-link">
+                Lihat di Google Maps <x-ikon nama="panah" />
+            </x-tautan-maps>
+        </div>
+    </section>
+
     {{-- Tentang Takeda --}}
     <section class="wrap section intro-grid">
         <div>

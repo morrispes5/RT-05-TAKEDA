@@ -788,3 +788,14 @@ Rilisnya digabung sama revisi hasil uji HP aku nanti.”
 5. Warga yang memasang APK sebelum fitur ini (≤1025) memperbarui manual sekali dari Drive/`/unduh`; sesudahnya lewat
    tombol. Fitur ini dirilis bersama revisi uji HP M19 dalam satu APK, bukan rilis tersendiri. Penerimaan alur
    unduh-pasang di HP nyata memerlukan dua build berurutan yang sama-sama memuat fitur ini.
+
+### ADR47 — Peta Google dan alamat lingkungan di website
+
+Tanggal: **29 Oktober 2026**. Status: **diputuskan oleh pemilik**.
+
+1. Teks footer tetap **"Taman Kedaung, Ciputat"** (ADR38). Baris itu adalah tautan ke peta pengurus
+   `https://maps.app.goo.gl/jzVGMiRRp8nV5otd7` (tab baru). Bukan daftar gang di footer.
+2. Alamat lengkap dan 7 gang ditampilkan di **Profil RT05** (bukan CMS `tentang`): RT 05 RW 07 Perum Taman Kedaung;
+   Kel. Kedaung, Kec. Pamulang, Kota Tangerang Selatan **15445**; gang Mawar 8, 9, 10, 11, 12, **12A/13**, dan 14.
+   Penulisan publik **RT 05 RW 07**, bukan 005/007.
+3. Halaman Kontak menambah kode pos dan tautan peta yang sama pada baris Lingkungan; daftar gang tidak diulang di situ.

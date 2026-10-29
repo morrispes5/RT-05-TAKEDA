@@ -1,5 +1,19 @@
 # Progress — RT05 TAKEDA
 
+## Website: tautan Maps footer + alamat Profil (ADR47) — 29 Oktober 2026
+
+Instruksi pemilik: klik "Taman Kedaung, Ciputat" di footer membuka Google Maps
+`https://maps.app.goo.gl/jzVGMiRRp8nV5otd7`; alamat Perum Taman Kedaung, kelurahan/kecamatan/kota 15445, dan 7 gang
+(Mawar 8–14 termasuk 12A/13) ditampilkan di website.
+
+- Footer: teks Ciputat tetap (ADR38), sekarang tautan Maps (`x-tautan-maps`, `SiteContent::mapsUrl()`).
+- Profil: blok "Alamat lingkungan" setelah panorama (bukan CMS `tentang`).
+- Kontak: baris Lingkungan + kode pos + tautan Maps; daftar gang tidak diulang.
+- CSS footer dikembalikan ke `content-preview.css` agar tautan lokasi tidak menyerupai item menu; override
+  `a.footer-place` juga ditambah ke CSS hasil build preview (PHP tidak tersedia di mesin ini, `vite build` tidak dijalankan).
+- Preview HTML diselaraskan dengan Blade (Vercel menyajikan `website/preview/`). Tes PHP tidak dijalankan (PHP tidak di PATH).
+  `node infra/scripts/check-repo.mjs` dijalankan setelah perubahan.
+
 ## Berikutnya — 27 Oktober 2026 sore
 
 Uji HP nyata M19 dengan APK 1025: [UJI_HP_M19.md](UJI_HP_M19.md). APK berikutnya menggabungkan revisi uji HP dengan

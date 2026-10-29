@@ -4,11 +4,16 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **Selasa 27 Oktober 2026 malam** (ADR46 pembaruan dari dalam aplikasi; sebelumnya sore: audit Claude M17–M19, PR #95–#98, staging `613466b`, APK 1025 di unduh/Drive 13.38–13.39 WIB; berikutnya uji HP nyata M19). **Baca bagian 0 dulu.**
+Terakhir diperbarui: **Kamis 29 Oktober 2026** (ADR47 tautan Maps footer + alamat Profil; sebelumnya 27 Okt malam ADR46). **Baca bagian 0 dulu.**
 
 ## 0. MULAI DI SINI — status Selasa 27 Oktober 2026 sore (Claude)
 
 Bagian ini mengungguli catatan lebih lama di bawah bila bertentangan.
+
+**Sesi 29 Oktober 2026 (website, ADR47):** footer "Taman Kedaung, Ciputat" membuka peta Google
+`https://maps.app.goo.gl/jzVGMiRRp8nV5otd7`. Alamat Perum Taman Kedaung, 15445, dan 7 gang (termasuk Mawar 12A/13)
+ada di `/profil`; `/kontak` hanya alamat + tautan peta. Commit ke `main` atas permintaan pemilik (akun hansrehan12).
+PHP tidak ada di PATH mesin ini: tes Laravel dan `build:preview` tidak dijalankan; preview HTML diubah selaras Blade.
 
 **Posisi:** M17 passed, M18 passed (staging + emulator), **M19 tombol panik selesai dikode + diaudit, tinggal uji HP
 nyata**. Urutan berikutnya (ADR45): **uji HP M19 → tutup M19 → M16 production (Biznet) → M20 iPhone PWA**.

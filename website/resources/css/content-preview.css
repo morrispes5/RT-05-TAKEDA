@@ -1234,3 +1234,117 @@ textarea.cms-input {
 .cms-login .cms-error {
     margin-bottom: 12px;
 }
+
+/* ============================================
+   Footer (navy). Sumber layout yang sempat hanya ada di berkas CSS hasil build.
+   a.footer-place: tautan Maps, bukan item menu (ADR47).
+   ============================================ */
+.site-footer {
+    color: #fff;
+    background: #123650;
+    padding-top: 60px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 70px;
+    padding-bottom: 55px;
+}
+
+.site-footer .brand small {
+    color: #b8cedc;
+}
+
+.site-footer p {
+    color: #bfd0da;
+    margin-top: 23px;
+    font-size: 13px;
+    line-height: 1.9;
+}
+
+.footer-place {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    font-size: 12px;
+}
+
+.footer-place svg {
+    width: 16px;
+}
+
+.footer-grid h2 {
+    margin: 5px 0 24px;
+    font: 600 13px Public Sans Variable, sans-serif;
+}
+
+.footer-grid > div > a:not(.brand) {
+    color: #d5e2eb;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: fit-content;
+    padding: 6px 0;
+    font-size: 13px;
+}
+
+.footer-grid > div > a svg {
+    width: 16px;
+}
+
+.footer-grid small:not(.brand small) {
+    color: #adc7d8;
+    font-size: 10px;
+}
+
+.footer-bottom {
+    color: #bfd0da;
+    border-top: 1px solid #395770;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 21px;
+    font-size: 10px;
+}
+
+.site-footer a:hover {
+    text-underline-offset: 4px;
+    text-decoration: underline;
+}
+
+.site-footer :focus-visible {
+    outline-color: var(--yellow);
+}
+
+.footer-grid > div > a.footer-place {
+    color: inherit;
+    width: auto;
+    padding: 0;
+    font-size: 12px;
+    gap: 8px;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
+
+    .footer-grid > div:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 6px;
+    }
+}
+
+@media (max-width: 600px) {
+    .footer-grid {
+        gap: 34px 20px;
+    }
+}
