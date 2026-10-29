@@ -395,9 +395,9 @@ uang yang benar-benar diterima; rekonsiliasi diperluas; saldo kas + ringkasan bu
 
 **Prioritas:** berikutnya setelah M18, sebelum M16 (ADR45). **Rencana:** [M19_PLAN.md](M19_PLAN.md).
 
-**Scope:** shortcut Android; aktivasi 3 langkah; kirim ke semua warga + pengurus dengan identitas pelapor, rumah, jenis
-darurat; notifikasi bergaya alarm (Android); pengurus menandai selesai/palsu; peringatan + nonaktif setelah 3 penyalahgunaan;
-fitur dapat dimatikan pengurus.
+**Scope:** shortcut Android; aktivasi 3 langkah (ADR48: FAB → ketentuan → geser); kirim ke semua warga + pengurus dengan
+identitas pelapor dan rumah; jenis darurat opsional setelah alarm; notifikasi bergaya alarm (Android); pengurus menandai
+selesai/palsu; pelapor dapat membatalkan; peringatan + nonaktif setelah 3 penyalahgunaan; fitur dapat dimatikan pengurus.
 
 **Gate:** uji HP nyata (bunyi di layar terkunci, aplikasi tertutup); batas laju; audit; teks peringatan bukan pengganti 112.
 

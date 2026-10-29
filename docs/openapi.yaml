@@ -3763,6 +3763,38 @@ paths:
               schema: {$ref: "#/components/schemas/DataEnvelope"}
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/admin/old-book-settlements/{id}/cancel:
+    post:
+      operationId: oldBookSettlementCancel
+      tags: [Finance]
+      summary: Batalkan pelunasan buku lama (ADR49)
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2. Membuka kembali tagihan yang ditandai lunas dari rekap bendahara; kas tidak berubah. Sudah dibatalkan atau tidak ada → 404 OLD_BOOK_NOT_FOUND.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18ReasonInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/dues-adjustments/{id}/reverse:
     post:
       operationId: adjustmentReverse
@@ -4020,7 +4052,7 @@ paths:
       operationId: createEmergency
       tags: [Community]
       summary: Konfirmasi laporan darurat dengan identitas dan rumah dari server
-      description: Tiga langkah pada client; konfirmasi dan versi ketentuan wajib. Satu laporan aktif per akun; key sama replay. Tiga penyalahgunaan menonaktifkan pengiriman. Batas DB 3 laporan per akun per jam dan 10 laporan global per menit, retry laporan aktif tidak menghabiskan budget. Inbox/outbox bukan bukti alarm diterima HP.
+      description: Geser pada client; konfirmasi dan versi ketentuan wajib. Jenis darurat opsional (ADR48). Satu laporan aktif per akun; key sama replay. Tiga penyalahgunaan menonaktifkan pengiriman. Batas DB 3 laporan per akun per jam dan 10 laporan global per menit, retry laporan aktif tidak menghabiskan budget. Inbox/outbox bukan bukti alarm diterima HP. APK lama boleh mengirim versi_ketentuan 2026-10-27.
       x-status: implemented
       x-milestone: M19
       parameters:
@@ -4031,14 +4063,75 @@ paths:
           application/json:
             schema:
               type: object
-              required: [jenis, konfirmasi, versi_ketentuan]
+              required: [konfirmasi, versi_ketentuan]
               properties:
-                jenis: {type: string, enum: [kebakaran, kemalingan, penyerangan, lainnya]}
+                jenis: {type: [string, 'null'], enum: [kebakaran, kemalingan, penyerangan, lainnya, null]}
                 konfirmasi: {type: boolean, const: true}
-                versi_ketentuan: {type: string, const: '2026-10-27'}
+                versi_ketentuan: {type: string, enum: ['2026-10-27', '2026-10-29']}
       responses:
         '201':
           description: Laporan tersimpan atau laporan aktif yang sama; pengiriman asinkron.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EmergencyEnvelope'}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/emergencies/{id}/jenis:
+    post:
+      operationId: setEmergencyKind
+      tags: [Community]
+      summary: Pelapor melengkapi jenis darurat setelah alarm menyala
+      x-status: implemented
+      x-milestone: M19
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [versi, jenis]
+              properties:
+                versi: {type: integer, minimum: 1}
+                jenis: {type: string, enum: [kebakaran, kemalingan, penyerangan, lainnya]}
+      responses:
+        '200':
+          description: Jenis tersimpan atau replay.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EmergencyEnvelope'}
+        default:
+          $ref: '#/components/responses/Error'
+  /api/v1/emergencies/{id}/cancel:
+    post:
+      operationId: cancelEmergency
+      tags: [Community]
+      summary: Pelapor membatalkan alarm yang masih aktif; bukan penyalahgunaan
+      x-status: implemented
+      x-milestone: M19
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [versi]
+              properties:
+                versi: {type: integer, minimum: 1}
+      responses:
+        '200':
+          description: Status dibatalkan_pelapor.
           content:
             application/json:
               schema: {$ref: '#/components/schemas/EmergencyEnvelope'}
@@ -4241,8 +4334,8 @@ components:
       required: [id, jenis, status, versi, pelapor, rumah, created_at, selesai_at]
       properties:
         id: {type: string, format: uuid}
-        jenis: {type: string, enum: [kebakaran, kemalingan, penyerangan, lainnya]}
-        status: {type: string, enum: [aktif, selesai, palsu]}
+        jenis: {type: [string, 'null'], enum: [kebakaran, kemalingan, penyerangan, lainnya, null]}
+        status: {type: string, enum: [aktif, selesai, palsu, dibatalkan_pelapor]}
         versi: {type: integer, minimum: 1}
         pelapor: {type: [string, 'null']}
         rumah: {type: [string, 'null']}
@@ -4283,7 +4376,7 @@ components:
             aktif: {type: boolean}
             versi: {type: integer, minimum: 1}
             penyalahgunaan: {type: integer, minimum: 0}
-            versi_ketentuan: {type: string, const: '2026-10-27'}
+            versi_ketentuan: {type: string, enum: ['2026-10-27', '2026-10-29']}
             uji_terbatas: {type: boolean}
         meta: {$ref: '#/components/schemas/Meta'}
     FinanceSettlement:
@@ -4295,6 +4388,7 @@ components:
         nominal_efektif: {type: integer, minimum: 0}
         terbayar: {type: integer, minimum: 0}
         terbayar_titipan: {type: integer, minimum: 0}
+        terbayar_buku_lama: {type: integer, minimum: 0, description: "ADR49: bagian terbayar dari rekap bendahara sebelum aplikasi (tanpa kas); sudah termasuk di terbayar."}
         keringanan: {type: integer, minimum: 0}
         sisa: {type: integer, minimum: 0}
     FinanceReportHouse:
@@ -4310,6 +4404,7 @@ components:
         nominal_efektif: {type: integer, minimum: 0}
         terbayar: {type: integer, minimum: 0}
         terbayar_titipan: {type: integer, minimum: 0}
+        terbayar_buku_lama: {type: integer, minimum: 0, description: "ADR49: bagian terbayar dari rekap bendahara sebelum aplikasi (tanpa kas); sudah termasuk di terbayar."}
         keringanan: {type: integer, minimum: 0}
         sisa: {type: integer, minimum: 0}
         status: {type: string, enum: [belum_bayar, lunas]}
@@ -5438,6 +5533,8 @@ components:
               nominal_efektif: {type: integer, minimum: 0}
               terbayar: {type: integer, minimum: 0}
               terbayar_titipan: {type: integer, minimum: 0}
+              terbayar_buku_lama: {type: integer, minimum: 0, description: "ADR49: bagian terbayar dari rekap bendahara sebelum aplikasi (tanpa kas); sudah termasuk di terbayar."}
+              buku_lama_id: {type: [string, 'null'], format: uuid, description: Pelunasan buku lama aktif yang dapat dibatalkan pengurus.}
               keringanan: {type: integer, minimum: 0}
               sisa: {type: integer, minimum: 0}
               jatuh_tempo: {type: string, format: date}

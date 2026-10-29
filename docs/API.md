@@ -13,10 +13,13 @@ akun aktif dan teks privasi **2026-10-27**; deployment flag tetap wajib. Warga m
 sejak akun dibuat serta riwayat sendiri; pengurus melihat seluruh riwayat. Audience restricted membatasi warga
 lain ke allowlist sintetis. Catatan pengurus/penilaian penyalahgunaan tidak dikirim ke warga.
 
-POST `/emergencies`: `jenis`, `konfirmasi: true`, `versi_ketentuan: 2026-10-27`, header UUID Idempotency-Key.
-Pelapor/rumah selalu ditentukan server. Satu laporan aktif per akun; niat ulang jenis sama mengembalikan laporan
-itu tanpa fanout baru, jenis berbeda 409. Batas DB awal 3 laporan per akun/jam dan 10 global/menit menghasilkan
-429; laporan aktif/retry tidak menghabiskan budget lagi. Hitungan tiga penyalahgunaan menghasilkan 403.
+POST `/emergencies`: `konfirmasi: true`, `versi_ketentuan: 2026-10-29` (APK lama 2026-10-27 masih diterima), `jenis`
+opsional, header UUID Idempotency-Key. Pelapor/rumah selalu ditentukan server. Satu laporan aktif per akun; niat ulang
+mengembalikan laporan itu tanpa fanout baru, jenis berbeda pada laporan yang sudah berjenis 409. POST
+`/emergencies/{id}/jenis` pelapor mengisi chip setelah alarm. POST `/emergencies/{id}/cancel` pelapor membatalkan
+alarm aktif (`dibatalkan_pelapor`, bukan penyalahgunaan); penerima mendapat notifikasi biasa `sistem` tanpa ref, bukan
+alarm kedua. Batas DB awal 3 laporan per akun/jam dan 10 global/menit
+menghasilkan 429; laporan aktif/retry tidak menghabiskan budget lagi. Hitungan tiga penyalahgunaan menghasilkan 403.
 
 POST `/admin/emergencies/{id}/resolve`: `versi`, `status: selesai|palsu`, `penyalahgunaan` boolean eksplisit,
 `alasan` 3–1000 karakter. Penyalahgunaan hanya pada status palsu; terminal sekali, versi basi 409. POST
@@ -58,6 +61,11 @@ Ringkasan kas warga dan laporan/XLSX tersedia saat flag v2 aktif. `/admin/cash/s
 yang sama: modal awal dan pembalikan bertanda (`koreksi`) terpisah dari pemasukan/pengeluaran baru; saldo dan mutasi
 tetap tersedia. Header private/no-store, snapshot diambil dengan lock keuangan. Respons M17 dipertahankan saat flag off.
 Ringkasan rumah v2 juga memuat riwayat_keringanan dan riwayat_penyesuaian yang dibatasi rumah tersebut.
+ADR49 (impor rekap bendahara): tagihan v2 menambah `terbayar_buku_lama` (sudah termasuk di `terbayar`) dan
+`buku_lama_id`; label "Lunas (buku lama)" bila lunas hanya dari rekap. Pengurus membatalkan satu pelunasan buku lama
+yang salah melalui `POST /admin/old-book-settlements/{id}/cancel` (alasan, `versi_keuangan` 2, Idempotency-Key); kas
+tidak berubah, tagihan terbuka kembali, sudah dibatalkan → 404 `OLD_BOOK_NOT_FOUND`. Impor sendiri lewat perintah
+`php artisan rt05:impor-buku-lama` (tanpa HTTP), lihat [M18_IMPOR_BUKU_LAMA.md](M18_IMPOR_BUKU_LAMA.md).
 Saldo/riwayat titipan pengurus memuat penggunaan beserta periode, nominal, pembatalan dan referensi pengganti.
 Rekap memuat saldo dari view secara batch; pembacaan ringkasan rumah/titipan tidak mencampur beberapa keadaan transaksi.
 

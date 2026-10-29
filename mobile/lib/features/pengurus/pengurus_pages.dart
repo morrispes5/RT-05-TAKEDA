@@ -58,12 +58,7 @@ class AdminHomePage extends StatelessWidget {
   final void Function(int) goTab;
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      const EmergencyEntry(),
-      Expanded(child: _AdminHomeContent(goTab: goTab)),
-    ],
-  );
+  Widget build(BuildContext context) => _AdminHomeContent(goTab: goTab);
 }
 
 class _AdminHomeContent extends ConsumerWidget {
@@ -74,7 +69,10 @@ class _AdminHomeContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final d = ref.watch(dashboardProvider);
     return RefreshIndicator(
-      onRefresh: () async => ref.invalidate(dashboardProvider),
+      onRefresh: () async {
+        ref.invalidate(dashboardProvider);
+        ref.invalidate(emergencyHistoryProvider);
+      },
       child: AsyncView(
         value: d,
         onRetry: () => ref.invalidate(dashboardProvider),
@@ -83,7 +81,7 @@ class _AdminHomeContent extends ConsumerWidget {
           final p = Map<String, dynamic>.from(d['pengaduan'] as Map? ?? {});
           final a = Map<String, dynamic>.from(d['aspirasi'] as Map? ?? {});
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
             children: [
               Container(
                 padding: const EdgeInsets.all(20),
@@ -108,6 +106,8 @@ class _AdminHomeContent extends ConsumerWidget {
                   ],
                 ),
               ),
+              // Pengurus perlu melihat alarm aktif di Ringkasan untuk menanganinya.
+              const EmergencyHomeSection(),
               const SizedBox(height: 16),
               // Dua kolom dengan tinggi mengikuti isi (bukan rasio tetap) agar aman pada skala teks besar.
               _TileRow(
@@ -1049,7 +1049,8 @@ class MoreAdminPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) => ListView(
     padding: const EdgeInsets.all(16),
     children: [
-      const EmergencyEntry(),
+      const EmergencyAdminSettings(),
+      const SizedBox(height: 16),
       SectionCard(
         title: 'Komunitas',
         child: Column(

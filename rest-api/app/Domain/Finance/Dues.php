@@ -60,22 +60,38 @@ final class Dues
         });
     }
 
-    private static function generateLocked(CarbonImmutable $period, ?Akun $actor): int
+    /**
+     * ADR49: tagihan satu periode hanya untuk rumah tertentu (impor buku lama, termasuk bulan yang dibayar di muka).
+     * Pemanggil wajib sudah memegang kunci rt05:keuangan di transaksinya.
+     *
+     * @param  list<string>  $houseIds
+     */
+    public static function generateForHouses(CarbonImmutable $period, array $houseIds, ?Akun $actor = null): int
+    {
+        return self::generateLocked($period, $actor, $houseIds);
+    }
+
+    private static function generateLocked(CarbonImmutable $period, ?Akun $actor, ?array $only = null): int
     {
         $rate = self::rateFor($period);
         $due = $period->day(10)->toDateString();
+        $date = $period->toDateString();
 
+        // Rumah yang sudah punya tagihan periode ini dilewati lebih dulu: catch-up bulan lama cukup dua query, bukan satu per rumah.
         $houses = Rumah::whereNull('archived_at')
             ->where('tagihan_aktif', true)
             ->whereNotNull('mulai_tagih')
-            ->where('mulai_tagih', '<=', $period->toDateString())
+            ->where('mulai_tagih', '<=', $date)
+            ->when($only !== null, fn ($q) => $q->whereIn('id', $only))
+            ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('tagihan_iuran')->whereColumn('tagihan_iuran.rumah_id', 'rumah.id')->where('tagihan_iuran.periode', $date))
             ->pluck('id');
 
         $created = 0;
         foreach ($houses->chunk(200) as $chunk) {
-            $rows = $chunk->map(function ($id) use ($period, $rate, $due) {
-                $special = config('finance.v2') ? DB::table('tarif_rumah')->where('rumah_id', $id)
-                    ->whereNull('dibatalkan_at')->where('mulai_periode', '<=', $period->toDateString())->orderByDesc('mulai_periode')->first() : null;
+            $specials = config('finance.v2') ? DB::table('tarif_rumah')->whereIn('rumah_id', $chunk->all())->whereNull('dibatalkan_at')
+                ->where('mulai_periode', '<=', $date)->orderByDesc('mulai_periode')->get()->unique('rumah_id')->keyBy('rumah_id') : collect();
+            $rows = $chunk->map(function ($id) use ($period, $rate, $due, $specials) {
+                $special = $specials->get($id);
 
                 return [
                     'id' => (string) Str::uuid(),

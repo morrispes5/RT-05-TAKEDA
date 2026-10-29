@@ -1,5 +1,68 @@
 # Progress — RT05 TAKEDA
 
+## M18 lanjutan — impor rekap iuran bendahara "buku lama" (ADR49) — 29 Oktober 2026
+
+Instruksi pemilik: data Excel bendahara (rekap iuran 2024–2026 + laporan keuangan 2024) dipakai untuk M18, dikerjakan di
+branch PR #103 (bersama M19R) agar merge bersama, dengan review mandiri keuangan. Rencana:
+[M18_IMPOR_BUKU_LAMA.md](M18_IMPOR_BUKU_LAMA.md). Fitur inti M18 sudah passed 26 Okt; ini jalur data awal.
+
+- DB `2026_10_30_000100_m18_impor_buku_lama`: `impor_keuangan` (satu per tahun, immutable) dan `pelunasan_buku_lama`
+  (satu aktif per tagihan, batal sekali beralasan, ikut kunci/validasi invarian M18). View `rt05_tagihan_saldo` menambah
+  `terbayar_buku_lama`, `buku_lama_id`; sisa ikut dikurangi. Kas tidak disentuh: uangnya masuk lewat saldo awal resmi.
+- Domain `OldBook` + perintah `rt05:impor-buku-lama` (cek tanpa tulis → terapkan dengan `--sidik-jari` hasil cek).
+  Baca hanya kolom alamat dan angka; NIK/KK/nama tidak disalin. Baris TOTAL Excel dipakai sebagai cek silang per bulan.
+  Nominal yang bukan mayoritas mutlak tarif umum → perlu keputusan (tarif khusus/tarif umum), tidak ditebak. Penjaga:
+  flag v2, pengurus aktif, impor ulang, batas melewati bulan berjalan, tarif umum berubah di tengah tahun, bentrok
+  pelunasan/koreksi existing (rollback penuh), rumah di luar rekap yang akan tertagih mundur.
+- Generator tagihan: `generateForHouses` + lewati rumah yang sudah punya tagihan periode itu dan muat tarif rumah per
+  kelompok (catch-up dari Januari tetap 2 query per bulan bila tidak ada yang dibuat).
+- API: `POST /admin/old-book-settlements/{id}/cancel`; tagihan menambah `terbayar_buku_lama`, `buku_lama_id`, label
+  "Lunas (buku lama)". OpenAPI/API/ERD/BUSINESS_RULES diperbarui. Mobile pengurus: rincian "dari buku lama" dan menu
+  **Batalkan catatan buku lama**.
+- Review mandiri menemukan dan memperbaiki sebelum rilis: (1) penanda `versi_keuangan` di mobile tidak mencakup alamat
+  baru sehingga pembatalan akan ditolak server (tes widget mengunci body); (2) batas impor di masa depan memunculkan
+  tunggakan belum jatuh tempo; (3) baris TOTAL Excel terbaca sebagai rumah tidak lengkap; (4) nilai TOTAL >Rp10 juta.
+- `M06PasswordResetTest` disesuaikan dengan teks email 28 Okt (subjek "Reset Kata Sandi - RT05 TAKEDA", kode tebal
+  `**kode**` tetap utuh untuk disalin); Pint `ResetPasswordNotification` dirapikan sehingga CI API tidak merah lagi.
+- Uji cek (tanpa tulis) pada Excel asli di PC pemilik: 187 rumah, TOTAL per bulan cocok, 1.886 tagihan, lunas buku lama
+  Rp98.065.000, sisa Rp43.385.000, kelebihan Rp1.055.000, **21 rumah perlu keputusan tarif**. Hasil hanya angka/kode;
+  laporan tinjauan disimpan lokal di folder Unduhan pemilik, tidak di Git.
+- Bukti: Postgres 17 lokal: backend penuh **451/451 (4.741 assertion)** termasuk `M18OldBookImportTest` 13 tes; Pint PASS; `flutter analyze` bersih, `flutter test` **353/353**; `check-repo` OK (1.118 berkas).
+- Belum: keputusan bendahara (tarif 21 rumah, "LUNAS DK", tidak mampu, rumah kosong), tanggal batas + saldo kas resmi,
+  uji terapkan pada branch Neon salinan production, lalu terapkan di production (izin pemilik). Tutup Buku belum dikerjakan.
+
+## M19R — revisi Tombol Panik (ADR48) — 29 Oktober 2026
+
+Branch `cursor1530` (bukan `main`). Brief pemilik: FAB kanan bawah, halaman ketentuan bergaya privasi, geser
+untuk menyalakan, jenis opsional setelah alarm, batal pelapor, toggle pengurus pindah ke Lainnya.
+
+- ADR48 + BUSINESS_RULES/M19_PLAN/ROADMAP/API/ERD/OpenAPI.
+- Backend: `jenis` nullable, `versi_ketentuan` 2026-10-29 (2026-10-27 tetap diterima), POST `/emergencies/{id}/jenis`
+  dan `/cancel`, status `dibatalkan_pelapor`, judul notifikasi `DARURAT di RT 05` tanpa nama di payload push.
+- Mobile: FAB di Beranda/Ringkasan, slider + sentinel, layar alarm merah, riwayat otomatis, `EmergencyAdminSettings`
+  di Lainnya pengurus.
+- Mockup Stitch proyek `1565323018345407688` (Beranda+FAB, ketentuan+slider, alarm menyala, riwayat) dipakai sebagai
+  referensi visual. Beranda aplikasi tetap layout RT05 yang sudah diterima; Stitch tidak mengganti home.
+- Belum passed: uji HP nyata (M19R-12). PHP dan Flutter tidak di PATH mesin ini, jadi tes otomatis belum dijalankan di sini.
+
+**Audit Claude Code (29 Okt malam) sebelum merge.** Perbaikan di atas commit `7813990`:
+
+- Notifikasi pembatalan memakai jenis `darurat`, sehingga `PushDelivery` melewatinya (alarm tidak lagi aktif) dan
+  push pembatalan tidak pernah sampai ke HP. Selain itu, ref `kejadian_darurat` membunyikan sirine di HP yang sedang
+  membuka aplikasi. Sekarang `sistem` tanpa ref; tes M19 memastikan jenis dan ref ini.
+- FAB dan riwayat Beranda tampil walau gerbang rilis server `RT05_PANIC_ENABLED` mati. Akibatnya semua warga melihat
+  FAB abu-abu, dan Beranda menampilkan galat 403 `PANIC_UNAVAILABLE`. Riwayat yang ada di atas kartu Iuran juga
+  menggagalkan 6 tes alur Beranda. Sekarang keduanya hanya tampil bila `tersedia`; FAB abu-abu tetap untuk fitur yang
+  dimatikan pengurus atau akun yang diblokir. Ada tes baru untuk server tanpa gerbang.
+- Ringkasan pengurus kehilangan akses ke alarm aktif (`EmergencyEntry` dihapus). Riwayat darurat kini dipasang
+  kembali di Ringkasan pengurus.
+- Lint `TickerMode.of` deprecated dan import tak terpakai di tes diperbaiki. `brand_test` di `main` sudah merah
+  sejak `app.css` diformat ulang (28 Okt, `--navy: #123e65`); tes kini menerima spasi.
+- Bukti lokal: `flutter analyze` bersih; `flutter test` 352/352; `php artisan test --filter=M19` 22/22 (206 assertion)
+  di Postgres 17 lokal; suite backend penuh
+  436/438. Dua yang gagal ada di `M06PasswordResetTest` (subjek dan kode salin di email reset). Keduanya sudah merah di
+  `main` sejak `f75a756` (28 Okt, ubah notifikasi reset), di luar M19R, dan dibiarkan untuk keputusan pemilik.
+
 ## Website: tautan Maps footer + alamat Profil (ADR47) — 29 Oktober 2026
 
 Instruksi pemilik: klik "Taman Kedaung, Ciputat" di footer membuka Google Maps

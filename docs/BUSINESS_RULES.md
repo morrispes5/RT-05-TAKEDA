@@ -1,9 +1,10 @@
 # Aturan bisnis — RT05 TAKEDA
 
-## M19 — tombol panik (ADR43/45)
+## M19 — tombol panik (ADR43/45/48)
 
-- Tidak anonim; setelah tiga langkah konfirmasi, nama/rumah/jenis darurat tersedia bagi warga/pengurus aktif penerima
-  yang menyetujui kebijakan M19. Tidak ada GPS, panggilan otomatis atau integrasi instansi.
+- Tidak anonim; setelah tiga langkah (tekan FAB → baca ketentuan sampai bawah → geser), nama/rumah dan jenis
+  darurat (bila diisi) tersedia bagi warga/pengurus aktif penerima yang menyetujui kebijakan M19. Jenis tidak wajib
+  sebelum alarm. Tidak ada GPS, panggilan otomatis atau integrasi instansi.
 - Pengurus setara menangani selesai/palsu. Penilaian penyalahgunaan dipilih secara eksplisit dengan alasan;
   palsu tidak otomatis dihitung sebagai penyalahgunaan. Tiga penilaian menonaktifkan pengiriman akun itu,
   tanpa menghalangi penerimaan darurat atau layanan lain. Belum ada pemulihan/reset hitungan otomatis.
@@ -125,6 +126,11 @@ Jika anonymous_to_residents=true, resource warga tidak memuat user_id, nama, kon
 - Pengingat iuran hanya ke akun utama rumah pada v1; agenda/pengumuman ke warga aktif; status laporan ke pembuatnya. Usulan baru dan perbaikan diberitahukan ke pengurus; keputusan diberitahukan ke pengusul; persetujuan memberi tahu semua warga aktif lewat agenda baru.
 - Reminder agenda satu kali H-1; pengingat iuran tanggal 5 dan 20 untuk periode berjalan; masing-masing key deduplikasi berbeda.
 - Preferences dapat mematikan push nonkritis; inbox riwayat layanan tetap ada.
+
+**Impor rekap bendahara (ADR49, 29 Okt 2026).** Bulan yang lunas sebelum aplikasi dicatat sebagai pelunasan buku lama
+tanpa kas; uangnya masuk sekali lewat saldo awal kas resmi. Nominal berbeda dari tarif umum tidak ditebak (perlu keputusan
+tarif khusus atau tarif umum); kelebihan bayar lama hanya dilaporkan. NIK/KK/nama dari Excel tidak diimpor. Koreksi
+per bulan dengan pembatalan beralasan; impor sekali per tahun.
 
 ## C. Matriks akses minimum
 

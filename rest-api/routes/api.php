@@ -110,6 +110,8 @@ Route::middleware(['auth:sanctum', 'akun'])->group(function () {
     Route::get('emergencies', [EmergencyController::class, 'index']);
     Route::get('emergencies/{id}', [EmergencyController::class, 'show'])->whereUuid('id');
     Route::post('emergencies', [EmergencyController::class, 'store']);
+    Route::post('emergencies/{id}/jenis', [EmergencyController::class, 'setKind'])->whereUuid('id');
+    Route::post('emergencies/{id}/cancel', [EmergencyController::class, 'cancel'])->whereUuid('id');
     Route::get('agendas', [CommunityController::class, 'agendas']);
     Route::get('agendas/{id}', [CommunityController::class, 'agenda'])->whereUuid('id');
     Route::get('agendas/{id}/calendar', [CommunityController::class, 'agendaCalendar'])->whereUuid('id');
@@ -234,6 +236,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::post('dues-charges/{id}/reliefs', [FlexibleFinanceController::class, 'relief'])->whereUuid('id');
     Route::post('dues-charges/{id}/adjustments', [FlexibleFinanceController::class, 'adjustment'])->whereUuid('id');
     Route::post('dues-reliefs/{id}/reverse', [FlexibleFinanceController::class, 'reverseRelief'])->whereUuid('id');
+    Route::post('old-book-settlements/{id}/cancel', [FlexibleFinanceController::class, 'cancelOldBook'])->whereUuid('id');
     Route::post('dues-reliefs/{id}/correct', [FlexibleFinanceController::class, 'correctRelief'])->whereUuid('id');
     Route::post('dues-adjustments/{id}/reverse', [FlexibleFinanceController::class, 'reverseAdjustment'])->whereUuid('id');
     Route::post('dues-adjustments/{id}/correct', [FlexibleFinanceController::class, 'correctAdjustment'])->whereUuid('id');

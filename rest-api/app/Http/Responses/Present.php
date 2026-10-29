@@ -3,6 +3,7 @@
 namespace App\Http\Responses;
 
 use App\Domain\Community\Calendar;
+use App\Domain\Finance\FinanceReports;
 use App\Domain\Residents\AgeGroups;
 use App\Models\Agenda;
 use App\Models\Akun;
@@ -435,15 +436,14 @@ final class Present
         $active = $t->relationLoaded('alokasi') ? $t->alokasi->firstWhere('dibatalkan_at', null) : null;
         if (config('finance.v2')) {
             $s = $t->saldo;
-            $status = (int) $s->sisa === 0 ? ((int) $s->keringanan > 0 ? 'lunas_keringanan' : 'lunas')
-                : ((int) $s->terbayar_uang + (int) $s->terbayar_titipan + (int) $s->keringanan > 0 ? 'kurang_bayar' : 'belum_bayar');
+            [$status, $label] = FinanceReports::settlementStatus($s);
 
             return ['id' => $t->id, 'periode' => $t->periode->format('Y-m'), 'nominal' => (int) $s->nominal_efektif,
                 'nominal_snapshot' => (int) $s->nominal_tagihan, 'nominal_efektif' => (int) $s->nominal_efektif,
-                'terbayar' => (int) $s->terbayar_uang + (int) $s->terbayar_titipan, 'terbayar_titipan' => (int) $s->terbayar_titipan,
+                'terbayar' => FinanceReports::paid($s), 'terbayar_titipan' => (int) $s->terbayar_titipan,
+                'terbayar_buku_lama' => (int) $s->terbayar_buku_lama, 'buku_lama_id' => $s->buku_lama_id,
                 'keringanan' => (int) $s->keringanan, 'sisa' => (int) $s->sisa, 'jatuh_tempo' => $t->jatuh_tempo->toDateString(),
-                'status' => $t->status, 'status_pelunasan' => $status,
-                'status_label' => ['lunas' => 'Lunas', 'lunas_keringanan' => 'Lunas dengan keringanan', 'kurang_bayar' => 'Kurang bayar', 'belum_bayar' => 'Belum dibayar'][$status],
+                'status' => $t->status, 'status_pelunasan' => $status, 'status_label' => $label,
                 'pembayaran_id' => $active?->pembayaran_id,
                 'alokasi' => $t->alokasi->map(fn ($a) => ['pembayaran_id' => $a->pembayaran_id, 'penggunaan_titipan_id' => $a->penggunaan_titipan_id,
                     'nominal' => $a->nominal_alokasi, 'dibatalkan_at' => self::ts($a->dibatalkan_at)])->values()->all()];

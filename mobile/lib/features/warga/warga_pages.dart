@@ -47,12 +47,13 @@ class WargaHomePage extends ConsumerWidget {
         ref.invalidate(duesMyProvider);
         ref.invalidate(agendasProvider);
         ref.invalidate(announcementsProvider);
+        ref.invalidate(emergencyHistoryProvider);
       },
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
         children: [
           _Hero(name: akun.nama, kode: akun.kodeRumah, alamat: akun.alamat),
-          const EmergencyEntry(),
+          const EmergencyHomeSection(),
           const SizedBox(height: 16),
           SectionCard(
             title: 'Iuran bulan ini',

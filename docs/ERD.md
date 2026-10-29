@@ -3,10 +3,11 @@
 ## M19 — kejadian darurat (implementasi lokal, belum deploy)
 
 `kejadian_darurat`: UUID; FK `pelapor_id → akun`, `rumah_id → rumah`, `ditangani_oleh_id → akun` (RESTRICT).
-Kolom: `jenis` kebakaran/kemalingan/penyerangan/lainnya; `status` aktif/selesai/palsu; `penyalahgunaan` boolean;
+Kolom: `jenis` kebakaran/kemalingan/penyerangan/lainnya **atau NULL** (ADR48, dilengkapi pelapor setelah alarm);
+`status` aktif/selesai/palsu/dibatalkan_pelapor; `penyalahgunaan` boolean;
 `catatan_pengurus`, `selesai_at`, `versi >= 1`, `created_at`. CHECK mengikat penanganan, alasan dan waktu;
-penyalahgunaan hanya pada status palsu. Unique parsial satu kejadian aktif per akun. Trigger melarang DELETE,
-perubahan identitas/rumah/jenis/waktu asal, buka ulang, edit hasil terminal, dan transisi versi yang tidak berurutan.
+penyalahgunaan hanya pada status palsu. Unique parsial satu kejadian aktif per akun. Trigger melarang DELETE, perubahan identitas/rumah/waktu asal, buka ulang, edit hasil terminal, dan transisi versi yang
+tidak berurutan. Jenis boleh diisi/diubah selama status masih aktif (M19R).
 
 `koreksi_penyalahgunaan_darurat` (audit 27 Okt): UUID; FK unik `kejadian_darurat_id → kejadian_darurat`,
 `dicatat_oleh_id → akun` (RESTRICT); `alasan` 5–300 karakter; `created_at`. Append-only (trigger `rt05_immutable_row`).
@@ -43,6 +44,8 @@ Migration `2026_10_25_000300_m18_finance_ledger.php` menambah:
 | mutasi_titipan | Lot dari satu pembayaran, arah ±1 dan nominal positif, pemakaian/pembalikan append-only; saldo tiap lot tidak negatif |
 | penyesuaian_tagihan | Delta bertanda, alasan, aktor, referensi pembalikan; mengubah nominal efektif tanpa menimpa snapshot |
 | konfirmasi_iuran | pembayaran_id nullable unique untuk persetujuan atomik pada tahap API berikutnya |
+| impor_keuangan | ADR49: satu batch per tahun (unik), sampai_periode, sidik_jari SHA-256 rencana, ringkasan angka, pengurus; immutable |
+| pelunasan_buku_lama | ADR49: tagihan, impor, nominal positif, aktor; satu aktif per tagihan; batal sekali beralasan; tanpa kas. View `rt05_tagihan_saldo` + `terbayar_buku_lama`, `buku_lama_id`; sisa ikut dikurangi |
 
 Views `rt05_tagihan_saldo`, `rt05_titipan_saldo`, `rt05_finance_violations` menghitung saldo dan penyimpangan.
 Constraint trigger deferred memvalidasi keadaan akhir transaksi; advisory lock `rt05:keuangan` menserialkan perubahan ledger.

@@ -12,7 +12,6 @@ import 'package:rt05_takeda/core/push.dart';
 import 'package:rt05_takeda/core/session.dart';
 import 'package:rt05_takeda/features/auth/privacy_policy.dart';
 import 'package:rt05_takeda/features/warga/emergencies.dart';
-import 'package:rt05_takeda/features/pengurus/pengurus_pages.dart';
 import 'package:rt05_takeda/main.dart';
 
 import 'support/fakes.dart';
@@ -93,25 +92,22 @@ Future<void> _tap(WidgetTester tester, String label) async {
   }
 }
 
-Future<void> _confirm(WidgetTester tester) async {
-  await _tap(tester, 'Mulai laporan darurat');
-  await _chooseKind(tester, 'Kebakaran');
-  await _tap(tester, 'Saya memahami ketentuan dan penyebaran identitas laporan darurat.');
-  await _tap(tester, 'Lanjut ke konfirmasi');
+Future<void> _unlock(WidgetTester tester) async {
+  for (var i = 0; i < 24 && find.text('Geser untuk menyalakan alarm').evaluate().isEmpty; i++) {
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -240));
+    await tester.pump(const Duration(milliseconds: 80));
+  }
+  await tester.pump();
 }
 
-/// Audit M19: jenis darurat tidak punya pilihan bawaan; warga memilih sendiri.
-Future<void> _chooseKind(WidgetTester tester, String label) async {
-  final field = find.byKey(const ValueKey('jenis-darurat'));
-  await tester.ensureVisible(field);
-  await tester.pump();
-  await tester.tap(field);
-  for (var i = 0; i < 6; i++) {
-    await tester.pump(const Duration(milliseconds: 100));
-  }
-  await tester.tap(find.text(label).last);
-  for (var i = 0; i < 6; i++) {
-    await tester.pump(const Duration(milliseconds: 100));
+Future<void> _arm(WidgetTester tester) async {
+  await _unlock(tester);
+  final slider = find.byKey(const ValueKey('geser-aktifkan'));
+  expect(slider, findsOneWidget);
+  final size = tester.getSize(slider);
+  await tester.drag(slider, Offset(size.width * 0.95, 0));
+  for (var i = 0; i < 8; i++) {
+    await tester.pump(const Duration(milliseconds: 50));
   }
 }
 
@@ -123,13 +119,34 @@ void main() {
         if (o.uri.path.endsWith('/emergencies/status')) return jsonBody(200, {'data': _status});
         return errorBody(503, 'SERVICE_UNAVAILABLE', 'Dashboard sementara tidak tersedia');
       }),
-      page: Scaffold(body: AdminHomePage(goTab: (_) {})),
+      page: const Scaffold(floatingActionButton: EmergencyFab(), body: SizedBox.expand()),
       admin: true,
       settle: false,
     );
-    expect(find.text('Tombol panik'), findsOneWidget);
+    expect(find.byType(EmergencyFab), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.text('Tombol panik'), findsNothing);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('server tanpa gerbang rilis panik: tanpa FAB dan tanpa riwayat di Beranda', (tester) async {
+    await _pump(
+      tester,
+      FakeAdapter((o) {
+        if (o.uri.path.endsWith('/emergencies/status')) {
+          return jsonBody(200, {
+            'data': {..._status, 'tersedia': false},
+          });
+        }
+        if (o.uri.path.endsWith('/emergencies')) return errorBody(403, 'PANIC_UNAVAILABLE', 'Tombol panik belum tersedia di server ini.');
+        return errorBody(404, 'NOT_FOUND', '-');
+      }),
+      page: const Scaffold(floatingActionButton: EmergencyFab(), body: EmergencyHomeSection()),
+    );
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.text('Laporan darurat'), findsNothing);
+    expect(find.text('Tombol panik belum tersedia di server ini.'), findsNothing);
   });
 
   testWidgets('pengurus has panic shortcut directly on Home and it never submits automatically', (tester) async {
@@ -142,12 +159,13 @@ void main() {
         if (o.uri.path.endsWith('/emergencies/status')) return jsonBody(200, {'data': _status});
         return base(o);
       }),
-      page: Scaffold(body: AdminHomePage(goTab: (_) {})),
+      page: const Scaffold(floatingActionButton: EmergencyFab(), body: SizedBox.expand()),
       admin: true,
     );
-    expect(find.text('Tombol panik'), findsOneWidget);
-    await _tap(tester, 'Tombol panik');
-    expect(find.text('Mulai laporan darurat'), findsOneWidget);
+    expect(find.byType(EmergencyFab), findsOneWidget);
+    await tester.tap(find.byType(EmergencyFab));
+    await tester.pumpAndSettle();
+    expect(find.text('Baca dulu sebelum menyalakan.'), findsOneWidget);
     expect(posts, 0);
   });
 
@@ -198,7 +216,7 @@ void main() {
     session.updateAkun(Akun({...akunJson(), 'privasi_versi': panicPrivacyTextVersion, 'privasi_perlu_setuju': false}), epoch: session.epoch);
     await tester.pumpAndSettle();
     expect(find.byType(EmergencyPage), findsOneWidget);
-    expect(find.text('Mulai laporan darurat'), findsOneWidget);
+    expect(find.text('Baca dulu sebelum menyalakan.'), findsOneWidget);
     expect(posts, isEmpty);
   });
 
@@ -241,6 +259,7 @@ void main() {
         }
         return jsonBody(200, {'data': _status});
       }),
+      page: const Scaffold(body: EmergencyAdminSettings()),
       admin: true,
     );
     await _tap(tester, 'Nonaktifkan tombol panik RT');
@@ -279,18 +298,14 @@ void main() {
       }),
     );
     expect(sent, isEmpty);
-    await _tap(tester, 'Mulai laporan darurat');
-    expect(sent, isEmpty);
-    await _tap(tester, 'Batal');
-    await _confirm(tester);
-    expect(sent, isEmpty);
+    expect(find.text('Baca dulu sebelum menyalakan.'), findsOneWidget);
     await _tap(tester, 'Batal');
     expect(sent, isEmpty);
-    await _confirm(tester);
-    await _tap(tester, 'Ya, kirim laporan');
+    await _arm(tester);
     expect(sent, hasLength(1));
     expect((sent.single.data as Map)['konfirmasi'], true);
-    expect(find.text('Laporan darurat'), findsOneWidget);
+    expect((sent.single.data as Map).containsKey('jenis'), isFalse);
+    expect(find.text('Alarm darurat menyala'), findsWidgets);
     expect(find.textContaining('Pelapor sintetis'), findsOneWidget);
     expect(find.text('Simpan penanganan'), findsNothing);
   });
@@ -308,9 +323,8 @@ void main() {
         return jsonBody(200, {'data': o.uri.path.endsWith('/status') ? _status : _report});
       }),
     );
-    await _confirm(tester);
-    await _tap(tester, 'Ya, kirim laporan');
-    expect(find.text('Batal'), findsNothing);
+    await _arm(tester);
+    expect(find.text('Coba kirim ulang'), findsOneWidget);
     await _tap(tester, 'Coba kirim ulang');
     expect(sent, hasLength(2));
     expect(sent[0].headers['Idempotency-Key'], sent[1].headers['Idempotency-Key']);
@@ -326,8 +340,7 @@ void main() {
         return jsonBody(200, {'data': _status});
       }),
     );
-    await _confirm(tester);
-    await _tap(tester, 'Ya, kirim laporan');
+    await _arm(tester);
     (container.read(sessionProvider.notifier) as _Session).replace(
       SessionState(
         loading: false,
@@ -351,37 +364,46 @@ void main() {
         }),
       ),
     );
-    expect(find.text('Mulai laporan darurat'), findsNothing);
+    expect(find.byKey(const ValueKey('geser-aktifkan')), findsNothing);
     expect(find.textContaining('tiga penyalahgunaan'), findsOneWidget);
   });
 
   testWidgets('compact screen with large text renders terms and confirmation without overflow', (tester) async {
     useCompactScreen(tester, width: 320, height: 800, textScale: 2);
     await _pump(tester, FakeAdapter((o) => jsonBody(200, {'data': _status})));
-    await _confirm(tester);
+    await _unlock(tester);
     expect(tester.takeException(), isNull);
-    expect(find.text('Kirim laporan darurat ini?'), findsOneWidget);
+    expect(find.byKey(const ValueKey('geser-aktifkan')), findsOneWidget);
   });
 
-  testWidgets('jenis darurat wajib dipilih sendiri sebelum lanjut ke konfirmasi (audit M19)', (tester) async {
+  testWidgets('jenis darurat tidak dikirim saat geser dan dapat dilengkapi di layar alarm', (tester) async {
     final sent = <RequestOptions>[];
     await _pump(
       tester,
       FakeAdapter((o) {
-        if (o.method == 'POST') sent.add(o);
-        return jsonBody(200, {'data': o.uri.path.endsWith('/status') ? _status : _report});
+        if (o.method == 'POST') {
+          sent.add(o);
+          if (o.uri.path.endsWith('/jenis')) {
+            return jsonBody(200, {
+              'data': {..._report, 'jenis': 'kemalingan', 'versi': 2},
+            });
+          }
+          return jsonBody(201, {
+            'data': {..._report, 'jenis': null},
+          });
+        }
+        return jsonBody(200, {
+          'data': o.uri.path.endsWith('/status') ? _status : {..._report, 'jenis': null},
+        });
       }),
     );
-    await _tap(tester, 'Mulai laporan darurat');
-    await _tap(tester, 'Saya memahami ketentuan dan penyebaran identitas laporan darurat.');
-    final next = find.widgetWithText(FilledButton, 'Lanjut ke konfirmasi');
-    expect(tester.widget<FilledButton>(next).onPressed, isNull);
-    await _chooseKind(tester, 'Kemalingan');
-    expect(tester.widget<FilledButton>(next).onPressed, isNotNull);
-    await _tap(tester, 'Lanjut ke konfirmasi');
-    await _tap(tester, 'Ya, kirim laporan');
+    await _arm(tester);
     expect(sent, hasLength(1));
-    expect((sent.single.data as Map)['jenis'], 'kemalingan');
+    expect((sent.single.data as Map).containsKey('jenis'), isFalse);
+    await _tap(tester, 'Kemalingan');
+    expect(sent, hasLength(2));
+    expect(sent.last.uri.path, endsWith('/emergencies/$_id/jenis'));
+    expect((sent.last.data as Map)['jenis'], 'kemalingan');
   });
 
   testWidgets('pengurus membatalkan penanda penyalahgunaan yang keliru dengan alasan (audit M19)', (tester) async {

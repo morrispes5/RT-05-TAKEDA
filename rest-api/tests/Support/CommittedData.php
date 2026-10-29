@@ -18,7 +18,7 @@ trait CommittedData
     private const COMMITTED_TABLES = [
         'perangkat_push', 'personal_access_tokens', 'password_reset_tokens', 'notifikasi', 'preferensi_notifikasi', 'pengumuman',
         'koreksi_penyalahgunaan_darurat', 'kejadian_darurat', 'permohonan_akun', 'audit_logs', 'outbox_events', 'token_registrasi', 'tautan_akun', 'keanggotaan_keluarga', 'riwayat_transaksi_kas', 'transaksi_kas',
-        'konfirmasi_iuran', 'mutasi_titipan', 'keringanan_iuran', 'penyesuaian_tagihan', 'alokasi_pembayaran', 'penggunaan_titipan', 'pembayaran_iuran', 'idempotency_requests',
+        'konfirmasi_iuran', 'pelunasan_buku_lama', 'impor_keuangan', 'mutasi_titipan', 'keringanan_iuran', 'penyesuaian_tagihan', 'alokasi_pembayaran', 'penggunaan_titipan', 'pembayaran_iuran', 'idempotency_requests',
         'tagihan_iuran', 'tarif_rumah', 'akun',
         'penghunian', 'warga', 'keluarga', 'rumah',
     ];
@@ -38,9 +38,10 @@ trait CommittedData
         DB::connection('pgsql_migrations')->transaction(function ($db) {
             $db->statement('ALTER TABLE kejadian_darurat DISABLE TRIGGER kejadian_darurat_immutable');
             $db->statement('ALTER TABLE koreksi_penyalahgunaan_darurat DISABLE TRIGGER koreksi_penyalahgunaan_darurat_immutable');
-            foreach (['tarif_rumah', 'keringanan_iuran', 'penggunaan_titipan', 'mutasi_titipan', 'penyesuaian_tagihan'] as $table) {
+            foreach (['tarif_rumah', 'keringanan_iuran', 'penggunaan_titipan', 'mutasi_titipan', 'penyesuaian_tagihan', 'pelunasan_buku_lama'] as $table) {
                 $db->statement("ALTER TABLE $table DISABLE TRIGGER {$table}_m18_immutable");
             }
+            $db->statement('ALTER TABLE impor_keuangan DISABLE TRIGGER impor_keuangan_immutable');
             $db->statement('ALTER TABLE audit_logs DISABLE TRIGGER audit_logs_no_update_delete');
             // Buku kas append-only (trigger) hanya dibuka di dalam transaksi pembersihan database *_test.
             $db->statement('ALTER TABLE transaksi_kas DISABLE TRIGGER transaksi_kas_immutable');
@@ -60,7 +61,8 @@ trait CommittedData
             $db->statement('ALTER TABLE riwayat_transaksi_kas ENABLE TRIGGER riwayat_transaksi_kas_immutable');
             $db->statement('ALTER TABLE transaksi_kas ENABLE TRIGGER transaksi_kas_immutable');
             $db->statement('ALTER TABLE audit_logs ENABLE TRIGGER audit_logs_no_update_delete');
-            foreach (['tarif_rumah', 'keringanan_iuran', 'penggunaan_titipan', 'mutasi_titipan', 'penyesuaian_tagihan'] as $table) {
+            $db->statement('ALTER TABLE impor_keuangan ENABLE TRIGGER impor_keuangan_immutable');
+            foreach (['tarif_rumah', 'keringanan_iuran', 'penggunaan_titipan', 'mutasi_titipan', 'penyesuaian_tagihan', 'pelunasan_buku_lama'] as $table) {
                 $db->statement("ALTER TABLE $table ENABLE TRIGGER {$table}_m18_immutable");
             }
         });
