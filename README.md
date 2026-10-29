@@ -12,7 +12,7 @@ Website publik sudah diterima pada 10 Oktober 2026 (M00) dan live sebagai previe
 | --- | --- | --- |
 | [website/](website/README.md) | Laravel 13 + Blade + Tailwind 4 + Vite; website publik dan UI Pengurus Artikel/Dokumentasi yang diterima | Baseline accepted, dipindah utuh pada M01 |
 | [mobile/](mobile/README.md) | Flutter Android warga/pengurus | Implementasi awal dan APK debug tersedia; penerimaan tiap domain tetap mengikuti PROGRESS |
-| [rest-api/](rest-api/README.md) | Laravel REST API, pemilik database Neon dan aturan bisnis | Fondasi M02–M04 dan akses akun M06 di staging; reset inbox/browser/Android diterima13Oktober |
+| [rest-api/](rest-api/README.md) | Laravel REST API, pemilik database Neon dan aturan bisnis | Fondasi M02–M04 dan akses akun M06 di staging; reset inbox/browser/Android diterima 13 Oktober |
 | [infra/](infra/README.md) | Script, Docker, Caddy, Compose | Staging awal tersedia; gate worker/recovery dan deployment dicatat di PROGRESS |
 | [docs/](docs/PRD.md) | Konteks lintas modul; dokumentasi frontend di [docs/website/](docs/website/FRONTEND_HANDOFF.md) | Aktif |
 | `.github/workflows/` | CI API, website, mobile, image infra dan pemeriksaan repo | Aktif |
@@ -84,7 +84,7 @@ node infra/scripts/check-repo.mjs
 
 ## Status
 
-Lihat [docs/PROGRESS.md](docs/PROGRESS.md). M00 accepted baseline; M01–M07 passed.
+Lihat [docs/PROGRESS.md](docs/PROGRESS.md). M00 accepted baseline; M01–M07 lulus.
 M06 membuktikan email reset nyata sampai inbox/browser/Android. M07 source
 979634f di staging lulus 77 kasus API/327 assertion dan demonstrasi Android;
 220 tes backend/2125 assertion serta 152 tes Flutter lulus. Bukti dan
