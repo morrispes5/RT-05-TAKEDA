@@ -10,6 +10,15 @@ Terakhir diperbarui: **Kamis 29 Oktober 2026** (M19R Tombol Panik di `cursor1530
 
 Bagian ini mengungguli catatan lebih lama di bawah bila bertentangan.
 
+**Sesi 29 Oktober 2026 malam (M18 lanjutan, ADR49, branch `codex/m19r-audit` / PR #103):** pemilik memberi Excel
+rekap iuran bendahara (2024–2026 + laporan keuangan 2024; berisi NIK/KK/nama, **jangan masuk Git**). Dibuat impor
+"lunas di buku lama" tanpa kas: `php artisan rt05:impor-buku-lama` (cek → terapkan dengan `--sidik-jari`), pembatalan
+per bulan di aplikasi. Uji cek Excel asli: 187 rumah, TOTAL cocok, **21 rumah perlu keputusan tarif** (55/35/50/25/85 rb).
+PR #103 sekarang berisi M19R + impor ini; merge hanya atas perintah pemilik. Langkah production di
+[M18_IMPOR_BUKU_LAMA.md](M18_IMPOR_BUKU_LAMA.md) bagian 5. Pertanyaan bendahara: arti 85 rb (iuran+sumbangan atau tarif),
+alasan 55/50/35/25 rb, "LUNAS DK", rumah tidak mampu/kosong (tagih atau tidak), tanggal batas, saldo kas resmi per tanggal
+itu (laporan Excel hanya sampai Okt 2024). Okt 2026 di Excel masih berjalan: pilih `--sampai=2026-09` atau tunggu Okt final.
+
 **Sesi 29 Oktober 2026 sore (M19R, branch `cursor1530`):** revisi Tombol Panik sesuai brief M19R/ADR48. Jangan merge
 ke `main` sebelum ditinjau. FAB hanya Beranda; ketentuan + slider; jenis opsional; batal pelapor; toggle di Lainnya.
 Pertanyaan terbuka pemilik: arti "semua keluarga"; FAB semua tab vs Beranda; ikon sirine vs SOS.

@@ -44,6 +44,8 @@ Migration `2026_10_25_000300_m18_finance_ledger.php` menambah:
 | mutasi_titipan | Lot dari satu pembayaran, arah ±1 dan nominal positif, pemakaian/pembalikan append-only; saldo tiap lot tidak negatif |
 | penyesuaian_tagihan | Delta bertanda, alasan, aktor, referensi pembalikan; mengubah nominal efektif tanpa menimpa snapshot |
 | konfirmasi_iuran | pembayaran_id nullable unique untuk persetujuan atomik pada tahap API berikutnya |
+| impor_keuangan | ADR49: satu batch per tahun (unik), sampai_periode, sidik_jari SHA-256 rencana, ringkasan angka, pengurus; immutable |
+| pelunasan_buku_lama | ADR49: tagihan, impor, nominal positif, aktor; satu aktif per tagihan; batal sekali beralasan; tanpa kas. View `rt05_tagihan_saldo` + `terbayar_buku_lama`, `buku_lama_id`; sisa ikut dikurangi |
 
 Views `rt05_tagihan_saldo`, `rt05_titipan_saldo`, `rt05_finance_violations` menghitung saldo dan penyimpangan.
 Constraint trigger deferred memvalidasi keadaan akhir transaksi; advisory lock `rt05:keuangan` menserialkan perubahan ledger.

@@ -139,26 +139,39 @@ class HouseFinancePage extends ConsumerWidget {
                         Builder(
                           builder: (_) {
                             final t = Json.from(raw as Map);
+                            final oldBook = (t['terbayar_buku_lama'] as num? ?? 0).toInt();
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
                               title: Text('${periode('${t['periode']}')} • ${t['status_label']}'),
                               subtitle: Text(
-                                'Tagihan ${rupiah(t['nominal_efektif'] as num)}\nTerbayar ${rupiah(t['terbayar'] as num)} • Keringanan ${rupiah(t['keringanan'] as num)}\nSisa ${rupiah(t['sisa'] as num)}',
+                                'Tagihan ${rupiah(t['nominal_efektif'] as num)}\nTerbayar ${rupiah(t['terbayar'] as num)} • Keringanan ${rupiah(t['keringanan'] as num)}\nSisa ${rupiah(t['sisa'] as num)}'
+                                '${oldBook > 0 ? '\nTermasuk ${rupiah(oldBook)} dari buku lama (rekap bendahara, tanpa kas)' : ''}',
                               ),
                               trailing: PopupMenuButton<String>(
                                 tooltip: 'Kelola tagihan',
                                 itemBuilder: (_) => [
                                   if ((t['sisa'] as num) > 0) const PopupMenuItem(value: 'relief', child: Text('Beri keringanan')),
                                   const PopupMenuItem(value: 'adjustment', child: Text('Koreksi tagihan')),
+                                  if (t['buku_lama_id'] != null) const PopupMenuItem(value: 'old-book', child: Text('Batalkan catatan buku lama')),
                                 ],
-                                onSelected: (action) => open(
-                                  FinanceAmountPage(
-                                    title: action == 'relief' ? 'Beri keringanan' : 'Koreksi tagihan',
-                                    path: '/admin/dues-charges/${t['id']}/${action == 'relief' ? 'reliefs' : 'adjustments'}',
-                                    field: action == 'relief' ? 'nominal' : 'delta',
-                                    initial: action == 'relief' ? (t['sisa'] as num).toInt() : null,
-                                  ),
-                                ),
+                                onSelected: (action) async {
+                                  if (action == 'old-book') {
+                                    await reverse(
+                                      '/admin/old-book-settlements/${t['buku_lama_id']}/cancel',
+                                      'Batalkan catatan buku lama?',
+                                      'Bulan ini kembali belum lunas sebesar ${rupiah(oldBook)}. Kas tidak berubah. Bila uangnya baru diterima, catat sebagai penerimaan.',
+                                    );
+                                    return;
+                                  }
+                                  await open(
+                                    FinanceAmountPage(
+                                      title: action == 'relief' ? 'Beri keringanan' : 'Koreksi tagihan',
+                                      path: '/admin/dues-charges/${t['id']}/${action == 'relief' ? 'reliefs' : 'adjustments'}',
+                                      field: action == 'relief' ? 'nominal' : 'delta',
+                                      initial: action == 'relief' ? (t['sisa'] as num).toInt() : null,
+                                    ),
+                                  );
+                                },
                               ),
                             );
                           },

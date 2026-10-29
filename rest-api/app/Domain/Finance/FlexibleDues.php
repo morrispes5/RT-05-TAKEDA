@@ -338,7 +338,8 @@ final class FlexibleDues
         return ['dibatalkan_at' => now(), 'dibatalkan_oleh_id' => $actor->id, 'alasan_pembatalan' => $reason];
     }
 
-    private static function sync(array $ids): void
+    /** Status tagihan mengikuti sisa (lunas ⇔ sisa 0); dipakai juga impor buku lama. */
+    public static function sync(array $ids): void
     {
         foreach (DB::table('rt05_tagihan_saldo')->whereIn('id', $ids)->get() as $charge) {
             DB::table('tagihan_iuran')->where('id', $charge->id)->update(['status' => (int) $charge->sisa === 0 ? 'lunas' : 'belum_bayar']);

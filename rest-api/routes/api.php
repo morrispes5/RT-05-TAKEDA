@@ -236,6 +236,7 @@ Route::middleware(['auth:sanctum', 'akun:pengurus'])->prefix('admin')->group(fun
     Route::post('dues-charges/{id}/reliefs', [FlexibleFinanceController::class, 'relief'])->whereUuid('id');
     Route::post('dues-charges/{id}/adjustments', [FlexibleFinanceController::class, 'adjustment'])->whereUuid('id');
     Route::post('dues-reliefs/{id}/reverse', [FlexibleFinanceController::class, 'reverseRelief'])->whereUuid('id');
+    Route::post('old-book-settlements/{id}/cancel', [FlexibleFinanceController::class, 'cancelOldBook'])->whereUuid('id');
     Route::post('dues-reliefs/{id}/correct', [FlexibleFinanceController::class, 'correctRelief'])->whereUuid('id');
     Route::post('dues-adjustments/{id}/reverse', [FlexibleFinanceController::class, 'reverseAdjustment'])->whereUuid('id');
     Route::post('dues-adjustments/{id}/correct', [FlexibleFinanceController::class, 'correctAdjustment'])->whereUuid('id');

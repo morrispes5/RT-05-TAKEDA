@@ -54,15 +54,33 @@ final class FinanceReports
         return DB::table('rt05_tagihan_saldo as t')->join('rumah as r', 'r.id', '=', 't.rumah_id')
             ->when($start, fn ($q) => $q->where('t.periode', '>=', $start))->when($end, fn ($q) => $q->where('t.periode', '<', $end))
             ->orderBy('t.periode')->orderBy('r.kode_rumah')->get(['t.*', 'r.kode_rumah', 'r.archived_at'])->map(function ($t) {
-                $paid = (int) $t->terbayar_uang + (int) $t->terbayar_titipan;
-                $status = (int) $t->sisa === 0 ? ((int) $t->keringanan > 0 ? 'lunas_keringanan' : 'lunas') : ($paid + (int) $t->keringanan > 0 ? 'kurang_bayar' : 'belum_bayar');
+                [$status, $label] = self::settlementStatus($t);
 
                 return ['rumah_id' => $t->rumah_id, 'kode_rumah' => $t->kode_rumah, 'rumah_arsip' => $t->archived_at !== null,
                     'periode' => substr($t->periode, 0, 7), 'nominal_snapshot' => (int) $t->nominal_tagihan, 'nominal_efektif' => (int) $t->nominal_efektif,
-                    'terbayar' => $paid, 'terbayar_titipan' => (int) $t->terbayar_titipan, 'keringanan' => (int) $t->keringanan, 'sisa' => (int) $t->sisa,
-                    'status' => $t->status, 'status_pelunasan' => $status,
-                    'status_label' => ['lunas' => 'Lunas', 'lunas_keringanan' => 'Lunas dengan keringanan', 'kurang_bayar' => 'Kurang bayar', 'belum_bayar' => 'Belum dibayar'][$status]];
+                    'terbayar' => self::paid($t), 'terbayar_titipan' => (int) $t->terbayar_titipan, 'terbayar_buku_lama' => (int) $t->terbayar_buku_lama,
+                    'keringanan' => (int) $t->keringanan, 'sisa' => (int) $t->sisa, 'status' => $t->status, 'status_pelunasan' => $status, 'status_label' => $label];
             })->all();
+    }
+
+    /** Terbayar = uang + titipan + buku lama (ADR49); keringanan terpisah. Sumber tunggal API, CSV, dan XLSX. */
+    public static function paid(object $saldo): int
+    {
+        return (int) $saldo->terbayar_uang + (int) $saldo->terbayar_titipan + (int) $saldo->terbayar_buku_lama;
+    }
+
+    /** @return array{0:string, 1:string} status_pelunasan (enum tetap empat nilai) dan label tampilan */
+    public static function settlementStatus(object $saldo): array
+    {
+        $paid = self::paid($saldo);
+        $status = (int) $saldo->sisa === 0 ? ((int) $saldo->keringanan > 0 ? 'lunas_keringanan' : 'lunas')
+            : ($paid + (int) $saldo->keringanan > 0 ? 'kurang_bayar' : 'belum_bayar');
+        $label = ['lunas' => 'Lunas', 'lunas_keringanan' => 'Lunas dengan keringanan', 'kurang_bayar' => 'Kurang bayar', 'belum_bayar' => 'Belum dibayar'][$status];
+        if ($status === 'lunas' && (int) $saldo->terbayar_buku_lama > 0 && $paid === (int) $saldo->terbayar_buku_lama) {
+            $label = 'Lunas (buku lama)';
+        }
+
+        return [$status, $label];
     }
 
     public static function cash(?string $start = null, ?string $end = null): array
@@ -86,7 +104,7 @@ final class FinanceReports
     private static function settlement(array $rows): array
     {
         $result = [];
-        foreach (['nominal_snapshot', 'nominal_efektif', 'terbayar', 'terbayar_titipan', 'keringanan', 'sisa'] as $field) {
+        foreach (['nominal_snapshot', 'nominal_efektif', 'terbayar', 'terbayar_titipan', 'terbayar_buku_lama', 'keringanan', 'sisa'] as $field) {
             $result[$field] = array_sum(array_column($rows, $field));
         }
 

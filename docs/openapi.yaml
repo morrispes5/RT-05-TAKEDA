@@ -3763,6 +3763,38 @@ paths:
               schema: {$ref: "#/components/schemas/DataEnvelope"}
         default:
           $ref: "#/components/responses/Error"
+  /api/v1/admin/old-book-settlements/{id}/cancel:
+    post:
+      operationId: oldBookSettlementCancel
+      tags: [Finance]
+      summary: Batalkan pelunasan buku lama (ADR49)
+      description: Khusus pengurus aktif. Memerlukan flag keuangan v2; flag nonaktif menghasilkan 404. Mutasi memerlukan versi_keuangan 2. Membuka kembali tagihan yang ditandai lunas dari rekap bendahara; kas tidak berubah. Sudah dibatalkan atau tidak ada → 404 OLD_BOOK_NOT_FOUND.
+      x-status: implemented
+      x-milestone: M18
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/M18ReasonInput"}
+      responses:
+        "200":
+          description: Berhasil membaca, pratinjau atau membalik transaksi.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        "201":
+          description: Rekaman baru berhasil dibuat atau replay hasil asal.
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DataEnvelope"}
+        default:
+          $ref: "#/components/responses/Error"
   /api/v1/admin/dues-adjustments/{id}/reverse:
     post:
       operationId: adjustmentReverse
@@ -4356,6 +4388,7 @@ components:
         nominal_efektif: {type: integer, minimum: 0}
         terbayar: {type: integer, minimum: 0}
         terbayar_titipan: {type: integer, minimum: 0}
+        terbayar_buku_lama: {type: integer, minimum: 0, description: "ADR49: bagian terbayar dari rekap bendahara sebelum aplikasi (tanpa kas); sudah termasuk di terbayar."}
         keringanan: {type: integer, minimum: 0}
         sisa: {type: integer, minimum: 0}
     FinanceReportHouse:
@@ -4371,6 +4404,7 @@ components:
         nominal_efektif: {type: integer, minimum: 0}
         terbayar: {type: integer, minimum: 0}
         terbayar_titipan: {type: integer, minimum: 0}
+        terbayar_buku_lama: {type: integer, minimum: 0, description: "ADR49: bagian terbayar dari rekap bendahara sebelum aplikasi (tanpa kas); sudah termasuk di terbayar."}
         keringanan: {type: integer, minimum: 0}
         sisa: {type: integer, minimum: 0}
         status: {type: string, enum: [belum_bayar, lunas]}
@@ -5499,6 +5533,8 @@ components:
               nominal_efektif: {type: integer, minimum: 0}
               terbayar: {type: integer, minimum: 0}
               terbayar_titipan: {type: integer, minimum: 0}
+              terbayar_buku_lama: {type: integer, minimum: 0, description: "ADR49: bagian terbayar dari rekap bendahara sebelum aplikasi (tanpa kas); sudah termasuk di terbayar."}
+              buku_lama_id: {type: [string, 'null'], format: uuid, description: Pelunasan buku lama aktif yang dapat dibatalkan pengurus.}
               keringanan: {type: integer, minimum: 0}
               sisa: {type: integer, minimum: 0}
               jatuh_tempo: {type: string, format: date}

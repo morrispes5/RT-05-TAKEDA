@@ -1,5 +1,36 @@
 # Progress — RT05 TAKEDA
 
+## M18 lanjutan — impor rekap iuran bendahara "buku lama" (ADR49) — 29 Oktober 2026
+
+Instruksi pemilik: data Excel bendahara (rekap iuran 2024–2026 + laporan keuangan 2024) dipakai untuk M18, dikerjakan di
+branch PR #103 (bersama M19R) agar merge bersama, dengan review mandiri keuangan. Rencana:
+[M18_IMPOR_BUKU_LAMA.md](M18_IMPOR_BUKU_LAMA.md). Fitur inti M18 sudah passed 26 Okt; ini jalur data awal.
+
+- DB `2026_10_30_000100_m18_impor_buku_lama`: `impor_keuangan` (satu per tahun, immutable) dan `pelunasan_buku_lama`
+  (satu aktif per tagihan, batal sekali beralasan, ikut kunci/validasi invarian M18). View `rt05_tagihan_saldo` menambah
+  `terbayar_buku_lama`, `buku_lama_id`; sisa ikut dikurangi. Kas tidak disentuh: uangnya masuk lewat saldo awal resmi.
+- Domain `OldBook` + perintah `rt05:impor-buku-lama` (cek tanpa tulis → terapkan dengan `--sidik-jari` hasil cek).
+  Baca hanya kolom alamat dan angka; NIK/KK/nama tidak disalin. Baris TOTAL Excel dipakai sebagai cek silang per bulan.
+  Nominal yang bukan mayoritas mutlak tarif umum → perlu keputusan (tarif khusus/tarif umum), tidak ditebak. Penjaga:
+  flag v2, pengurus aktif, impor ulang, batas melewati bulan berjalan, tarif umum berubah di tengah tahun, bentrok
+  pelunasan/koreksi existing (rollback penuh), rumah di luar rekap yang akan tertagih mundur.
+- Generator tagihan: `generateForHouses` + lewati rumah yang sudah punya tagihan periode itu dan muat tarif rumah per
+  kelompok (catch-up dari Januari tetap 2 query per bulan bila tidak ada yang dibuat).
+- API: `POST /admin/old-book-settlements/{id}/cancel`; tagihan menambah `terbayar_buku_lama`, `buku_lama_id`, label
+  "Lunas (buku lama)". OpenAPI/API/ERD/BUSINESS_RULES diperbarui. Mobile pengurus: rincian "dari buku lama" dan menu
+  **Batalkan catatan buku lama**.
+- Review mandiri menemukan dan memperbaiki sebelum rilis: (1) penanda `versi_keuangan` di mobile tidak mencakup alamat
+  baru sehingga pembatalan akan ditolak server (tes widget mengunci body); (2) batas impor di masa depan memunculkan
+  tunggakan belum jatuh tempo; (3) baris TOTAL Excel terbaca sebagai rumah tidak lengkap; (4) nilai TOTAL >Rp10 juta.
+- `M06PasswordResetTest` disesuaikan dengan teks email 28 Okt (subjek "Reset Kata Sandi - RT05 TAKEDA", kode tebal
+  `**kode**` tetap utuh untuk disalin); Pint `ResetPasswordNotification` dirapikan sehingga CI API tidak merah lagi.
+- Uji cek (tanpa tulis) pada Excel asli di PC pemilik: 187 rumah, TOTAL per bulan cocok, 1.886 tagihan, lunas buku lama
+  Rp98.065.000, sisa Rp43.385.000, kelebihan Rp1.055.000, **21 rumah perlu keputusan tarif**. Hasil hanya angka/kode;
+  laporan tinjauan disimpan lokal di folder Unduhan pemilik, tidak di Git.
+- Bukti: Postgres 17 lokal: backend penuh **451/451 (4.741 assertion)** termasuk `M18OldBookImportTest` 13 tes; Pint PASS; `flutter analyze` bersih, `flutter test` **353/353**; `check-repo` OK (1.118 berkas).
+- Belum: keputusan bendahara (tarif 21 rumah, "LUNAS DK", tidak mampu, rumah kosong), tanggal batas + saldo kas resmi,
+  uji terapkan pada branch Neon salinan production, lalu terapkan di production (izin pemilik). Tutup Buku belum dikerjakan.
+
 ## M19R — revisi Tombol Panik (ADR48) — 29 Oktober 2026
 
 Branch `cursor1530` (bukan `main`). Brief pemilik: FAB kanan bawah, halaman ketentuan bergaya privasi, geser

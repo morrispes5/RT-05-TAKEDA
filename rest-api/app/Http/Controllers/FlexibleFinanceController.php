@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domain\Finance\Dues;
 use App\Domain\Finance\DuesConfirmations;
 use App\Domain\Finance\FlexibleDues;
+use App\Domain\Finance\OldBook;
 use App\Exceptions\DomainConflict;
 use App\Http\Responses\Api;
 use App\Http\Responses\Present;
@@ -267,6 +268,19 @@ class FlexibleFinanceController extends Controller
             } else {
                 FlexibleDues::reverseAdjustment($request->user(), $id, $d['alasan']);
             }
+
+            return Api::data(['id' => $id, 'dibatalkan' => true]);
+        });
+    }
+
+    /** ADR49: batalkan satu pelunasan buku lama hasil impor yang salah; tagihan kembali terbuka, kas tidak berubah. */
+    public function cancelOldBook(Request $request, string $id): JsonResponse
+    {
+        self::client($request);
+        $d = $request->validate(['alasan' => ['required', 'string', 'min:5', 'max:300']]);
+
+        return Idempotency::run($request, $request->user(), 'old-book.cancel', $d + ['id' => $id], function () use ($request, $id, $d) {
+            OldBook::cancel($request->user(), $id, $d['alasan']);
 
             return Api::data(['id' => $id, 'dibatalkan' => true]);
         });

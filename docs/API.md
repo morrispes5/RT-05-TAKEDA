@@ -61,6 +61,11 @@ Ringkasan kas warga dan laporan/XLSX tersedia saat flag v2 aktif. `/admin/cash/s
 yang sama: modal awal dan pembalikan bertanda (`koreksi`) terpisah dari pemasukan/pengeluaran baru; saldo dan mutasi
 tetap tersedia. Header private/no-store, snapshot diambil dengan lock keuangan. Respons M17 dipertahankan saat flag off.
 Ringkasan rumah v2 juga memuat riwayat_keringanan dan riwayat_penyesuaian yang dibatasi rumah tersebut.
+ADR49 (impor rekap bendahara): tagihan v2 menambah `terbayar_buku_lama` (sudah termasuk di `terbayar`) dan
+`buku_lama_id`; label "Lunas (buku lama)" bila lunas hanya dari rekap. Pengurus membatalkan satu pelunasan buku lama
+yang salah melalui `POST /admin/old-book-settlements/{id}/cancel` (alasan, `versi_keuangan` 2, Idempotency-Key); kas
+tidak berubah, tagihan terbuka kembali, sudah dibatalkan → 404 `OLD_BOOK_NOT_FOUND`. Impor sendiri lewat perintah
+`php artisan rt05:impor-buku-lama` (tanpa HTTP), lihat [M18_IMPOR_BUKU_LAMA.md](M18_IMPOR_BUKU_LAMA.md).
 Saldo/riwayat titipan pengurus memuat penggunaan beserta periode, nominal, pembatalan dan referensi pengganti.
 Rekap memuat saldo dari view secara batch; pembacaan ringkasan rumah/titipan tidak mencampur beberapa keadaan transaksi.
 

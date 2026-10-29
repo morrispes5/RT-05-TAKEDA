@@ -127,6 +127,11 @@ Jika anonymous_to_residents=true, resource warga tidak memuat user_id, nama, kon
 - Reminder agenda satu kali H-1; pengingat iuran tanggal 5 dan 20 untuk periode berjalan; masing-masing key deduplikasi berbeda.
 - Preferences dapat mematikan push nonkritis; inbox riwayat layanan tetap ada.
 
+**Impor rekap bendahara (ADR49, 29 Okt 2026).** Bulan yang lunas sebelum aplikasi dicatat sebagai pelunasan buku lama
+tanpa kas; uangnya masuk sekali lewat saldo awal kas resmi. Nominal berbeda dari tarif umum tidak ditebak (perlu keputusan
+tarif khusus atau tarif umum); kelebihan bayar lama hanya dilaporkan. NIK/KK/nama dari Excel tidak diimpor. Koreksi
+per bulan dengan pembatalan beralasan; impor sekali per tahun.
+
 ## C. Matriks akses minimum
 
 | Resource | Publik | Warga aktif | Akun pending | Admin |

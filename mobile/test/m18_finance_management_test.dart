@@ -65,9 +65,64 @@ void main() {
     await api.post('/admin/dues/generate', data: {}, idempotencyKey: 'synthetic');
     await api.post('/admin/cash-transactions/x/reverse', data: {'alasan': 'Salah catat'});
     await api.post('/admin/agenda', data: {'judul': 'Uji sintetis'});
+    await api.post('/admin/old-book-settlements/x/cancel', data: {'alasan': 'Salah catat'});
     expect(body(requests[0].data)['versi_keuangan'], 2);
     expect(body(requests[1].data)['versi_keuangan'], 2);
     expect(body(requests[2].data).containsKey('versi_keuangan'), isFalse);
+    expect(body(requests[3].data)['versi_keuangan'], 2);
+  });
+
+  testWidgets('ADR49: old-book month shows its source and can be cancelled with a reason', (tester) async {
+    final writes = <RequestOptions>[];
+    await mount(tester, const HouseFinancePage(house: {'id': 'h1', 'kode_rumah': 'D1-2'}), (o) {
+      if (o.method == 'POST') {
+        writes.add(o);
+        return jsonBody(200, {
+          'data': {'id': 'b1', 'dibatalkan': true},
+        });
+      }
+      if (o.path.endsWith('/dues')) {
+        return jsonBody(200, {
+          'data': {
+            'tagihan': [
+              {
+                'id': 't1',
+                'periode': '2026-03',
+                'nominal_efektif': 75000,
+                'terbayar': 75000,
+                'terbayar_buku_lama': 75000,
+                'buku_lama_id': 'b1',
+                'keringanan': 0,
+                'sisa': 0,
+                'status_label': 'Lunas (buku lama)',
+              },
+            ],
+            'riwayat_keringanan': [],
+            'riwayat_penyesuaian': [],
+          },
+        });
+      }
+      if (o.path.endsWith('/deposits')) {
+        return jsonBody(200, {
+          'data': {'saldo': 0, 'lot': [], 'penggunaan': []},
+        });
+      }
+      return jsonBody(200, {'data': []});
+    });
+    expect(find.textContaining('Lunas (buku lama)'), findsOneWidget);
+    expect(find.textContaining('dari buku lama'), findsOneWidget);
+    await tester.tap(find.byTooltip('Kelola tagihan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Batalkan catatan buku lama'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'Salah catat dari rekap');
+    await tap(tester, 'Simpan');
+    await tester.pumpAndSettle();
+    await tap(tester, 'Balik');
+    await tester.pumpAndSettle();
+    expect(writes, hasLength(1));
+    expect(writes.single.path, endsWith('/admin/old-book-settlements/b1/cancel'));
+    expect(body(writes.single.data), {'alasan': 'Salah catat dari rekap', 'versi_keuangan': 2});
   });
 
   testWidgets('house rates deposits and relief history fit compact large text', (tester) async {

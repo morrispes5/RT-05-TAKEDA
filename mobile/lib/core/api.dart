@@ -147,7 +147,7 @@ class Api {
 
   Object? _financeData(String path, Object? data) {
     if (_ref.read(sessionProvider).akun?.keuanganFleksibel != true || data is! Map) return data;
-    if (!RegExp(r'^/admin/(dues|deposit|cash|houses/[^/]+/dues-rates)').hasMatch(path)) return data;
+    if (!RegExp(r'^/admin/(dues|deposit|cash|old-book|houses/[^/]+/dues-rates)').hasMatch(path)) return data;
     return {...data, 'versi_keuangan': 2};
   }
 

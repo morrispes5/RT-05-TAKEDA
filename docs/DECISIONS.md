@@ -811,3 +811,19 @@ Tanggal: **29 Oktober 2026**. Status: **diputuskan oleh pemilik** (brief M19R). 
 5. Pelapor dapat membatalkan alarm aktif (`dibatalkan_pelapor`); tidak dihitung penyalahgunaan. Riwayat tidak dihapus.
 6. Judul notifikasi penerima: **"DARURAT di RT 05"**. Isi push tetap generik tanpa nama/rumah di layar kunci (aturan M19); identitas hanya lewat API terautentikasi. Jenis disebut di isi hanya jika sudah terisi saat fanout.
 7. Belum diputuskan pemilik: arti "semua keluarga"; FAB di semua tab; ikon SOS vs sirine (default sirine).
+
+### ADR49 — Impor rekap iuran bendahara sebagai "lunas di buku lama"
+
+Tanggal: **29 Oktober 2026**. Status: **diputuskan pemilik** (arah kerja); nilai tarif per rumah menunggu bendahara.
+Rincian: [M18_IMPOR_BUKU_LAMA.md](M18_IMPOR_BUKU_LAMA.md).
+
+1. Data awal iuran berasal dari Excel rekap bendahara. Yang diimpor hanya alamat rumah, tarif, dan angka bayar per bulan
+   tahun berjalan. **NIK, No KK, nama, pekerjaan tidak diimpor**; warga tetap mendaftar sendiri dan dicocokkan ke rumah.
+2. Bulan yang sudah dibayar sebelum aplikasi dicatat sebagai **pelunasan buku lama tanpa kas**. Uangnya masuk aplikasi
+   sekali lewat saldo awal kas resmi bendahara. Tidak dicatat sebagai pembayaran agar kas tidak terhitung dua kali.
+3. Nominal yang berbeda dari tarif umum tidak ditebak: impor diblokir sampai berkas keputusan menetapkan tarif khusus
+   (dengan alasan) atau menegaskan tarif umum. Kelebihan bayar di buku lama hanya dilaporkan.
+4. Impor dua tahap (cek tanpa tulis → terapkan), satu kali per tahun, satu transaksi, audit angka saja, tanpa notifikasi.
+   Pelaksanaan production memerlukan izin pemilik; uji dahulu pada branch Neon salinan.
+5. Koreksi per bulan lewat aplikasi: pembatalan pelunasan buku lama dengan alasan (append-only).
+6. Pekerjaan ini digabung di branch PR #103 (M19R) atas instruksi pemilik 29 Okt agar merge bersama.
