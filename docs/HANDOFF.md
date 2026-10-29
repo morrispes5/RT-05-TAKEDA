@@ -12,10 +12,8 @@ Bagian ini mengungguli catatan lebih lama di bawah bila bertentangan.
 
 **Rilis 29 Okt 21.37 WIB:** APK **1027** di `/unduh` + Drive (ID tetap). Staging immutable **`3384bf9`** (rekonsiliasi 0
 masalah, saldo uji Rp2.180.000). **Panik staging dibuka untuk semua akun** (`RT05_PANIC_AUDIENCE=all`; cadangan env lama
-`/root/.rt05/.env.staging.bak-20261029-adr50`). **Temuan terbuka:** `website/resources/css/app.css` di `main` menyusut
-±40 rb → ±5 rb karakter sejak commit 28 Okt (Natanael: "udah terubah", "benerin css", "ganti"); menu HP, sidebar pengurus,
-dan tata letak bacaan hilang di sumber. Preview statis yang ter-commit masih build lama sehingga situs live aman; **jangan
-`build:preview` sebelum CSS dipulihkan** (Website verification merah karena ini). Data iuran asli hanya untuk production.
+`/root/.rt05/.env.staging.bak-20261029-adr50`). **Pemulihan 28 Okt (29 Okt malam):** perubahan Natanael di website/email reset dikembalikan ke versi yang diterima
+(lihat PROGRESS); perubahan Raihan (ADR47) dan teks Profil PR #102 dipertahankan; preview diekspor ulang. Data iuran asli hanya untuk production.
 
 **Sesi 29 Oktober 2026 malam (lanjutan):** PR #103 dan #102 di-merge atas perintah pemilik. ADR50: alarm darurat
 berdering terus seperti panggilan (data-only FCM + `EmergencyAlarmReceiver` + layar alarm penuh + kartu izin di Beranda).
