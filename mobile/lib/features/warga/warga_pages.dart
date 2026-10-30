@@ -30,6 +30,7 @@ import 'providers.dart';
 import 'report_actions.dart';
 import 'report_draft.dart';
 import 'resident_cash.dart';
+import '../auth/account_switcher.dart';
 
 // ─────────────────────────────────────────── Beranda warga
 class WargaHomePage extends ConsumerWidget {
@@ -1710,14 +1711,15 @@ class AccountPage extends ConsumerWidget {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        const AccountSwitcher(),
+        const SizedBox(height: 16),
         if (akun.rumah == null) ...[
-          const SizedBox(height: 16),
           const SectionCard(
             title: 'Keluarga',
             child: Text('Belum terhubung ke rumah.', style: TextStyle(color: Brand.muted, height: 1.35)),
           ),
         ] else ...[
-          const SizedBox(height: 16),
           const FamilyPanel(),
         ],
         const SizedBox(height: 16),
@@ -1739,7 +1741,6 @@ class AccountPage extends ConsumerWidget {
         const Center(
           child: Text('RT05 TAKEDA • data warga hanya untuk administrasi RT', style: TextStyle(color: Brand.muted, fontSize: 12)),
         ),
-        // ADR35: Kebijakan Privasi dapat dibaca ulang kapan saja.
         Center(
           child: TextButton.icon(
             key: const ValueKey('buka-kebijakan-privasi'),
