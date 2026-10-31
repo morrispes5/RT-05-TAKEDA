@@ -11,6 +11,7 @@ import '../../core/models.dart';
 import '../../core/session.dart';
 import '../../core/widgets.dart';
 import 'account_access.dart';
+import 'account_switcher.dart';
 
 Future<void> _finishAuth(WidgetRef ref, dynamic data) async {
   final map = data as Map;
@@ -74,7 +75,11 @@ class _AuthScaffold extends StatelessWidget {
 }
 
 class LoginPage extends ConsumerStatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.adding = false});
+
+  /// Dibuka dari dalam aplikasi untuk menambah akun rumah lain tanpa membuang akun yang sedang dipakai.
+  final bool adding;
+
   @override
   ConsumerState<LoginPage> createState() => _LoginPageState();
 }
@@ -111,6 +116,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           .post('/auth/mobile-login', data: {'email': _email.text.trim(), 'password': _password.text, 'device_name': 'Android RT05'});
       if (!mounted) return;
       await _finishAuth(ref, data);
+      if (widget.adding && mounted) Navigator.pop(context);
     } on ApiException catch (error) {
       if (!mounted) return;
       setState(() => _error = error.display);
@@ -121,16 +127,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final expired = ref.watch(sessionProvider).expired;
+    final session = ref.watch(sessionProvider);
     return _AuthScaffold(
-      title: 'Masuk',
-      subtitle: 'Email dan kata sandi aplikasi RT05 TAKEDA. Tidak memakai akun Google.',
+      back: widget.adding,
+      title: widget.adding ? 'Tambah akun' : 'Masuk',
+      subtitle: widget.adding
+          ? 'Masukkan akun rumah yang lain. Akun yang sudah ada di HP ini tidak dihapus, dan datanya tidak digabung.'
+          : 'Email dan kata sandi aplikasi RT05 TAKEDA. Tidak memakai akun Google.',
       child: Form(
         key: _form,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (expired) const _Banner('Sesi berakhir. Silakan masuk kembali.'),
+            if (!widget.adding) const AccountSwitcher(embeddedInLogin: true),
+            if (session.expired) const _Banner('Sesi berakhir. Silakan masuk kembali.'),
             TextFormField(
               key: const ValueKey('field-login-email'),
               controller: _email,
@@ -165,22 +175,35 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 child: Text(_error!, style: const TextStyle(color: Brand.danger)),
               ),
             const SizedBox(height: 20),
-            BusyButton(label: 'Masuk', icon: Icons.login, onPressed: _busy ? null : _submit),
-            TextButton(onPressed: _busy ? null : () => context.push('/forgot'), child: const Text('Lupa kata sandi?')),
-            const Divider(height: 32),
-            const Text(
-              'Belum punya akun? Minta token RT 6 digit kepada pengurus.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Brand.muted),
+            BusyButton(label: widget.adding ? 'Simpan akun ini' : 'Masuk', icon: Icons.login, onPressed: _busy ? null : _submit),
+            TextButton(
+              onPressed: _busy
+                  ? null
+                  : () {
+                      if (widget.adding) {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordPage()));
+                      } else {
+                        context.push('/forgot');
+                      }
+                    },
+              child: const Text('Lupa kata sandi?'),
             ),
-            const SizedBox(height: 12),
-            _AuthLink(icon: Icons.home_work_outlined, label: 'Daftar akun utama rumah', onPressed: _busy ? null : () => context.push('/register')),
-            const SizedBox(height: 10),
-            _AuthLink(
-              icon: Icons.group_add_outlined,
-              label: 'Daftar akun tambahan keluarga',
-              onPressed: _busy ? null : () => context.push('/register?jenis=tambahan'),
-            ),
+            if (!widget.adding) ...[
+              const Divider(height: 32),
+              const Text(
+                'Belum punya akun? Minta token RT 6 digit kepada pengurus.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Brand.muted),
+              ),
+              const SizedBox(height: 12),
+              _AuthLink(icon: Icons.home_work_outlined, label: 'Daftar akun utama rumah', onPressed: _busy ? null : () => context.push('/register')),
+              const SizedBox(height: 10),
+              _AuthLink(
+                icon: Icons.group_add_outlined,
+                label: 'Daftar akun tambahan keluarga',
+                onPressed: _busy ? null : () => context.push('/register?jenis=tambahan'),
+              ),
+            ],
             const SizedBox(height: 24),
             const ServerInfo(),
           ],
@@ -625,13 +648,18 @@ class _PendingPageState extends ConsumerState<PendingPage> {
           BusyButton(label: 'Periksa lagi', icon: Icons.refresh, outlined: true, onPressed: _busy ? null : _refresh),
           const SizedBox(height: 10),
           BusyButton(label: 'Keluar', outlined: true, onPressed: _busy ? null : _logout),
+          const SizedBox(height: 16),
+          AccountSwitcher(onAdd: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginPage(adding: true)))),
         ],
       ),
     );
   }
 }
 
-final _pendingStatus = FutureProvider.autoDispose((ref) => ref.read(apiProvider).get('/auth/additional-account-status'));
+final _pendingStatus = FutureProvider.autoDispose((ref) {
+  ref.watch(sessionProvider.select((s) => s.akun?.id));
+  return ref.read(apiProvider).get('/auth/additional-account-status');
+});
 
 /// UAT M15: pemohon akun tambahan memperbaiki data yang diminta pengurus, lalu mengajukan ulang.
 class RevisionRequestPage extends ConsumerStatefulWidget {

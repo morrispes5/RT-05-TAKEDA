@@ -79,7 +79,10 @@ class Api {
         onError: (e, handler) {
           final auth = e.requestOptions.headers['Authorization'];
           final epoch = e.requestOptions.extra['sessionEpoch'];
-          if (e.response?.statusCode == 401 && auth is String && auth.startsWith('Bearer ')) {
+          if (e.response?.statusCode == 401 &&
+              e.requestOptions.extra['ignoreUnauthorized'] != true &&
+              auth is String &&
+              auth.startsWith('Bearer ')) {
             _ref.read(sessionProvider.notifier).expire(token: auth.substring(7), epoch: epoch is int ? epoch : null);
           }
           handler.next(e);
@@ -126,7 +129,19 @@ class Api {
   );
 
   /// Mengembalikan `data` dari envelope.
-  Future<dynamic> get(String path, {Map<String, dynamic>? query}) => _wrap(() => _dio.get(path, queryParameters: query), (b) => (b as Map)['data']);
+  /// [bearer] memeriksa token tertentu tanpa mengganti token sesi yang sedang aktif.
+  /// [ignoreUnauthorized] menahan interceptor agar 401 token itu tidak mengakhiri sesi HP.
+  Future<dynamic> get(String path, {Map<String, dynamic>? query, String? bearer, bool ignoreUnauthorized = false}) => _wrap(
+    () => _dio.get(
+      path,
+      queryParameters: query,
+      options: Options(
+        headers: {if (bearer != null) 'Authorization': 'Bearer $bearer'},
+        extra: {if (ignoreUnauthorized) 'ignoreUnauthorized': true},
+      ),
+    ),
+    (b) => (b as Map)['data'],
+  );
 
   /// Mengembalikan envelope lengkap (data + meta) untuk daftar berhalaman.
   Future<Map<String, dynamic>> page(String path, {Map<String, dynamic>? query}) =>

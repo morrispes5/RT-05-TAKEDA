@@ -1,5 +1,18 @@
 # Progress — RT05 TAKEDA
 
+## Ganti akun di HP (dua rumah) — 31 Oktober 2026
+
+Branch `feature/mobile-switch-account` (Natanael, 30 Okt 13.27 WIB, fondasi). Dilanjutkan di branch yang sama.
+**Belum digabung ke `main` dan belum disentuh staging**, supaya rilis yang sedang berjalan tidak berubah.
+
+Satu orang dapat menyimpan lebih dari satu akun di HP (misalnya dua rumah). Iuran, keluarga, dan laporan tidak digabung.
+- Akun yang sudah masuk ikut masuk daftar saat sesi dipulihkan, jadi akun kedua bisa ditambah tanpa keluar dulu.
+- Pindah akun memakai token tersimpan dan baru mengganti sesi setelah `GET /auth/me` berhasil. Token mati dihapus dan akun yang sedang dipakai tetap.
+- Keluar hanya melepas akun itu. Akun lain tetap di halaman masuk dan bisa dipilih tanpa mengetik sandi lagi.
+- Halaman Akun, menunggu persetujuan, dan persetujuan privasi menampilkan daftar. Tambah akun menutup halaman masuk setelah berhasil.
+- Tab shell dikunci dengan id akun; halaman yang menumpuk di atas shell ditutup saat akun berganti.
+- Tes: `flutter test` di `mobile/` lulus (362 tes, termasuk `test/account_switch_test.dart` dan `test/family_flow_test.dart`). `node infra/scripts/check-repo.mjs` OK. Belum ada uji di HP nyata.
+
 ## Pemulihan perubahan 28 Oktober (Natanael) — 29 Oktober 2026
 
 Instruksi pemilik: rapikan semua perubahan 51 commit Natanael (28 Okt 07.10–08.31 UTC), riwayat dan kontributor tetap

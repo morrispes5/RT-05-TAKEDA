@@ -1,6 +1,9 @@
 import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+/// Akun yang token-nya disimpan di HP ini. Satu orang dapat menyimpan lebih dari satu
+/// akun (misalnya dua rumah). Token tidak pernah ditulis ke log atau preferensi biasa.
 class StoredAccount {
   const StoredAccount({
     required this.id,
@@ -19,36 +22,63 @@ class StoredAccount {
   final String? status;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'email': email,
-        'token': token,
-        'nama': nama,
-        'peran': peran,
-        'status': status,
-      };
+    'id': id,
+    'email': email,
+    'token': token,
+    'nama': nama,
+    'peran': peran,
+    'status': status,
+  };
 
   factory StoredAccount.fromJson(Map<String, dynamic> json) => StoredAccount(
-        id: json['id'] as String,
-        email: json['email'] as String,
-        token: json['token'] as String,
-        nama: json['nama'] as String?,
-        peran: json['peran'] as String?,
-        status: json['status'] as String?,
-      );
+    id: json['id'] as String,
+    email: json['email'] as String,
+    token: json['token'] as String,
+    nama: json['nama'] as String?,
+    peran: json['peran'] as String?,
+    status: json['status'] as String?,
+  );
 }
 
+/// Daftar akun di secure storage OS. [memory] hanya untuk tes: tiap instance punya peta sendiri
+/// sehingga sesi uji tidak saling menimpa dan tidak memanggil plugin secure storage.
 class AccountStore {
-  static const _storage = FlutterSecureStorage();
+  AccountStore({Map<String, String>? memory}) : _memory = memory;
+
+  static const _secure = FlutterSecureStorage();
   static const _key = 'rt05_accounts';
   static const _activeKey = 'rt05_active_account_id';
 
+  final Map<String, String>? _memory;
+
+  Future<String?> _read(String key) async =>
+      _memory != null ? _memory[key] : _secure.read(key: key);
+
+  Future<void> _write(String key, String value) async {
+    if (_memory != null) {
+      _memory[key] = value;
+      return;
+    }
+    await _secure.write(key: key, value: value);
+  }
+
+  Future<void> _delete(String key) async {
+    if (_memory != null) {
+      _memory.remove(key);
+      return;
+    }
+    await _secure.delete(key: key);
+  }
+
   Future<List<StoredAccount>> loadAll() async {
-    final raw = await _storage.read(key: _key);
+    final raw = await _read(_key);
     if (raw == null || raw.isEmpty) return [];
     try {
       final list = jsonDecode(raw) as List;
       return list
-          .map((e) => StoredAccount.fromJson(Map<String, dynamic>.from(e)))
+          .map(
+            (e) => StoredAccount.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
           .toList();
     } catch (_) {
       return [];
@@ -56,16 +86,14 @@ class AccountStore {
   }
 
   Future<void> saveAll(List<StoredAccount> accounts) async {
-    final json = jsonEncode(accounts.map((a) => a.toJson()).toList());
-    await _storage.write(key: _key, value: json);
+    await _write(_key, jsonEncode(accounts.map((a) => a.toJson()).toList()));
   }
 
-  Future<String?> activeId() => _storage.read(key: _activeKey);
+  Future<String?> activeId() => _read(_activeKey);
 
-  Future<void> setActive(String id) =>
-      _storage.write(key: _activeKey, value: id);
+  Future<void> setActive(String id) => _write(_activeKey, id);
 
-  Future<void> clearActive() => _storage.delete(key: _activeKey);
+  Future<void> clearActive() => _delete(_activeKey);
 
   Future<void> upsert(StoredAccount account) async {
     final all = await loadAll();
@@ -82,12 +110,6 @@ class AccountStore {
     final all = await loadAll();
     all.removeWhere((a) => a.id == id);
     await saveAll(all);
-    final active = await activeId();
-    if (active == id) await clearActive();
-  }
-
-  Future<void> clearAll() async {
-    await _storage.delete(key: _key);
-    await clearActive();
+    if (await activeId() == id) await clearActive();
   }
 }

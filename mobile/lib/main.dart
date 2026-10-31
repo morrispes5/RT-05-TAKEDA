@@ -144,6 +144,15 @@ class _Rt05AppState extends ConsumerState<Rt05App> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(sessionProvider, (prev, next) {
+      if (prev?.akun?.id == null || prev!.akun?.id == next.akun?.id) return;
+      // Halaman yang didorong di atas shell milik akun lama ditutup supaya datanya tidak tertinggal.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final nav = ref.read(routerProvider).routerDelegate.navigatorKey.currentState;
+        if (nav != null && nav.canPop()) nav.popUntil((route) => route.isFirst);
+      });
+    });
     final flavor = ref.watch(appConfigProvider).flavor;
     return MaterialApp.router(
       title: AppConfig.appName,

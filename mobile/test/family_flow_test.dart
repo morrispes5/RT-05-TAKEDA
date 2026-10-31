@@ -100,6 +100,7 @@ void main() {
     );
     await tester.tap(find.widgetWithText(NavigationDestination, 'Akun'));
     await tester.pumpAndSettle();
+    await scrollUntilReadable(tester, find.text('Ubah data keluarga'));
     await tester.tap(find.text('Ubah data keluarga'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, 'Nama Ditulis Duluan');
@@ -146,13 +147,13 @@ void main() {
     );
     await tester.tap(find.widgetWithText(NavigationDestination, 'Akun'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Kepala Keluarga Uji'));
+    await scrollUntilReadable(tester, find.text('Kepala Keluarga Uji'));
     await tester.tap(find.text('Kepala Keluarga Uji'));
     await tester.pumpAndSettle();
     expect(find.text('Tandai pindah'), findsNothing);
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Anggota Keluarga Uji'));
+    await scrollUntilReadable(tester, find.text('Anggota Keluarga Uji'));
     await tester.tap(find.text('Anggota Keluarga Uji'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tandai pindah'));
@@ -278,6 +279,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Ubah data keluarga'), findsNothing);
     expect(find.text('Tambah anggota'), findsNothing);
+    await scrollUntilReadable(tester, find.text('Anggota Keluarga Uji'));
     await tester.tap(find.text('Anggota Keluarga Uji'));
     await tester.pumpAndSettle();
     expect(find.byType(MemberPage), findsNothing);

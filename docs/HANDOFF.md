@@ -4,7 +4,11 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **Kamis 29 Oktober 2026** (M19R Tombol Panik di `cursor1530`; sebelumnya ADR47 Maps). **Baca bagian 0 dulu.**
+Terakhir diperbarui: **Sabtu 31 Oktober 2026** (ganti akun di branch `feature/mobile-switch-account`; belum ke `main`/staging). **Baca bagian 0 dulu.**
+
+**31 Okt 2026:** fitur ganti akun (satu orang, lebih dari satu akun, misalnya dua rumah) dilanjutkan di branch
+`feature/mobile-switch-account`. Jangan digabung ke `main` dan jangan di-deploy ke staging sampai pemilik meminta.
+Data tiap akun tetap terpisah. Rincian di PROGRESS bagian atas.
 
 ## 0. MULAI DI SINI — status Selasa 27 Oktober 2026 sore (Claude)
 
