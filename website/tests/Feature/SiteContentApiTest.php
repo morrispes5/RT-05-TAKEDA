@@ -11,9 +11,16 @@ use Tests\TestCase;
 /**
  * M14: website membaca artikel/album terbit dari API konten; API mati → last-good → JSON baked.
  * Tanpa RT05_CONTENT_API (preview statis Vercel) perilaku lama tidak berubah.
+ * 
+ * ============================================
+ * SiteContentApiTest — Integration tests for public content fetching
+ * ============================================
  */
 class SiteContentApiTest extends TestCase
 {
+    /**
+     * Setup: flush cache and reset SiteContent before each test.
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -21,6 +28,9 @@ class SiteContentApiTest extends TestCase
         SiteContent::forget();
     }
 
+    /**
+     * Teardown: clean up cache and SiteContent after each test.
+     */
     protected function tearDown(): void
     {
         Cache::store('file')->flush();
@@ -28,6 +38,9 @@ class SiteContentApiTest extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * Helper: configure fake HTTP responses for articles and albums.
+     */
     private function api(): void
     {
         config(['services.rt05_content.api' => 'http://api.internal']);
@@ -45,6 +58,9 @@ class SiteContentApiTest extends TestCase
         ]);
     }
 
+    /**
+     * Test: when no API is configured, baked catalog is used.
+     */
     public function test_without_api_config_the_baked_catalog_is_used(): void
     {
         Http::fake();
@@ -53,6 +69,9 @@ class SiteContentApiTest extends TestCase
         Http::assertNothingSent();
     }
 
+    /**
+     * Test: published API content is rendered and cached as last-good.
+     */
     public function test_published_api_content_is_rendered_and_cached_as_last_good(): void
     {
         $this->api();
@@ -65,6 +84,9 @@ class SiteContentApiTest extends TestCase
         Http::assertSentCount(4); // artikel, album, profil, kontak sekali ambil; sisanya dari cache fresh
     }
 
+    /**
+     * Test: API outage falls back to last-good cache, then to baked.
+     */
     public function test_api_outage_falls_back_to_last_good_then_to_baked(): void
     {
         $this->api();
@@ -86,7 +108,11 @@ class SiteContentApiTest extends TestCase
         $this->assertSame('baked', SiteContent::source());
     }
 
-    /** M16: cache fresh habis → konten terakhir disajikan tanpa menunggu API; pembaruan berjalan setelah response. */
+    /**
+     * M16: cache fresh habis → konten terakhir disajikan tanpa menunggu API; pembaruan berjalan setelah response.
+     * 
+     * Test: expired cache serves last-good and refreshes after the response.
+     */
     public function test_expired_cache_serves_last_good_and_refreshes_after_the_response(): void
     {
         $this->api();
@@ -113,7 +139,11 @@ class SiteContentApiTest extends TestCase
         Http::assertSentCount(4); // artikel, album, profil, kontak (ADR43)
     }
 
-    /** ADR43: halaman Kontak menampilkan Ketua RT dari pengaturan aplikasi; tanpa API (preview) tidak ada nomor. */
+    /**
+     * ADR43: halaman Kontak menampilkan Ketua RT dari pengaturan aplikasi; tanpa API (preview) tidak ada nomor.
+     * 
+     * Test: contact page shows chairman WhatsApp from settings only when available.
+     */
     public function test_contact_page_shows_chairman_whatsapp_from_settings_only_when_available(): void
     {
         $this->get('/kontak')->assertOk()->assertSee('Belum diumumkan')->assertDontSee('wa.me', false);
@@ -131,7 +161,11 @@ class SiteContentApiTest extends TestCase
             ->assertSee('0812-0000-1234');
     }
 
-    /** UAT M15: foto sampul asli yang diunggah lewat CMS tampil menggantikan SVG; artikel tanpa sampul tetap SVG. */
+    /**
+     * UAT M15: foto sampul asli yang diunggah lewat CMS tampil menggantikan SVG; artikel tanpa sampul tetap SVG.
+     * 
+     * Test: article cover photo replaces SVG illustration.
+     */
     public function test_article_cover_photo_replaces_svg_illustration(): void
     {
         config(['services.rt05_content.api' => 'http://api.internal']);

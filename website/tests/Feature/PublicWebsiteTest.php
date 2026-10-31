@@ -5,8 +5,16 @@ namespace Tests\Feature;
 use App\Support\SiteContent;
 use Tests\TestCase;
 
+/**
+ * ============================================
+ * PublicWebsiteTest — Public routes & content rendering tests
+ * ============================================
+ */
 class PublicWebsiteTest extends TestCase
 {
+    /**
+     * Test: all public and demo routes render without database.
+     */
     public function test_all_public_and_demo_routes_render_without_database(): void
     {
         foreach (SiteContent::paths() as $path) {
@@ -16,6 +24,9 @@ class PublicWebsiteTest extends TestCase
         }
     }
 
+    /**
+     * Test: unknown routes and unknown content are not silently served.
+     */
     public function test_unknown_routes_and_unknown_content_are_not_silently_served(): void
     {
         foreach (['/admin', '/artikel/tidak-ada', '/dokumentasi/tidak-ada', '/pengurus/tidak-ada', '/pengurus/iuran', '/pengurus/warga', '/tidak-ada'] as $path) {
@@ -23,6 +34,9 @@ class PublicWebsiteTest extends TestCase
         }
     }
 
+    /**
+     * Test: pengurus prototype only has content tools and no server writes.
+     */
     public function test_pengurus_prototype_only_has_content_tools_and_no_server_writes(): void
     {
         foreach (['/pengurus', '/pengurus/artikel', '/pengurus/dokumentasi', '/pengurus/artikel/editor', '/pengurus/dokumentasi/editor'] as $path) {
@@ -35,6 +49,9 @@ class PublicWebsiteTest extends TestCase
         $this->get('/pengurus/masuk')->assertDontSee('type="password"', false);
     }
 
+    /**
+     * Test: event album uses real assets without an unconfirmed year.
+     */
     public function test_event_album_uses_real_assets_without_an_unconfirmed_year(): void
     {
         $this->get('/dokumentasi/perayaan-17-agustus')->assertOk()->assertSee('Perayaan 17 Agustus')->assertDontSee('17 Agustus 2026');
@@ -46,6 +63,9 @@ class PublicWebsiteTest extends TestCase
         }
     }
 
+    /**
+     * Test: footer and profil use maps link and published address.
+     */
     public function test_footer_and_profil_use_maps_link_and_published_address(): void
     {
         $maps = SiteContent::mapsUrl();
@@ -58,6 +78,10 @@ class PublicWebsiteTest extends TestCase
         $this->get('/kontak')->assertOk()->assertSee($maps, false)->assertSee('15445');
     }
 
+    /**
+     * Test: profile has confirmed chairman and anonymous officers.
+     * ADR43: bendahara Mas Wirawan boleh dipublikasikan; sekretaris tetap anonim.
+     */
     public function test_profile_has_confirmed_chairman_and_anonymous_officers(): void
     {
         // ADR43: bendahara Mas Wirawan boleh dipublikasikan; sekretaris tetap anonim.
@@ -67,6 +91,9 @@ class PublicWebsiteTest extends TestCase
             ->assertDontSee('menunggu konfirmasi pengurus');
     }
 
+    /**
+     * Test: photo variants exist and do not request nonexistent 1600 portrait.
+     */
     public function test_photo_variants_exist_and_do_not_request_nonexistent_1600_portrait(): void
     {
         foreach (SiteContent::photos() as $slug => $photo) {
@@ -77,6 +104,9 @@ class PublicWebsiteTest extends TestCase
         $this->get('/dokumentasi')->assertDontSee('peraturan-lapangan-1600.webp');
     }
 
+    /**
+     * Test: articles use calculated reading time and health source.
+     */
     public function test_articles_use_calculated_reading_time_and_health_source(): void
     {
         foreach (SiteContent::articles() as $article) {
