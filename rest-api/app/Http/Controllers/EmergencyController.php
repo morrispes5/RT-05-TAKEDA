@@ -49,7 +49,12 @@ class EmergencyController extends Controller
     {
         [$actor, $q] = $this->visible($r);
 
-        return Api::data(Emergencies::present($q->findOrFail($id), $actor->isPengurus()) + ['pemberitahuan' => Emergencies::deliveryState($id)])->header('Cache-Control', 'no-store');
+        $e = $q->findOrFail($id);
+
+        // milik_saya: status pengiriman pemberitahuan hanya relevan bagi pelapor (dan pengurus), bukan penerima alarm.
+        return Api::data(Emergencies::present($e, $actor->isPengurus())
+            + ['pemberitahuan' => Emergencies::deliveryState($id), 'milik_saya' => $e->pelapor_id === $actor->id])
+            ->header('Cache-Control', 'no-store');
     }
 
     public function store(Request $r): JsonResponse

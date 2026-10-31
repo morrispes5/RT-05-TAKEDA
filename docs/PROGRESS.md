@@ -1,5 +1,21 @@
 # Progress — RT05 TAKEDA
 
+## Temuan uji emulator APK 1027 — 31 Oktober 2026
+
+Branch `codex/m19-temuan-emulator` (di atas PR #107). Dari 4 temuan uji emulator 30 Okt:
+- Detail darurat yang masih menyala dimuat ulang tiap 15 detik selama halaman terbuka (berhenti setelah status berubah,
+  tidak mengganggu formulir pengurus yang sedang dikirim).
+- Kalimat status pengiriman pemberitahuan hanya untuk pelapor dan pengurus: `GET /emergencies/{id}` menambah
+  `milik_saya` (OpenAPI diperbarui). Penerima alarm tidak lagi melihat "Layanan notifikasi menerima pengiriman".
+- Menu Tombol Panik warga menampilkan "Penyalahgunaan tercatat di akun Anda: N dari 3" (cocok dengan teks notifikasi).
+- `setState` yang mengembalikan Future di detail/alarm darurat (assert debug) diganti blok.
+- **Ditunda:** teks Kebijakan Privasi Tombol Panik ("memilih jenis darurat, lalu mengonfirmasi"). Mengubahnya berarti
+  versi privasi baru: semua akun setuju ulang dan alarm (`privasi_versi === PANIC_VERSION`) terhenti sampai setuju.
+  Dikerjakan bersama pembukaan production (semua akun production setuju dari awal).
+- Pint website: `tests/Feature/PublicWebsiteTest.php` dan `SiteContentApiTest.php` (komentar Natanael 30 Okt langsung
+  di `main`) dirapikan sehingga cek website hijau lagi.
+- Tes: Flutter 366/366, analyze/format bersih; backend M19 22/22, Pint lulus.
+
 ## Ganti akun di HP (dua rumah) — 31 Oktober 2026
 
 Branch `feature/mobile-switch-account` (Natanael, 30 Okt 13.27 WIB, fondasi). Dilanjutkan di branch yang sama.

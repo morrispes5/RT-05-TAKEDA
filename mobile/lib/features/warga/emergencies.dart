@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:math';
 
@@ -457,6 +458,16 @@ class _EmergencyPageState extends ConsumerState<EmergencyPage> {
                             decoration: BoxDecoration(color: Brand.warningBg, borderRadius: BorderRadius.circular(12)),
                             child: const Text('Uji terbatas: alarm hanya dikirim ke akun uji.', style: TextStyle(color: Brand.warning)),
                           ),
+                        if ((status['penyalahgunaan'] as num? ?? 0) > 0 && !blocked)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(color: Brand.warningBg, borderRadius: BorderRadius.circular(12)),
+                            child: Text(
+                              'Penyalahgunaan tercatat di akun Anda: ${status['penyalahgunaan']} dari 3. Pada hitungan ke-3 Tombol Panik akun ini dinonaktifkan.',
+                              style: const TextStyle(color: Brand.warning),
+                            ),
+                          ),
                         if (!allowed)
                           SectionCard(
                             title: blocked
@@ -854,7 +865,11 @@ class _EmergencyAlarmPageState extends ConsumerState<EmergencyAlarmPage> {
     } on ApiException catch (error) {
       if (!mounted || !ref.read(sessionProvider.notifier).isCurrentActive(s, epoch: epoch)) return;
       showApiError(context, error);
-      if (error.isConflict) setState(() => _detail = ref.read(apiProvider).get('/emergencies/${widget.id}'));
+      if (error.isConflict) {
+        setState(() {
+          _detail = ref.read(apiProvider).get('/emergencies/${widget.id}');
+        });
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -905,7 +920,12 @@ class _EmergencyAlarmPageState extends ConsumerState<EmergencyAlarmPage> {
         future: _detail,
         builder: (context, snap) {
           if (snap.hasError) {
-            return ErrorState(message: '${snap.error}', onRetry: () => setState(() => _detail = ref.read(apiProvider).get('/emergencies/${widget.id}')));
+            return ErrorState(
+              message: '${snap.error}',
+              onRetry: () => setState(() {
+                _detail = ref.read(apiProvider).get('/emergencies/${widget.id}');
+              }),
+            );
           }
           if (!snap.hasData) return const Center(child: CircularProgressIndicator(color: Colors.white));
           final e = Json.from(snap.data as Map);
@@ -1002,8 +1022,27 @@ class _EmergencyDetailPageState extends ConsumerState<EmergencyDetailPage> {
   final _correctionReason = TextEditingController();
   final _correctionKey = _key();
   Json? _correctionPending;
+
+  /// Status kejadian yang masih menyala dimuat ulang berkala selama halaman terbuka (uji emulator 1027:
+  /// status "Ditangani"/"Dibatalkan" tidak tampil sampai halaman dibuka ulang). Formulir yang sedang dikirim tidak diganggu.
+  late final Timer _refresh = Timer.periodic(const Duration(seconds: 15), (_) async {
+    if (!mounted || _pending != null || _correctionPending != null) return;
+    final current = await _detail.then<Object?>((v) => v, onError: (_) => null);
+    if (!mounted || current is! Map || current['status'] != 'aktif') return;
+    setState(() {
+      _detail = ref.read(apiProvider).get('/emergencies/${widget.id}');
+    });
+  });
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh;
+  }
+
   @override
   void dispose() {
+    _refresh.cancel();
     _reason.dispose();
     _correctionReason.dispose();
     super.dispose();
@@ -1089,7 +1128,12 @@ class _EmergencyDetailPageState extends ConsumerState<EmergencyDetailPage> {
         future: _detail,
         builder: (context, snap) {
           if (snap.hasError) {
-            return ErrorState(message: '${snap.error}', onRetry: () => setState(() => _detail = ref.read(apiProvider).get('/emergencies/${widget.id}')));
+            return ErrorState(
+              message: '${snap.error}',
+              onRetry: () => setState(() {
+                _detail = ref.read(apiProvider).get('/emergencies/${widget.id}');
+              }),
+            );
           }
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final e = Json.from(snap.data as Map);
@@ -1098,7 +1142,7 @@ class _EmergencyDetailPageState extends ConsumerState<EmergencyDetailPage> {
             children: [
               Text(emergencyKindLabel(e['jenis']), style: Theme.of(context).textTheme.headlineSmall),
               Text('Pelapor: ${e['pelapor']}\nRumah: ${e['rumah']}\nStatus: ${emergencyStatusBadge(e['status'])}'),
-              Text(emergencyDeliveryText(e['pemberitahuan'])),
+              if (e['milik_saya'] == true || s.pengurus) Text(emergencyDeliveryText(e['pemberitahuan'])),
               const SizedBox(height: 12),
               const Text(emergencyWarning),
               if (e['catatan_pengurus'] != null) Text('Catatan pengurus: ${e['catatan_pengurus']}'),

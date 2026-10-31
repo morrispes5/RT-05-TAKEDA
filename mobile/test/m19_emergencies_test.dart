@@ -396,6 +396,53 @@ void main() {
     expect(find.text('Laporan darurat'), findsNothing);
   });
 
+  testWidgets('uji emulator 1027: status pengiriman hanya untuk pelapor, bukan penerima alarm', (tester) async {
+    for (final mine in [false, true]) {
+      await _pump(
+        tester,
+        FakeAdapter(
+          (o) => jsonBody(200, {
+            'data': {..._report, 'pemberitahuan': 'provider_menerima', 'milik_saya': mine},
+          }),
+        ),
+        page: const EmergencyDetailPage(id: _id),
+      );
+      expect(find.textContaining('Layanan notifikasi menerima'), mine ? findsOneWidget : findsNothing);
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+  });
+
+  testWidgets('uji emulator 1027: detail darurat yang menyala memperbarui status sendiri', (tester) async {
+    var status = 'aktif';
+    final adapter = FakeAdapter(
+      (o) => jsonBody(200, {
+        'data': {..._report, 'status': status},
+      }),
+    );
+    await _pump(tester, adapter, page: const EmergencyDetailPage(id: _id));
+    expect(find.textContaining('Status: Menyala'), findsOneWidget);
+    status = 'selesai';
+    await tester.pump(const Duration(seconds: 16));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Status: Selesai'), findsOneWidget);
+    final gets = adapter.requests.length;
+    await tester.pump(const Duration(seconds: 16));
+    await tester.pumpAndSettle();
+    expect(adapter.requests.length, gets, reason: 'kejadian selesai tidak dimuat ulang terus');
+  });
+
+  testWidgets('uji emulator 1027: hitungan penyalahgunaan tampil di menu Tombol Panik', (tester) async {
+    await _pump(
+      tester,
+      FakeAdapter(
+        (o) => jsonBody(200, {
+          'data': {..._status, 'penyalahgunaan': 1},
+        }),
+      ),
+    );
+    expect(find.textContaining('1 dari 3'), findsOneWidget);
+  });
+
   testWidgets('disabled account and disabled feature cannot enter activation', (tester) async {
     await _pump(
       tester,

@@ -150,6 +150,9 @@ class M19EmergencyTest extends TestCase
         (new ProcessOutboxEvent($out->id))->handle();
         $this->assertSame([$c->id], Notifikasi::where('event_id', $out->id)->pluck('penerima_id')->all());
         $this->as($b)->getJson('/api/v1/emergencies/'.$e->id)->assertNotFound();
+        // Uji emulator 1027: kalimat status pengiriman hanya untuk pelapor; penerima alarm tidak melihatnya.
+        $this->as($a)->getJson('/api/v1/emergencies/'.$e->id)->assertOk()->assertJsonPath('data.milik_saya', true);
+        $this->as($c)->getJson('/api/v1/emergencies/'.$e->id)->assertOk()->assertJsonPath('data.milik_saya', false);
         config(['panic.recipient_ids' => []]);
         $this->send($b)->assertForbidden();
     }

@@ -4348,6 +4348,7 @@ components:
           type: string
           enum: [belum_diketahui, antrean, diproses, gagal, sebagian_gagal, dilewati, provider_menerima]
           description: Status pada detail dan hasil mutasi; provider_menerima bukan bukti HP menerima atau berbunyi.
+        milik_saya: {type: boolean, description: 'Detail saja. true bila akun ini pelapornya; aplikasi menampilkan status pemberitahuan hanya untuk pelapor dan pengurus.'}
     EmergencyEnvelope:
       type: object
       required: [data, meta]
