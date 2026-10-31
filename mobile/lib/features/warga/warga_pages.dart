@@ -16,6 +16,8 @@ import '../../core/picked_files.dart';
 import '../../core/whatsapp.dart';
 import '../../core/widgets.dart';
 import '../auth/account_access.dart';
+import '../auth/account_switcher.dart';
+import '../auth/auth_pages.dart';
 import '../auth/privacy_policy.dart';
 import '../household/family_actions.dart' show conflictKeptMessage, staleConflict;
 import '../household/complete_data_card.dart';
@@ -1710,14 +1712,15 @@ class AccountPage extends ConsumerWidget {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        AccountSwitcher(onAdd: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginPage(adding: true)))),
+        const SizedBox(height: 16),
         if (akun.rumah == null) ...[
-          const SizedBox(height: 16),
           const SectionCard(
             title: 'Keluarga',
             child: Text('Belum terhubung ke rumah.', style: TextStyle(color: Brand.muted, height: 1.35)),
           ),
         ] else ...[
-          const SizedBox(height: 16),
           const FamilyPanel(),
         ],
         const SizedBox(height: 16),

@@ -8,7 +8,7 @@ import '../../core/widgets.dart';
 import '../pengurus/dues_admin.dart' show currentPeriod, shiftMonth;
 
 final residentCashProvider = FutureProvider.autoDispose.family<Json, String>(
-  (ref, period) async => Json.from(await ref.read(apiProvider).get('/cash/summary', query: {'periode': period}) as Map),
+  (ref, period) async => Json.from(await accountApi(ref).get('/cash/summary', query: {'periode': period}) as Map),
 );
 
 class ResidentCashPage extends ConsumerStatefulWidget {

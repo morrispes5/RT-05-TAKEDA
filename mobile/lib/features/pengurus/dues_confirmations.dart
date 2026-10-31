@@ -15,7 +15,7 @@ import 'flexible_payment.dart';
 
 /// Bukti pembayaran iuran warga per status (diajukan | selesai | ditolak).
 final duesConfirmationsProvider = FutureProvider.autoDispose.family<Json, String>(
-  (ref, status) async => await ref.read(apiProvider).page('/admin/dues-confirmations', query: {'status': status, 'per_page': 50}),
+  (ref, status) async => await accountApi(ref).page('/admin/dues-confirmations', query: {'status': status, 'per_page': 50}),
 );
 
 List<Json> _items(Json envelope) => (envelope['data'] as List).cast<Map>().map(Json.from).toList();

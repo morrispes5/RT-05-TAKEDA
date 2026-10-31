@@ -14,13 +14,13 @@ import 'flexible_payment.dart';
 import 'pengurus_pages.dart' show newKey, paymentsProvider;
 
 final houseRatesProvider = FutureProvider.autoDispose.family<List<Json>, String>(
-  (ref, id) async => (await ref.read(apiProvider).get('/admin/houses/$id/dues-rates') as List).cast<Map>().map(Json.from).toList(),
+  (ref, id) async => (await accountApi(ref).get('/admin/houses/$id/dues-rates') as List).cast<Map>().map(Json.from).toList(),
 );
 final houseDepositsProvider = FutureProvider.autoDispose.family<Json, String>(
-  (ref, id) async => Json.from(await ref.read(apiProvider).get('/admin/houses/$id/deposits') as Map),
+  (ref, id) async => Json.from(await accountApi(ref).get('/admin/houses/$id/deposits') as Map),
 );
 final paymentDetailProvider = FutureProvider.autoDispose.family<Json, String>(
-  (ref, id) async => Json.from(await ref.read(apiProvider).get('/admin/dues-payments/$id') as Map),
+  (ref, id) async => Json.from(await accountApi(ref).get('/admin/dues-payments/$id') as Map),
 );
 
 class HouseFinancePage extends ConsumerWidget {

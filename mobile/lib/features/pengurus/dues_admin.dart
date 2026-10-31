@@ -42,11 +42,11 @@ Map<String, String> validateRate({required String nominal, required String? mula
 }
 
 final duesRecapProvider = FutureProvider.autoDispose.family<Json, String>(
-  (ref, p) async => Json.from(await ref.read(apiProvider).get('/admin/dues-recap', query: {'periode': p}) as Map),
+  (ref, p) async => Json.from(await accountApi(ref).get('/admin/dues-recap', query: {'periode': p}) as Map),
 );
 
 final duesRatesProvider = FutureProvider.autoDispose<List<Json>>(
-  (ref) async => (await ref.read(apiProvider).get('/admin/dues-rates') as List).cast<Map>().map(Json.from).toList(),
+  (ref) async => (await accountApi(ref).get('/admin/dues-rates') as List).cast<Map>().map(Json.from).toList(),
 );
 
 /// Tab Keuangan → Rekap: per bulan, lunas/belum, tunggakan sebelumnya, per kode rumah.

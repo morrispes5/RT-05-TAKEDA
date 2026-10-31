@@ -12,7 +12,12 @@ import 'identity_data.dart';
 /// "Nanti saja" berlaku sampai aplikasi ditutup; kartu muncul lagi pada sesi berikutnya selama data belum lengkap.
 class _Dismissed extends Notifier<bool> {
   @override
-  bool build() => false;
+  bool build() {
+    // "Nanti saja" tidak ikut pindah ke akun rumah lain.
+    ref.watch(sessionProvider.select((s) => s.akun?.id));
+    return false;
+  }
+
   void dismiss() => state = true;
 }
 

@@ -40,16 +40,16 @@ String newKey() {
   return '${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-${h.substring(16, 20)}-${h.substring(20)}';
 }
 
-final dashboardProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await ref.read(apiProvider).get('/admin/dashboard') as Map));
+final dashboardProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await accountApi(ref).get('/admin/dashboard') as Map));
 final requestsProvider = FutureProvider.autoDispose.family<List<Json>, String>(
-  (ref, status) async => ((await ref.read(apiProvider).page('/admin/additional-account-requests', query: {'status': status, 'per_page': 50}))['data'] as List)
+  (ref, status) async => ((await accountApi(ref).page('/admin/additional-account-requests', query: {'status': status, 'per_page': 50}))['data'] as List)
       .cast<Map>()
       .map(Json.from)
       .toList(),
 );
-final tokenProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await ref.read(apiProvider).get('/admin/registration-token') as Map));
+final tokenProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await accountApi(ref).get('/admin/registration-token') as Map));
 final paymentsProvider = FutureProvider.autoDispose<List<Json>>(
-  (ref) async => ((await ref.read(apiProvider).page('/admin/dues-payments', query: {'per_page': 50}))['data'] as List).cast<Map>().map(Json.from).toList(),
+  (ref) async => ((await accountApi(ref).page('/admin/dues-payments', query: {'per_page': 50}))['data'] as List).cast<Map>().map(Json.from).toList(),
 );
 
 // ─────────────────────────────────────────── Ringkasan

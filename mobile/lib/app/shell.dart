@@ -23,6 +23,7 @@ class HomeShell extends ConsumerStatefulWidget {
 
 class _HomeShellState extends ConsumerState<HomeShell> {
   int _index = 0;
+  String? _accountId;
 
   // Kembali ke aplikasi: muat ulang lencana inbox (push bisa ditolak atau belum tersedia).
   late final AppLifecycleListener _lifecycle = AppLifecycleListener(onResume: () => ref.invalidate(notificationsProvider));
@@ -55,6 +56,12 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   Widget build(BuildContext context) {
     if (ref.read(appUpdatePlatformProvider).supported) ref.listen(latestReleaseProvider, (_, next) => _offerUpdate(next.value));
     final session = ref.watch(sessionProvider);
+    // Ganti akun memakai id baru sebagai kunci tab, supaya iuran/keluarga/laporan akun lama tidak tetap menempel.
+    final accountId = session.akun?.id;
+    if (_accountId != accountId) {
+      _accountId = accountId;
+      _index = 0;
+    }
     // Sesi berakhir/keluar: router berpindah ke login pada frame berikutnya; jangan bangun tab
     // yang membaca data akun pada frame peralihan ini.
     if (!session.signedIn || session.pending) return const Scaffold(body: SizedBox.shrink());
@@ -115,7 +122,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             ),
           ],
         ),
-        body: IndexedStack(index: _index, children: [for (final t in tabs) t.$3]),
+        body: IndexedStack(key: ValueKey(accountId), index: _index, children: [for (final t in tabs) t.$3]),
         floatingActionButton: _index == 0 ? const EmergencyFab() : null,
         // Label navigasi dibatasi 1,3× agar lima tab tetap muat di layar sempit; isi halaman tetap mengikuti skala sistem.
         bottomNavigationBar: MediaQuery.withClampedTextScaling(

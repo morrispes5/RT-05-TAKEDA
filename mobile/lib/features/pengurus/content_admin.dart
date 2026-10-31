@@ -31,10 +31,10 @@ String contentStatusLabel(Json k) => switch (k['status']) {
 };
 
 final contentListProvider = FutureProvider.autoDispose.family<List<Json>, String>(
-  (ref, type) async => ((await ref.read(apiProvider).page('/admin/$type'))['data'] as List).cast<Map>().map(Json.from).toList(),
+  (ref, type) async => ((await accountApi(ref).page('/admin/$type'))['data'] as List).cast<Map>().map(Json.from).toList(),
 );
 
-final siteProfileProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await ref.read(apiProvider).get('/admin/site-profile') as Map));
+final siteProfileProvider = FutureProvider.autoDispose<Json>((ref) async => Json.from(await accountApi(ref).get('/admin/site-profile') as Map));
 
 /// Lainnya → Konten website.
 class ContentAdminPage extends ConsumerWidget {

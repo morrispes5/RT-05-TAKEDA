@@ -8,7 +8,7 @@ import '../../core/widgets.dart';
 import 'finance_actions.dart';
 
 final financeReportProvider = FutureProvider.autoDispose.family<Json, int>(
-  (ref, year) async => Json.from(await ref.read(apiProvider).get('/admin/finance-reports', query: {'tahun': year}) as Map),
+  (ref, year) async => Json.from(await accountApi(ref).get('/admin/finance-reports', query: {'tahun': year}) as Map),
 );
 
 class FinanceReportsPage extends ConsumerStatefulWidget {

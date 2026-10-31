@@ -7,6 +7,8 @@ import '../../core/models.dart';
 import '../../core/session.dart';
 import '../../core/widgets.dart';
 import 'account_access.dart';
+import 'account_switcher.dart';
+import 'auth_pages.dart';
 
 /// Local text versions must match the content actually displayed before consent.
 const legacyPrivacyTextVersion = '2026-10-25';
@@ -138,6 +140,7 @@ class PrivacyPolicyPage extends ConsumerStatefulWidget {
 class _PrivacyPolicyPageState extends ConsumerState<PrivacyPolicyPage> {
   var _checked = false;
   String? _shownVersion;
+  String? _accountId;
 
   Future<void> _agree() async {
     final session = ref.read(sessionProvider.notifier);
@@ -163,8 +166,10 @@ class _PrivacyPolicyPageState extends ConsumerState<PrivacyPolicyPage> {
   @override
   Widget build(BuildContext context) {
     final server = ref.watch(sessionProvider).akun?.raw['privasi_versi'] as String?;
+    final accountId = ref.watch(sessionProvider).akun?.id;
     final version = widget.consent ? privacyVersionFor(server) : privacyVersionFor(server) ?? privacyTextVersion;
-    if (_shownVersion != version) {
+    if (_accountId != accountId || _shownVersion != version) {
+      _accountId = accountId;
       _shownVersion = version;
       _checked = false;
     }
@@ -229,6 +234,8 @@ class _PrivacyPolicyPageState extends ConsumerState<PrivacyPolicyPage> {
               ),
               const SizedBox(height: 8),
               BusyButton(label: 'Setuju dan lanjutkan', icon: Icons.check_circle_outline, onPressed: _checked && version != null ? _agree : null),
+              const SizedBox(height: 16),
+              AccountSwitcher(onAdd: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginPage(adding: true)))),
               const SizedBox(height: 8),
               TextButton(
                 key: const ValueKey('privasi-keluar'),
