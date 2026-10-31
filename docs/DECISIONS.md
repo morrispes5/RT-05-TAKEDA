@@ -844,3 +844,21 @@ Mengubah sebagian ADR43 butir 8 (bunyi alarm sekali lewat kanal notifikasi).
 4. Pembatalan oleh pelapor mengirim `alarm_selesai=<id kejadian>` sehingga dering di HP penerima berhenti.
 5. APK lama (≤ build sebelum ADR50) tidak membunyikan alarm data-only saat aplikasi tertutup: semua penguji/warga wajib
    memasang APK terbaru. Penerima tetap bergantung pada pengaturan baterai/OEM HP; uji di HP nyata tim.
+
+### ADR51 — Ganti akun di HP untuk pemilik dua rumah
+
+Tanggal: **31 Oktober 2026**. Status: **diputuskan pemilik** (pilihan "Ganti akun di HP", rencana 31 Okt). Bagian domain
+akun M17; dirilis bersama APK 1028 sebelum soft launch 8 Nov.
+
+1. Satu rumah tetap satu akun utama (tautan akun → keluarga → penghunian aktif tidak berubah). Pemilik dua rumah memakai
+   dua akun (email berbeda, mis. alias Gmail `nama+rumah2@`), masing-masing lewat pendaftaran dan persetujuan pengurus.
+   Server tidak diubah; akun "satu akun banyak rumah" ditunda sampai setelah peluncuran.
+2. HP menyimpan token tiap akun di secure storage dan berpindah setelah `GET /auth/me` berhasil (PR #107, Natanael +
+   Cursor). Keluar hanya melepas akun aktif; akun lain tetap tersimpan.
+3. Semua provider data akun memakai `accountApi(ref)` (mobile/lib/core/api.dart) sehingga dimuat ulang saat akun aktif
+   berganti. Tanpa ini, provider autoDispose yang langsung ditonton tab baru menampilkan data rumah sebelumnya (audit
+   Claude 31 Okt, tes regresi di `test/account_switch_test.dart`).
+4. Push/alarm terdaftar ke akun aktif (`PUT /devices/{id}` memindahkan baris perangkat). Alarm panik tetap berbunyi sekali
+   per HP. Notifikasi akun yang tidak aktif hanya ada di Kotak masuk akun itu.
+5. Tarif rumah kedua yang dinegosiasikan memakai tarif khusus beralasan (ADR44), bukan fitur baru.
+

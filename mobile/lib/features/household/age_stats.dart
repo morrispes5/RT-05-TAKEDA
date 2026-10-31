@@ -15,8 +15,7 @@ typedef AgeQuery = ({String? kelompok, int? min, int? max, bool belumDiisi});
 const _semua = (kelompok: null, min: null, max: null, belumDiisi: false);
 
 final ageStatsProvider = FutureProvider.autoDispose.family<Json, AgeQuery>((ref, q) async {
-  final data = await ref
-      .read(apiProvider)
+  final data = await accountApi(ref)
       .get('/admin/age-stats', query: {'kelompok': ?q.kelompok, 'min': ?q.min, 'max': ?q.max, if (q.belumDiisi) 'belum_diisi': 1});
   return Json.from(data as Map);
 });

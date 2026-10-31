@@ -27,14 +27,11 @@ class SecureTokenStorage implements TokenStorage {
   Future<void> delete() => _storage.delete(key: _key);
 }
 
-final tokenStorageProvider = Provider<TokenStorage>(
-  (ref) => const SecureTokenStorage(),
-);
+final tokenStorageProvider = Provider<TokenStorage>((ref) => const SecureTokenStorage());
 
 /// `flutter test` mengisi FLUTTER_TEST. Tiap container uji mendapat penyimpanan memori sendiri.
 final accountStoreProvider = Provider<AccountStore>((ref) {
-  if (Platform.environment['FLUTTER_TEST'] == 'true')
-    return AccountStore(memory: <String, String>{});
+  if (Platform.environment['FLUTTER_TEST'] == 'true') return AccountStore(memory: <String, String>{});
   return AccountStore();
 });
 
@@ -45,21 +42,13 @@ typedef FetchMe = Future<Akun> Function(String token);
 
 final fetchMeProvider = Provider<FetchMe>(
   (ref) => (token) async {
-    final me = await ref
-        .read(apiProvider)
-        .get('/auth/me', bearer: token, ignoreUnauthorized: true);
+    final me = await ref.read(apiProvider).get('/auth/me', bearer: token, ignoreUnauthorized: true);
     return Akun(Map<String, dynamic>.from(me as Map));
   },
 );
 
-StoredAccount storedAccount(Akun akun, String token) => StoredAccount(
-  id: akun.id,
-  email: akun.email,
-  token: token,
-  nama: akun.nama,
-  peran: akun.peran,
-  status: akun.status,
-);
+StoredAccount storedAccount(Akun akun, String token) =>
+    StoredAccount(id: akun.id, email: akun.email, token: token, nama: akun.nama, peran: akun.peran, status: akun.status);
 
 /// Status sesi aplikasi.
 ///
@@ -68,14 +57,7 @@ StoredAccount storedAccount(Akun akun, String token) => StoredAccount(
 /// - `unavailable`: token tetap tersimpan tetapi server belum dapat memvalidasinya
 ///   (offline, timeout, 5xx, 403). Data akun tidak ditampilkan sampai validasi berhasil.
 class SessionState {
-  const SessionState({
-    this.loading = true,
-    this.token,
-    this.akun,
-    this.expired = false,
-    this.unavailable,
-    this.accounts = const [],
-  });
+  const SessionState({this.loading = true, this.token, this.akun, this.expired = false, this.unavailable, this.accounts = const []});
 
   final bool loading;
   final String? token;
@@ -94,8 +76,7 @@ class SessionState {
   bool get needsPrivacy => akun != null && !pending && akun!.perluSetujuPrivasi;
 
   /// Akun menunggu tetap boleh menerima kabar persetujuan; navigasi layanan tetap ditahan.
-  bool get canRegisterPush =>
-      signedIn && !loading && unavailable == null && !needsPrivacy;
+  bool get canRegisterPush => signedIn && !loading && unavailable == null && !needsPrivacy;
   bool get readyForServices => canRegisterPush && !pending;
 
   SessionState copy({
@@ -127,13 +108,13 @@ class SessionController extends Notifier<SessionState> {
   /// sebelum request dan memeriksanya lagi di dalam antrean storage.
   int get epoch => _epoch;
 
+  /// Urutan permintaan pindah akun; ketukan pindah yang lebih baru membatalkan yang lama.
+  int _switchSeq = 0;
+
   /// Periksa pemilik operasi async. Token ikut dibandingkan karena signIn menaikkan
   /// epoch sebelum storage selesai, ketika state sesi lama masih tersedia.
   bool isCurrentActive(SessionState started, {required int epoch}) =>
-      state.readyForServices &&
-      _epoch == epoch &&
-      state.token == started.token &&
-      state.akun?.id == started.akun?.id;
+      state.readyForServices && _epoch == epoch && state.token == started.token && state.akun?.id == started.akun?.id;
 
   /// Operasi storage dijalankan berurutan: hapus milik logout tidak dapat
   /// menyusul dan menghapus token login baru.
@@ -190,23 +171,12 @@ class SessionController extends Notifier<SessionState> {
       if (epoch != _epoch) return;
       final fresh = await _accounts.loadAll();
       if (epoch != _epoch) return;
-      state = SessionState(
-        loading: false,
-        token: bearer,
-        akun: akun,
-        accounts: fresh,
-      );
+      state = SessionState(loading: false, token: bearer, akun: akun, accounts: fresh);
     } on ApiException catch (e) {
       if (epoch != _epoch) return;
       if (e.status == 401) {
         final generation = ++_epoch;
-        state = SessionState(
-          loading: false,
-          expired: true,
-          accounts: all
-              .where((a) => a.id != tokenAccountId && a.token != bearer)
-              .toList(),
-        );
+        state = SessionState(loading: false, expired: true, accounts: all.where((a) => a.id != tokenAccountId && a.token != bearer).toList());
         await _serial(_storage.delete);
         if (_epoch != generation) return;
         if (tokenAccountId != null) {
@@ -222,25 +192,11 @@ class SessionController extends Notifier<SessionState> {
         if (_epoch != generation) return;
         state = SessionState(loading: false, expired: true, accounts: fresh);
       } else {
-        state = SessionState(
-          loading: false,
-          token: bearer,
-          unavailable: e,
-          accounts: all,
-        );
+        state = SessionState(loading: false, token: bearer, unavailable: e, accounts: all);
       }
     } catch (_) {
       if (epoch != _epoch) return;
-      state = SessionState(
-        loading: false,
-        token: bearer,
-        unavailable: ApiException(
-          0,
-          'UNKNOWN',
-          'Terjadi kesalahan. Coba lagi.',
-        ),
-        accounts: all,
-      );
+      state = SessionState(loading: false, token: bearer, unavailable: ApiException(0, 'UNKNOWN', 'Terjadi kesalahan. Coba lagi.'), accounts: all);
     }
   }
 
@@ -252,12 +208,7 @@ class SessionController extends Notifier<SessionState> {
     if (epoch != _epoch) return;
     final all = await _accounts.loadAll();
     if (epoch != _epoch) return;
-    state = SessionState(
-      loading: false,
-      token: token,
-      akun: akun,
-      accounts: all,
-    );
+    state = SessionState(loading: false, token: token, akun: akun, accounts: all);
   }
 
   /// Pindah ke akun yang sudah tersimpan. Token tujuan dicek dulu ke server.
@@ -265,49 +216,42 @@ class SessionController extends Notifier<SessionState> {
   /// supaya data rumah yang satu tidak menimpa rumah yang lain.
   /// Mengembalikan pesan bila pindah gagal; null bila sesi sudah berpindah.
   Future<String?> switchTo(String accountId) async {
-    final epoch = ++_epoch;
+    // Epoch baru dipakai hanya saat sesi benar-benar berganti. Pengecekan yang gagal
+    // tidak boleh membatalkan permintaan (logout/401) milik sesi yang masih dipakai.
+    final epoch = _epoch;
+    final seq = ++_switchSeq;
+    bool stale() => epoch != _epoch || seq != _switchSeq;
     final all = await _accounts.loadAll();
-    if (epoch != _epoch) return null;
+    if (stale()) return null;
     final target = all.where((a) => a.id == accountId).firstOrNull;
     if (target == null) return 'Akun tidak ditemukan di HP ini.';
     if (target.id == state.akun?.id && state.token == target.token) return null;
 
-    final previousToken = state.token;
-    final previousAkun = state.akun;
     try {
       final akun = await ref.read(fetchMeProvider)(target.token);
-      if (epoch != _epoch) return null;
+      if (stale()) return null;
+      final generation = ++_epoch;
       await _serial(() => _storage.write(target.token));
-      if (epoch != _epoch) return null;
+      if (generation != _epoch) return null;
       await _accounts.upsert(storedAccount(akun, target.token));
       await _accounts.setActive(akun.id);
-      if (epoch != _epoch) return null;
+      if (generation != _epoch) return null;
       final fresh = await _accounts.loadAll();
-      if (epoch != _epoch) return null;
-      state = SessionState(
-        loading: false,
-        token: target.token,
-        akun: akun,
-        accounts: fresh,
-      );
+      if (generation != _epoch) return null;
+      state = SessionState(loading: false, token: target.token, akun: akun, accounts: fresh);
       return null;
     } on ApiException catch (e) {
-      if (epoch != _epoch) return null;
+      if (stale()) return null;
       if (e.status == 401) {
         await _accounts.remove(accountId);
         final fresh = await _accounts.loadAll();
-        if (epoch != _epoch) return null;
-        state = SessionState(
-          loading: false,
-          token: previousToken,
-          akun: previousAkun,
-          accounts: fresh,
-        );
+        if (stale()) return null;
+        state = state.copy(accounts: fresh);
         return 'Sesi akun itu sudah berakhir. Masuk lagi dengan email dan kata sandi.';
       }
       return 'Tidak dapat beralih akun. Periksa koneksi, lalu coba lagi.';
     } catch (_) {
-      if (epoch != _epoch) return null;
+      if (stale()) return null;
       return 'Tidak dapat beralih akun. Coba lagi.';
     }
   }
@@ -316,13 +260,11 @@ class SessionController extends Notifier<SessionState> {
   /// Data di server tidak dihapus. Akun yang sedang dipakai dilepas lewat Keluar.
   Future<String?> forgetAccount(String accountId) async {
     final epoch = _epoch;
-    if (accountId == state.akun?.id)
-      return 'Akun yang sedang dipakai dilepas lewat tombol Keluar.';
+    if (accountId == state.akun?.id) return 'Akun yang sedang dipakai dilepas lewat tombol Keluar.';
     final all = await _accounts.loadAll();
     final target = all.where((a) => a.id == accountId).firstOrNull;
     if (target == null) return null;
-    if (target.token == state.token)
-      return 'Akun ini memakai sesi yang sedang aktif.';
+    if (target.token == state.token) return 'Akun ini memakai sesi yang sedang aktif.';
     try {
       await ref.read(apiProvider).post('/auth/logout', bearer: target.token);
     } on ApiException catch (e) {
@@ -365,8 +307,7 @@ class SessionController extends Notifier<SessionState> {
     if (!ref.mounted) return;
     await _accounts.upsert(stored);
     if (!ref.mounted) return;
-    if (previousId != null && previousId != stored.id)
-      await _accounts.remove(previousId);
+    if (previousId != null && previousId != stored.id) await _accounts.remove(previousId);
     if (!ref.mounted) return;
     await _accounts.setActive(stored.id);
   }
@@ -375,10 +316,7 @@ class SessionController extends Notifier<SessionState> {
   Future<void> signOut() async {
     final currentId = state.akun?.id;
     final generation = ++_epoch;
-    state = SessionState(
-      loading: false,
-      accounts: state.accounts.where((a) => a.id != currentId).toList(),
-    );
+    state = SessionState(loading: false, accounts: state.accounts.where((a) => a.id != currentId).toList());
     await _serial(_storage.delete);
     if (currentId != null) await _accounts.remove(currentId);
     if (_epoch != generation) return;
@@ -391,18 +329,12 @@ class SessionController extends Notifier<SessionState> {
   /// hanya bila sesi masih [token] pada [epoch] yang dicatat sebelum request.
   /// Pemeriksaan ada di dalam antrean storage, termasuk bila token string-nya sama.
   /// Akun lain yang tersimpan di HP tidak ikut dihapus.
-  Future<void> signOutIfCurrent({
-    required String token,
-    required int epoch,
-  }) async {
+  Future<void> signOutIfCurrent({required String token, required int epoch}) async {
     await _serial(() async {
       if (_epoch != epoch || state.token != token) return;
       final currentId = state.akun?.id;
       final generation = ++_epoch;
-      state = SessionState(
-        loading: false,
-        accounts: state.accounts.where((a) => a.id != currentId).toList(),
-      );
+      state = SessionState(loading: false, accounts: state.accounts.where((a) => a.id != currentId).toList());
       await _storage.delete();
       if (currentId != null) await _accounts.remove(currentId);
       if (_epoch != generation) return;
@@ -421,13 +353,7 @@ class SessionController extends Notifier<SessionState> {
     final currentId = state.akun?.id;
     final tokenToDrop = state.token;
     final generation = ++_epoch;
-    state = SessionState(
-      loading: false,
-      expired: true,
-      accounts: state.accounts
-          .where((a) => a.id != currentId && a.token != tokenToDrop)
-          .toList(),
-    );
+    state = SessionState(loading: false, expired: true, accounts: state.accounts.where((a) => a.id != currentId && a.token != tokenToDrop).toList());
     await _serial(_storage.delete);
     if (_epoch != generation) return;
     if (currentId != null) {
@@ -445,6 +371,4 @@ class SessionController extends Notifier<SessionState> {
   }
 }
 
-final sessionProvider = NotifierProvider<SessionController, SessionState>(
-  SessionController.new,
-);
+final sessionProvider = NotifierProvider<SessionController, SessionState>(SessionController.new);

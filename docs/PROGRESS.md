@@ -3,7 +3,7 @@
 ## Ganti akun di HP (dua rumah) — 31 Oktober 2026
 
 Branch `feature/mobile-switch-account` (Natanael, 30 Okt 13.27 WIB, fondasi). Dilanjutkan di branch yang sama.
-**Belum digabung ke `main` dan belum disentuh staging**, supaya rilis yang sedang berjalan tidak berubah.
+Pemilik memilih cara ini untuk dua rumah (31 Okt malam); digabung ke `main` setelah audit dan CI hijau.
 
 Satu orang dapat menyimpan lebih dari satu akun di HP (misalnya dua rumah). Iuran, keluarga, dan laporan tidak digabung.
 - Akun yang sudah masuk ikut masuk daftar saat sesi dipulihkan, jadi akun kedua bisa ditambah tanpa keluar dulu.
@@ -12,6 +12,12 @@ Satu orang dapat menyimpan lebih dari satu akun di HP (misalnya dua rumah). Iura
 - Halaman Akun, menunggu persetujuan, dan persetujuan privasi menampilkan daftar. Tambah akun menutup halaman masuk setelah berhasil.
 - Tab shell dikunci dengan id akun; halaman yang menumpuk di atas shell ditutup saat akun berganti.
 - Tes: `flutter test` di `mobile/` lulus (362 tes, termasuk `test/account_switch_test.dart` dan `test/family_flow_test.dart`). `node infra/scripts/check-repo.mjs` OK. Belum ada uji di HP nyata.
+- **Audit Claude 31 Okt (ADR51):** (1) bug data tertukar: provider autoDispose yang langsung ditonton tab akun baru
+  menyimpan data rumah sebelumnya. Diperbaiki dengan `accountApi(ref)` di 42 provider data; tes regresi gagal tanpa
+  perbaikan (A-01 tetap tampil setelah pindah ke B) dan lulus sesudahnya. (2) Pindah akun yang gagal tidak lagi menaikkan
+  epoch sesi aktif (logout/401 sesi yang sedang dipakai tidak terbuang). (3) Teks daftar akun menjelaskan notifikasi
+  masuk ke akun yang sedang dipakai. (4) `dart format` dan lint `prefer_initializing_formals` dibereskan.
+  Hasil lokal: `flutter test` **363/363**, `flutter analyze` bersih, `dart format --set-exit-if-changed` bersih.
 
 ## Pemulihan perubahan 28 Oktober (Natanael) — 29 Oktober 2026
 

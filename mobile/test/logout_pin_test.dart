@@ -97,7 +97,8 @@ void main() {
       expect(storage.token, newToken);
       expect(storage.log.where((entry) => entry == 'delete'), isEmpty);
       expect(c.read(duesMyProvider).requireValue['tarif_berlaku'], 75000);
-      expect(adapter.requests.where((r) => r.uri.path.endsWith('/dues/my')).length, duesCalls);
+      // Akun baru (a-2) memuat iurannya sendiri satu kali (ADR51); logout lama tidak memicu muat ulang lain.
+      expect(adapter.requests.where((r) => r.uri.path.endsWith('/dues/my')).length, duesCalls + 1);
     });
   }
 }

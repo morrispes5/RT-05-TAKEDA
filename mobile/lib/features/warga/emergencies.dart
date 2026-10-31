@@ -91,13 +91,13 @@ String _key() {
 final emergencyStatusProvider = FutureProvider.autoDispose<Json>((ref) async {
   final session = ref.watch(sessionProvider);
   if (!session.readyForServices) return {};
-  return Json.from(await ref.read(apiProvider).get('/emergencies/status') as Map);
+  return Json.from(await accountApi(ref).get('/emergencies/status') as Map);
 }, retry: (_, _) => null);
 
 final emergencyHistoryProvider = FutureProvider.autoDispose<List<Json>>((ref) async {
   final session = ref.watch(sessionProvider);
   if (!session.readyForServices) return [];
-  final page = await ref.read(apiProvider).page('/emergencies');
+  final page = await accountApi(ref).page('/emergencies');
   final raw = page['data'];
   if (raw is! List) return [];
   return raw.whereType<Map>().map(Json.from).toList();

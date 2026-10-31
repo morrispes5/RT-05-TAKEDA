@@ -7,7 +7,7 @@ menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputu
 Terakhir diperbarui: **Sabtu 31 Oktober 2026** (ganti akun di branch `feature/mobile-switch-account`; belum ke `main`/staging). **Baca bagian 0 dulu.**
 
 **31 Okt 2026:** fitur ganti akun (satu orang, lebih dari satu akun, misalnya dua rumah) dilanjutkan di branch
-`feature/mobile-switch-account`. Jangan digabung ke `main` dan jangan di-deploy ke staging sampai pemilik meminta.
+`feature/mobile-switch-account` (PR #107). Pemilik memilihnya untuk dua rumah (ADR51); diaudit Claude dan digabung ke `main` setelah CI hijau.
 Data tiap akun tetap terpisah. Rincian di PROGRESS bagian atas.
 
 ## 0. MULAI DI SINI — status Selasa 27 Oktober 2026 sore (Claude)

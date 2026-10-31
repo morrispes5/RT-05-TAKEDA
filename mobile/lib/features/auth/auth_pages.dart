@@ -658,7 +658,7 @@ class _PendingPageState extends ConsumerState<PendingPage> {
 
 final _pendingStatus = FutureProvider.autoDispose((ref) {
   ref.watch(sessionProvider.select((s) => s.akun?.id));
-  return ref.read(apiProvider).get('/auth/additional-account-status');
+  return accountApi(ref).get('/auth/additional-account-status');
 });
 
 /// UAT M15: pemohon akun tambahan memperbaiki data yang diminta pengurus, lalu mengajukan ulang.

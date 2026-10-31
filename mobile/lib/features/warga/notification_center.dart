@@ -92,12 +92,12 @@ Widget _unavailable(Object e, VoidCallback retry, String what) {
 Duration? _noRetryOn4xx(int count, Object e) => e is ApiException && e.status >= 400 && e.status < 500 || count >= 2 ? null : const Duration(seconds: 1);
 
 final agendaByIdProvider = FutureProvider.autoDispose.family<Json, String>(
-  (ref, id) async => Json.from(await ref.read(apiProvider).get('/agendas/$id') as Map),
+  (ref, id) async => Json.from(await accountApi(ref).get('/agendas/$id') as Map),
   retry: _noRetryOn4xx,
 );
 
 final announcementByIdProvider = FutureProvider.autoDispose.family<Json, String>(
-  (ref, id) async => Json.from(await ref.read(apiProvider).get('/announcements/$id') as Map),
+  (ref, id) async => Json.from(await accountApi(ref).get('/announcements/$id') as Map),
   retry: _noRetryOn4xx,
 );
 
@@ -142,7 +142,7 @@ class AnnouncementByIdPage extends ConsumerWidget {
 }
 
 final notificationPreferencesProvider = FutureProvider.autoDispose<Json>(
-  (ref) async => Json.from(await ref.read(apiProvider).get('/notification-preferences') as Map),
+  (ref) async => Json.from(await accountApi(ref).get('/notification-preferences') as Map),
 );
 
 final pushPermissionProvider = FutureProvider.autoDispose<PushPermission>((ref) => ref.read(pushClientProvider).permission());
