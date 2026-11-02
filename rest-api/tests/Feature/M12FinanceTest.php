@@ -117,6 +117,7 @@ class M12FinanceTest extends TestCase
 
     public function test_archived_house_keeps_payment_history_ledger_and_export(): void
     {
+        $this->travelTo(now('Asia/Jakarta')->setDate(2026, 10, 26)->setTime(10, 0));
         [$warga, $rumah] = $this->house();
         Dues::generate(Dues::period('2026-10'));
         $this->as($this->pengurus());

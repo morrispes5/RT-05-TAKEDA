@@ -94,8 +94,9 @@ class M11DuesTest extends TestCase
     public function test_resident_sees_at_least_twelve_months_of_history(): void
     {
         TarifIuran::create(['nominal' => 70000, 'mulai_periode' => '2025-08-01', 'alasan' => 'Tarif lama (tes riwayat)']);
-        [$warga, $rumah] = $this->house('1', '2025-08-01');
+        // Waktu dipasang sebelum pendaftaran: pendaftaran langsung menagih bulan berjalan.
         $this->travelTo(now('Asia/Jakarta')->setDate(2026, 10, 17)->setTime(10, 0));
+        [$warga, $rumah] = $this->house('1', '2025-08-01');
         Dues::catchUp();
 
         $this->assertSame(15, TagihanIuran::where('rumah_id', $rumah->id)->count(), 'Agustus 2025 s.d. Oktober 2026');

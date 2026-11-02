@@ -29,9 +29,18 @@ class M18ConcurrencyTest extends TestCase
         parent::tearDown();
     }
 
+    /** Proses paralel memakai jam asli, jadi rumah dibuat mulai ditagih Oktober 2026 apa pun tanggal tes. */
+    private function house(string $nomor): string
+    {
+        $id = $this->warga($nomor)->rumah()->id;
+        DB::table('rumah')->where('id', $id)->update(['mulai_tagih' => '2026-10-01']);
+
+        return $id;
+    }
+
     private function race(bool $sameKey): void
     {
-        $house = $this->warga('m18race')->rumah()->id;
+        $house = $this->house('m18race');
         Dues::generate(Dues::period('2026-10'));
         $actor = $this->pengurus();
         $body = ['house' => $house, 'periods' => ['2026-10'], 'amount' => 100000,
@@ -60,7 +69,7 @@ class M18ConcurrencyTest extends TestCase
 
     public function test_two_independent_deposit_requests_cannot_overdraw(): void
     {
-        $house = $this->warga('m18deposit')->rumah()->id;
+        $house = $this->house('m18deposit');
         $actor = $this->pengurus();
         Dues::generate(Dues::period('2026-10'));
         Dues::generate(Dues::period('2026-11'));
@@ -83,6 +92,7 @@ class M18ConcurrencyTest extends TestCase
     {
         $resident = $this->warga('m18approve');
         $house = $resident->rumah()->id;
+        DB::table('rumah')->where('id', $house)->update(['mulai_tagih' => '2026-10-01']);
         Dues::generate(Dues::period('2026-10'));
         $confirmation = KonfirmasiIuran::create(['akun_id' => $resident->id, 'rumah_id' => $house, 'periode' => ['2026-10'],
             'nominal' => 75000, 'storage_key' => 'iuran/synthetic.jpg', 'mime' => 'image/jpeg', 'bytes' => 100,
