@@ -4,14 +4,25 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **Sabtu 31 Oktober 2026** (ganti akun di branch `feature/mobile-switch-account`; belum ke `main`/staging). **Baca bagian 0 dulu.**
+Terakhir diperbarui: **Senin 2 November 2026** (main `33a25f8` di staging, APK 1028). **Baca bagian 0 dulu.**
+
+**2 Nov 2026 (pemilik: "lgsg ke main … database dll masih staging sampe kita tutup milestone 16"):** main
+fast-forward ke `00d9196` (PR #107 ganti akun + temuan emulator + ADR53), lalu `33a25f8` (tes iuran tidak lagi
+bergantung bulan berjalan; CI main merah sejak 1 Nov karena itu). Staging immutable **`33a25f8`**, migrasi
+`2026_10_31_000100` jalan, `/health/ready` ok. APK **1028** (Senin 2 Nov 20.11 WIB) di `/unduh` + Drive ID tetap,
+sertifikat rilis cocok. **Semua database tetap staging sampai M16 ditutup**; production belum disentuh.
+Staging kini memakai branch Neon baru **`pratinjau-data-asli-2`** (`br-patient-feather-b36im3vt`, endpoint
+`ep-proud-hill-b3jn0edf`, dari branch staging; cadangan env `/root/.rt05/.env.staging.bak-20261102`). Branch lama
+`pratinjau-data-asli` (`ep-flat-sunset`) dibiarkan, belum dihapus. **Impor ulang `--putihkan` belum jalan:** menyalin
+kredensial DB staging ke PC ditolak pengaman otomatis agent; skrip siap di scratchpad `priv/impor-pratinjau.sh` untuk
+dijalankan pemilik (kredensial hanya di memori proses). Sebelum impor, branch baru berisi data uji staging tanpa 187 rumah.
 
 **31 Okt 2026:** fitur ganti akun (satu orang, lebih dari satu akun, misalnya dua rumah) dilanjutkan di branch
 `feature/mobile-switch-account` (PR #107). Pemilik memilihnya untuk dua rumah (ADR51); diaudit Claude dan digabung ke `main` setelah CI hijau.
 Data tiap akun tetap terpisah. Rincian di PROGRESS bagian atas.
 
 **31 Okt 2026 malam (ADR53):** pemilik memutuskan pemutihan bulan buku lama yang tidak dibayar, bayar di bawah tarif
-tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Branch `codex/m18-pemutihan-metode`. Impor production
+tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Sudah di `main` (2 Nov). Impor production
 memakai `--sampai=2026-09 --putihkan`; saldo awal kas resmi tetap diisi bendahara sekali (belum ada angkanya).
 Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau staging (ADR52) perlu impor ulang setelah deploy.
 

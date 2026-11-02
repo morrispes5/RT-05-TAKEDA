@@ -1,5 +1,19 @@
 # Progress — RT05 TAKEDA
 
+## Main, staging, dan APK 1028 — 2 November 2026
+
+Pemilik: langsung ke `main`; database tetap staging sampai M16 ditutup.
+- `main` fast-forward `5f1c223` → `00d9196` (ganti akun PR #107, temuan emulator, ADR53) → `33a25f8`.
+- CI main `00d9196`: API 6 gagal karena tes memakai bulan tetap sementara jam CI sudah November (M11 riwayat 12 bulan,
+  M12 arsip rumah, 4 tes M18 konkurensi). Diperbaiki di `33a25f8` (waktu dipasang sebelum pendaftaran; mulai_tagih
+  Oktober untuk proses paralel). Lokal penuh 453/453, Pint lulus; CI `33a25f8` API/Infra/Repository hijau.
+- Staging immutable `33a25f8`: migrasi `2026_10_31_000100_m18_metode_pemutihan` DONE, semua container healthy,
+  `/health/ready` database ok, `/api/v1/dues/my` tanpa token 401.
+- Branch Neon `pratinjau-data-asli-2` dibuat dari staging; env staging diarahkan ke situ. Impor ulang `--putihkan`
+  **belum** (kredensial DB staging tidak boleh disalin agent ke PC; menunggu pemilik menjalankan skrip lokal).
+- APK 1028 (run 28, `33a25f8`): sha256 arm64 `13dd655b…`, armeabi-v7a `add209a9…`, sertifikat `DB:A8:BC:3F…`.
+  Tersaji `/unduh` (baca ulang sha cocok) dan Drive ID tetap `1G3YAstTNabAD_Eo44QinoRdM9ZYfiixr`. Belum diuji di HP.
+
 ## Keuangan asli sampai September 2026: pemutihan, bayar sesuai kemampuan, tunai/transfer — 31 Oktober 2026
 
 Branch `codex/m18-pemutihan-metode` (di atas `codex/m19-temuan-emulator`). Keputusan pemilik ADR53.
