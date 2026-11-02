@@ -76,7 +76,14 @@ final class FinanceReports
         $status = (int) $saldo->sisa === 0 ? ((int) $saldo->keringanan > 0 ? 'lunas_keringanan' : 'lunas')
             : ($paid + (int) $saldo->keringanan > 0 ? 'kurang_bayar' : 'belum_bayar');
         $label = ['lunas' => 'Lunas', 'lunas_keringanan' => 'Lunas dengan keringanan', 'kurang_bayar' => 'Kurang bayar', 'belum_bayar' => 'Belum dibayar'][$status];
-        if ($status === 'lunas' && (int) $saldo->terbayar_buku_lama > 0 && $paid === (int) $saldo->terbayar_buku_lama) {
+        // ADR53: bayar di bawah tarif tetap "Lunas"; bulan buku lama yang diputihkan bukan tunggakan dan bukan pembayaran.
+        $relief = (int) $saldo->keringanan;
+        if ($status === 'lunas_keringanan' && $paid === 0 && $relief === (int) ($saldo->keringanan_pemutihan ?? 0)) {
+            $label = 'Diputihkan';
+        } elseif ($status === 'lunas_keringanan' && $relief === (int) ($saldo->keringanan_sukarela ?? 0)) {
+            $label = 'Lunas';
+        }
+        if ($label === 'Lunas' && (int) $saldo->terbayar_buku_lama > 0 && $paid === (int) $saldo->terbayar_buku_lama) {
             $label = 'Lunas (buku lama)';
         }
 

@@ -24,6 +24,7 @@ class ImportOldBook extends Command
         {--sampai= : Bulan terakhir buku lama (YYYY-MM); bulan sesudahnya hanya dibaca bila sudah dibayar di muka}
         {--sheet= : Nama sheet (bawaan "IURAN <tahun>")}
         {--keputusan= : Berkas JSON keputusan tarif/tidak ditagih}
+        {--putihkan : Pemutihan (ADR53): sisa bulan buku lama tidak jadi tunggakan (belum bayar = diputihkan, kurang = lunas sukarela)}
         {--laporan= : Tulis Excel tinjauan per rumah × bulan ke path ini}
         {--terapkan : Tulis ke database (wajib --pengurus dan --sidik-jari hasil cek)}
         {--pengurus= : Email pengurus aktif pelaksana}
@@ -42,7 +43,8 @@ class ImportOldBook extends Command
         }
         try {
             $rows = OldBook::read((string) $this->argument('berkas'), (string) ($this->option('sheet') ?: "IURAN $year"));
-            $plan = OldBook::plan($rows, OldBook::decisions($this->option('keputusan')), $year, $until, OldBook::commonRate($year));
+            $plan = OldBook::plan($rows, OldBook::decisions($this->option('keputusan')), $year, $until, OldBook::commonRate($year),
+                (bool) $this->option('putihkan'));
             foreach ([OldBook::rateIssue($year), OldBook::periodIssue($until)] as $issue) {
                 if ($issue !== null) {
                     $plan['perlu_keputusan'][] = ['baris' => null, 'kode' => null, 'pesan' => $issue];
@@ -104,9 +106,15 @@ class ImportOldBook extends Command
             ['Tagihan', $s['tagihan']], ['Bulan lunas', $s['bulan_lunas']], ['Bulan kurang bayar', $s['bulan_kurang']],
             ['Bulan belum dibayar', $s['bulan_belum']], ['Bulan dibayar di muka', $s['bulan_di_muka']],
             ['Total tagihan', $rp($s['nominal_tagihan'])], ['Lunas di buku lama', $rp($s['nominal_buku_lama'])],
-            ['Sisa tunggakan', $rp($s['nominal_sisa'])], ['Kelebihan bayar (sudah di kas fisik)', $rp($s['nominal_lebih'])],
-            ['Kolom sumbangan (informasi)', $rp($s['sumbangan_kolom'])],
+            ['Sisa sebelum pemutihan', $rp($s['nominal_sisa'])], ['Kelebihan bayar (sudah di kas fisik)', $rp($s['nominal_lebih'])],
+            ['Kolom sumbangan (informasi)', $rp($s['sumbangan_kolom'])], ['Bulan dibayar via transfer (sel oranye/biru)', $s['bulan_transfer']],
+            ['Bulan diputihkan', "{$s['bulan_diputihkan']} ({$rp($s['nominal_diputihkan'])})"],
+            ['Bulan lunas sesuai kemampuan', "{$s['bulan_sukarela']} ({$rp($s['nominal_sukarela'])})"],
+            ['Tunggakan yang tampil di HP warga', $rp($s['nominal_tunggakan'])],
         ]);
+        if (! $plan['putihkan'] && $s['nominal_sisa'] > 0) {
+            $this->line('Tanpa --putihkan, sisa di atas tampil sebagai tunggakan warga.');
+        }
         if ($plan['perlu_keputusan'] !== []) {
             $this->warn('Perlu keputusan sebelum impor ('.count($plan['perlu_keputusan']).'):');
             foreach ($plan['perlu_keputusan'] as $item) {
@@ -139,7 +147,9 @@ class ImportOldBook extends Command
                 $paid = $rest = $more = 0;
                 for ($m = 1; $m <= 12; $m++) {
                     $month = $per[$m] ?? null;
-                    $cells[] = $month === null ? '' : ($month['sisa'] === 0 ? 'Lunas' : ($month['buku_lama'] === 0 ? 'Belum' : 'Kurang '.$month['sisa']));
+                    $state = $month === null ? '' : ($month['sisa'] === 0 ? 'Lunas' : ($month['buku_lama'] === 0
+                        ? ($plan['putihkan'] ? 'Diputihkan' : 'Belum') : ($plan['putihkan'] ? 'Lunas '.$month['buku_lama'] : 'Kurang '.$month['sisa'])));
+                    $cells[] = $state !== '' && in_array($m - 1, $house['transfer'] ?? [], true) ? "$state TF" : $state;
                     $paid += $month['buku_lama'] ?? 0;
                     $rest += $month['sisa'] ?? 0;
                     $more += $month['lebih'] ?? 0;

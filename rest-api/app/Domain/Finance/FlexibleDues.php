@@ -66,20 +66,23 @@ final class FlexibleDues
         }
     }
 
+    /** Bayar di bawah tarif tanpa tunggakan (ADR53): sisa ditutup keringanan sukarela, alasan boleh kosong. */
+    private const VOLUNTARY_REASON = 'Bayar di bawah tarif sesuai kemampuan';
+
     public static function record(Akun $actor, string $house, array $periods, int $amount, string $date,
-        ?string $shortfall, ?string $excess, ?string $reason, string $fingerprint, ?string $replaces = null): PembayaranIuran
+        ?string $shortfall, ?string $excess, ?string $reason, string $fingerprint, ?string $replaces = null, ?string $method = null): PembayaranIuran
     {
         if ($amount <= 0 || $amount > 1000000000) {
             throw new DomainConflict('INVALID_AMOUNT', 'Nominal penerimaan harus lebih dari nol dan paling besar Rp1 miliar.', 422);
         }
 
-        return DB::transaction(function () use ($actor, $house, $periods, $amount, $date, $shortfall, $excess, $reason, $fingerprint, $replaces) {
+        return DB::transaction(function () use ($actor, $house, $periods, $amount, $date, $shortfall, $excess, $reason, $fingerprint, $replaces, $method) {
             self::lock();
             self::checkPreview($house, $periods, $fingerprint);
             $charges = self::charges($house, $periods);
             $due = (int) $charges->sum('sisa');
-            if ($amount < $due && ! in_array($shortfall, ['kurang_bayar', 'keringanan'], true)) {
-                throw new DomainConflict('SHORTFALL_CHOICE_REQUIRED', 'Pilih kurang bayar atau lunas dengan keringanan.', 422);
+            if ($amount < $due && ! in_array($shortfall, ['sukarela', 'kurang_bayar', 'keringanan'], true)) {
+                throw new DomainConflict('SHORTFALL_CHOICE_REQUIRED', 'Pilih lunas sesuai kemampuan, dicicil, atau lunas dengan keringanan.', 422);
             }
             if ($amount > $due && ! in_array($excess, ['sumbangan', 'titipan'], true)) {
                 throw new DomainConflict('EXCESS_CHOICE_REQUIRED', 'Pilih sumbangan ke kas atau titipan.', 422);
@@ -87,13 +90,14 @@ final class FlexibleDues
             if ($amount < $due && $shortfall === 'keringanan') {
                 self::reason($reason ?? '');
             }
+            $reliefReason = $shortfall === 'sukarela' && mb_strlen(trim($reason ?? '')) < 5 ? self::VOLUNTARY_REASON : $reason;
             $extra = max(0, $amount - $due);
             $seq = DB::selectOne("SELECT nextval('pembayaran_nomor_seq') AS n")->n;
             $payment = PembayaranIuran::create(['rumah_id' => $house, 'diterima_oleh_id' => $actor->id,
                 'nomor_bukti' => sprintf('IUR-%s-%06d', now('Asia/Jakarta')->format('Y'), $seq),
                 'tanggal_bayar' => $date, 'total_bayar' => $amount, 'status' => 'tercatat',
                 'nominal_sumbangan' => $excess === 'sumbangan' ? $extra : 0,
-                'nominal_titipan' => $excess === 'titipan' ? $extra : 0, 'versi_keuangan' => 2, 'menggantikan_id' => $replaces]);
+                'nominal_titipan' => $excess === 'titipan' ? $extra : 0, 'versi_keuangan' => 2, 'menggantikan_id' => $replaces, 'metode' => $method]);
             $left = $amount;
             foreach ($charges as $charge) {
                 $allocated = min($left, (int) $charge->sisa);
@@ -101,9 +105,9 @@ final class FlexibleDues
                     self::insert('alokasi_pembayaran', ['tagihan_id' => $charge->id, 'pembayaran_id' => $payment->id, 'nominal_alokasi' => $allocated]);
                 }
                 $left -= $allocated;
-                if ($shortfall === 'keringanan' && $charge->sisa > $allocated) {
+                if (in_array($shortfall, ['keringanan', 'sukarela'], true) && $charge->sisa > $allocated) {
                     self::insert('keringanan_iuran', ['tagihan_id' => $charge->id, 'pembayaran_id' => $payment->id,
-                        'nominal' => (int) $charge->sisa - $allocated, 'alasan' => $reason, 'dicatat_oleh_id' => $actor->id]);
+                        'nominal' => (int) $charge->sisa - $allocated, 'alasan' => $reliefReason, 'jenis' => $shortfall, 'dicatat_oleh_id' => $actor->id]);
                 }
             }
             if ($extra > 0 && $excess === 'titipan') {
@@ -255,16 +259,16 @@ final class FlexibleDues
         });
     }
 
-    public static function correct(Akun $actor, string $id, string $reason, array $periods, int $amount, string $date, ?string $shortfall, ?string $excess, string $fingerprint): PembayaranIuran
+    public static function correct(Akun $actor, string $id, string $reason, array $periods, int $amount, string $date, ?string $shortfall, ?string $excess, string $fingerprint, ?string $method = null): PembayaranIuran
     {
-        return DB::transaction(function () use ($actor, $id, $reason, $periods, $amount, $date, $shortfall, $excess, $fingerprint) {
+        return DB::transaction(function () use ($actor, $id, $reason, $periods, $amount, $date, $shortfall, $excess, $fingerprint, $method) {
             self::lock();
             $old = PembayaranIuran::findOrFail($id);
             self::checkPreview($old->rumah_id, $periods, $fingerprint);
             self::reverse($actor, $id, $reason);
 
             return self::record($actor, $old->rumah_id, $periods, $amount, $date, $shortfall, $excess, $reason,
-                self::preview($old->rumah_id, $periods)['fingerprint'], $id);
+                self::preview($old->rumah_id, $periods)['fingerprint'], $id, $method ?? $old->metode);
         });
     }
 

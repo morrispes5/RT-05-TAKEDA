@@ -56,6 +56,23 @@ class M18FinanceApiTest extends TestCase
         $recap->assertJsonPath('data.sisa', 25000)->assertJsonPath('data.terbayar', 50000);
     }
 
+    public function test_receipt_below_rate_is_paid_within_means_and_records_method(): void
+    {
+        [$resident, , $house] = $this->setupFinance();
+        $data = $this->payload($house, 50000) + ['perlakuan_kurang' => 'sukarela', 'metode' => 'transfer'];
+        $this->assertSame([], OpenApi::errors($data, 'M18PaymentInput'));
+        $payment = $this->postJson('/api/v1/admin/dues-payments', $data, ['Idempotency-Key' => (string) Str::uuid()])
+            ->assertCreated()->assertJsonPath('data.metode', 'transfer');
+
+        $this->assertSame('transfer', DB::table('pembayaran_iuran')->where('id', $payment->json('data.id'))->value('metode'));
+        $this->assertSame('sukarela', DB::table('keringanan_iuran')->value('jenis'));
+        $this->as($resident)->getJson('/api/v1/dues/my')->assertOk()
+            ->assertJsonPath('data.bulan_berjalan.sisa', 0)->assertJsonPath('data.bulan_berjalan.status_label', 'Lunas')
+            ->assertJsonPath('data.tunggakan.jumlah_bulan', 0);
+        $this->assertSame(50000, Dues::balance(), 'Kas bertambah sebesar uang yang diterima');
+        $this->assertSame(0, Reconciliation::run()['total_masalah']);
+    }
+
     public function test_old_client_and_disabled_flag_cannot_write_v2(): void
     {
         [, , $house] = $this->setupFinance();
@@ -91,6 +108,7 @@ class M18FinanceApiTest extends TestCase
         $this->postJson($url, $data, ['Idempotency-Key' => (string) Str::uuid()])->assertConflict();
         $this->assertSame(75000, $confirmation->refresh()->nominal);
         $this->assertNotNull($confirmation->pembayaran_id);
+        $this->assertSame('transfer', DB::table('pembayaran_iuran')->where('id', $confirmation->pembayaran_id)->value('metode'), 'ADR53: bukti transfer');
         try {
             DB::transaction(fn () => DB::table('konfirmasi_iuran')->where('id', $confirmation->id)->update(['nominal' => 50000]));
             $this->fail('Original proof amount must remain immutable');

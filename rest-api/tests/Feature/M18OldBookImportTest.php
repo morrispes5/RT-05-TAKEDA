@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Color;
+use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer;
 use Tests\Support\Fixtures;
 use Tests\TestCase;
@@ -45,8 +47,12 @@ class M18OldBookImportTest extends TestCase
         parent::tearDown();
     }
 
-    /** Baris rumah: [blok, nomor, 12 nominal iuran]; kolom mengikuti rekap bendahara (Q=Jan, selang-seling sumbangan). */
-    private function workbook(array $houses, array $header = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'], int $totalOffset = 0): string
+    /**
+     * Baris rumah: [blok, nomor, 12 nominal iuran]; kolom mengikuti rekap bendahara (Q=Jan, selang-seling sumbangan).
+     * $transfer: indeks rumah → bulan (0..11) yang selnya diwarnai oranye/biru seperti keterangan "via TRF".
+     */
+    private function workbook(array $houses, array $header = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'], int $totalOffset = 0,
+        array $transfer = []): string
     {
         $file = sys_get_temp_dir().'/rt05-oldbook-'.Str::uuid().'.xlsx';
         $this->files[] = $file;
@@ -70,7 +76,11 @@ class M18OldBookImportTest extends TestCase
                 $row[16 + 2 * $m] = $amount ?: '';
             }
             $row[17] = $i === 0 ? 10000 : '';
-            $writer->addRow(Row::fromValues($row));
+            $styles = [];
+            foreach ($transfer[$i] ?? [] as $n => $m) {
+                $styles[16 + 2 * $m] = (new Style)->setBackgroundColor($n % 2 === 0 ? Color::rgb(255, 192, 0) : Color::rgb(0, 176, 240));
+            }
+            $writer->addRow(Row::fromValuesWithStyles($row, null, $styles));
         }
         $total = array_replace($blank, [5 => 'TOTAL']);
         for ($m = 0; $m < 12; $m++) {
@@ -119,9 +129,45 @@ class M18OldBookImportTest extends TestCase
             'tarif_umum' => ['D1-4'], 'tidak_ditagih' => ['D1-6']]);
     }
 
-    private function plan(string $file, ?string $decisions = null, string $until = '2026-10'): array
+    private function plan(string $file, ?string $decisions = null, string $until = '2026-10', bool $forgive = false): array
     {
-        return OldBook::plan(OldBook::read($file, 'IURAN 2026'), OldBook::decisions($decisions), 2026, $until, OldBook::commonRate(2026));
+        return OldBook::plan(OldBook::read($file, 'IURAN 2026'), OldBook::decisions($decisions), 2026, $until, OldBook::commonRate(2026), $forgive);
+    }
+
+    public function test_forgiveness_leaves_no_arrears_and_transfer_cells_are_recorded(): void
+    {
+        $actor = $this->pengurus();
+        // D1-1: Feb & Mar via TRF (oranye, biru); sel transfer yang kosong tidak dihitung.
+        $file = $this->workbook($this->scenario(), transfer: [0 => [1, 2], 5 => [0]]);
+        $plain = $this->plan($file, $this->scenarioDecisions());
+        $plan = $this->plan($file, $this->scenarioDecisions(), forgive: true);
+        $this->assertNotSame($plain['sidik_jari'], $plan['sidik_jari'], 'Pemutihan mengubah sidik jari rencana');
+        $this->assertSame([1, 2], collect($plan['rumah'])->firstWhere('kode', 'D1-1')['transfer']);
+        $this->assertSame(2, $plan['ringkasan']['bulan_transfer']);
+        $this->assertSame(0, $plan['ringkasan']['nominal_tunggakan']);
+        $this->assertSame(25000, $plan['ringkasan']['nominal_sukarela']);
+        $this->assertSame(75000 + 75000 + 10 * 75000, $plan['ringkasan']['nominal_diputihkan']);
+
+        OldBook::apply($actor, $plan);
+
+        $this->assertSame(0, (int) DB::table('rt05_tagihan_saldo')->sum('sisa'), 'Tidak ada tunggakan buku lama');
+        $this->assertSame(2, DB::table('pelunasan_buku_lama')->where('metode', 'transfer')->count());
+        $this->assertSame(0, DB::table('pelunasan_buku_lama')->where('metode', 'tunai')->count(), 'Sel tanpa warna tidak ditebak tunai');
+        $this->assertSame(0, DB::table('transaksi_kas')->count());
+        $this->assertSame(0, Dues::balance());
+
+        $charges = collect(FinanceReports::charges())->keyBy(fn ($c) => $c['kode_rumah'].'|'.$c['periode']);
+        $this->assertSame('Diputihkan', $charges['D5-17A|2026-01']['status_label']);
+        $this->assertSame('Diputihkan', $charges['D1-1|2026-10']['status_label']);
+        $this->assertSame('Lunas (buku lama)', $charges['D1-5|2026-09']['status_label'], 'Bayar 50rb tetap lunas');
+        $this->assertSame(50000, $charges['D1-5|2026-09']['terbayar']);
+        $this->assertSame('Lunas (buku lama)', $charges['D1-1|2026-02']['status_label']);
+        $this->invariant();
+
+        $this->as($this->warga('1', ['blok' => 'D1', 'jalan' => 'Mawar 8', 'nomor' => '1']))->getJson('/api/v1/dues/my')->assertOk()
+            ->assertJsonPath('data.tunggakan.jumlah_bulan', 0)
+            ->assertJsonFragment(['periode' => '2026-02', 'buku_lama_metode' => 'transfer'])
+            ->assertJsonFragment(['periode' => '2026-10', 'status_label' => 'Diputihkan', 'keringanan_pemutihan' => 75000]);
     }
 
     private function invariant(): void

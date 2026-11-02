@@ -862,3 +862,38 @@ akun M17; dirilis bersama APK 1028 sebelum soft launch 8 Nov.
    per HP. Notifikasi akun yang tidak aktif hanya ada di Kotak masuk akun itu.
 5. Tarif rumah kedua yang dinegosiasikan memakai tarif khusus beralasan (ADR44), bukan fitur baru.
 
+### ADR52 — Pratinjau data iuran asli di staging
+
+Tanggal: **31 Oktober 2026**. Status: **diizinkan pemilik** ("Aku mau liat dulu di staging … biar nanti pas production
+nya ga salah tampilan"). Pengecualian sekali dari aturan "data asli hanya di production".
+
+1. Pratinjau memakai branch Neon terpisah `pratinjau-data-asli` dari branch staging. Data uji staging tidak disentuh dan
+   staging dikembalikan ke branch data uji setelah pemilik melihat. Branch pratinjau dihapus setelah production jalan.
+2. Yang masuk hanya hasil impor ADR49: alamat rumah, tarif, dan status bayar per bulan. NIK, No KK, dan nama tidak masuk.
+   Excel tetap di PC, tidak diunggah ke VPS/Git/CI. Saldo awal kas tidak diisi.
+3. Hanya akun pengurus staging yang melihat status bayar seluruh rumah. Tidak ada notifikasi ke warga.
+
+### ADR53 — Pemutihan, bayar sesuai kemampuan, dan cara bayar tunai/transfer
+
+Tanggal: **31 Oktober 2026**. Status: **diputuskan pemilik** (pesan 31 Okt: warga yang tidak pernah bayar "ada
+pemutihan … nggak usah bayar, tapi bulan depan bayar"; "dibayar 50.000 itu nggak ada tunggakan … kesadaran diri dia
+sendiri"; rekap "ada yang bayar cash maupun lewat TF"; data rekap lengkap sampai September 2026). Mengubah sebagian
+BR iuran fleksibel (ADR44 butir "kurang wajib tunggakan atau keringanan beralasan").
+
+1. **Bayar di bawah tarif = lunas, tanpa tunggakan.** Pilihan `perlakuan_kurang=sukarela` menutup sisa dengan
+   keringanan jenis `sukarela`; alasan opsional (bawaan "Bayar di bawah tarif sesuai kemampuan"). Kas bertambah sebesar
+   uang diterima. Ini pilihan bawaan di HP. Pengurus tetap bisa memilih **Dicicil** (`kurang_bayar`, sisa ditagih) atau
+   keringanan beralasan. Label tagihan "Lunas" (atau "Lunas (buku lama)").
+2. **Pemutihan buku lama.** `rt05:impor-buku-lama --putihkan`: bulan buku lama yang tidak dibayar dicatat keringanan jenis
+   `pemutihan` (label "Diputihkan"), yang dibayar kurang dicatat `sukarela`. Tanpa kas, bukan tunggakan. Mulai bulan
+   sesudah batas buku lama tagihan berjalan biasa. Pemutihan tercatat dan dapat dibatalkan per bulan seperti keringanan.
+3. **Cara bayar.** `pembayaran_iuran.metode` (`tunai`/`transfer`), dipilih pengurus saat mencatat; persetujuan bukti
+   transfer warga selalu `transfer`. Impor membaca sel bulan yang berwarna oranye/biru (keterangan rekap "pembayaran via
+   TRF") sebagai `transfer` pada `pelunasan_buku_lama.metode`. Sel tanpa warna tidak ditebak tunai: metodenya kosong.
+   Rekap 29 Okt yang dipegang Claude belum punya sel bulan berwarna transfer (warna hanya di baris keterangan), jadi
+   tanda TF baru muncul bila bendahara mewarnai rekap terbarunya.
+4. **Rumah hasil impor dapat ditempati pendaftar pertama.** Pendaftaran akun utama ke alamat rumah yang sudah ada tetapi
+   belum berpenghuni (hasil impor/sensus) memakai rumah itu, sehingga riwayat iuran tersambung. Rumah yang sudah dihuni
+   keluarga atau diarsipkan tetap ditolak. Keluarga baru tetap berstatus belum diverifikasi pengurus. Mengganti aturan
+   M06 lama "rumah tanpa keluarga ditolak tanpa merge", yang membuat 187 rumah impor tidak bisa didaftari.
+5. HP warga menampilkan iuran **per tahun** (12 bulan sekilas + rincian bulan) seperti rekap bendahara.

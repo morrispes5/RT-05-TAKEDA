@@ -46,6 +46,9 @@ class _FlexiblePaymentPageState extends ConsumerState<FlexiblePaymentPage> {
   Json? _preview;
   String? _shortfall;
   String? _excess;
+
+  /// Cara bayar (ADR53). Persetujuan bukti transfer selalu dicatat transfer oleh server.
+  String _method = 'tunai';
   String _key = newKey();
   Json? _pending;
   bool _busy = false;
@@ -95,7 +98,13 @@ class _FlexiblePaymentPageState extends ConsumerState<FlexiblePaymentPage> {
               if (widget.usageId != null) 'koreksi_penggunaan_id': widget.usageId,
             },
           );
-      if (mounted) setState(() => _preview = Json.from(value as Map));
+      // ADR53: bayar di bawah tarif bawaannya lunas sesuai kemampuan (tanpa tunggakan); pengurus tetap bisa memilih dicicil.
+      if (mounted) {
+        setState(() {
+          _preview = Json.from(value as Map);
+          if (!widget.deposit && ((_preview!['kurang'] as num?) ?? 0) > 0) _shortfall = 'sukarela';
+        });
+      }
     } on ApiException catch (e) {
       if (mounted) showApiError(context, e);
     } finally {
@@ -138,16 +147,20 @@ class _FlexiblePaymentPageState extends ConsumerState<FlexiblePaymentPage> {
         if (_shortfall != null && !widget.deposit) 'perlakuan_kurang': _shortfall,
         if (_excess != null && !widget.deposit) 'perlakuan_lebih': _excess,
         if (_reason.text.trim().isNotEmpty) 'alasan': _reason.text.trim(),
+        if (_asksMethod) 'metode': _method,
       };
       final detail = widget.deposit
           ? 'Titipan dipakai ${rupiah(amount)}. Tidak ada uang baru masuk.'
           : 'Uang diterima ${rupiah(amount)}\n'
                 '${short > 0
-                    ? _shortfall == 'keringanan'
+                    ? _shortfall == 'sukarela'
+                          ? 'Lunas sesuai kemampuan, tanpa tunggakan'
+                          : _shortfall == 'keringanan'
                           ? 'Keringanan ${rupiah(short)}'
                           : 'Sisa tunggakan ${rupiah(short)}'
                     : ''}'
-                '${extra > 0 ? '\n${_excess == 'titipan' ? 'Titipan' : 'Sumbangan'} ${rupiah(extra)}' : ''}';
+                '${extra > 0 ? '\n${_excess == 'titipan' ? 'Titipan' : 'Sumbangan'} ${rupiah(extra)}' : ''}'
+                '${_asksMethod ? '\nCara bayar: ${_method == 'transfer' ? 'Transfer' : 'Tunai'}' : ''}';
       if (!await confirm(
         context,
         title: _correcting ? 'Simpan koreksi?' : 'Simpan pencatatan?',
@@ -201,6 +214,8 @@ class _FlexiblePaymentPageState extends ConsumerState<FlexiblePaymentPage> {
   }
 
   Widget _choice(String label, String value) => RadioListTile<String>(title: Text(label), value: value, enabled: !_busy && !_uncertain);
+
+  bool get _asksMethod => !widget.deposit && widget.confirmationId == null;
 
   @override
   Widget build(BuildContext context) {
@@ -312,6 +327,26 @@ class _FlexiblePaymentPageState extends ConsumerState<FlexiblePaymentPage> {
                     }
                   },
           ),
+          if (_asksMethod) ...[
+            const Text('Cara bayar'),
+            const SizedBox(height: 6),
+            SegmentedButton<String>(
+              key: const ValueKey('finance-method'),
+              segments: const [
+                ButtonSegment(value: 'tunai', label: Text('Tunai'), icon: Icon(Icons.payments_outlined)),
+                ButtonSegment(value: 'transfer', label: Text('Transfer'), icon: Icon(Icons.account_balance_outlined)),
+              ],
+              selected: {_method},
+              onSelectionChanged: _busy || _uncertain
+                  ? null
+                  : (v) => setState(() {
+                      _method = v.first;
+                      _pending = null;
+                      _key = newKey();
+                    }),
+            ),
+            const SizedBox(height: 12),
+          ],
           if (!_uncertain) BusyButton(label: 'Periksa rincian', icon: Icons.fact_check_outlined, onPressed: _busy ? null : _loadPreview),
           if (p != null) ...[
             const SizedBox(height: 16),
@@ -333,7 +368,11 @@ class _FlexiblePaymentPageState extends ConsumerState<FlexiblePaymentPage> {
                 groupValue: _shortfall,
                 onChanged: (v) => setState(() => _shortfall = v),
                 child: Column(
-                  children: [_choice('Kurang bayar, sisanya tetap tunggakan', 'kurang_bayar'), _choice('Lunas dengan keringanan (alasan wajib)', 'keringanan')],
+                  children: [
+                    _choice('Lunas, bayar sesuai kemampuan (tanpa tunggakan)', 'sukarela'),
+                    _choice('Dicicil, sisanya masih ditagih', 'kurang_bayar'),
+                    _choice('Lunas dengan keringanan (alasan wajib)', 'keringanan'),
+                  ],
                 ),
               ),
             ],

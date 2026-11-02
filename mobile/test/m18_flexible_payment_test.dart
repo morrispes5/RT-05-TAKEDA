@@ -106,12 +106,26 @@ Future<void> _tap(WidgetTester tester, String text) async {
 }
 
 void main() {
-  testWidgets('short receipt requires choice and reason before approval', (tester) async {
+  testWidgets('short receipt defaults to paid within means without arrears or reason (ADR53)', (tester) async {
     final writes = <RequestOptions>[];
-    await _open(tester, _handler(writes), confirmation: 'proof1');
+    await _open(tester, _handler(writes));
+    await _tap(tester, 'Transfer');
     await _tap(tester, 'Periksa rincian');
     await _tap(tester, 'Simpan pencatatan');
-    expect(writes, isEmpty);
+    expect(find.textContaining('Lunas sesuai kemampuan, tanpa tunggakan'), findsOneWidget);
+    expect(find.textContaining('Cara bayar: Transfer'), findsOneWidget);
+    await _tap(tester, 'Simpan');
+    final body = _body(writes.single.data);
+    expect(body, containsPair('perlakuan_kurang', 'sukarela'));
+    expect(body, containsPair('metode', 'transfer'));
+    expect(body.containsKey('alasan'), isFalse);
+  });
+
+  testWidgets('short receipt with relief still requires a reason before approval', (tester) async {
+    final writes = <RequestOptions>[];
+    await _open(tester, _handler(writes), confirmation: 'proof1');
+    expect(find.byKey(const ValueKey('finance-method')), findsNothing, reason: 'Bukti transfer selalu transfer');
+    await _tap(tester, 'Periksa rincian');
     await _tap(tester, 'Lunas dengan keringanan (alasan wajib)');
     await _tap(tester, 'Simpan pencatatan');
     expect(writes, isEmpty);
@@ -123,6 +137,7 @@ void main() {
     expect(_body(writes.single.data), containsPair('perlakuan_kurang', 'keringanan'));
     expect(_body(writes.single.data), containsPair('nominal', 50000));
     expect(_body(writes.single.data), containsPair('versi_keuangan', 2));
+    expect(_body(writes.single.data).containsKey('metode'), isFalse);
     expect(find.text('Pencatatan berhasil'), findsOneWidget);
   });
 
@@ -147,10 +162,11 @@ void main() {
       return base(o);
     });
     await _tap(tester, 'Periksa rincian');
-    await _tap(tester, 'Kurang bayar, sisanya tetap tunggakan');
+    await _tap(tester, 'Dicicil, sisanya masih ditagih');
     await _tap(tester, 'Simpan pencatatan');
     await _tap(tester, 'Simpan');
     expect(writes, hasLength(1));
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('finance-amount')), -250, scrollable: find.byType(Scrollable).first);
     expect(tester.widget<TextField>(find.byKey(const ValueKey('finance-amount'))).enabled, isFalse);
     await _tap(tester, 'Coba simpan lagi');
     expect(writes, hasLength(2));

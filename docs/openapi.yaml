@@ -4571,7 +4571,8 @@ components:
         nominal: {type: integer, minimum: 1, maximum: 1000000000}
         tanggal_bayar: {type: string, format: date}
         fingerprint: {type: string, pattern: '^[a-f0-9]{64}$'}
-        perlakuan_kurang: {type: [string, 'null'], enum: [kurang_bayar, keringanan, null]}
+        perlakuan_kurang: {type: [string, 'null'], enum: [sukarela, kurang_bayar, keringanan, null], description: "ADR53: sukarela = lunas sesuai kemampuan (alasan opsional); kurang_bayar = dicicil, sisa tetap ditagih."}
+        metode: {type: [string, 'null'], enum: [tunai, transfer, null], description: "ADR53: cara bayar; persetujuan bukti transfer selalu transfer."}
         perlakuan_lebih: {type: [string, 'null'], enum: [sumbangan, titipan, null]}
         alasan: {type: [string, 'null'], minLength: 5, maxLength: 300}
     M18RateInput:
@@ -5536,6 +5537,9 @@ components:
               terbayar_titipan: {type: integer, minimum: 0}
               terbayar_buku_lama: {type: integer, minimum: 0, description: "ADR49: bagian terbayar dari rekap bendahara sebelum aplikasi (tanpa kas); sudah termasuk di terbayar."}
               buku_lama_id: {type: [string, 'null'], format: uuid, description: Pelunasan buku lama aktif yang dapat dibatalkan pengurus.}
+              buku_lama_metode: {type: [string, 'null'], enum: [tunai, transfer, null], description: "ADR53: transfer bila sel rekap diwarnai via TRF; null = tidak tercatat."}
+              keringanan_sukarela: {type: integer, minimum: 0, description: "ADR53: bayar di bawah tarif tanpa tunggakan."}
+              keringanan_pemutihan: {type: integer, minimum: 0, description: "ADR53: bulan buku lama yang diputihkan RT (status_label Diputihkan)."}
               keringanan: {type: integer, minimum: 0}
               sisa: {type: integer, minimum: 0}
               jatuh_tempo: {type: string, format: date}

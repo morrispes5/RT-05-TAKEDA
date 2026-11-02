@@ -10,6 +10,11 @@ Terakhir diperbarui: **Sabtu 31 Oktober 2026** (ganti akun di branch `feature/mo
 `feature/mobile-switch-account` (PR #107). Pemilik memilihnya untuk dua rumah (ADR51); diaudit Claude dan digabung ke `main` setelah CI hijau.
 Data tiap akun tetap terpisah. Rincian di PROGRESS bagian atas.
 
+**31 Okt 2026 malam (ADR53):** pemilik memutuskan pemutihan bulan buku lama yang tidak dibayar, bayar di bawah tarif
+tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Branch `codex/m18-pemutihan-metode`. Impor production
+memakai `--sampai=2026-09 --putihkan`; saldo awal kas resmi tetap diisi bendahara sekali (belum ada angkanya).
+Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau staging (ADR52) perlu impor ulang setelah deploy.
+
 ## 0. MULAI DI SINI — status Selasa 27 Oktober 2026 sore (Claude)
 
 Bagian ini mengungguli catatan lebih lama di bawah bila bertentangan.

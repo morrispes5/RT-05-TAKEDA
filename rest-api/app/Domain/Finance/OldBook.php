@@ -40,16 +40,22 @@ final class OldBook
 
     private const DECISION_KEYS = ['tarif', 'tarif_umum', 'tidak_ditagih'];
 
+    /** Keterangan rekap: oranye = "pembayaran via TRF", biru = transfer yang sudah dikonfirmasi ke Pak RT. */
+    private const TRANSFER_FILLS = ['FFC000', '00B0F0'];
+
+    private const SHEET_NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+
     /**
      * Baris TOTAL di bawah tabel (rumus jumlah per bulan) dipakai sebagai cek silang hasil baca, lalu pembacaan berhenti.
      *
-     * @return array{rumah: list<array{baris:int, jalan:string, blok:string, nomor:string, iuran:list<int>, sumbangan:int}>, total: ?list<int>}
+     * @return array{rumah: list<array{baris:int, jalan:string, blok:string, nomor:string, iuran:list<int>, sumbangan:int, transfer:list<int>}>, total: ?list<int>}
      */
     public static function read(string $path, string $sheetName): array
     {
         if (! is_file($path)) {
             throw new DomainConflict('IMPORT_FILE_NOT_FOUND', 'Berkas Excel tidak ditemukan.', 422);
         }
+        $marks = self::transferMarks($path, $sheetName);
         $options = new Options;
         $options->SHOULD_PRESERVE_EMPTY_ROWS = true;
         $reader = new Reader($options);
@@ -91,7 +97,9 @@ final class OldBook
                         $dues[] = self::amount($values[self::COL_FIRST_MONTH + 2 * $m] ?? null, $index);
                         $donation += self::amount($values[self::COL_FIRST_MONTH + 2 * $m + 1] ?? null, $index);
                     }
-                    $rows[] = ['baris' => $index, 'jalan' => $street, 'blok' => $block, 'nomor' => $number, 'iuran' => $dues, 'sumbangan' => $donation];
+                    $transfer = array_values(array_filter($marks[$index] ?? [], fn ($m) => $dues[$m] > 0));
+                    $rows[] = ['baris' => $index, 'jalan' => $street, 'blok' => $block, 'nomor' => $number, 'iuran' => $dues, 'sumbangan' => $donation,
+                        'transfer' => $transfer];
                 }
                 if (! $header) {
                     throw new DomainConflict('IMPORT_HEADER_INVALID', 'Baris judul bulan tidak ditemukan.', 422);
@@ -104,6 +112,80 @@ final class OldBook
         }
 
         throw new DomainConflict('IMPORT_SHEET_NOT_FOUND', "Sheet \"$sheetName\" tidak ada di berkas.", 422);
+    }
+
+    /**
+     * Bulan yang selnya diwarnai transfer, per nomor baris. OpenSpout tidak membaca gaya sel, jadi warna isian dibaca langsung
+     * dari XML berkas. Sel tanpa warna transfer tidak dianggap tunai: metodenya tidak tercatat (tidak ditebak).
+     *
+     * @return array<int, list<int>> baris → indeks bulan 0..11
+     */
+    private static function transferMarks(string $path, string $sheetName): array
+    {
+        $zip = new \ZipArchive;
+        if ($zip->open($path) !== true) {
+            throw new DomainConflict('IMPORT_FILE_INVALID', 'Berkas Excel tidak dapat dibuka.', 422);
+        }
+        try {
+            $dom = function (string $name) use ($zip): ?\DOMDocument {
+                $xml = $zip->getFromName($name);
+                $doc = new \DOMDocument;
+
+                return $xml !== false && $doc->loadXML($xml, LIBXML_NONET) ? $doc : null;
+            };
+            $workbook = $dom('xl/workbook.xml');
+            $rels = $dom('xl/_rels/workbook.xml.rels');
+            $styles = $dom('xl/styles.xml');
+            if (! $workbook || ! $rels || ! $styles) {
+                return [];
+            }
+            $relId = null;
+            foreach ($workbook->getElementsByTagNameNS(self::SHEET_NS, 'sheet') as $sheet) {
+                if (trim($sheet->getAttribute('name')) === trim($sheetName)) {
+                    $relId = $sheet->getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+                }
+            }
+            $target = null;
+            foreach ($rels->getElementsByTagName('Relationship') as $rel) {
+                if ($rel->getAttribute('Id') === $relId) {
+                    $target = ltrim(preg_replace('#^/?xl/#', '', $rel->getAttribute('Target')), '/');
+                }
+            }
+            $sheet = $target === null ? null : $dom('xl/'.$target);
+            if (! $sheet) {
+                return [];
+            }
+            $fills = [];
+            foreach ($styles->getElementsByTagNameNS(self::SHEET_NS, 'fill') as $fill) {
+                $color = $fill->getElementsByTagNameNS(self::SHEET_NS, 'fgColor')->item(0);
+                $fills[] = $color ? strtoupper(substr($color->getAttribute('rgb'), -6)) : '';
+            }
+            $xfs = [];
+            $cellXfs = $styles->getElementsByTagNameNS(self::SHEET_NS, 'cellXfs')->item(0);
+            foreach ($cellXfs ? $cellXfs->getElementsByTagNameNS(self::SHEET_NS, 'xf') : [] as $xf) {
+                $xfs[] = (int) $xf->getAttribute('fillId');
+            }
+            $marks = [];
+            foreach ($sheet->getElementsByTagNameNS(self::SHEET_NS, 'c') as $cell) {
+                if (! preg_match('/^([A-Z]+)(\d+)$/', $cell->getAttribute('r'), $ref)) {
+                    continue;
+                }
+                $col = 0;
+                foreach (str_split($ref[1]) as $letter) {
+                    $col = $col * 26 + ord($letter) - 64;
+                }
+                $offset = $col - 1 - self::COL_FIRST_MONTH;
+                $row = (int) $ref[2];
+                $fill = $fills[$xfs[(int) $cell->getAttribute('s')] ?? 0] ?? '';
+                if ($row >= self::FIRST_DATA_ROW && $offset >= 0 && $offset < 24 && $offset % 2 === 0 && in_array($fill, self::TRANSFER_FILLS, true)) {
+                    $marks[$row][] = intdiv($offset, 2);
+                }
+            }
+
+            return $marks;
+        } finally {
+            $zip->close();
+        }
     }
 
     private static function checkHeader(array $values): void
@@ -211,7 +293,7 @@ final class OldBook
      *
      * @param  array{rumah: list<array>, total: ?list<int>}  $sheet  hasil read()
      */
-    public static function plan(array $sheet, array $decisions, int $year, string $until, int $commonRate): array
+    public static function plan(array $sheet, array $decisions, int $year, string $until, int $commonRate, bool $forgive = false): array
     {
         $untilMonth = self::untilMonth($year, $until);
         $houses = [];
@@ -247,7 +329,7 @@ final class OldBook
             $other = $common <= count($paid) - $common && $counts !== [] ? (int) array_key_first($counts) : null;
             if (in_array($code, $decisions['tidak_ditagih'], true)) {
                 $houses[$code] = ['kode' => $code, 'alamat_key' => $key, 'blok' => $row['blok'], 'jalan' => $street, 'nomor' => $row['nomor'],
-                    'lewati' => true, 'tarif' => null, 'iuran' => $row['iuran'], 'sumbangan' => $row['sumbangan']];
+                    'lewati' => true, 'tarif' => null, 'iuran' => $row['iuran'], 'sumbangan' => $row['sumbangan'], 'transfer' => $row['transfer'] ?? []];
 
                 continue;
             }
@@ -265,7 +347,7 @@ final class OldBook
             }
             $houses[$code] = ['kode' => $code, 'alamat_key' => $key, 'blok' => $row['blok'], 'jalan' => $street, 'nomor' => $row['nomor'],
                 'lewati' => false, 'tarif' => $rate === null ? ['mode' => 'umum', 'nominal' => $commonRate] : ['mode' => 'khusus'] + $rate,
-                'iuran' => $row['iuran'], 'sumbangan' => $row['sumbangan']];
+                'iuran' => $row['iuran'], 'sumbangan' => $row['sumbangan'], 'transfer' => $row['transfer'] ?? []];
         }
         $known = array_keys($houses);
         foreach (array_merge(array_keys($decisions['tarif']), $decisions['tarif_umum'], $decisions['tidak_ditagih']) as $code) {
@@ -276,9 +358,12 @@ final class OldBook
         ksort($houses, SORT_STRING);
         $houses = array_values($houses);
 
-        return ['tahun' => $year, 'sampai' => sprintf('%04d-%02d', $year, $untilMonth), 'tarif_umum' => $commonRate,
-            'rumah' => $houses, 'perlu_keputusan' => $blocking, 'catatan' => $notes, 'ringkasan' => self::summary($houses, $untilMonth),
-            'sidik_jari' => hash('sha256', json_encode([$year, $untilMonth, $commonRate, $houses], JSON_THROW_ON_ERROR))];
+        // Sidik jari lama (tanpa pemutihan) tidak berubah agar hasil cek yang sudah ditinjau tetap berlaku.
+        $print = $forgive ? [$year, $untilMonth, $commonRate, $houses, 'putihkan'] : [$year, $untilMonth, $commonRate, $houses];
+
+        return ['tahun' => $year, 'sampai' => sprintf('%04d-%02d', $year, $untilMonth), 'tarif_umum' => $commonRate, 'putihkan' => $forgive,
+            'rumah' => $houses, 'perlu_keputusan' => $blocking, 'catatan' => $notes, 'ringkasan' => self::summary($houses, $untilMonth, $forgive),
+            'sidik_jari' => hash('sha256', json_encode($print, JSON_THROW_ON_ERROR))];
     }
 
     private static function untilMonth(int $year, string $until): int
@@ -307,11 +392,16 @@ final class OldBook
         return $result;
     }
 
-    private static function summary(array $houses, int $untilMonth): array
+    /**
+     * Pemutihan (ADR53): sisa bulan buku lama tidak menjadi tunggakan. Bulan tanpa bayar → keringanan "pemutihan", bulan yang
+     * dibayar di bawah tarif → keringanan "sukarela". Keduanya tanpa kas.
+     */
+    private static function summary(array $houses, int $untilMonth, bool $forgive = false): array
     {
         $s = ['rumah' => 0, 'rumah_dilewati' => 0, 'tarif_khusus' => 0, 'tagihan' => 0, 'bulan_lunas' => 0, 'bulan_kurang' => 0,
             'bulan_belum' => 0, 'bulan_di_muka' => 0, 'nominal_tagihan' => 0, 'nominal_buku_lama' => 0, 'nominal_sisa' => 0, 'nominal_lebih' => 0,
-            'sumbangan_kolom' => 0];
+            'sumbangan_kolom' => 0, 'bulan_transfer' => 0, 'bulan_diputihkan' => 0, 'nominal_diputihkan' => 0, 'bulan_sukarela' => 0,
+            'nominal_sukarela' => 0, 'nominal_tunggakan' => 0];
         foreach ($houses as $house) {
             if ($house['lewati']) {
                 $s['rumah_dilewati']++;
@@ -329,6 +419,14 @@ final class OldBook
                 $s['nominal_lebih'] += $month['lebih'];
                 $s[$month['buku_lama'] === 0 ? 'bulan_belum' : ($month['sisa'] > 0 ? 'bulan_kurang' : 'bulan_lunas')]++;
                 $s['bulan_di_muka'] += $m > $untilMonth ? 1 : 0;
+                $s['bulan_transfer'] += in_array($m - 1, $house['transfer'] ?? [], true) ? 1 : 0;
+                if ($month['sisa'] > 0 && $forgive) {
+                    $kind = $month['buku_lama'] === 0 ? 'diputihkan' : 'sukarela';
+                    $s["bulan_$kind"]++;
+                    $s["nominal_$kind"] += $month['sisa'];
+                } else {
+                    $s['nominal_tunggakan'] += $month['sisa'];
+                }
             }
         }
 
@@ -402,7 +500,7 @@ final class OldBook
             $charges = DB::table('rt05_tagihan_saldo')->whereIn('rumah_id', array_values($ids))
                 ->whereBetween('periode', [$january, sprintf('%04d-12-01', $year)])->get()->keyBy(fn ($c) => $c->rumah_id.'|'.substr($c->periode, 0, 10));
             $corrected = DB::table('penyesuaian_tagihan')->whereIn('tagihan_id', $charges->pluck('id')->all())->pluck('tagihan_id')->flip();
-            $adjustments = $settlements = $touched = [];
+            $adjustments = $settlements = $reliefs = $touched = [];
             foreach ($houses as $i => $house) {
                 foreach ($months[$i] as $m => $month) {
                     $period = sprintf('%04d-%02d-01', $year, $m);
@@ -421,7 +519,14 @@ final class OldBook
                     }
                     if ($month['buku_lama'] > 0) {
                         $settlements[] = ['id' => (string) Str::uuid(), 'tagihan_id' => $charge->id, 'impor_id' => $batch,
-                            'nominal' => $month['buku_lama'], 'dicatat_oleh_id' => $actor->id];
+                            'nominal' => $month['buku_lama'], 'dicatat_oleh_id' => $actor->id,
+                            'metode' => in_array($m - 1, $house['transfer'] ?? [], true) ? 'transfer' : null];
+                    }
+                    if ($month['sisa'] > 0 && ! empty($plan['putihkan'])) {
+                        $forgiven = $month['buku_lama'] === 0;
+                        $reliefs[] = ['id' => (string) Str::uuid(), 'tagihan_id' => $charge->id, 'nominal' => $month['sisa'],
+                            'jenis' => $forgiven ? 'pemutihan' : 'sukarela', 'dicatat_oleh_id' => $actor->id,
+                            'alasan' => $forgiven ? "Pemutihan buku lama $year (keputusan RT)" : "Bayar di bawah tarif sesuai kemampuan (buku lama $year)"];
                     }
                     $touched[] = $charge->id;
                 }
@@ -431,6 +536,9 @@ final class OldBook
             }
             foreach (array_chunk($settlements, 500) as $chunk) {
                 DB::table('pelunasan_buku_lama')->insert($chunk);
+            }
+            foreach (array_chunk($reliefs, 500) as $chunk) {
+                DB::table('keringanan_iuran')->insert($chunk);
             }
             foreach (array_chunk($touched, 500) as $chunk) {
                 DB::update("UPDATE tagihan_iuran t SET status = CASE WHEN s.sisa = 0 THEN 'lunas' ELSE 'belum_bayar' END

@@ -39,7 +39,9 @@ Endpoint baru mengembalikan 404 saat flag nonaktif. Akses tetap pengurus aktif; 
 
 Sebelum penerimaan, POST `/admin/dues-payments/preview` dengan rumah_id, periode, nominal dan versi_keuangan.
 Respons memberi alokasi tertua, kurang/lebih, sisa, saldo titipan dan fingerprint. Kirim fingerprint itu ke POST
-`/admin/dues-payments`; kurang wajib memilih kurang_bayar/keringanan, lebih wajib sumbangan/titipan.
+`/admin/dues-payments`; kurang wajib memilih sukarela (lunas sesuai kemampuan, alasan opsional)/kurang_bayar/keringanan,
+lebih wajib sumbangan/titipan; `metode` tunai/transfer opsional (ADR53). Tagihan memuat `keringanan_sukarela`,
+`keringanan_pemutihan` (label Diputihkan), dan `buku_lama_metode`.
 Keringanan dan koreksi nominal bukti wajib alasan. Fingerprint basi menghasilkan 409, tanpa pencatatan uang.
 Untuk koreksi, preview boleh membawa koreksi_pembayaran_id atau koreksi_penggunaan_id (saling eksklusif), dari rumah sama.
 Alokasi/kurang/lebih memakai sisa setelah pembalikan asal; sisa tetap keadaan sekarang dan sisa_setelah_pembalikan memberi

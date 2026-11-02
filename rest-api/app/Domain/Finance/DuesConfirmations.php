@@ -126,7 +126,7 @@ final class DuesConfirmations
             }
             $payment = FlexibleDues::record($actor, $confirmation->rumah_id, $data['periode'], (int) $data['nominal'],
                 $data['tanggal_bayar'], $data['perlakuan_kurang'] ?? null, $data['perlakuan_lebih'] ?? null,
-                $data['alasan'] ?? null, $data['fingerprint']);
+                $data['alasan'] ?? null, $data['fingerprint'], null, 'transfer');
             $confirmation->forceFill(['status' => 'selesai', 'pembayaran_id' => $payment->id,
                 'catatan_pengurus' => $data['alasan'] ?? null, 'diproses_oleh_id' => $actor->id, 'diproses_at' => now()])->save();
             Audit::record($actor, 'iuran.konfirmasi_disetujui', 'konfirmasi_iuran', $id, ['pembayaran_id' => $payment->id]);

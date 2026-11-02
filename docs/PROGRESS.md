@@ -1,5 +1,20 @@
 # Progress — RT05 TAKEDA
 
+## Keuangan asli sampai September 2026: pemutihan, bayar sesuai kemampuan, tunai/transfer — 31 Oktober 2026
+
+Branch `codex/m18-pemutihan-metode` (di atas `codex/m19-temuan-emulator`). Keputusan pemilik ADR53.
+- Server: migrasi `2026_10_31_000100_m18_metode_pemutihan` (kolom `metode`, `keringanan_iuran.jenis`, view saldo +3 kolom
+  di akhir). `perlakuan_kurang=sukarela`, `metode` di catat/koreksi; persetujuan bukti transfer = transfer. Label
+  "Diputihkan"/"Lunas". Impor `--putihkan` dan pembacaan warna sel transfer (XML styles, OpenSpout tidak membaca gaya).
+- **Bug ditemukan & diperbaiki:** pendaftaran akun utama menolak semua alamat yang rumahnya sudah ada. Setelah impor 187
+  rumah, tidak ada warga yang bisa mendaftar. Sekarang rumah belum berpenghuni ditempati pendaftar pertama (ADR53 butir 4).
+- HP: form catat uang bawaan "Lunas, bayar sesuai kemampuan", pilihan Tunai/Transfer; tab Iuran warga per tahun
+  (`dues_year.dart`: 12 bulan, tanda TF, "Diputihkan").
+- Cek impor Excel asli di PC (tanpa tulis, `--sampai=2026-09 --putihkan`): 187 rumah, 1.717 tagihan, 1.337 bulan lunas
+  buku lama (Rp98.065.000), 380 bulan diputihkan (Rp28.235.000), tunggakan tampil di HP Rp0, sel transfer 0.
+- Tes: backend `phpunit` penuh 453/453 (tes M06 lama "rumah tanpa keluarga ditolak" diganti perilaku ADR53), Pint
+  lulus; Flutter 370/370, analyze/format bersih. Belum: deploy staging, impor ulang pratinjau, uji HP.
+
 ## Temuan uji emulator APK 1027 — 31 Oktober 2026
 
 Branch `codex/m19-temuan-emulator` (di atas PR #107). Dari 4 temuan uji emulator 30 Okt:

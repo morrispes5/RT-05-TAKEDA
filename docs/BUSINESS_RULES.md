@@ -93,7 +93,9 @@ Jika anonymous_to_residents=true, resource warga tidak memuat user_id, nama, kon
 - Setiap charge berstatus unpaid atau paid. Nilai uang integer rupiah positif.
 - Sebelum M18 aktif, kontrak M12 hanya menerima pelunasan penuh bulan terpilih; parsial/lebih ditolak.
 - M18: satu penerimaan dapat melunasi sebagian/beberapa tagihan rumah yang sama, tertua dari bulan dipilih dahulu.
-  Kurang wajib dipilih sebagai tunggakan atau keringanan beralasan; lebih wajib sumbangan atau titipan.
+  Kurang dipilih sebagai lunas sesuai kemampuan (bawaan, tanpa tunggakan, ADR53), dicicil (sisa tetap tunggakan), atau
+  keringanan beralasan; lebih wajib sumbangan atau titipan. Cara bayar tunai/transfer dicatat; bukti transfer = transfer.
+  Bulan buku lama yang tidak dibayar dapat diputihkan saat impor (ADR53); diputihkan bukan tunggakan dan bukan kas.
   Kas masuk sama dengan uang diterima. Keringanan bukan kas; pemakaian titipan manual tidak menambah kas kedua.
   Nominal efektif = snapshot + penyesuaian; terbayar + keringanan + sisa = nominal efektif, saldo titipan tidak negatif.
 - Admin boleh mencatat tanggal bayar aktual serta catatan; server mencatat recorded_at dan recorded_by terpisah.

@@ -50,25 +50,30 @@ final class Registration
             }
 
             $key = Address::key($data['blok'] ?? null, $data['jalan'], $data['nomor']);
-            if (Rumah::where('alamat_key', $key)->exists()) {
+            // Rumah dari impor buku lama/sensus belum berpenghuni: kepala keluarga pertama menempatinya, riwayat iuran
+            // tetap pada rumah itu (ADR53). Rumah yang sudah dihuni keluarga lain tetap ditolak.
+            $rumah = Rumah::where('alamat_key', $key)->lockForUpdate()->first();
+            if ($rumah && ($rumah->archived_at !== null || Penghunian::where('rumah_id', $rumah->id)->whereNull('selesai_tanggal')->exists())) {
                 throw new DomainConflict('HOUSE_ALREADY_REGISTERED', self::HOUSE_EXISTS);
             }
 
-            $code = Address::code($data['blok'] ?? null, $data['nomor']);
-            $suffix = 1;
-            $base = $code;
-            while (Rumah::where('kode_rumah', $code)->exists()) {
-                $code = $base.'-'.(++$suffix);
+            if (! $rumah) {
+                $code = Address::code($data['blok'] ?? null, $data['nomor']);
+                $suffix = 1;
+                $base = $code;
+                while (Rumah::where('kode_rumah', $code)->exists()) {
+                    $code = $base.'-'.(++$suffix);
+                }
+                $rumah = Rumah::create([
+                    'kode_rumah' => $code,
+                    'blok' => $data['blok'] ?? null,
+                    'jalan' => trim($data['jalan']),
+                    'nomor' => trim($data['nomor']),
+                    'alamat_key' => $key,
+                    'tagihan_aktif' => true,
+                    'mulai_tagih' => now('Asia/Jakarta')->startOfMonth()->toDateString(),
+                ]);
             }
-            $rumah = Rumah::create([
-                'kode_rumah' => $code,
-                'blok' => $data['blok'] ?? null,
-                'jalan' => trim($data['jalan']),
-                'nomor' => trim($data['nomor']),
-                'alamat_key' => $key,
-                'tagihan_aktif' => true,
-                'mulai_tagih' => now('Asia/Jakarta')->startOfMonth()->toDateString(),
-            ]);
 
             $keluarga = Keluarga::create(['status' => 'belum_verifikasi']);
             $kepala = Warga::create([

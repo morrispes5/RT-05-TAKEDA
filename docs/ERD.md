@@ -37,15 +37,15 @@ Migration `2026_10_25_000300_m18_finance_ledger.php` menambah:
 | --- | --- |
 | tarif_rumah | Rumah, mulai_periode, mode khusus/umum, nominal, alasan, pembuat; versi dibatalkan + pengganti, satu versi aktif per rumah/bulan |
 | tagihan_iuran | Tambahan tarif_rumah_id; nominal_tagihan tetap snapshot immutable |
-| pembayaran_iuran | nominal_sumbangan, nominal_titipan, versi_keuangan; total penerimaan tetap sama dengan kas masuk |
+| pembayaran_iuran | nominal_sumbangan, nominal_titipan, versi_keuangan, metode (tunai/transfer, kosong untuk catatan lama — ADR53); total penerimaan tetap sama dengan kas masuk |
 | alokasi_pembayaran | Sumber XOR pembayaran_id / penggunaan_titipan_id; beberapa alokasi parsial per tagihan diperbolehkan |
-| keringanan_iuran | Tagihan, pembayaran opsional, nominal positif, alasan, aktor, riwayat pembatalan; bukan uang masuk |
+| keringanan_iuran | Tagihan, pembayaran opsional, nominal positif, alasan, jenis (keringanan/sukarela/pemutihan — ADR53), aktor, riwayat pembatalan; bukan uang masuk |
 | penggunaan_titipan | Rumah, nominal, tanggal, aktor, riwayat pembatalan; tidak membuat penerimaan kas |
 | mutasi_titipan | Lot dari satu pembayaran, arah ±1 dan nominal positif, pemakaian/pembalikan append-only; saldo tiap lot tidak negatif |
 | penyesuaian_tagihan | Delta bertanda, alasan, aktor, referensi pembalikan; mengubah nominal efektif tanpa menimpa snapshot |
 | konfirmasi_iuran | pembayaran_id nullable unique untuk persetujuan atomik pada tahap API berikutnya |
 | impor_keuangan | ADR49: satu batch per tahun (unik), sampai_periode, sidik_jari SHA-256 rencana, ringkasan angka, pengurus; immutable |
-| pelunasan_buku_lama | ADR49: tagihan, impor, nominal positif, aktor; satu aktif per tagihan; batal sekali beralasan; tanpa kas. View `rt05_tagihan_saldo` + `terbayar_buku_lama`, `buku_lama_id`; sisa ikut dikurangi |
+| pelunasan_buku_lama | ADR49: tagihan, impor, nominal positif, aktor; satu aktif per tagihan; batal sekali beralasan; tanpa kas. View `rt05_tagihan_saldo` + `terbayar_buku_lama`, `buku_lama_id`; sisa ikut dikurangi. ADR53: `metode` (transfer dari warna sel), view + `keringanan_sukarela`, `keringanan_pemutihan`, `buku_lama_metode` |
 
 Views `rt05_tagihan_saldo`, `rt05_titipan_saldo`, `rt05_finance_violations` menghitung saldo dan penyimpangan.
 Constraint trigger deferred memvalidasi keadaan akhir transaksi; advisory lock `rt05:keuangan` menserialkan perubahan ledger.

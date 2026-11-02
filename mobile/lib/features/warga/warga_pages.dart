@@ -26,6 +26,7 @@ import '../household/family_page.dart';
 import 'activity_proposals.dart';
 import 'app_about.dart';
 import 'dues_proof.dart';
+import 'dues_year.dart';
 import 'emergencies.dart';
 import 'notification_center.dart';
 import 'providers.dart';
@@ -1295,36 +1296,7 @@ class _MyDues extends ConsumerWidget {
               const SizedBox(height: 16),
               Text('Riwayat tagihan', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
-              if (list.isEmpty) const EmptyState(icon: Icons.receipt_long_outlined, title: 'Belum ada tagihan'),
-              for (final t in list)
-                Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  // Wrap, bukan ListTile: label status turun ke baris berikutnya pada skala teks besar.
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Wrap(
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 8,
-                      runSpacing: 6,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(periode(t.periode), style: const TextStyle(fontWeight: FontWeight.w700)),
-                            Text(rupiah(t.nominal), style: const TextStyle(color: Brand.muted)),
-                            if (t.raw.containsKey('sisa')) ...[
-                              Text('Terbayar ${rupiah(t.terbayar)} • Keringanan ${rupiah(t.keringanan)}'),
-                              Text('Sisa ${rupiah(t.sisa)}'),
-                            ],
-                          ],
-                        ),
-                        StatusChip(t.status, label: t.label),
-                      ],
-                    ),
-                  ),
-                ),
+              DuesYearView(tagihan: list),
               if (footer != null) ...[const SizedBox(height: 16), footer!(d)],
             ],
           );

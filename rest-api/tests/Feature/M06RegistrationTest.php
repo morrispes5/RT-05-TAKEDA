@@ -103,18 +103,21 @@ class M06RegistrationTest extends TestCase
         $this->assertSame($before, $this->counts());
     }
 
-    public function test_existing_house_without_family_is_rejected_without_merge(): void
+    public function test_existing_house_without_family_is_occupied_by_first_head(): void
     {
         $this->freshToken();
-        // Rumah kosong yang dibuat pengurus, tanpa penghunian aktif.
-        Rumah::create(['kode_rumah' => 'M-6', 'blok' => 'M', 'jalan' => 'Melati', 'nomor' => '6', 'alamat_key' => 'm|melati|6', 'tagihan_aktif' => true]);
-        $before = $this->counts();
+        // ADR53: rumah dari impor buku lama/sensus belum berpenghuni; kepala keluarga pertama menempati rumah itu (tanpa rumah ganda).
+        $rumah = Rumah::create(['kode_rumah' => 'M-6', 'blok' => 'M', 'jalan' => 'Melati', 'nomor' => '6', 'alamat_key' => 'm|melati|6',
+            'tagihan_aktif' => true, 'mulai_tagih' => '2026-01-01']);
 
-        $this->postJson('/api/v1/auth/register', $this->payload(['jalan' => 'JALAN  melati', 'nomor' => 'no. 6']))
+        $this->postJson('/api/v1/auth/register', $this->payload(['jalan' => 'JALAN  melati', 'nomor' => 'no. 6']))->assertCreated();
+
+        $this->assertSame(1, Rumah::where('alamat_key', 'm|melati|6')->count());
+        $this->assertSame(1, DB::table('penghunian')->where('rumah_id', $rumah->id)->whereNull('selesai_tanggal')->count());
+        $this->assertSame('2026-01-01', substr((string) $rumah->refresh()->mulai_tagih, 0, 10), 'Riwayat tagihan rumah tidak diubah');
+
+        $this->postJson('/api/v1/auth/register', $this->payload(['email' => 'kedua@contoh.test']))
             ->assertStatus(409)->assertJsonPath('error.code', 'HOUSE_ALREADY_REGISTERED');
-
-        $this->assertSame($before, $this->counts());
-        $this->assertSame(0, DB::table('penghunian')->join('rumah', 'rumah.id', '=', 'penghunian.rumah_id')->where('alamat_key', 'm|melati|6')->count());
     }
 
     public function test_archived_house_is_rejected_too(): void

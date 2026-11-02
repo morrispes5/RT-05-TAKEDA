@@ -66,7 +66,8 @@ class FlexibleFinanceController extends Controller
             'periode' => ['required', 'array', 'min:1', 'max:24'], 'periode.*' => ['required', 'date_format:Y-m', 'distinct'],
             'nominal' => ['required', 'integer', 'min:1', 'max:1000000000'],
             'tanggal_bayar' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.now('Asia/Jakarta')->toDateString()],
-            'perlakuan_kurang' => ['nullable', 'in:kurang_bayar,keringanan'],
+            'perlakuan_kurang' => ['nullable', 'in:sukarela,kurang_bayar,keringanan'],
+            'metode' => ['nullable', 'in:tunai,transfer'],
             'perlakuan_lebih' => ['nullable', 'in:sumbangan,titipan'],
             'alasan' => ['nullable', 'string', 'min:5', 'max:300'],
             'fingerprint' => ['required', 'string', 'regex:/^[a-f0-9]{64}$/'],
@@ -137,7 +138,7 @@ class FlexibleFinanceController extends Controller
 
         return Idempotency::run($request, $request->user(), 'dues-payments.store', $d, fn () => Api::data(Present::pembayaran(
             FlexibleDues::record($request->user(), $d['rumah_id'], $d['periode'], (int) $d['nominal'], $d['tanggal_bayar'],
-                $d['perlakuan_kurang'] ?? null, $d['perlakuan_lebih'] ?? null, $d['alasan'] ?? null, $d['fingerprint'])
+                $d['perlakuan_kurang'] ?? null, $d['perlakuan_lebih'] ?? null, $d['alasan'] ?? null, $d['fingerprint'], null, $d['metode'] ?? null)
         ), 201));
     }
 
@@ -148,7 +149,7 @@ class FlexibleFinanceController extends Controller
 
         return Idempotency::run($request, $request->user(), 'dues-payments.correct', $d + ['id' => $id], fn () => Api::data(Present::pembayaran(
             FlexibleDues::correct($request->user(), $id, $d['alasan'], $d['periode'], (int) $d['nominal'], $d['tanggal_bayar'],
-                $d['perlakuan_kurang'] ?? null, $d['perlakuan_lebih'] ?? null, $d['fingerprint'])
+                $d['perlakuan_kurang'] ?? null, $d['perlakuan_lebih'] ?? null, $d['fingerprint'], $d['metode'] ?? null)
         ), 201));
     }
 
