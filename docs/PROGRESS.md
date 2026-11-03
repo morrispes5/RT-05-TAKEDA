@@ -1,5 +1,23 @@
 # Progress — RT05 TAKEDA
 
+## Staging Biznet dan impor pratinjau dengan pemutihan — 3 November 2026
+
+Koreksi: deploy `33a25f8` dan `/unduh` APK 1028 tanggal 2 Nov terpasang di VPS Hostinger lama, bukan di Biznet yang
+dilayani DNS sejak 1 Nov. Staging Biznet saat itu masih `b324a18`, APK 1027, branch `pratinjau-data-asli` lama.
+- Env staging Biznet diarahkan ke branch `pratinjau-data-asli-2` (`ep-proud-hill-b3jn0edf`), cadangan
+  `.env.staging.bak-20261103-pratinjau1` (mode 600). Skrip deploy sha256 `aa50ca1a…` sama dengan `33a25f8`.
+- Deploy pertama GAGAL di migrasi (`Network is unreachable` ke alamat IPv6 Neon saja, load ~20, 1 vCPU). Cek ulang:
+  DNS di jaringan `rt05-staging_default` mengembalikan IPv4. Deploy kedua lulus: health ready, heartbeat worker/scheduler,
+  semua service image `33a25f8` dengan endpoint `ep-proud-hill`. Dari luar: `/health/ready` 200, `/api/v1/dues/my` 401.
+- APK 1028 dari artefak run 28 (sha256 cocok `13dd655b…`/`add209a9…`) + `versi.json` build 1028 terpasang di volume
+  `rt05-staging_apk-downloads`; unduhan publik arm64 sha cocok.
+- Impor dari PC (Excel tetap di PC; kredensial DB hanya di memori proses; `DB_SSLMODE=verify-full` dengan CA bundle):
+  cek lalu terapkan sidik jari `48ea004a…`. 187 rumah (186 baru), 8 tarif khusus, 1.717 tagihan, 1.337 bulan lunas
+  buku lama (Rp98.065.000), 380 bulan diputihkan (Rp28.235.000), tunggakan di HP Rp0, sel transfer 0 (Excel tanpa warna).
+  `rt05:rekonsiliasi-keuangan`: 0 masalah, saldo Rp2.180.000 (kas data uji staging, saldo resmi belum diisi).
+  Neon: `keringanan_iuran` pemutihan 380.
+- Belum: uji APK 1028 di HP; tagihan Oktober–November rumah hasil impor belum ada (impor sampai September).
+
 ## Main, staging, dan APK 1028 — 2 November 2026
 
 Pemilik: langsung ke `main`; database tetap staging sampai M16 ditutup.

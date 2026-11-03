@@ -4,7 +4,17 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **Senin 2 November 2026** (main `33a25f8` di staging, APK 1028). **Baca bagian 0 dulu.**
+Terakhir diperbarui: **Selasa 3 November 2026** (main `33a25f8` di staging Biznet, APK 1028, pratinjau dengan pemutihan). **Baca bagian 0 dulu.**
+
+**3 Nov 2026 — koreksi lokasi staging dan impor pratinjau.** Deploy dan APK 1028 tanggal 2 Nov ternyata terpasang
+di **VPS Hostinger lama** (alias `rt05-vps-v6`), padahal sejak 1 Nov DNS `takeda-staging.morriz.tech` sudah menunjuk ke
+**Biznet `139.190.105.219`** (`ssh biznet`, user `morriztech` + `sudo -n`). Hostinger kini tidak terjangkau (masa
+sewa habis 3 Nov); **jangan pakai `rt05-vps-v6` lagi.** Hari ini di Biznet:
+env staging diarahkan ke `ep-proud-hill-b3jn0edf` (cadangan `/root/.rt05/.env.staging.bak-20261103-pratinjau1`),
+deploy immutable `33a25f8` (percobaan pertama gagal di migrasi: saat load ~20 container hanya mendapat alamat IPv6
+Neon, sedangkan Biznet tanpa IPv6; diulang dan lulus), APK 1028 + `versi.json` dipasang di `/unduh`. Impor
+`--sampai=2026-09 --putihkan` dari PC ke `pratinjau-data-asli-2` selesai: 187 rumah, 380 bulan diputihkan, tunggakan di HP
+Rp0, rekonsiliasi 0 masalah. Production tetap belum disentuh.
 
 **2 Nov 2026 (pemilik: "lgsg ke main … database dll masih staging sampe kita tutup milestone 16"):** main
 fast-forward ke `00d9196` (PR #107 ganti akun + temuan emulator + ADR53), lalu `33a25f8` (tes iuran tidak lagi
