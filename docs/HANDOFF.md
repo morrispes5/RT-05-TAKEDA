@@ -4,7 +4,15 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **Selasa 3 November 2026** (main `33a25f8` di staging Biznet, APK 1028, pratinjau dengan pemutihan). **Baca bagian 0 dulu.**
+Terakhir diperbarui: **Kamis 5 November 2026** (hosting production dibeli, ADR54; staging tetap `33a25f8`, APK 1028). **Baca bagian 0 dulu.**
+
+**5 Nov 2026 — production resmi dimulai (ADR54).** Pemilik membeli Biznet NEO Web Hosting Personal Large + domain
+**`rt05takeda.com`** (Active 5 Nov 2026 – 5 Nov 2027, perpanjangan portal Rp612.000/thn) dengan akun Biznet email khusus
+RT. Neon production **sementara di akun Neon pribadi pemilik** (project baru, belum dibuat). Staging **tidak dipindah**
+(VPS Biznet `takeda-staging.morriz.tech`). Urutan rilis: Lokal → Vercel preview → Staging → Production. Langkah M16.1–M16.10
+ada di [M16_PLAN.md](M16_PLAN.md) bagian 8; berikutnya **M16.1 cek koneksi hosting → Neon 5432**. Akses browser: Claude
+in Chrome terpasang di profil Chrome "Takeda" (portal Biznet sudah login); login cPanel dilakukan pemilik, agent tidak
+mengetik kata sandi. Invoice MorrizTech INV/MZT/2026/11/001 (Rp499.000) sudah dikirim ke RT.
 
 **3 Nov 2026 — koreksi lokasi staging dan impor pratinjau.** Deploy dan APK 1028 tanggal 2 Nov ternyata terpasang
 di **VPS Hostinger lama** (alias `rt05-vps-v6`), padahal sejak 1 Nov DNS `takeda-staging.morriz.tech` sudah menunjuk ke

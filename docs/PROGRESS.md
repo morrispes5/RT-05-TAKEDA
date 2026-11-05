@@ -1,5 +1,17 @@
 # Progress — RT05 TAKEDA
 
+## M16 production dimulai: hosting dan domain — 5 November 2026
+
+- Hosting dibeli pemilik: Biznet NEO Web Hosting Personal Large + `rt05takeda.com`, status **Active** (dibaca agent dari
+  portal Biznet lewat Claude in Chrome, profil "Takeda"), 5 Nov 2026 – 5 Nov 2027, perpanjangan Rp612.000/thn. Belum ada
+  berkas atau konfigurasi di hosting; cPanel belum dibuka agent.
+- Keputusan ADR54: domain production `rt05takeda.com` (K1), Neon production sementara di akun pribadi pemilik, staging
+  tetap di VPS Biznet, empat tahap rilis. Pecahan langkah M16.1–M16.10 di M16_PLAN bagian 8.
+- Belum terbukti: koneksi hosting → Neon 5432 (M16.1), Neon project production, paket rilis shared (skrip build belum
+  ada di repo), Resend untuk domain baru. Blocker data: saldo kas resmi + tanggal dari bendahara (M16.8).
+- Perubahan hanya dokumentasi: `docs/DECISIONS.md` (ADR54), `docs/M16_PLAN.md` (K1 + bagian 8), `docs/HANDOFF.md`,
+  `docs/DEPLOYMENT.md` (target domain), `docs/PROGRESS.md`.
+
 ## Staging Biznet dan impor pratinjau dengan pemutihan — 3 November 2026
 
 Koreksi: deploy `33a25f8` dan `/unduh` APK 1028 tanggal 2 Nov terpasang di VPS Hostinger lama, bukan di Biznet yang

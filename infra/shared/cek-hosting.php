@@ -58,8 +58,25 @@ if (! is_array($ini) || empty($ini['host'])) {
     if ($sock) {
         fclose($sock);
     }
+    foreach ([['ssl://api.resend.com', 443, 'HTTPS keluar ke Resend API 443'], ['smtp.resend.com', 587, 'SMTP keluar ke Resend 587'], ['ssl://smtp.resend.com', 465, 'SMTPS keluar ke Resend 465']] as [$h, $port, $label]) {
+        $t = microtime(true);
+        $sock = @fsockopen($h, $port, $errno, $errstr, 8);
+        $add($label, (bool) $sock, $sock ? round((microtime(true) - $t) * 1000).' ms' : "errno $errno");
+        if ($sock) {
+            fclose($sock);
+        }
+    }
     if (extension_loaded('pdo_pgsql')) {
         $ca = (string) ($ini['sslrootcert'] ?? '');
+        if ($ca === '' || ! is_readable($ca)) {
+            foreach (['/etc/pki/tls/certs/ca-bundle.crt', '/etc/ssl/certs/ca-certificates.crt', (string) ini_get('openssl.cafile')] as $candidate) {
+                if ($candidate !== '' && is_readable($candidate)) {
+                    $ca = $candidate;
+                    break;
+                }
+            }
+        }
+        $add('CA bundle untuk verify-full', $ca !== '' && is_readable($ca), $ca !== '' ? $ca : 'tidak ditemukan');
         $dsn = sprintf('pgsql:host=%s;port=5432;dbname=%s;sslmode=%s%s', $host, $ini['dbname'] ?? 'neondb',
             $ca !== '' && is_readable($ca) ? 'verify-full' : 'require', $ca !== '' && is_readable($ca) ? ';sslrootcert='.$ca : '');
         try {

@@ -35,7 +35,7 @@ Agent bisa mulai Fase A tanpa jawaban ini. Fase B ke atas tertahan sampai keputu
 
 | # | Keputusan | Rekomendasi agent | Kenapa penting |
 | --- | --- | --- | --- |
-| K1 | **Nama domain production** (gratis .COM dari paket Biznet Large) | Nama yang sama dengan merek, mis. `rt05takeda.com` (cek ketersediaan saat checkout; agent tidak menebak dan tidak membeli) | Domain ini yang muncul di Google dan di halaman unduh. Nama yang cocok dengan pencarian "RT05 Takeda" paling membantu. `takeda.morriz.tech` (P13) adalah domain pribadi pemilik dan terlihat kurang resmi bagi warga |
+| K1 | ~~Nama domain production~~ **Diputuskan (ADR54, 5 Nov 2026): `rt05takeda.com`** | Nama yang sama dengan merek, mis. `rt05takeda.com` (cek ketersediaan saat checkout; agent tidak menebak dan tidak membeli) | Domain ini yang muncul di Google dan di halaman unduh. Nama yang cocok dengan pencarian "RT05 Takeda" paling membantu. `takeda.morriz.tech` (P13) adalah domain pribadi pemilik dan terlihat kurang resmi bagi warga |
 | K2 | **Nama paket aplikasi** tetap `tech.morriz.takeda` atau diganti sebelum didaftarkan | **Tetap.** Nama paket hampir tidak terlihat warga. Menggantinya berarti mendaftar ulang aplikasi Android di Firebase dan semua penguji memasang ulang | Nama paket yang sudah didaftarkan ke verifikasi developer bersifat permanen |
 | K3 | ~~Jenis akun developer~~ — **ditunda (ADR37)**. Bila nanti didaftarkan: perorangan (identitas pemilik) | Perorangan. RT bukan badan hukum, sedangkan akun organisasi biasanya meminta nomor D-U-N-S | Nama developer terverifikasi tercatat di Google |
 | K4 | Kontak resmi + masa simpan data (Kebijakan Privasi dan halaman Kontak) | Usulan masa simpan sebagai bahan diskusi: data akun dihapus atau dianonimkan 12 bulan setelah warga pindah; catatan keuangan disimpan sesuai kebutuhan pembukuan RT. **Angka final dari pemilik/Pak RT** | Wajib sebelum data warga asli masuk |
@@ -181,3 +181,41 @@ Biznet, runbook, draf SOP. Butir 5 (ejaan lokasi, K7) menunggu konfirmasi Pak RT
 - Data warga asli tidak masuk Git atau log. Staging tidak dipakai untuk data asli. Production tidak dipakai untuk tes atau seed.
 - Tidak menambah layanan berbayar tanpa persetujuan. Layanan gratis yang butuh akun (UptimeRobot, tujuan backup) tetap
   keputusan pemilik.
+
+## 8. Pecahan kerja setelah hosting dibeli (5 Nov 2026, ADR54)
+
+Fakta yang sudah pasti (dibaca agent dari portal Biznet 5 Nov, bukan perkiraan): paket **NEO Web Hosting Personal
+Large**, domain **`rt05takeda.com`**, status **Active**, berlaku 5 Nov 2026 – 5 Nov 2027, siklus tahunan, perpanjangan
+**Rp612.000** (next due 5 Nov 2027). Panel = cPanel Biznet (alamat dan username di portal, tidak ditulis di Git).
+Jawaban tiket #737856: tanpa SSH/CLI, PHP sampai 8.4 + `pdo_pgsql`, cron cPanel `/usr/local/bin/php`, document root
+domain utama terkunci di `public_html`. Port 5432 ke Neon **belum terbukti** sampai M16.1 lulus.
+
+### 8.1 Empat tahap rilis
+
+| Tahap | Alamat | Isi | Database | Dipakai oleh | Syarat naik ke tahap berikut |
+| --- | --- | --- | --- | --- | --- |
+| Lokal | PC pemilik | kode, tes, build | Postgres lokal `rt05_test` | agent | tes relevan + `check-repo.mjs` lulus, PR hijau, merge `main` atas perintah pemilik |
+| Vercel preview | `rt05takeda.vercel.app` | ekspor statis `website/preview/`, CMS mode demo, `noindex` | tidak ada | pemilik/tim cek tampilan | tampilan diterima |
+| Staging | `takeda-staging.morriz.tech` (VPS Biznet NEO Lite, profil VPS) | web + API + worker + APK flavor staging | Neon staging (data uji) | tim penguji | deploy immutable commit itu, smoke + uji fitur/APK lulus |
+| Production | `rt05takeda.com` (NEO Web Hosting, profil shared) | web + API + cron tick + APK flavor prod 1.0.0 | Neon project production baru | warga | — |
+
+Aturan: production hanya menerima commit `main` yang sudah berjalan di staging. Perubahan skema selalu aditif dan
+dimigrasikan dari PC operator. Data asli tidak pernah turun ke staging/lokal (kecuali pratinjau ADR52 yang akan dihapus).
+
+### 8.2 Langkah M16 (urut; satu langkah selesai = bukti tercatat di PROGRESS)
+
+| # | Langkah | Siapa | Butuh | Gate/bukti |
+| --- | --- | --- | --- | --- |
+| M16.1 | **Cek hosting** (RUNBOOK_PRODUCTION 1a): role Neon uji `CONNECT` saja + `rt05-cek.ini` di Desktop; unggah ke cPanel; buka `cek-xxxx.php`; hapus berkas + role uji. Tambahkan uji keluar SMTP Resend (587/465) dan HTTPS `api.resend.com` ke `cek-hosting.php` | Agent + pemilik login cPanel | Pemilik login cPanel di profil Chrome Takeda | PHP ≥8.3, `pdo_pgsql`, GD WebP, TCP+TLS Neon 5432, FCM 443, `finish_request`. **Gagal → berhenti, keputusan ADR54 butir 5** |
+| M16.2 | **Neon production**: project baru di akun pribadi pemilik (region sama dengan staging), role migrator + runtime, `migrate --force` dari PC, `grant-runtime-role.sql` | Agent (izin pemilik untuk membuat project) | M16.1 lulus | Migrasi lulus, runtime DDL ditolak |
+| M16.3 | **Paket rilis shared**: skrip/workflow build `rest-api` + `website` (`composer --no-dev`, aset Vite) jadi zip tanpa `.env`/tests; `index.php`/`index-api.php` dengan path `../rt05/...`; `.htaccess` dari `public-htaccess.example`. Uji dulu di lokal | Agent | — (bisa paralel dengan M16.1) | Zip dari commit staging, sha256 tercatat |
+| M16.4 | **Pasang di cPanel**: PHP Selector 8.3/8.4 + ekstensi; folder `~/rt05/` di luar `public_html`; unggah+ekstrak zip lewat File Manager; env privat diisi di hosting; SSL AutoSSL `rt05takeda.com` + `www`; cron tiap menit `rt05:shared-tick`; `config:cache` lewat cron sekali jalan | Agent lewat browser (pemilik login) | M16.2, M16.3 | `/up`, `/health/ready` 200 via HTTPS |
+| M16.5 | **Email + push production**: domain `rt05takeda.com` di Resend (record SPF/DKIM di Zone Editor cPanel, atas izin), FCM memakai project Firebase yang sama | Pemilik (akun Resend) + agent | M16.4 | Email reset sampai inbox nyata; push ke HP |
+| M16.6 | **Admin pertama + smoke luar**: `rt05:pengurus buat` (Pak RT + pemilik), smoke dari check-host.net + `staging-runtime-smoke.sh` origin production | Agent + pemilik | M16.4 | Bukti `docs/evidence/m16/` |
+| M16.7 | **APK prod 1.0.0**: variable `RT05_PROD_BASE_URL=https://rt05takeda.com`, workflow `flavor=prod`, salin ke `public_html/unduh/`, `versi.json` terakhir; pasang di HP nyata | Agent + pemilik | M16.6 | `/aplikasi` cocok artifact; HP 64/32-bit |
+| M16.8 | **Data asli**: impor rumah + buku lama `--sampai=2026-09 --putihkan` dari PC; saldo awal kas resmi bendahara; rekonsiliasi 0 | Agent + bendahara | Saldo kas resmi + tanggalnya | Rekonsiliasi 0, cocok 10 rumah acak |
+| M16.9 | **Backup + cadangan**: backup terenkripsi harian ke Drive (ADR38), drill restore, standby-sync ke cadangan; hapus branch pratinjau ADR52, kembalikan staging ke data uji | Agent | M16.8 | Log drill; G3/G4 |
+| M16.10 | **SEO + beta**: GSC (TXT DNS atas izin), sitemap; pilot 5–10 rumah; pantau 14 hari; SOP + serah terima (catat biaya Rp612.000/thn, akun RT) | Pemilik + pengurus | M16.7 | G8, G13, G12 |
+
+Beta 8 Nov (ADR43) realistis bila M16.1–M16.7 lulus; tanpa saldo kas resmi, beta berjalan dengan menu iuran tanpa
+impor buku lama, atau tanggal beta digeser (keputusan pemilik).

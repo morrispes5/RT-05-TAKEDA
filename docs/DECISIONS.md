@@ -897,3 +897,30 @@ BR iuran fleksibel (ADR44 butir "kurang wajib tunggakan atau keringanan beralasa
    keluarga atau diarsipkan tetap ditolak. Keluarga baru tetap berstatus belum diverifikasi pengurus. Mengganti aturan
    M06 lama "rumah tanpa keluarga ditolak tanpa merge", yang membuat 187 rumah impor tidak bisa didaftari.
 5. HP warga menampilkan iuran **per tahun** (12 bulan sekilas + rincian bulan) seperti rekap bendahara.
+
+### ADR54 — Production di Biznet NEO Web Hosting `rt05takeda.com`; empat tahap rilis
+
+Tanggal: **5 November 2026**. Status: **diputuskan pemilik** (pesan 5 Nov: hosting dibeli "1 tahun di mulai dari 5
+november 2026"; "neon sementara pake database aku dulu"; "pakai domain yang udah aku register rt05takeda.com"; "kita
+sekarang sudah resmi memasuki tahap production"; urutan "Lokal > vercel preview > staging > production"). Menjawab K1
+(nama domain) di M16_PLAN dan menggantikan rancangan P13 `takeda.morriz.tech` untuk production.
+
+1. **Hosting production:** Biznet Gio NEO Web Hosting **Personal Large** + domain gratis **`rt05takeda.com`**, aktif
+   5 Nov 2026 s.d. 5 Nov 2027, akun portal Biznet memakai email khusus RT (bukan akun pribadi pemilik). Perpanjangan
+   menurut portal Rp612.000/tahun (jatuh tempo 5 Nov 2027); invoice 4 Nov menulis perkiraan Rp981.000 (harga coret
+   promo). Profil `shared` (ADR23): tanpa SSH/CLI, PHP sampai 8.4, cron cPanel, document root terkunci `public_html`.
+2. **Neon production sementara di akun Neon pribadi pemilik**, project baru terpisah dari staging dan cadangan.
+   Saran agent memindahkan project production + cadangan ke akun email RT demi serah terima ditunda, bukan ditolak;
+   dicatat lagi sebelum serah terima (G12).
+6. **Serah terima ke RT:** akun email khusus RT dan akun Biznet (hosting + domain) diserahkan ke pengurus RT beserta
+   pelatihan cara memakainya (pesan pemilik 5 Nov). Karena itu semua konfigurasi production (cPanel, DNS, SSL, cron, email
+   domain) dibuat di akun RT tersebut, dicatat langkahnya di SOP pengurus, dan tidak bergantung pada akun pribadi pemilik
+   kecuali Neon (butir 2), GitHub, Firebase, dan kunci rilis APK (ADR31).
+3. **Staging tidak dipindah.** Tetap di VPS Biznet NEO Lite `takeda-staging.morriz.tech` (APK flavor staging dan akun
+   uji tim menunjuk ke sana). VPS staging diakses lewat SSH; portal Biznet akun pribadi dan Coolify tidak dibutuhkan
+   untuk production.
+4. **Empat tahap rilis, satu arah:** Lokal → Vercel preview (`rt05takeda.vercel.app`, website statis, `noindex`) →
+   Staging → Production. Commit yang naik ke production harus commit `main` yang sudah lulus di staging. Data warga asli
+   hanya di production (pratinjau ADR52 dihapus setelah production jalan).
+5. Bila uji koneksi hosting → Neon 5432 (RUNBOOK_PRODUCTION 1a) gagal, setup shared dihentikan dan pemilik memutuskan
+   production sementara di VPS (`infra/compose.production.yml`) dengan domain yang sama.

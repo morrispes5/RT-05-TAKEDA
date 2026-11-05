@@ -4,7 +4,7 @@ Profil target hemat (15 Oktober 2026): lihat [SHARED_HOSTING.md](SHARED_HOSTING.
 
 ## Target dan status
 
-Target aplikasi: https://takeda.morriz.tech; staging https://takeda-staging.morriz.tech.
+Target aplikasi: **https://rt05takeda.com** (ADR54, 5 Nov 2026; profil shared di Biznet NEO Web Hosting, menggantikan rancangan `takeda.morriz.tech`); staging https://takeda-staging.morriz.tech (VPS Biznet).
 Domain utama morriz.tech adalah koreksi eksplisit pemilik pada 10 Oktober 2026.
 VPS Hostinger disebut RAM 8 GB/storage 100 GB dalam konteks; kapasitas bebas/CPU/OS/service harus diinspeksi sebelum alokasi. Dokumen ini tidak menyatakan DNS atau service sudah dikonfigurasi.
 
