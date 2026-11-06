@@ -4,7 +4,15 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **Kamis 5 November 2026** (hosting production dibeli, ADR54; staging tetap `33a25f8`, APK 1028). **Baca bagian 0 dulu.**
+Terakhir diperbarui: **Jumat 6 November 2026** (M16.1 gagal: hosting memblokir port 5432 keluar; staging tetap `33a25f8`, APK 1028). **Baca bagian 0 dulu.**
+
+**6 Nov 2026 — M16.1 GAGAL, production berhenti menunggu pemilik.** Nameserver `rt05takeda.com` sudah ke
+`ns1/ns2.neohosting.id` (domain resolve ke hosting). Cek hosting lulus untuk ekstensi PHP, `finish_request`, FCM, dan
+Resend 587/443, tetapi **firewall hosting menolak TCP keluar port 5432** ke mana pun (443/3306 terbuka), jadi Laravel
+tidak bisa ke Neon. Hosting tidak punya PostgreSQL lokal. Jangan lanjut M16.2+ sebelum pemilik memilih: tiket Biznet
+buka port 5432 keluar, atau API production di VPS (ADR54 butir 5). Berkas cek sudah dihapus dari hosting. PHP default
+8.2 harus diganti ke 8.3/8.4 sebelum install. Chrome menyimpan NXDOMAIN lama setelah ganti nameserver; restart Chrome
+bila domain "tidak ditemukan" padahal DNS publik sudah benar.
 
 **5 Nov 2026 — production resmi dimulai (ADR54).** Pemilik membeli Biznet NEO Web Hosting Personal Large + domain
 **`rt05takeda.com`** (Active 5 Nov 2026 – 5 Nov 2027, perpanjangan portal Rp612.000/thn) dengan akun Biznet email khusus

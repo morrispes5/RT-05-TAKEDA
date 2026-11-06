@@ -1,0 +1,28 @@
+RT05 TAKEDA — bukti M16.1 cek hosting production (rt05takeda.com, Biznet NEO Web Hosting Personal Large)
+Dibaca agent lewat Chrome (profil Takeda); username cPanel dan kredensial tidak dicatat.
+
+cek-hosting.php — 2026-11-06 00:24:26 UTC
+GAGAL PHP >= 8.3                     8.2.35 (litespeed)  -> pilih 8.3/8.4 di PHP Selector
+OK    pdo_pgsql, gd, intl, mbstring, fileinfo, openssl, curl, zip, bcmath
+OK    GD JPEG/PNG/WebP
+OK    fastcgi/litespeed finish_request
+OK    max_execution_time 30 s; memory_limit 128M; upload_max_filesize/post_max_size 2M/8M
+OK    folder home di luar public_html dapat ditulis
+GAGAL TCP keluar ke Neon port 5432   errno 101 (percobaan IPv6)
+OK    HTTPS keluar FCM 443 (48 ms)
+OK    HTTPS keluar Resend API 443 (81 ms)
+OK    SMTP keluar Resend 587 (283 ms)
+GAGAL SMTPS keluar Resend 465        errno 111
+OK    CA bundle /etc/pki/tls/certs/ca-bundle.crt
+GAGAL PDO PostgreSQL ke Neon (TLS)   PDOException kode 7
+
+cek2 (uji rinci port, tanpa kredensial) — 2026-11-06 00:26:04 UTC
+Endpoint Neon production (direct dan -pooler): A 3 alamat IPv4 + 3 AAAA
+  IPv4:5432 -> GAGAL errno 111 Connection refused (1-2 ms)  [4 alamat diuji]
+  IPv4:443  -> OK (14 ms)
+portquiz.net (menerima semua port):
+  5432 GAGAL 111 | 6543 GAGAL 111 | 8080 GAGAL 111 | 3306 OK | 443 OK
+Kesimpulan: firewall keluar hosting menolak port 5432 untuk semua tujuan; bukan masalah Neon.
+
+cPanel UAPI Postgresql/list_databases: "This server does not support this functionality." (tidak ada PostgreSQL lokal)
+Pembersihan: cek-5398e10d.php, cek2-7d41a9c3.php, rt05-cek.ini dihapus (public_html tinggal cgi-bin).

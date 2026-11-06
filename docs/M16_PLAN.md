@@ -188,7 +188,8 @@ Fakta yang sudah pasti (dibaca agent dari portal Biznet 5 Nov, bukan perkiraan):
 Large**, domain **`rt05takeda.com`**, status **Active**, berlaku 5 Nov 2026 – 5 Nov 2027, siklus tahunan, perpanjangan
 **Rp612.000** (next due 5 Nov 2027). Panel = cPanel Biznet (alamat dan username di portal, tidak ditulis di Git).
 Jawaban tiket #737856: tanpa SSH/CLI, PHP sampai 8.4 + `pdo_pgsql`, cron cPanel `/usr/local/bin/php`, document root
-domain utama terkunci di `public_html`. Port 5432 ke Neon **belum terbukti** sampai M16.1 lulus.
+domain utama terkunci di `public_html`. **6 Nov: M16.1 GAGAL di port 5432** — firewall hosting menolak TCP keluar 5432
+(443/3306 terbuka); detail di PROGRESS 6 Nov. Menunggu keputusan pemilik (ADR54 butir 5).
 
 ### 8.1 Empat tahap rilis
 

@@ -1,5 +1,24 @@
 # Progress — RT05 TAKEDA
 
+## M16.1 cek hosting: port 5432 keluar diblokir — 6 November 2026
+
+- Nameserver registrar `rt05takeda.com` diganti agent atas izin pemilik dari `satu/dua.neodns.id` (zona kosong) ke
+  `ns1/ns2.neohosting.id` (zona cPanel) pada 5 Nov ~20.26 WIB. Registry `.com`, Google, Cloudflare, Quad9, dan OpenDNS
+  menjawab A `103.58.102.39`. SSL masih self-signed (AutoSSL belum dijalankan).
+- `cek-hosting.php` + `rt05-cek.ini` (role Neon uji `rt05_cek_hosting`, CONNECT saja, berlaku sampai 8 Nov) dibuka lewat
+  Chrome karena hosting memasang tantangan anti-bot untuk curl. Bukti: `docs/evidence/m16/cek-hosting-20261106.txt`.
+- LULUS: `pdo_pgsql`, GD JPEG/PNG/WebP, intl, mbstring, fileinfo, openssl, curl, zip, bcmath, `finish_request`
+  (LiteSpeed), home di luar `public_html` dapat ditulis, HTTPS keluar FCM 443 dan Resend API 443, SMTP Resend 587,
+  CA bundle `/etc/pki/tls/certs/ca-bundle.crt`.
+- GAGAL: **TCP keluar ke port 5432 ditolak firewall hosting** (errno 111 dalam 1–2 ms, juga ke portquiz.net:5432; IPv6
+  memberi errno 101). Port 443 dan 3306 keluar terbuka; 6543 dan 8080 ditolak. Akibatnya PDO ke Neon gagal (kode 7).
+  PHP default 8.2.35, perlu dipilih 8.3/8.4 di PHP Selector. SMTPS 465 ditolak (587 cukup). cPanel tidak menyediakan
+  PostgreSQL lokal (UAPI Postgresql: "This server does not support this functionality").
+- Pembersihan: kedua skrip cek dan `rt05-cek.ini` dihapus dari hosting (`public_html` hanya `cgi-bin`), salinan lokal
+  dihapus. Role `rt05_cek_hosting` belum di-DROP; kedaluwarsa sendiri 8 Nov dan bisa dipakai uji ulang setelah ganti sandi.
+- Sesuai ADR54 butir 5, M16.2 dan seterusnya **berhenti** sampai pemilik memilih: (a) tiket ke Biznet minta membuka
+  TCP keluar 5432 (lalu uji ulang M16.1), atau (b) API production di VPS, website tetap di hosting.
+
 ## M16 production dimulai: hosting dan domain — 5 November 2026
 
 - Hosting dibeli pemilik: Biznet NEO Web Hosting Personal Large + `rt05takeda.com`, status **Active** (dibaca agent dari
