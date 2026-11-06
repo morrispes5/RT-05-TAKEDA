@@ -4,7 +4,7 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **Jumat 6 November 2026** (5432 ditolak Biznet; jembatan WebSocket ADR55 lulus uji awal; Imunify360 hanya menantang IP VPN/WARP; staging tetap `33a25f8`, APK 1028). **Baca bagian 0 dulu.**
+Terakhir diperbarui: **Jumat 6 November 2026 ±18.00 WIB** (**baca "LANJUTKAN DARI SINI" dulu**; 5432 ditolak Biznet; jembatan WebSocket ADR55 lulus uji awal; Imunify360 hanya menantang IP VPN/WARP; staging tetap `33a25f8`, APK 1028). **Baca bagian 0 dulu.**
 
 **6 Nov 2026 (sore) — jalur baru: jembatan WebSocket (ADR55).** Biznet menolak membuka 5432 (T744194: hanya VPS).
 Neon menerima PostgreSQL lewat `wss://.../v2` port 443; jembatan `infra/shared/neon-ws-bridge.php` lulus uji di hosting
@@ -59,6 +59,48 @@ Data tiap akun tetap terpisah. Rincian di PROGRESS bagian atas.
 tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Sudah di `main` (2 Nov). Impor production
 memakai `--sampai=2026-09 --putihkan`; saldo awal kas resmi tetap diisi bendahara sekali (belum ada angkanya).
 Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau staging (ADR52) perlu impor ulang setelah deploy.
+
+## LANJUTKAN DARI SINI — sesi berikut (ditulis Jumat 6 Nov 2026 ±18.00 WIB)
+
+Kondisi pasti saat sesi ditutup (semua sudah di `main`; checkout lokal `RT-05-TAKEDA` masih di branch lama
+`codex/m17-rilis-1018` dengan perubahan pengguna — **jangan diedit/di-reset**; baca main lewat `gh api`, publish ke main
+lewat Git Data API seperti commit `e04b9a2`/`128acc1`, push/merge hanya atas perintah pemilik, ADR45):
+
+- `node infra/scripts/check-repo.mjs` pada snapshot `main` 128acc1: **OK, 1127 berkas**. `php -l` jembatan: OK.
+- Production: hosting Biznet `rt05takeda.com` aktif; database dipilih **Neon production lewat jembatan WebSocket**
+  (ADR55). Biznet menolak buka port 5432 (T744194, ditutup Biznet). Pemilik menolak relay/API di VPS pribadi, Oracle,
+  dan pindah MySQL — jangan tawarkan ulang tanpa fakta baru.
+- **Proses jembatan uji masih hidup di hosting** (PID 1683954, mulai 17.33 WIB; cek 17.55 WIB: hidup, RSS 40,8 MB).
+  Berkas: `~/neon-ws-bridge.php`, `~/rt05-pg/` (socket, `bridge.lock`, `bridge.log`). `public_html` bersih (hanya
+  `.well-known`, `cgi-bin`). Cek hidup: unggah sementara `infra/shared/neon-ws-bridge-status.php` ke `public_html`
+  dengan nama acak, buka di Chrome, lalu hapus.
+- Role uji Neon `rt05_cek_hosting` (project `jolly-voice-55175426`, CONNECT saja, batas koneksi kecil) kedaluwarsa
+  9 Nov 00.00 WIB. Sandinya tidak disimpan di mana pun; bila perlu uji lagi, ganti sandi lewat SQL. DROP role setelah
+  uji selesai (minta konfirmasi pemilik dulu, tindakan destruktif Neon).
+- Imunify360 bot-protection: dari PC agent (Cloudflare WARP `104.28.x.x`) curl/JSON ditantang atau 403; dari IP VPS
+  lolos. Pemilik akan mematikan WARP. Tiket Imunify **tidak** dikirim (pemilik: jangan buat tiket yang ujungnya ditolak).
+
+Urutan kerja berikut:
+
+1. Minta pemilik memastikan WARP mati, lalu dari PC: `curl -s -H "Accept: application/json" https://rt05takeda.com/` —
+   catat apakah IP rumah lolos (bukti untuk risiko HP warga).
+2. Cek proses jembatan uji (ketahanan ≥ beberapa jam). Catat hasil di PROGRESS. Bila mati: lihat `bridge.log`, catat
+   umur proses; jangan langsung ganti arsitektur — laporkan ke pemilik.
+3. Integrasi jembatan ke Laravel API (kode, belum ada): watchdog di `rt05:shared-tick` + penyalaan saat request bila
+   socket tidak ada (tutup fd >2 sebelum `setsid`, lihat PROGRESS 6 Nov), env di `infra/shared/api.env.example`
+   (`DB_HOST=/home/<akun>/rt05-pg`, `DB_PORT=5432`, `DB_SSLMODE=disable`, `RT05_NEON_HOST`), tes, dan update
+   SHARED_HOSTING preflight #3. Kerjakan di branch `codex/m16-jembatan-neon` + PR.
+4. M16.2: migrasi Neon production dari PC (PC bisa langsung 5432), role migrator/runtime, `grant-runtime-role`.
+5. M16.3 skrip paket rilis shared (belum ada) → M16.4 install cPanel: PHP Selector 8.4 untuk web (sekarang 8.2.35),
+   `~/rt05` di luar `public_html`, AutoSSL, cron tiap menit `rt05:shared-tick` (pemasangan cron production butuh izin
+   eksplisit pemilik — pengaman agent menolak tanpa izin) → M16.5 Resend+FCM → M16.6 admin pertama → M16.7 APK prod +
+   uji HP nyata (data seluler + Wi-Fi rumah, cek Imunify).
+6. Masih menunggu pemilik/bendahara: saldo kas resmi + tanggalnya (M16.8).
+
+Akses: cPanel dan portal/Gmail RT dibuka di Chrome pemilik (login oleh pemilik; agent tidak mengetik sandi). Tab cPanel
+latar sering membeku — buat tab baru dan biarkan tantangan "One moment, please..." selesai ±20 detik. Upload: isi
+`input[type=file]` halaman upload File Manager (otomatis terunggah ke folder di URL), hapus via API2 Fileman `fileop`
+`op=unlink`.
 
 ## 0. MULAI DI SINI — status Selasa 27 Oktober 2026 sore (Claude)
 

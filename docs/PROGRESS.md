@@ -33,6 +33,9 @@
   - RSS proses ±33–41 MB.
 - **Cron uji tidak dipasang:** pemasangan cron di hosting production ditolak pengaman otomatis agent; cron dipasang saat
   M16.4 dengan izin eksplisit (watchdog jembatan ikut `rt05:shared-tick` tiap menit).
+- Penutupan sesi 6 Nov ±18.00 WIB: jembatan uji masih hidup 22 menit setelah mulai (RSS 40,8 MB stabil); skrip status
+  sementara dihapus lagi dari `public_html`; `check-repo.mjs` pada snapshot main 128acc1 OK (1127 berkas). Helper
+  `infra/shared/neon-ws-bridge-status.php` ditambahkan untuk cek berikutnya. Urutan lanjut: HANDOFF "LANJUTKAN DARI SINI".
 - **Imunify360 bot-protection (openresty di depan hosting) — koreksi: bukan blokir total.** Dari PC agent, semua klien
   non-browser (curl, User-Agent Dart, Googlebot) mendapat halaman tantangan "One moment, please..." (HTTP 200 HTML) dan
   `Accept: application/json` mendapat 403 `Access denied by Imunify360 bot-protection. IPs used for automation should
