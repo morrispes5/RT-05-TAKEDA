@@ -15,6 +15,23 @@
   `setsid -w sleep 864000` (log `~/rt05-pg/canary.log`) untuk membedakan "semua proses lama dibunuh" vs "hanya PHP".
   Status dibaca dengan `public_html/st-*.php` (read-only; hapus setelah uji). Hasil berkala dicatat di bawah.
   - 18.26 WIB: hidup, umur 859 dtk, RSS 32,8 MB. 18.32 WIB: hidup, umur 1245 dtk.
+  - **18.42 WIB: mati lagi** (hidup 18.36 umur 1466 dtk; mati antara 18.40 dan 18.42 → umur ±28–30 menit). Jembatan,
+    bash pembungkusnya (tidak sempat menulis `keluar kode`), dan kenari `sleep` + bash-nya **hilang bersamaan**;
+    `bridge.err` kosong. Pada saat yang sama induk **lsphp akun berganti** (lsphp baru mulai 18.42:24; lsphp lama
+    1780220 adalah induk saat jembatan dinyalakan). cgroup proses: `memory:/lve1602`, `devices:/system.slice/lshttpd.service`.
+  - **Kesimpulan sementara:** hosting membunuh seluruh proses yang lahir dari pohon lsphp saat induk lsphp akun didaur
+    ulang (idle/umur ±30 menit), bukan karena PHP crash atau batas memori. `setsid` tidak cukup karena proses tetap di
+    cgroup LiteSpeed. Uji pertama cocok: tidak ada request web setelah 17.55 → lsphp idle dan ditutup.
+  - Dampak pada desain: penyalaan dari request web (lahir di bawah lsphp) hanya cadangan; jalur utama harus **cron**
+    (`rt05:shared-tick` tiap menit, proses lahir dari crond, di luar pohon lsphp). Belum terbukti: apakah proses yang
+    dinyalakan cron bertahan lebih lama. Uji butuh cron di hosting production → **menunggu izin eksplisit pemilik**.
+    Tanpa itu pun watchdog tiap menit membatasi gangguan ±1 menit per kematian; request yang sedang berjalan saat
+    pembunuhan gagal sekali.
+  - **Uji cron dimulai 19.02 WIB** (izin pemilik 6 Nov): cron cPanel tiap menit (linekey 3865576208) menjalankan
+    `~/neon-ws-bridge.php` langsung dengan env jembatan (`RT05_NEON_HOST` endpoint production pooled, socket/lock/log di
+    `~/rt05-pg/`, stderr ke `bridge.err`); flock membuat tick saat jembatan hidup langsung keluar, jadi setiap baris
+    `mulai` baru = jembatan sempat mati. Jembatan pertama dari cron: PID 1896846 mulai 19.02:01 WIB. **Cron uji ini
+    dihapus/diganti `rt05:shared-tick` saat M16.4**; skrip status `public_html/st-*.php` dihapus setelah uji.
 - **Integrasi Laravel (branch `codex/m16-jembatan-neon`):**
   - `infra/shared/neon-ws-bridge.php` → `rest-api/bin/neon-ws-bridge.php` (ikut paket rilis API); PID ditulis ke
     `bridge.lock` yang tetap di-flock selama hidup.

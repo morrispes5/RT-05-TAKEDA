@@ -958,3 +958,6 @@ butir 5 (fallback API di VPS) untuk production.
    stderr + kode keluar tercatat dan proses kenari `sleep` dimulai 18.11 WIB (PROGRESS). Watchdog tiap menit + penyalaan
    saat request membuat kematian proses tidak memutus layanan lebih dari ±1 menit (tanpa request) atau ±3 detik
    (request pertama), asalkan hosting tidak melarang proses latar.
+9. Uji kedua (18.11–18.42 WIB): mati lagi di umur ±28–30 menit, bersamaan dengan kenari `sleep` dan pergantian induk
+   lsphp akun. Proses yang lahir dari web ikut dibunuh saat lsphp didaur ulang. Jalur utama penyalaan = cron
+   `rt05:shared-tick`; penyalaan saat request hanya cadangan. Ketahanan proses dari cron belum diuji (butuh izin cron).
