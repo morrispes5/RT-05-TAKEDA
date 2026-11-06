@@ -21,6 +21,16 @@
   `RT05_SEARCH_INDEXING=false` sampai M16.10, panik mati).
 - Uji luar (PC rumah) 20.50 WIB: `/` 200 (0,94 dtk pertama, lalu ±0,07 dtk), `/profil` 200, `/up` 200,
   `/health/live` 200, `/sanctum/csrf-cookie` 204, `/.env` 403, `/health/ready` 503 (sandi DB belum diisi).
+- 21.20 WIB: PR #111 merge (`5c94fbf`), paket `rt05-shared-5c94fbf.zip` (run 42233201817, sha256
+  `52bdcb1a9f1fa0fd240808ef8d9e9d0ac81e8576981eb1b7b5c79ebe5022dfc3`) terpasang lewat installer (`.env` tidak diubah).
+  Cron uji dihapus; cron production tiap menit dipasang: `rt05:neon-bridge run` (stderr ke `~/rt05-pg/bridge.err`) dan
+  `rt05:shared-tick >> ~/rt05/cron.log`.
+- **Temuan kritis 21.25 WIB:** `cron.log` menulis setiap tugas terjadwal "DONE" dalam 1–65 ms. Probe PHP CLI (cron
+  sekali jalan, lalu dihapus): `disable_functions` sama dengan web, `proc_open=0 exec=0 pcntl_exec=1 posix_setsid=1`
+  (`/opt/alt/php84/etc/php.ini`). `schedule:run` tidak bisa menjalankan command → perbaikan ADR55 butir 12
+  (`SharedSchedule`, tes `test_due_shared_task_runs_inside_the_tick_process_without_scheduler` dan
+  `test_failed_shared_task_is_retried_next_tick`). Setelah deploy: kosongkan penanda slot palsu di cache file
+  (`rt05:shared:slot:*`/`ran:*`) supaya tugas hari ini benar-benar jalan.
 - Berikutnya: pemilik mengisi `DB_PASSWORD` di `~/rt05/api/.env`; merge perbaikan butir 11 → paket baru; cron
   `rt05:neon-bridge run` + `rt05:shared-tick` menggantikan cron uji; cron sekali jalan `config:cache`/`route:cache`/
   `view:cache` + `rt05:db-smoke`; hapus installer, `st-*.php`, `~/neon-ws-bridge.php`.

@@ -214,36 +214,10 @@ Artisan::command('rt05:media-recover {--stale-minutes=10}', function () {
 
 // Mutex overlap berumur pendek (bukan bawaan 24 jam): proses yang terbunuh di tengah run (deploy,
 // timeout hosting) hanya menahan task beberapa menit. Insiden staging 19 Okt 2026: outbox macet setelah deploy.
-if (SharedHosting::enabled()) {
-    // Dipanggil shared-tick saja (cron ≤15 menit, bisa terlambat). Ekspresi tetap (hourly, dailyAt)
-    // terlewat bila tick tidak tepat di menit itu, jadi tiap task dicek setiap tick dan jalan bila
-    // jatuh tempo (catch-up). Pengecekan hanya membaca cache file; outbox/media/push lewat tick.
-    $wib = fn () => CarbonImmutable::now('Asia/Jakarta');
-    Schedule::command('rt05:tagihan-generate')->everyMinute()->withoutOverlapping(60)
-        ->when(fn () => SharedHosting::dueSlot('tagihan-generate', $wib()->toDateString()))
-        ->onSuccess(fn () => SharedHosting::markRan('tagihan-generate', $wib()->toDateString()));
-    Schedule::command('rt05:pengingat-agenda')->everyMinute()->withoutOverlapping(60)
-        ->when(fn () => SharedHosting::dueEvery('pengingat-agenda', 3600))
-        ->onSuccess(fn () => SharedHosting::markRan('pengingat-agenda'));
-    Schedule::command('rt05:token-rotate --if-due')->everyMinute()->withoutOverlapping(60)
-        ->when(fn () => SharedHosting::dueEvery('token-rotate', 3600))
-        ->onSuccess(fn () => SharedHosting::markRan('token-rotate'));
-    // Tanggal 5 dan 20 mulai 08:00 WIB: tick pertama setelahnya mengirim; dedup slot per tanggal.
-    Schedule::command('rt05:pengingat-iuran')->everyMinute()->withoutOverlapping(60)
-        ->when(fn () => in_array($wib()->day, [5, 20], true) && $wib()->hour >= 8
-            && SharedHosting::dueSlot('pengingat-iuran', $wib()->toDateString()))
-        ->onSuccess(fn () => SharedHosting::markRan('pengingat-iuran', $wib()->toDateString()));
-    Schedule::command('rt05:rekonsiliasi-keuangan')->everyMinute()->withoutOverlapping(60)
-        ->when(fn () => $wib()->hour >= 1 && SharedHosting::dueSlot('rekonsiliasi-keuangan', $wib()->toDateString()))
-        // after, bukan onSuccess: ketidakcocokan (exit 1) cukup dilaporkan sekali per hari, bukan tiap tick.
-        ->after(fn () => SharedHosting::markRan('rekonsiliasi-keuangan', $wib()->toDateString()));
-    Schedule::command('rt05:anonimkan-arsip')->everyMinute()->withoutOverlapping(60)
-        ->when(fn () => $wib()->hour >= 2 && SharedHosting::dueSlot('anonimkan-arsip', $wib()->toDateString()))
-        ->onSuccess(fn () => SharedHosting::markRan('anonimkan-arsip', $wib()->toDateString()));
-    Schedule::command('rt05:bersihkan-ekspor')->everyMinute()->withoutOverlapping(60)
-        ->when(fn () => $wib()->hour >= 2 && SharedHosting::dueSlot('bersihkan-ekspor', $wib()->toDateString()))
-        ->onSuccess(fn () => SharedHosting::markRan('bersihkan-ekspor', $wib()->toDateString()));
-} else {
+// Profil shared tidak memakai scheduler Laravel: hosting Biznet memblokir proc_open/exec, jadi `schedule:run` tidak
+// bisa menjalankan command apa pun. Tugas terjadwal shared ada di App\Support\SharedSchedule dan dipanggil dalam proses
+// `rt05:shared-tick` (catch-up per tick, aturan jatuh tempo sama).
+if (! SharedHosting::enabled()) {
     // Heartbeat scheduler M03: dibaca rt05:heartbeat-check, tidak lewat endpoint publik.
     Schedule::call(fn () => Heartbeat::beat('scheduler'))->everyMinute()->name('rt05:heartbeat-scheduler');
     // ADR31: sweep yang menanyai database hanya saat aktif (event baru ≤10 menit) atau pengaman per jam,
