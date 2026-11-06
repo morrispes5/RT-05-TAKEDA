@@ -1,5 +1,26 @@
 # Progress — RT05 TAKEDA
 
+## M16.2 Neon production dimigrasi — 6 November 2026 19.24 WIB
+
+- Project `rt05-takeda-production` (`jolly-voice-55175426`), branch `production`, endpoint `ep-snowy-union-b33dixmf`.
+  Pengaman agent menolak agent membuat role Neon production, jadi **pemilik** membuat role `rt05_owner` (migrator,
+  anggota `neon_superuser` seperti staging) dan database `rt05_takeda` (owner `rt05_owner`) di konsol Neon.
+- Pemilik menjalankan `~/.rt05/m16-migrasi-prod.sh` (di luar Git) dari PC: connection string `rt05_owner` dibaca dari
+  clipboard (tidak ditampilkan, clipboard dikosongkan), role runtime `rt05_app` dibuat lewat SQL
+  (`NOSUPERUSER NOCREATEDB NOCREATEROLE`, sandi acak 48 hex hanya di `~/.rt05/prod/rt05_app.pw` milik pemilik untuk env
+  hosting M16.4), lalu `migrate --database=pgsql_migrations --force`, `rt05:db-grant-runtime-role rt05_app`, dan
+  `rt05:db-smoke` kedua koneksi. TLS `verify-full` dengan CA bundle Git (`~/.rt05/prod/ca-bundle.crt`; path berspasi
+  `C:/Program Files/...` ditolak libpq).
+- Kode: snapshot `main` 8a5cfeb + PR #108 (tidak ada perubahan `rest-api/` sejak staging `33a25f8`).
+- Hasil: semua migrasi DONE; smoke runtime `rt05_app` pooled: `verify-full`, tulis+baca dalam transaksi ok, 0 baris
+  tersisa, **DDL denied**; smoke migrator direct ok. Verifikasi SQL (Neon MCP, baca saja): **37 migrasi** (terakhir
+  `2026_10_31_000100_m18_metode_pemutihan`) dan **56 tabel**, sama dengan staging `pratinjau-data-asli-2`; `rt05_app`
+  bukan superuser, tanpa CREATEROLE/CREATEDB, tanpa keanggotaan role, tanpa CREATE di schema `public`.
+- Insiden kecil: tempelan pertama connection string masuk ke prompt PowerShell (bukan skrip), sehingga sandi
+  `rt05_owner` tampil di terminal dan terbaca agent. Baris riwayat PSReadLine dihapus; pemilik diminta **Reset
+  password** `rt05_owner` di Neon. Skrip diubah membaca clipboard.
+- Belum: data asli (M16.8); role uji `rt05_cek_hosting` masih ada (kedaluwarsa 9 Nov; DROP menunggu konfirmasi pemilik).
+
 ## M16.1c jembatan Neon di Laravel + uji IP rumah + ketahanan — 6 November 2026 malam
 
 - **IP rumah lolos Imunify360** (6 Nov 18.05 WIB, WARP `Disconnected`, IP MyRepublic `158.140.180.88`): `curl` biasa,
