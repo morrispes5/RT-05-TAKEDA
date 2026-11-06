@@ -975,3 +975,9 @@ butir 5 (fallback API di VPS) untuk production.
     lewat `pcntl_exec`; bila jembatan hidup langsung keluar). Penyalaan dari request web (`exec`) tidak berlaku di
     Biznet; konektor hanya menunggu jembatan yang dinyalakan cron. HTTP Laravel memakai stream PHP karena `curl_exec`
     diblokir (dibuktikan saat M16.5).
+12. Akibat yang sama untuk **scheduler**: `schedule:run` menjalankan setiap command terjadwal sebagai proses baru
+    (Symfony Process/`proc_open`), jadi di Biznet tidak ada tugas terjadwal yang benar-benar berjalan walau log
+    menulis "DONE" (cron.log 6 Nov 21.25 WIB; probe CLI: `proc_open=0 exec=0 pcntl_exec=1`). Profil shared kini tidak
+    memakai scheduler Laravel: `App\Support\SharedSchedule` memanggil tugas jatuh tempo dengan `Artisan::call` di
+    dalam proses `rt05:shared-tick` (aturan catch-up dan slot sama, kunci tumpang tindih file 60 menit, gagal → dicoba
+    tick berikutnya kecuali rekonsiliasi yang dilaporkan sekali per hari). Profil VPS tidak berubah.

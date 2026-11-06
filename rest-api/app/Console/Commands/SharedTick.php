@@ -6,6 +6,7 @@ use App\Domain\Operations\OutboxDispatcher;
 use App\Support\Database\NeonBridge;
 use App\Support\Heartbeat;
 use App\Support\SharedHosting;
+use App\Support\SharedSchedule;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -45,13 +46,14 @@ class SharedTick extends Command
             if (! app(NeonBridge::class)->ensureRunning()) {
                 $this->error('neon_bridge_unavailable');
             }
-            if ($this->call('schedule:run') !== 0) {
-                return self::FAILURE;
+            // Bukan `schedule:run`: itu menjalankan command sebagai proses baru (proc_open), yang diblokir di Biznet.
+            foreach (SharedSchedule::runDue() as $ran) {
+                $this->line(now()->toDateTimeString().' '.$ran['task'].' exit='.$ran['exit']);
             }
             $cache = Cache::store('file');
             $sweep = time() - (int) $cache->get('rt05:shared:last-sweep', 0) >= SharedHosting::SWEEP_SECONDS;
             if (! $sweep && ! SharedHosting::awake()) {
-                // Idle juga baru menulis setelah schedule:run kembali.
+                // Idle juga baru menulis setelah tugas terjadwal kembali.
                 Heartbeat::beat('shared-tick');
 
                 return self::SUCCESS;

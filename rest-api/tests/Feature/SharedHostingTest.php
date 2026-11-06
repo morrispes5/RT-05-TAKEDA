@@ -9,7 +9,10 @@ use App\Jobs\ProcessOutboxEvent;
 use App\Models\OutboxEvent;
 use App\Support\Outbox;
 use App\Support\SharedHosting;
+use App\Support\SharedSchedule;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -33,6 +36,10 @@ class SharedHostingTest extends TestCase
         ]);
         Cache::store('file')->forget('rt05:shared:awake');
         Cache::store('file')->forget('rt05:shared:last-sweep');
+        // Tugas terjadwal shared dianggap sudah jalan; tes yang membutuhkannya membuka slot sendiri.
+        foreach (SharedSchedule::tasks() as $task) {
+            ($task['mark'])();
+        }
     }
 
     protected function tearDown(): void
@@ -42,7 +49,49 @@ class SharedHostingTest extends TestCase
         OutboxEvent::whereIn('id', $this->events)->delete();
         Cache::store('file')->forget('rt05:shared:awake');
         Cache::store('file')->forget('rt05:shared:last-sweep');
+        foreach (SharedSchedule::tasks() as $task) {
+            Cache::store('file')->forget('rt05:shared:slot:'.$task['task']);
+            Cache::store('file')->forget('rt05:shared:ran:'.$task['task']);
+        }
         parent::tearDown();
+    }
+
+    /** Setelah travelTo: semua tugas shared ditandai jalan pada waktu baru, kecuali $open. */
+    private function onlyDue(string $open): void
+    {
+        foreach (SharedSchedule::tasks() as $task) {
+            ($task['mark'])();
+        }
+        Cache::store('file')->forget('rt05:shared:slot:'.$open);
+    }
+
+    public function test_due_shared_task_runs_inside_the_tick_process_without_scheduler(): void
+    {
+        // 03.00 WIB: bersihkan-ekspor (mulai 02.00) jatuh tempo.
+        $this->travelTo(CarbonImmutable::parse('2026-11-07 03:00', 'Asia/Jakarta'));
+        Cache::store('file')->put('rt05:shared:last-sweep', time(), 3600);
+        $this->onlyDue('bersihkan-ekspor');
+        $this->assertTrue(SharedHosting::dueSlot('bersihkan-ekspor', '2026-11-07'));
+
+        $this->artisan('rt05:shared-tick')->expectsOutputToContain('bersihkan-ekspor exit=0')->assertExitCode(0);
+
+        $this->assertFalse(SharedHosting::dueSlot('bersihkan-ekspor', '2026-11-07'), 'slot hari ini tercatat');
+        // Tick berikutnya tidak menjalankan ulang (catch-up sekali per slot).
+        $this->artisan('rt05:shared-tick')->doesntExpectOutputToContain('bersihkan-ekspor')->assertExitCode(0);
+        $this->travelBack();
+    }
+
+    public function test_failed_shared_task_is_retried_next_tick(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-07 03:00', 'Asia/Jakarta'));
+        $this->onlyDue('bersihkan-ekspor');
+        Artisan::command('rt05:bersihkan-ekspor', fn () => 1); // ganti sementara: gagal
+
+        $ran = SharedSchedule::runDue();
+
+        $this->assertSame([['task' => 'bersihkan-ekspor', 'exit' => 1]], $ran);
+        $this->assertTrue(SharedHosting::dueSlot('bersihkan-ekspor', '2026-11-07'), 'gagal → tidak ditandai, dicoba lagi');
+        $this->travelBack();
     }
 
     public function test_outbox_wakes_only_after_commit_and_rollback_leaves_no_hint(): void
@@ -107,6 +156,7 @@ class SharedHostingTest extends TestCase
     public function test_safety_sweep_recovers_outbox_without_wake_hint(): void
     {
         $this->travelTo(now()->setTime(12, 7, 0));
+        $this->onlyDue('-'); // tugas terjadwal shared tidak ikut jatuh tempo
         Cache::store('file')->put('rt05:shared:last-sweep', time() - SharedHosting::SWEEP_SECONDS - 1, 3600);
         Cache::store('file')->forget('rt05:shared:awake');
         $event = DB::transaction(fn () => Outbox::record('rt05.smoke', 'smoke', null, ['penerima' => []]));
@@ -123,6 +173,7 @@ class SharedHostingTest extends TestCase
     public function test_idle_tick_does_not_query_database(): void
     {
         $this->travelTo(now()->setTime(12, 7, 0));
+        $this->onlyDue('-'); // tugas terjadwal shared tidak ikut jatuh tempo
         Cache::store('file')->put('rt05:shared:last-sweep', time(), 3600);
         $queries = [];
         DB::listen(function ($event) use (&$queries): void {
