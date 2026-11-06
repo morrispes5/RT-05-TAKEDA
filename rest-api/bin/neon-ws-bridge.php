@@ -243,9 +243,31 @@ $closePair = function (int $id, bool $sendClose = true) use (&$pairs, &$bySock):
     @fclose($p['w']);
 };
 
-/** Nyalakan instance baru terlepas dari proses ini (fd > 2 ditutup agar kunci/socket tidak terwariskan). */
+/**
+ * Nyalakan instance baru terlepas dari proses ini. Biznet (PHP Selector 8.4) memblokir exec/proc_open untuk web dan
+ * CLI, jadi jalur utama pcntl_fork: anak menutup socket koneksi lama (listener dan kunci sudah ditutup sebelum ini),
+ * pindah sesi, lalu pcntl_exec menjadi jembatan baru. exec hanya cadangan bila pcntl tidak ada.
+ */
 function spawn_successor(): bool
 {
+    global $pairs;
+    if (function_exists('pcntl_fork') && function_exists('pcntl_exec') && function_exists('posix_setsid')) {
+        $pid = pcntl_fork();
+        if ($pid === -1) {
+            return false;
+        }
+        if ($pid === 0) {
+            foreach ($pairs as $p) {
+                @fclose($p['c']);
+                @fclose($p['w']);
+            }
+            posix_setsid();
+            @pcntl_exec(PHP_BINARY, [__FILE__], getenv());
+            exit(1); // pcntl_exec gagal: anak tidak boleh ikut menjalankan loop jembatan
+        }
+
+        return true;
+    }
     if (! function_exists('exec')) {
         return false;
     }

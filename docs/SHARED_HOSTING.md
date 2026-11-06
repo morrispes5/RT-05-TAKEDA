@@ -30,6 +30,9 @@ Laravel menyalakan jembatan sendiri bila `RT05_NEON_BRIDGE=true`: konektor pgsql
 pertama bila belum hidup (tunggu socket ≤3 detik), dan `rt05:shared-tick` memeriksanya tiap menit (flock + socket saja,
 tidak membangunkan Neon). Isi `RT05_BRIDGE_PHP=/opt/alt/php84/usr/bin/php` karena PHP web adalah lsphp. Operator:
 `php artisan rt05:neon-bridge status|start|stop` (stop memutus koneksi aktif; dinyalakan lagi otomatis).
+Biznet PHP 8.4 memblokir `exec`/`proc_open` (web dan CLI): pasang cron tiap menit
+`cd ~/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:neon-bridge run >/dev/null 2>&1` di samping cron
+`rt05:shared-tick` (ADR55 butir 11). Serah terima memakai `pcntl_fork`/`pcntl_exec`.
 Hosting membunuh setiap proses akun di umur ±30 menit (uji 6 Nov), jadi jembatan menyerahkan socket ke instance
 baru di umur `RT05_BRIDGE_MAX_AGE` (default 1500 dtk) dan menyelesaikan koneksi lama ≤60 dtk sebelum keluar (ADR55 butir 10).
 Hasil uji 6 Nov dan risiko terbuka ada di PROGRESS dan ADR55. Imunify360 bot-protection di depan hosting menantang
@@ -56,6 +59,12 @@ AutoSSL terbukti. Zip **tidak** berisi `.env`, isi `storage/`, `public_html/undu
 menolak paket yang melanggar. `.env` API/web dibuat sekali di hosting (privat). Upgrade: ekstrak zip baru di atasnya
 (storage, `.env`, `unduh/` tidak tersentuh), lalu `config:cache`/`view:cache` lewat cron sekali jalan; berkas yang dihapus
 di commit baru tidak ikut terhapus (bersihkan manual bila perlu).
+
+Pemasangan: `infra/shared/install-release.php` (sementara di `public_html` dengan nama + token acak, lalu dihapus)
+menyambung potongan zip dari `~/rt05-upload/` (File Manager/alat browser membatasi unggah ≤10 MB per berkas) atau
+mengunduh dari rilis GitHub, mengecek sha256, mengekstrak, dan membuat `.env` API/web dari `.env.example` + nilai
+production (APP_KEY acak dibuat di hosting; `DB_PASSWORD` diisi pemilik). Langkah `artisan` (cache, smoke) lewat
+cron sekali jalan karena `exec` diblokir di web.
 
 Uji lokal 6 Nov (PC, commit uji `178e8a2` = main 3d2154b + paket): zip 24 MB, 13.515 berkas, `check` OK; diekstrak ke
 home palsu dan dijalankan `php -S` dengan router setara `.htaccess`: `/`, `/profil`, `/aplikasi`, `/up`, `/robots.txt`
