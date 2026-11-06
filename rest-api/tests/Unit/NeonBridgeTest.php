@@ -213,6 +213,38 @@ class NeonBridgeTest extends TestCase
         }
     }
 
+    public function test_cron_run_command_becomes_the_bridge_without_exec(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows' || ! function_exists('pcntl_exec')) {
+            $this->markTestSkipped('butuh pcntl (Linux CLI, seperti cron hosting dan CI)');
+        }
+        $bridge = $this->useBridge();
+        $env = [
+            'RT05_NEON_BRIDGE' => 'true', 'RT05_NEON_HOST' => (string) config('rt05.neon_bridge.neon_host'),
+            'RT05_BRIDGE_DIR' => $this->dir, 'DB_HOST' => $this->dir, 'DB_PORT' => '5432', 'APP_ENV' => 'testing',
+            // URL eksplisit: nilai kosong tidak menimpa DATABASE_URL di .env CI (port 54329) → nama socket berbeda.
+            'DATABASE_URL' => 'postgresql://rt05_app@127.0.0.1:5432/rt05_test',
+        ] + getenv();
+        // Proses terpisah: pcntl_exec mengganti proses pemanggil dengan jembatan.
+        $cmd = [PHP_BINARY, base_path('artisan'), 'rt05:neon-bridge', 'run'];
+        $out = $this->dir.'/run.out';
+        $proc = proc_open($cmd, [['file', '/dev/null', 'r'], ['file', $out, 'a'], ['file', $out, 'a']], $pipes, base_path(), $env);
+        $this->assertIsResource($proc);
+
+        $this->assertTrue($this->waitUntil(fn () => $bridge->running(), 10), 'cron run menyalakan jembatan; output='
+            .json_encode(@file_get_contents($out)).' isi='.json_encode(scandir($this->dir)));
+        $pid = $bridge->pid();
+        $this->assertSame($pid, proc_get_status($proc)['pid'], 'proses artisan itu sendiri yang menjadi jembatan');
+
+        // Tick berikutnya saat jembatan hidup: keluar 0 tanpa instance kedua.
+        $this->assertSame(0, (int) proc_close(proc_open($cmd, [['file', '/dev/null', 'r'], ['file', '/dev/null', 'w'], ['file', '/dev/null', 'w']], $p2, base_path(), $env)));
+        $this->assertSame($pid, $bridge->pid());
+
+        $bridge->stop();
+        $this->assertTrue($this->waitUntil(fn () => ! $bridge->running()));
+        proc_close($proc);
+    }
+
     public function test_status_command_reports_without_touching_database(): void
     {
         $this->artisan('rt05:neon-bridge')->expectsOutputToContain('jembatan=mati')->assertExitCode(0);

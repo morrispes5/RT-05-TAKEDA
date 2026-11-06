@@ -1,5 +1,30 @@
 # Progress — RT05 TAKEDA
 
+## M16.4 pasang di cPanel (berjalan) — 6 November 2026 malam
+
+- Izin pemilik (chat 6 Nov ±20.25 WIB): zip di GitHub, installer di hosting, PHP 8.4 + SSL, cron setelah uji serah
+  terima. Rilis publik GitHub ditolak pengaman otomatis → zip diunggah langsung ke hosting dalam 3 potongan.
+- **SSL sudah aktif** (Let's Encrypt `rt05takeda.com` + `*.rt05takeda.com`, berlaku s/d 3 Feb 2027); AutoSSL tidak perlu.
+- **PHP Selector: native 8.2 → 8.4** (8.4.27 LiteSpeed, ekstensi wajib aktif termasuk pdo_pgsql/intl/gd/zip/pcntl;
+  opcache aktif). Catatan: `upload_max_filesize=2M`, `post_max_size=8M`, `memory_limit=128M`, `max_execution_time=30`
+  → foto >2 MB akan ditolak; naikkan di PHP Selector → Options (belum). Mengganti versi PHP memulai ulang proses akun
+  (jembatan uji dinyalakan ulang cron 20.25 WIB).
+- **`disable_functions` PHP 8.4 = exec, passthru, shell_exec, system, proc_open, popen, curl_exec, curl_multi_exec,
+  parse_ini_file, show_source** (web dan CLI). Serah terima jembatan 20.50:02 WIB tercatat `pengganti_gagal`; cron
+  menyalakan ulang 20.51:02 (jeda 60 dtk). Perbaikan: ADR55 butir 11 (`pcntl_fork`/`pcntl_exec`, cron
+  `rt05:neon-bridge run`), tes Linux baru `test_cron_run_command_becomes_the_bridge_without_exec`.
+- Paket: workflow Shared release package run 42227696403 dari main `7f0a5a2` → `rt05-shared-7f0a5a2.zip` 24,2 MB, sha256
+  `91fbae707f8ba608364e0ac60e0f3fca794658ee19329b38cf9ca4bada21960a` (percobaan pertama gagal: checkout butuh SHA
+  penuh). Diunggah ke `~/rt05-upload/` (3 potongan ≤9 MB, salinan PC dihapus), installer sementara
+  `public_html/ins-*.php` (token acak; tanpa token 404): sambung → sha256 cocok → ekstrak (`rt05/RELEASE.json` commit
+  `7f0a5a2`) → `.env` API/web dibuat (APP_KEY acak di hosting, izin 0600, `MAIL_MAILER=log` sampai M16.5,
+  `RT05_SEARCH_INDEXING=false` sampai M16.10, panik mati).
+- Uji luar (PC rumah) 20.50 WIB: `/` 200 (0,94 dtk pertama, lalu ±0,07 dtk), `/profil` 200, `/up` 200,
+  `/health/live` 200, `/sanctum/csrf-cookie` 204, `/.env` 403, `/health/ready` 503 (sandi DB belum diisi).
+- Berikutnya: pemilik mengisi `DB_PASSWORD` di `~/rt05/api/.env`; merge perbaikan butir 11 → paket baru; cron
+  `rt05:neon-bridge run` + `rt05:shared-tick` menggantikan cron uji; cron sekali jalan `config:cache`/`route:cache`/
+  `view:cache` + `rt05:db-smoke`; hapus installer, `st-*.php`, `~/neon-ws-bridge.php`.
+
 ## ADR55 butir 10: jembatan serah terima sebelum batas umur 30 menit — 6 November 2026 malam
 
 - Keputusan pemilik (chat 6 Nov): restart rapi sebelum 30 menit. `rest-api/bin/neon-ws-bridge.php`: di umur

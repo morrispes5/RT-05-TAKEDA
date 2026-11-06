@@ -153,26 +153,15 @@ class NeonBridge
     protected function spawn(): bool
     {
         if (! function_exists('exec') || PHP_OS_FAMILY === 'Windows') {
-            Log::error('neon_bridge.spawn_unsupported');
+            // Biznet PHP 8.4 memblokir exec: penyala utama di sana adalah cron `rt05:neon-bridge run`.
+            Log::warning('neon_bridge.spawn_unsupported');
 
             return false;
         }
-        if (! is_dir($this->dir()) && ! @mkdir($this->dir(), 0700, true) && ! is_dir($this->dir())) {
-            Log::error('neon_bridge.dir_failed');
-
+        if (! $this->prepareDir()) {
             return false;
         }
-        @chmod($this->dir(), 0700);
-
-        $env = array_filter([
-            'RT05_NEON_HOST' => (string) config('rt05.neon_bridge.neon_host'),
-            'RT05_BRIDGE_LISTEN' => 'unix://'.$this->socketPath(),
-            'RT05_BRIDGE_LOCK' => $this->lockPath(),
-            'RT05_BRIDGE_LOG' => $this->logPath(),
-            'RT05_BRIDGE_CAFILE' => (string) config('rt05.neon_bridge.cafile'),
-            'RT05_BRIDGE_MAX' => (string) (int) config('rt05.neon_bridge.max_connections', 40),
-            'RT05_BRIDGE_MAX_AGE' => (string) (int) config('rt05.neon_bridge.max_age_seconds', 1500),
-        ], fn ($v) => $v !== '' && $v !== '0');
+        $env = $this->processEnv();
         $assign = implode(' ', array_map(fn ($k, $v) => $k.'='.escapeshellarg($v), array_keys($env), $env));
 
         // Proses web (lsphp) mewariskan fd > 2, termasuk socket klien HTTP. Tanpa menutupnya respons tertahan sampai
@@ -186,6 +175,49 @@ class NeonBridge
 
             return false;
         }
+
+        return true;
+    }
+
+    /**
+     * Ganti proses CLI ini menjadi jembatan (pcntl_exec, tanpa exec/proc_open yang diblokir hosting). Untuk cron
+     * `php artisan rt05:neon-bridge run` tiap menit; bila jembatan sudah hidup kembali segera. Hanya kembali bila gagal.
+     */
+    public function runInForeground(): bool
+    {
+        if (! $this->enabled() || $this->running()) {
+            return true;
+        }
+        if ($this->configErrors() !== [] || ! function_exists('pcntl_exec') || ! $this->prepareDir()) {
+            return false;
+        }
+        @pcntl_exec($this->php(), [$this->script()], $this->processEnv() + getenv());
+
+        return false;
+    }
+
+    /** @return array<string,string> env proses jembatan (host/path saja, tanpa kredensial). */
+    protected function processEnv(): array
+    {
+        return array_filter([
+            'RT05_NEON_HOST' => (string) config('rt05.neon_bridge.neon_host'),
+            'RT05_BRIDGE_LISTEN' => 'unix://'.$this->socketPath(),
+            'RT05_BRIDGE_LOCK' => $this->lockPath(),
+            'RT05_BRIDGE_LOG' => $this->logPath(),
+            'RT05_BRIDGE_CAFILE' => (string) config('rt05.neon_bridge.cafile'),
+            'RT05_BRIDGE_MAX' => (string) (int) config('rt05.neon_bridge.max_connections', 40),
+            'RT05_BRIDGE_MAX_AGE' => (string) (int) config('rt05.neon_bridge.max_age_seconds', 1500),
+        ], fn ($v) => $v !== '' && $v !== '0');
+    }
+
+    private function prepareDir(): bool
+    {
+        if (! is_dir($this->dir()) && ! @mkdir($this->dir(), 0700, true) && ! is_dir($this->dir())) {
+            Log::error('neon_bridge.dir_failed');
+
+            return false;
+        }
+        @chmod($this->dir(), 0700);
 
         return true;
     }

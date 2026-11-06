@@ -967,3 +967,11 @@ butir 5 (fallback API di VPS) untuk production.
     ditutup, `setsid`), lalu tetap melayani koneksi yang sedang berjalan maks 60 dtk dan keluar. Celah tanpa socket
     hanya selama PHP pengganti start (milidetik); konektor Laravel menunggu socket ≤3 dtk. Watchdog cron tetap sebagai
     jaring bila pengganti gagal.
+11. 6 Nov 20.50 WIB: setelah akun dipindah ke PHP Selector **8.4** (8.2 bawaan terlalu tua untuk composer.lock),
+    `disable_functions` = `exec, passthru, shell_exec, system, proc_open, popen, curl_exec, curl_multi_exec,
+    parse_ini_file, show_source` untuk web **dan** CLI (serah terima pertama di hosting: `pengganti_gagal`). Maka:
+    pengganti dibuat dengan `pcntl_fork` + `posix_setsid` + `pcntl_exec` (anak menutup socket koneksi lama dulu),
+    dan penyala utama = cron tiap menit `php artisan rt05:neon-bridge run` (proses artisan berganti menjadi jembatan
+    lewat `pcntl_exec`; bila jembatan hidup langsung keluar). Penyalaan dari request web (`exec`) tidak berlaku di
+    Biznet; konektor hanya menunggu jembatan yang dinyalakan cron. HTTP Laravel memakai stream PHP karena `curl_exec`
+    diblokir (dibuktikan saat M16.5).

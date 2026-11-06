@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 /** Operator jembatan Neon ADR55. Tidak membuka database; status hanya membaca flock, socket, dan log. */
 class NeonBridgeCommand extends Command
 {
-    protected $signature = 'rt05:neon-bridge {aksi=status : status|start|stop}';
+    protected $signature = 'rt05:neon-bridge {aksi=status : status|start|stop|run (run = cron tiap menit, menjadi proses jembatan)}';
 
     protected $description = 'Status, nyalakan, atau hentikan jembatan PostgreSQL→Neon lewat WebSocket (ADR55)';
 
@@ -24,6 +24,15 @@ class NeonBridgeCommand extends Command
         }
 
         switch ($this->argument('aksi')) {
+            case 'run':
+                // Hosting tanpa exec (Biznet PHP 8.4): cron memanggil ini tiap menit. Jembatan hidup → keluar diam-diam;
+                // mati → proses ini diganti jembatan lewat pcntl_exec dan tidak kembali.
+                if ($bridge->runInForeground()) {
+                    return self::SUCCESS;
+                }
+                $this->error('gagal menjadi jembatan (pcntl_exec tidak ada atau konfigurasi salah)');
+
+                return self::FAILURE;
             case 'start':
                 $ok = $bridge->ensureRunning();
                 $this->line($ok ? 'hidup pid='.$bridge->pid() : 'gagal menyalakan (lihat log Laravel dan bridge.log)');
@@ -45,7 +54,7 @@ class NeonBridgeCommand extends Command
 
                 return $running ? self::SUCCESS : self::FAILURE;
             default:
-                $this->error('aksi: status|start|stop');
+                $this->error('aksi: status|start|stop|run');
 
                 return self::INVALID;
         }
