@@ -1,5 +1,47 @@
 # Progress — RT05 TAKEDA
 
+## M16.1b jalur Neon lewat WebSocket 443 + temuan Imunify360 — 6 November 2026
+
+- **Tiket T744194 dijawab Biznet: ditolak.** Port keluar 5432 hanya bisa dibuka di VPS, tidak di paket NEO Web Hosting
+  (disampaikan pemilik di chat 6 Nov).
+- Uji dari PC (user palsu, tanpa kredensial): Neon port 443 **bukan** PostgreSQL biasa (SSLRequest: "invalid response to
+  SSL negotiation"; TLS langsung ALPN `postgresql`: alert "no application protocol"). Tetapi **`wss://<endpoint>/v2`
+  (WebSocket, port 443) menerima protokol PostgreSQL penuh** — balasan `R` auth 3 lalu `28P01 password authentication
+  failed`. Ini jalur driver serverless resmi Neon.
+- Opsi yang ditimbang dan keputusan pemilik (chat 6 Nov):
+  - relay TCP 3306 di VPS Biznet pribadi pemilik ke Neon 5432: **ditolak** — production bergantung pada VPS pribadi yang
+    bisa berhenti langganan;
+  - API production di VPS (ADR54 butir 5): **ditolak** — alasan sama; VPS staging juga sesak (2 GB RAM, 1 CPU, load ±4);
+  - VM gratis Oracle Cloud untuk relay: **ditolak** pemilik;
+  - pindah ke MySQL di hosting: **ditolak** pemilik (tidak mau pindah database). Estimasi agent: ±21 berkas
+    `DB::statement`, 19 berkas CHECK constraint, `jsonb`, `gen_random_uuid`, advisory lock — kerja berhari-hari + uji
+    ulang keuangan;
+  - Neon HTTP API langsung dari Laravel: tidak cocok (transaksi interaktif + `lockForUpdate` di domain keuangan);
+  - **dipilih untuk diuji: jembatan PHP di hosting** `infra/shared/neon-ws-bridge.php` (ADR55, diusulkan).
+- Uji jembatan di PC (`tcp://127.0.0.1`, role uji `rt05_cek_hosting` di Neon production, sandi baru hanya di memori
+  proses/browser, berlaku sampai 9 Nov 00.00 WIB): kueri, transaksi, prepared statement, hasil 96 KB lulus.
+- Uji di hosting lewat Chrome (skrip sementara `public_html/cek3-*.php`, jembatan di home, socket
+  `~/rt05-pg/.s.PGSQL.5432`, folder 0700):
+  - lingkungan: `disable_functions` kosong; `exec`/`proc_open`/`pcntl_fork` ada; PHP CLI `/opt/alt/php84/usr/bin/php`
+    (web masih 8.2.35 LiteSpeed); unix socket bisa; `ulimit` waktu CPU unlimited, maks proses 1400;
+  - PDO `pgsql:host=~/rt05-pg;sslmode=disable` lewat jembatan: **LULUS** — connect 104–123 ms, kueri+transaksi ±150 ms,
+    `select 1` ±48 ms per round trip, hasil 96 KB utuh; 6 request paralel: 3 OK, 3 ditolak Neon "too many connections
+    for role" (batas koneksi role uji, bukan jembatan);
+  - jembatan bisa dinyalakan **dari request PHP web tanpa cron** (`nohup bash -c` + `setsid`) asal fd warisan lsphp (>2)
+    ditutup dulu — tanpa itu respons HTTP tertahan sampai proses anak mati (terjadi pada percobaan pertama);
+  - RSS proses ±33–41 MB.
+- **Cron uji tidak dipasang:** pemasangan cron di hosting production ditolak pengaman otomatis agent; cron dipasang saat
+  M16.4 dengan izin eksplisit (watchdog jembatan ikut `rt05:shared-tick` tiap menit).
+- **Blocker baru — Imunify360 bot-protection di depan hosting (openresty):** semua klien non-browser (curl, User-Agent
+  Dart/APK, Googlebot) mendapat halaman tantangan "One moment, please..." (HTTP 200 HTML), dan request
+  `Accept: application/json` mendapat **403 `Access denied by Imunify360 bot-protection`**. APK tidak akan bisa memanggil
+  `/api/v1` sebelum Biznet mengecualikan domain/path API. Panel Imunify360 akun pengguna hanya berisi pemindai malware.
+- Status setelah uji: skrip `cek3-*.php` **dihapus** dari `public_html` (isi tinggal `.well-known`, `cgi-bin`). Proses
+  jembatan uji **sengaja dibiarkan hidup** sejak 6 Nov 17.33 WIB untuk uji ketahanan (5 menit pertama: hidup, RSS stabil
+  ±41 MB); berkasnya `~/neon-ws-bridge.php` dan `~/rt05-pg/` (socket, `bridge.lock`, `bridge.log`). Sesi berikut: cek
+  apakah PID masih hidup (unggah skrip status sementara), lalu matikan dan hapus bila uji selesai. Role uji kedaluwarsa
+  9 Nov 00.00 WIB.
+
 ## M16.1 cek hosting: port 5432 keluar diblokir — 6 November 2026
 
 - Nameserver registrar `rt05takeda.com` diganti agent atas izin pemilik dari `satu/dua.neodns.id` (zona kosong) ke

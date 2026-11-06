@@ -924,3 +924,27 @@ sekarang sudah resmi memasuki tahap production"; urutan "Lokal > vercel preview 
    hanya di production (pratinjau ADR52 dihapus setelah production jalan).
 5. Bila uji koneksi hosting → Neon 5432 (RUNBOOK_PRODUCTION 1a) gagal, setup shared dihentikan dan pemilik memutuskan
    production sementara di VPS (`infra/compose.production.yml`) dengan domain yang sama.
+
+### ADR55 — Neon dari hosting bersama lewat jembatan WebSocket 443
+
+Tanggal: **6 November 2026**. Status: **diusulkan, uji hosting lulus sebagian** (pemilik 6 Nov: tetap PostgreSQL/Neon,
+tidak bergantung VPS pribadi, tidak memakai Oracle; "coba semua alternatif ... langsung eksekusi"). Mengganti ADR54
+butir 5 (fallback API di VPS) untuk production.
+
+1. Hosting NEO memblokir TCP keluar 5432 dan Biznet menolak membukanya (tiket T744194). Neon menerima protokol
+   PostgreSQL di dalam WebSocket `wss://<endpoint>/v2` port 443, yang terbuka dari hosting.
+2. `infra/shared/neon-ws-bridge.php` (PHP murni, tanpa dependensi) berjalan sebagai proses latar akun hosting,
+   mendengarkan unix socket `~/rt05-pg/.s.PGSQL.5432` (folder 0700, umask 0077) dan meneruskan byte apa adanya ke Neon.
+   Jembatan tidak mem-parsing kueri, tidak mencatat isi/kata sandi; log hanya waktu mulai dan galat koneksi.
+3. Laravel API memakai `DB_HOST=/home/<akun>/rt05-pg`, `DB_PORT=5432`, `DB_SSLMODE=disable`. Hop lokal unix socket tanpa
+   TLS; **TLS verify-peer + verify-peer-name ada di hop wss ke Neon** (CA bundle hosting). Ini pengecualian tertulis atas
+   preflight shared #3 ("verify-full, jangan sslmode=require") khusus hop lokal.
+4. Satu instance dijamin `flock` (`bridge.lock`). Penyalaan: watchdog di `rt05:shared-tick` (cron tiap menit) dan
+   penyalaan saat request bila socket tidak ada (menutup fd warisan lsphp >2 sebelum `setsid`). Integrasi ini **belum
+   dibuat** di kode Laravel.
+5. Migrasi/DDL tetap dijalankan operator dari PC/CI langsung ke Neon 5432 (role migrator); hosting hanya DML pooled.
+6. Profil VPS/staging tidak berubah. Bila hosting kelak mematikan proses latar secara rutin, atau Biznet melarangnya,
+   opsi berikutnya diputuskan pemilik lagi; jangan pindah diam-diam.
+7. Risiko terbuka: (a) ketahanan proses latar jangka panjang belum terbukti; (b) setiap request membuka koneksi
+   WebSocket baru (±110 ms dari hosting); (c) Imunify360 bot-protection memblokir klien non-browser — wajib dikecualikan
+   Biznet sebelum APK production.

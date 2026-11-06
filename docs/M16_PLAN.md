@@ -189,7 +189,8 @@ Large**, domain **`rt05takeda.com`**, status **Active**, berlaku 5 Nov 2026 – 
 **Rp612.000** (next due 5 Nov 2027). Panel = cPanel Biznet (alamat dan username di portal, tidak ditulis di Git).
 Jawaban tiket #737856: tanpa SSH/CLI, PHP sampai 8.4 + `pdo_pgsql`, cron cPanel `/usr/local/bin/php`, document root
 domain utama terkunci di `public_html`. **6 Nov: M16.1 GAGAL di port 5432** — firewall hosting menolak TCP keluar 5432
-(443/3306 terbuka); detail di PROGRESS 6 Nov. Menunggu keputusan pemilik (ADR54 butir 5).
+(443/3306 terbuka); detail di PROGRESS 6 Nov. Menunggu keputusan pemilik (ADR54 butir 5). **6 Nov sore:** Biznet menolak (T744194); jalur pengganti jembatan
+WebSocket 443 (ADR55) lulus uji awal di hosting; Imunify360 bot-protection harus dikecualikan sebelum APK production.
 
 ### 8.1 Empat tahap rilis
 

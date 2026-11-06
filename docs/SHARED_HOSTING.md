@@ -19,6 +19,16 @@ Sumber harga/kuota (bisa berubah):
 - https://www.resend.com/blog/new-free-tier
 - https://firebase.google.com/pricing
 
+## Database lewat jembatan WebSocket (ADR55, 6 Nov 2026)
+
+Hosting NEO Biznet memblokir TCP keluar 5432. Jalur production: Laravel → unix socket `~/rt05-pg/.s.PGSQL.5432` →
+`infra/shared/neon-ws-bridge.php` → `wss://<endpoint-neon>/v2` (443, TLS verify) → Neon. Env API:
+`DB_HOST=/home/<akun>/rt05-pg`, `DB_PORT=5432`, `DB_SSLMODE=disable`. Env jembatan: `RT05_NEON_HOST` (host endpoint Neon),
+`RT05_BRIDGE_LISTEN=unix:///home/<akun>/rt05-pg/.s.PGSQL.5432`, `RT05_BRIDGE_LOCK`, `RT05_BRIDGE_LOG`, opsional
+`RT05_BRIDGE_CAFILE`, `RT05_BRIDGE_MAX` (default 40 koneksi). Jalankan dengan PHP CLI `/opt/alt/php84/usr/bin/php`.
+Hasil uji 6 Nov dan risiko terbuka ada di PROGRESS dan ADR55. Imunify360 bot-protection akun ini memblokir klien
+non-browser; API production belum bisa dipakai APK sebelum Biznet mengecualikannya.
+
 ## Cara kerja
 
 Profil default `vps` tidak berubah. Pilih `RT05_DEPLOYMENT_PROFILE=shared` hanya di staging yang lolos preflight. Tambahkan tabel `jobs` melalui koneksi migrator, tetap pisahkan credential DDL dari hosting. Config queue database memakai role runtime DML. Job reset tetap terenkripsi dan after-commit; outbox tetap persisten.

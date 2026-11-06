@@ -4,7 +4,13 @@ Dokumen hidup untuk agent AI dan manusia yang melanjutkan pekerjaan. Isinya stat
 pertanyaan untuk pemilik, dan cara kerja operasional yang tidak terlihat dari kode. **Perbarui bagian 2–6 setiap kali
 menutup sesi.** Sumber kebenaran status tetap [PROGRESS.md](PROGRESS.md); keputusan ada di [DECISIONS.md](DECISIONS.md).
 
-Terakhir diperbarui: **Jumat 6 November 2026** (M16.1 gagal: hosting memblokir port 5432 keluar; staging tetap `33a25f8`, APK 1028). **Baca bagian 0 dulu.**
+Terakhir diperbarui: **Jumat 6 November 2026** (5432 ditolak Biznet; jembatan WebSocket ADR55 lulus uji awal; Imunify360 memblokir APK; staging tetap `33a25f8`, APK 1028). **Baca bagian 0 dulu.**
+
+**6 Nov 2026 (sore) — jalur baru: jembatan WebSocket (ADR55).** Biznet menolak membuka 5432 (T744194: hanya VPS).
+Neon menerima PostgreSQL lewat `wss://.../v2` port 443; jembatan `infra/shared/neon-ws-bridge.php` lulus uji di hosting
+(PDO lewat unix socket, connect ±110 ms). Pemilik menolak relay/API di VPS pribadi, Oracle, dan pindah MySQL. Sisa
+sebelum M16.2: uji ketahanan proses latar, integrasi watchdog/penyalaan di Laravel, dan **Imunify360 bot-protection**
+(403/halaman tantangan untuk semua klien non-browser termasuk APK) harus dikecualikan Biznet. Detail di PROGRESS 6 Nov.
 
 **6 Nov 2026 — M16.1 GAGAL, production berhenti menunggu pemilik.** Nameserver `rt05takeda.com` sudah ke
 `ns1/ns2.neohosting.id` (domain resolve ke hosting). Cek hosting lulus untuk ekstensi PHP, `finish_request`, FCM, dan
