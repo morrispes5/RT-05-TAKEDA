@@ -1,5 +1,20 @@
 # Progress — RT05 TAKEDA
 
+## M16.3 paket rilis shared + batas umur proses 30 menit — 6 November 2026 malam
+
+- **Jembatan dari cron juga mati di umur ±31 menit**: PID 1896846 mulai 19.02:01 WIB (cron), cron menyalakan pengganti
+  PID 1970795 pukul 19.33:02. Ringkasan tiga uji: web 22–36 mnt, web 28,5–30,5 mnt, cron ≤31 mnt; induk lsphp
+  1780220 juga hilang di umur ±30 mnt; kenari `sleep` ikut mati. **Koreksi kesimpulan ADR55 butir 9:** yang cocok adalah
+  **batas umur ±30 menit untuk setiap proses akun** (dari web maupun cron), bukan daur ulang lsphp. Cron uji tetap jalan
+  untuk memastikan periodenya (dugaan berikut ±20.03 WIB). Keputusan arsitektur (ADR55 butir 6) ada di pemilik; usulan
+  agent: jembatan berhenti sendiri dengan rapi sebelum 30 menit dan langsung menyalakan pengganti, sehingga koneksi aktif
+  tidak terputus paksa.
+- **M16.3 paket rilis (kode):** `infra/shared/build-release.sh`, `infra/shared/release-zip.php` (pack + check),
+  `infra/shared/release/{index.php,index-api.php,.htaccess}`, workflow `.github/workflows/shared-release.yml`
+  (manual + PR yang menyentuh berkas paket). Rincian isi dan hasil uji lokal di SHARED_HOSTING "Paket rilis".
+- Uji lokal: build 10 menit di PC (composer + npm di Windows), zip 24 MB lulus `check`, uji rute lewat `php -S` lulus
+  (lihat SHARED_HOSTING). Folder uji + zip lokal dihapus (production dibangun di CI).
+
 ## M16.2 Neon production dimigrasi — 6 November 2026 19.24 WIB
 
 - Project `rt05-takeda-production` (`jolly-voice-55175426`), branch `production`, endpoint `ep-snowy-union-b33dixmf`.
