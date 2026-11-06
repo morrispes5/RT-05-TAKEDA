@@ -1,0 +1,51 @@
+name: Shared release package
+# M16.3: zip untuk hosting cPanel (profil shared, ADR54/ADR55). Manual; hasil berupa artifact, tidak deploy apa pun.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Commit atau branch (production: commit main yang sudah jalan di staging)'
+        required: true
+        default: main
+  pull_request:
+    paths:
+      - 'infra/shared/build-release.sh'
+      - 'infra/shared/release-zip.php'
+      - 'infra/shared/release/**'
+      - '.github/workflows/shared-release.yml'
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, intl, mbstring, gd, zip, curl, fileinfo, openssl
+          tools: composer
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: bash infra/shared/build-release.sh dist
+      - id: rev
+        run: echo "short=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Ringkasan
+        run: |
+          {
+            echo "### Paket shared"
+            echo '```'
+            cat dist/*.sha256
+            unzip -p dist/*.zip rt05/RELEASE.json
+            echo
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rt05-shared-${{ steps.rev.outputs.short }}
+          path: dist/
+          retention-days: 30

@@ -1,0 +1,43 @@
+# RT05 TAKEDA — public_html production shared (paket M16.3, dari infra/shared/release/.htaccess).
+# Satu origin: path API (setara infra/docker/gateway.Caddyfile) → index-api.php; path lain → index.php website.
+# Aplikasi, .env, vendor, dan storage ada di ~/rt05/ (di luar public_html).
+
+Options -Indexes -MultiViews
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Teruskan header auth/CSRF ke PHP.
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # HTTPS wajib — AKTIFKAN setelah AutoSSL rt05takeda.com terbukti (M16.4). Sebelum itu redirect ini memutus situs.
+    # RewriteCond %{HTTPS} !=on
+    # RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Dotfile tidak boleh diunduh, kecuali .well-known (validasi AutoSSL).
+    RewriteRule (^|/)\.(?!well-known(/|$)) - [F,L]
+
+    # API same-origin.
+    RewriteRule ^(api|health|reset-password)(/.*)?$ index-api.php [L,QSA]
+    RewriteRule ^sanctum/csrf-cookie$ index-api.php [L,QSA]
+
+    # Website: buang garis miring akhir lalu front controller.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# APK warga (M16.7) di public_html/unduh/: browser HP langsung menawarkan pemasangan; versi.json tidak di-cache lama.
+AddType application/vnd.android.package-archive .apk
+<IfModule mod_headers.c>
+    <Files "versi.json">
+        Header set Cache-Control "no-cache"
+    </Files>
+</IfModule>

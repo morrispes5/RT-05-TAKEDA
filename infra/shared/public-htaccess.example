@@ -1,3 +1,4 @@
+# DIGANTIKAN infra/shared/release/.htaccess (paket M16.3, build-release.sh). Berkas ini sketsa awal, simpan sebagai rujukan.
 # Contoh routing satu origin untuk shared hosting. BELUM diuji di Biznet.
 # Document root = folder public website. Jangan menaruh repo, .env, atau vendor di public_html.
 #

@@ -33,6 +33,34 @@ tidak membangunkan Neon). Isi `RT05_BRIDGE_PHP=/opt/alt/php84/usr/bin/php` karen
 Hasil uji 6 Nov dan risiko terbuka ada di PROGRESS dan ADR55. Imunify360 bot-protection di depan hosting menantang
 klien non-browser dari IP bereputasi buruk (contoh: Cloudflare WARP); dari IP VPS Biznet lolos. Uji APK di HP nyata.
 
+## Paket rilis (M16.3, 6 Nov 2026)
+
+`bash infra/shared/build-release.sh [dist]` (production: workflow **Shared release package**, `workflow_dispatch`
+dengan commit `main` yang sudah jalan di staging) menghasilkan `rt05-shared-<sha7>.zip` + `.sha256`. Isinya hanya berkas
+yang dilacak Git di commit itu (`git archive`), dengan `composer --no-dev` dan build Vite:
+
+| Path di zip | Diekstrak ke | Isi |
+| --- | --- | --- |
+| `rt05/api/` | `~/rt05/api/` | rest-api tanpa `public/`, `tests/`; termasuk `bin/neon-ws-bridge.php` |
+| `rt05/web/` | `~/rt05/web/` | website tanpa `public/`, `tests/`, `preview/`, `node_modules/` |
+| `rt05/infra/sql/` | `~/rt05/infra/sql/` | `grant-runtime-role.sql` |
+| `rt05/RELEASE.json` | `~/rt05/` | commit, waktu build, versi PHP/Node |
+| `public_html/` | `~/public_html/` | `website/public` + `build/` Vite + `auth-assets/` API + `index.php`, `index-api.php`, `.htaccess` dari `infra/shared/release/` |
+
+`index.php`/`index-api.php` menunjuk `../rt05/web` dan `../rt05/api` dan memanggil `usePublicPath(public_html)`.
+`.htaccess` meniru `gateway.Caddyfile`: `/api`, `/health`, `/sanctum/csrf-cookie`, `/reset-password` → API; dotfile
+selain `.well-known` 403; `Options -Indexes`; MIME APK + `versi.json` no-cache; redirect HTTPS masih dikomentari sampai
+AutoSSL terbukti. Zip **tidak** berisi `.env`, isi `storage/`, `public_html/unduh/`, atau paket dev; `release-zip.php check`
+menolak paket yang melanggar. `.env` API/web dibuat sekali di hosting (privat). Upgrade: ekstrak zip baru di atasnya
+(storage, `.env`, `unduh/` tidak tersentuh), lalu `config:cache`/`view:cache` lewat cron sekali jalan; berkas yang dihapus
+di commit baru tidak ikut terhapus (bersihkan manual bila perlu).
+
+Uji lokal 6 Nov (PC, commit uji `178e8a2` = main 3d2154b + paket): zip 24 MB, 13.515 berkas, `check` OK; diekstrak ke
+home palsu dan dijalankan `php -S` dengan router setara `.htaccess`: `/`, `/profil`, `/aplikasi`, `/up`, `/robots.txt`
+200 (website); `/health/live` 200, `/sanctum/csrf-cookie` 204, `/reset-password` 200 (API); aset Vite, gambar, font
+`auth-assets` 200; `/.env` dan `/.htaccess` 403; `/health/ready` 503 dan `/api/v1/public/contacts` 500 karena uji tanpa
+database (diharapkan). Perilaku `.htaccess` di LiteSpeed sendiri baru terbukti saat M16.4.
+
 ## Cara kerja
 
 Profil default `vps` tidak berubah. Pilih `RT05_DEPLOYMENT_PROFILE=shared` hanya di staging yang lolos preflight. Tambahkan tabel `jobs` melalui koneksi migrator, tetap pisahkan credential DDL dari hosting. Config queue database memakai role runtime DML. Job reset tetap terenkripsi dan after-commit; outbox tetap persisten.
