@@ -946,5 +946,5 @@ butir 5 (fallback API di VPS) untuk production.
 6. Profil VPS/staging tidak berubah. Bila hosting kelak mematikan proses latar secara rutin, atau Biznet melarangnya,
    opsi berikutnya diputuskan pemilik lagi; jangan pindah diam-diam.
 7. Risiko terbuka: (a) ketahanan proses latar jangka panjang belum terbukti; (b) setiap request membuka koneksi
-   WebSocket baru (±110 ms dari hosting); (c) Imunify360 bot-protection memblokir klien non-browser — wajib dikecualikan
-   Biznet sebelum APK production.
+   WebSocket baru (±110 ms dari hosting); (c) Imunify360 bot-protection menantang klien non-browser dari IP bereputasi
+   buruk (VPN/WARP/datacenter tertentu); dari IP VPS Biznet lolos. Uji di HP nyata (M16.7) sebelum minta Biznet apa pun.

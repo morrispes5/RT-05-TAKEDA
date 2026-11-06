@@ -26,8 +26,8 @@ Hosting NEO Biznet memblokir TCP keluar 5432. Jalur production: Laravel → unix
 `DB_HOST=/home/<akun>/rt05-pg`, `DB_PORT=5432`, `DB_SSLMODE=disable`. Env jembatan: `RT05_NEON_HOST` (host endpoint Neon),
 `RT05_BRIDGE_LISTEN=unix:///home/<akun>/rt05-pg/.s.PGSQL.5432`, `RT05_BRIDGE_LOCK`, `RT05_BRIDGE_LOG`, opsional
 `RT05_BRIDGE_CAFILE`, `RT05_BRIDGE_MAX` (default 40 koneksi). Jalankan dengan PHP CLI `/opt/alt/php84/usr/bin/php`.
-Hasil uji 6 Nov dan risiko terbuka ada di PROGRESS dan ADR55. Imunify360 bot-protection akun ini memblokir klien
-non-browser; API production belum bisa dipakai APK sebelum Biznet mengecualikannya.
+Hasil uji 6 Nov dan risiko terbuka ada di PROGRESS dan ADR55. Imunify360 bot-protection di depan hosting menantang
+klien non-browser dari IP bereputasi buruk (contoh: Cloudflare WARP); dari IP VPS Biznet lolos. Uji APK di HP nyata.
 
 ## Cara kerja
 

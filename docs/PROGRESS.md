@@ -2,8 +2,9 @@
 
 ## M16.1b jalur Neon lewat WebSocket 443 + temuan Imunify360 — 6 November 2026
 
-- **Tiket T744194 dijawab Biznet: ditolak.** Port keluar 5432 hanya bisa dibuka di VPS, tidak di paket NEO Web Hosting
-  (disampaikan pemilik di chat 6 Nov).
+- **Tiket T744194 dijawab Biznet: ditolak** (email support 6 Nov 10.23 WIB, dibaca agent di Gmail akun RT): NEO Web
+  Hosting adalah shared hosting; membuka port hanya lewat NEO Dedicated Hosting atau VPS NEO Lite (unmanaged). Tiket
+  ditutup Biznet 13.47 WIB karena tidak ada balasan. Total pembayaran hosting 5 Nov: Rp442.890 (invoice 737106, Paid).
 - Uji dari PC (user palsu, tanpa kredensial): Neon port 443 **bukan** PostgreSQL biasa (SSLRequest: "invalid response to
   SSL negotiation"; TLS langsung ALPN `postgresql`: alert "no application protocol"). Tetapi **`wss://<endpoint>/v2`
   (WebSocket, port 443) menerima protokol PostgreSQL penuh** — balasan `R` auth 3 lalu `28P01 password authentication
@@ -32,10 +33,15 @@
   - RSS proses ±33–41 MB.
 - **Cron uji tidak dipasang:** pemasangan cron di hosting production ditolak pengaman otomatis agent; cron dipasang saat
   M16.4 dengan izin eksplisit (watchdog jembatan ikut `rt05:shared-tick` tiap menit).
-- **Blocker baru — Imunify360 bot-protection di depan hosting (openresty):** semua klien non-browser (curl, User-Agent
-  Dart/APK, Googlebot) mendapat halaman tantangan "One moment, please..." (HTTP 200 HTML), dan request
-  `Accept: application/json` mendapat **403 `Access denied by Imunify360 bot-protection`**. APK tidak akan bisa memanggil
-  `/api/v1` sebelum Biznet mengecualikan domain/path API. Panel Imunify360 akun pengguna hanya berisi pemindai malware.
+- **Imunify360 bot-protection (openresty di depan hosting) — koreksi: bukan blokir total.** Dari PC agent, semua klien
+  non-browser (curl, User-Agent Dart, Googlebot) mendapat halaman tantangan "One moment, please..." (HTTP 200 HTML) dan
+  `Accept: application/json` mendapat 403 `Access denied by Imunify360 bot-protection. IPs used for automation should
+  be whitelisted`. Tetapi dari IP VPS Biznet staging, curl dan User-Agent Dart (Accept `*/*` maupun JSON) **lolos tanpa
+  tantangan** (404 biasa, aplikasi belum dipasang). IP publik PC agent `104.28.x.x` adalah rentang egress Cloudflare
+  WARP/VPN, jadi yang ditandai adalah reputasi IP, bukan semua aplikasi. Keputusan pemilik 6 Nov: **tiket Imunify tidak
+  dikirim** (hindari tiket yang akan ditolak). Risiko sisa: HP warga yang memakai VPN/WARP atau IP CGNAT bereputasi buruk
+  bisa ditolak API; buktikan di HP nyata dengan data seluler dan Wi-Fi rumah saat M16.7, dan APK sebaiknya menampilkan
+  pesan jelas bila respons bukan JSON. Panel Imunify360 akun pengguna hanya berisi pemindai malware.
 - Status setelah uji: skrip `cek3-*.php` **dihapus** dari `public_html` (isi tinggal `.well-known`, `cgi-bin`). Proses
   jembatan uji **sengaja dibiarkan hidup** sejak 6 Nov 17.33 WIB untuk uji ketahanan (5 menit pertama: hidup, RSS stabil
   ±41 MB); berkasnya `~/neon-ws-bridge.php` dan `~/rt05-pg/` (socket, `bridge.lock`, `bridge.log`). Sesi berikut: cek
