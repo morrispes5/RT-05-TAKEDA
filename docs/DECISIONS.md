@@ -933,18 +933,28 @@ butir 5 (fallback API di VPS) untuk production.
 
 1. Hosting NEO memblokir TCP keluar 5432 dan Biznet menolak membukanya (tiket T744194). Neon menerima protokol
    PostgreSQL di dalam WebSocket `wss://<endpoint>/v2` port 443, yang terbuka dari hosting.
-2. `infra/shared/neon-ws-bridge.php` (PHP murni, tanpa dependensi) berjalan sebagai proses latar akun hosting,
+2. `rest-api/bin/neon-ws-bridge.php` (dipindah dari `infra/shared/` 6 Nov agar ikut paket rilis; PHP murni, tanpa dependensi) berjalan sebagai proses latar akun hosting,
    mendengarkan unix socket `~/rt05-pg/.s.PGSQL.5432` (folder 0700, umask 0077) dan meneruskan byte apa adanya ke Neon.
    Jembatan tidak mem-parsing kueri, tidak mencatat isi/kata sandi; log hanya waktu mulai dan galat koneksi.
 3. Laravel API memakai `DB_HOST=/home/<akun>/rt05-pg`, `DB_PORT=5432`, `DB_SSLMODE=disable`. Hop lokal unix socket tanpa
    TLS; **TLS verify-peer + verify-peer-name ada di hop wss ke Neon** (CA bundle hosting). Ini pengecualian tertulis atas
    preflight shared #3 ("verify-full, jangan sslmode=require") khusus hop lokal.
 4. Satu instance dijamin `flock` (`bridge.lock`). Penyalaan: watchdog di `rt05:shared-tick` (cron tiap menit) dan
-   penyalaan saat request bila socket tidak ada (menutup fd warisan lsphp >2 sebelum `setsid`). Integrasi ini **belum
-   dibuat** di kode Laravel.
+   penyalaan saat request bila socket tidak ada (menutup fd warisan lsphp >2 sebelum `setsid`). **Dibuat 6 Nov malam**
+   (branch `codex/m16-jembatan-neon`): `App\Support\Database\NeonBridge` + konektor `db.connector.pgsql`
+   (`BridgedPostgresConnector`, menyalakan jembatan sebelum koneksi pertama bila belum hidup), watchdog di awal
+   `rt05:shared-tick`, operator `php artisan rt05:neon-bridge status|start|stop`, `TlsPolicy` menerima `sslmode=disable`
+   hanya bila host koneksi = folder jembatan dan `RT05_NEON_HOST` = `*.neon.tech`. Aktif hanya dengan
+   `RT05_NEON_BRIDGE=true`; profil lain tidak berubah. Cek hidup hanya flock + socket, tidak membuka Neon.
 5. Migrasi/DDL tetap dijalankan operator dari PC/CI langsung ke Neon 5432 (role migrator); hosting hanya DML pooled.
 6. Profil VPS/staging tidak berubah. Bila hosting kelak mematikan proses latar secara rutin, atau Biznet melarangnya,
    opsi berikutnya diputuskan pemilik lagi; jangan pindah diam-diam.
 7. Risiko terbuka: (a) ketahanan proses latar jangka panjang belum terbukti; (b) setiap request membuka koneksi
    WebSocket baru (±110 ms dari hosting); (c) Imunify360 bot-protection menantang klien non-browser dari IP bereputasi
    buruk (VPN/WARP/datacenter tertentu); dari IP VPS Biznet lolos. Uji di HP nyata (M16.7) sebelum minta Biznet apa pun.
+8. Temuan 6 Nov malam: proses uji pertama (PID 1683954, mulai 17.33 WIB) **mati tanpa log** antara 17.55 dan 18.09 WIB
+   (umur 22–36 menit; tidak ada proses akun tersisa, crontab kosong). Penyebab belum diketahui (dugaan pembunuh proses
+   hosting). Dari PC rumah tanpa WARP (IP MyRepublic) curl/User-Agent Dart/JSON **lolos** Imunify360. Uji ulang dengan
+   stderr + kode keluar tercatat dan proses kenari `sleep` dimulai 18.11 WIB (PROGRESS). Watchdog tiap menit + penyalaan
+   saat request membuat kematian proses tidak memutus layanan lebih dari ±1 menit (tanpa request) atau ±3 detik
+   (request pertama), asalkan hosting tidak melarang proses latar.

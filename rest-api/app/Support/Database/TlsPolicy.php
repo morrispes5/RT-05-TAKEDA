@@ -23,6 +23,7 @@ final class TlsPolicy
         return [
             'sslmode' => $config['sslmode'] ?? 'prefer',
             'sslrootcert_set' => ! empty($config['sslrootcert']),
+            'via_bridge' => app(NeonBridge::class)->serves($config),
         ];
     }
 
@@ -40,6 +41,14 @@ final class TlsPolicy
                 continue; // Optional only for runtime; any configured migration connection remains strict.
             }
             $tls = self::effective($connection);
+            if ($tls['via_bridge']) {
+                // ADR55: unix socket lokal tanpa TLS; TLS verify_peer + hostname ada di jembatan wss://<neon>:443.
+                foreach (app(NeonBridge::class)->configErrors() as $error) {
+                    $violations[] = "$connection: jembatan Neon: $error";
+                }
+
+                continue;
+            }
             if ($tls['sslmode'] !== 'verify-full') {
                 $violations[] = "$connection: sslmode harus verify-full (sekarang {$tls['sslmode']})";
             }

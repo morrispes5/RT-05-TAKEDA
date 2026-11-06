@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Domain\Community\Push\FcmGateway;
 use App\Domain\Community\Push\NullGateway;
 use App\Domain\Community\Push\PushGateway;
+use App\Support\Database\BridgedPostgresConnector;
+use App\Support\Database\NeonBridge;
 use App\Support\Heartbeat;
 use App\Support\SharedHosting;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -23,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PushGateway::class, fn () => config('rt05.push.driver') === 'fcm'
             ? new FcmGateway((array) config('rt05.push.fcm'))
             : new NullGateway);
+
+        // ADR55: ConnectionFactory memakai binding ini untuk driver pgsql. Tanpa RT05_NEON_BRIDGE perilakunya sama
+        // dengan PostgresConnector bawaan.
+        $this->app->singleton(NeonBridge::class);
+        $this->app->bind('db.connector.pgsql', fn ($app) => new BridgedPostgresConnector($app->make(NeonBridge::class)));
     }
 
     public function boot(): void

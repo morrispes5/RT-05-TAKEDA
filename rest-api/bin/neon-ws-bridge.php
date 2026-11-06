@@ -10,7 +10,9 @@ declare(strict_types=1);
  * mendengarkan socket lokal (unix socket di folder akun, izin 0600) dan
  * meneruskan byte apa adanya; ia tidak membaca isi kueri maupun kata sandi.
  *
- * Pakai:  RT05_NEON_HOST=ep-xxx.neon.tech RT05_BRIDGE_LISTEN=unix:///home/u/rt05-pg/.s.PGSQL.5432 \
+ * Di production proses ini dinyalakan otomatis oleh Laravel (App\Support\Database\NeonBridge): saat koneksi
+ * database pertama bila socket belum ada, dan oleh watchdog `rt05:shared-tick` tiap menit. Manual (uji):
+ *         RT05_NEON_HOST=ep-xxx.neon.tech RT05_BRIDGE_LISTEN=unix:///home/u/rt05-pg/.s.PGSQL.5432 \
  *         RT05_BRIDGE_LOCK=/home/u/rt05-pg/bridge.lock php neon-ws-bridge.php
  * Laravel: DB_HOST=/home/u/rt05-pg DB_PORT=5432 DB_SSLMODE=disable (TLS ada di jalur wss).
  */
@@ -43,6 +45,10 @@ if ($lockFile !== '') {
     if ($lock === false || ! flock($lock, LOCK_EX | LOCK_NB)) {
         exit(0); // instance lain sudah berjalan
     }
+    // PID di berkas kunci dibaca `php artisan rt05:neon-bridge status|stop` (kunci tetap dipegang selama hidup).
+    ftruncate($lock, 0);
+    fwrite($lock, (string) getmypid());
+    fflush($lock);
 }
 
 set_time_limit(0);
