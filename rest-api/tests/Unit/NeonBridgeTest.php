@@ -221,7 +221,9 @@ class NeonBridgeTest extends TestCase
         $bridge = $this->useBridge();
         $env = [
             'RT05_NEON_BRIDGE' => 'true', 'RT05_NEON_HOST' => (string) config('rt05.neon_bridge.neon_host'),
-            'RT05_BRIDGE_DIR' => $this->dir, 'DB_HOST' => $this->dir, 'DB_PORT' => '5432', 'DATABASE_URL' => '', 'APP_ENV' => 'testing',
+            'RT05_BRIDGE_DIR' => $this->dir, 'DB_HOST' => $this->dir, 'DB_PORT' => '5432', 'APP_ENV' => 'testing',
+            // URL eksplisit: nilai kosong tidak menimpa DATABASE_URL di .env CI (port 54329) → nama socket berbeda.
+            'DATABASE_URL' => 'postgresql://rt05_app@127.0.0.1:5432/rt05_test',
         ] + getenv();
         // Proses terpisah: pcntl_exec mengganti proses pemanggil dengan jembatan.
         $cmd = [PHP_BINARY, base_path('artisan'), 'rt05:neon-bridge', 'run'];
