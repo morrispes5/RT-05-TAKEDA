@@ -11,7 +11,8 @@ Terakhir diperbarui: **Jumat 6 November 2026** (M16.1 gagal: hosting memblokir p
 Resend 587/443, tetapi **firewall hosting menolak TCP keluar port 5432** ke mana pun (443/3306 terbuka), jadi Laravel
 tidak bisa ke Neon. Hosting tidak punya PostgreSQL lokal. Jangan lanjut M16.2+ sebelum pemilik memilih: tiket Biznet
 buka port 5432 keluar, atau API production di VPS (ADR54 butir 5). Berkas cek sudah dihapus dari hosting. PHP default
-8.2 harus diganti ke 8.3/8.4 sebelum install. Chrome menyimpan NXDOMAIN lama setelah ganti nameserver; restart Chrome
+8.2 harus diganti ke 8.3/8.4 sebelum install. **Tiket Biznet T744194** (6 Nov 09.52, buka 5432 keluar) sedang Open;
+balasan dibaca di portal Support. Setelah dibuka, uji ulang M16.1 (role uji perlu sandi baru atau role baru). Chrome menyimpan NXDOMAIN lama setelah ganti nameserver; restart Chrome
 bila domain "tidak ditemukan" padahal DNS publik sudah benar.
 
 **5 Nov 2026 — production resmi dimulai (ADR54).** Pemilik membeli Biznet NEO Web Hosting Personal Large + domain

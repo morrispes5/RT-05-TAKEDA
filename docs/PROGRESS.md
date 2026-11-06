@@ -18,6 +18,8 @@
   dihapus. Role `rt05_cek_hosting` belum di-DROP; kedaluwarsa sendiri 8 Nov dan bisa dipakai uji ulang setelah ganti sandi.
 - Sesuai ADR54 butir 5, M16.2 dan seterusnya **berhenti** sampai pemilik memilih: (a) tiket ke Biznet minta membuka
   TCP keluar 5432 (lalu uji ulang M16.1), atau (b) API production di VPS, website tetap di hosting.
+- Pemilik memilih (a). Agent membuat tiket portal Biznet **T744194** (6 Nov 09.52 WIB, NEO Web Hosting Personal,
+  severity Medium) dari akun RT: minta TCP keluar 5432 dibuka per port, plus opsi lain bila tidak bisa. Status: Open.
 
 ## M16 production dimulai: hosting dan domain — 5 November 2026
 
