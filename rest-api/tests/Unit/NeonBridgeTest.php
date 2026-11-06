@@ -221,7 +221,7 @@ class NeonBridgeTest extends TestCase
         $bridge = $this->useBridge();
         $env = [
             'RT05_NEON_BRIDGE' => 'true', 'RT05_NEON_HOST' => (string) config('rt05.neon_bridge.neon_host'),
-            'RT05_BRIDGE_DIR' => $this->dir, 'DB_HOST' => $this->dir, 'DATABASE_URL' => '', 'APP_ENV' => 'testing',
+            'RT05_BRIDGE_DIR' => $this->dir, 'DB_HOST' => $this->dir, 'DB_PORT' => '5432', 'DATABASE_URL' => '', 'APP_ENV' => 'testing',
         ] + getenv();
         // Proses terpisah: pcntl_exec mengganti proses pemanggil dengan jembatan.
         $cmd = [PHP_BINARY, base_path('artisan'), 'rt05:neon-bridge', 'run'];
@@ -229,12 +229,8 @@ class NeonBridgeTest extends TestCase
         $proc = proc_open($cmd, [['file', '/dev/null', 'r'], ['file', $out, 'a'], ['file', $out, 'a']], $pipes, base_path(), $env);
         $this->assertIsResource($proc);
 
-        $ok = $this->waitUntil(fn () => $bridge->running(), 10);
-        $st = proc_get_status($proc);
-        $this->assertTrue($ok, 'cron run menyalakan jembatan; output='.json_encode(@file_get_contents($out))
-            .' log='.json_encode($bridge->logTail()).' isi='.json_encode(array_map(fn ($f) => $f.':'.@filetype($this->dir.'/'.$f), scandir($this->dir)))
-            .' kunci='.json_encode(@file_get_contents($bridge->lockPath())).' proc='.json_encode(['pid' => $st['pid'], 'running' => $st['running'], 'exit' => $st['exitcode']])
-            .' state='.json_encode(@file_get_contents('/proc/'.$st['pid'].'/status') ? 'ada' : 'tidak'));
+        $this->assertTrue($this->waitUntil(fn () => $bridge->running(), 10), 'cron run menyalakan jembatan; output='
+            .json_encode(@file_get_contents($out)).' isi='.json_encode(scandir($this->dir)));
         $pid = $bridge->pid();
         $this->assertSame($pid, proc_get_status($proc)['pid'], 'proses artisan itu sendiri yang menjadi jembatan');
 
