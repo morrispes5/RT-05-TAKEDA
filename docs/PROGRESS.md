@@ -1,5 +1,42 @@
 # Progress — RT05 TAKEDA
 
+## M16.1c jembatan Neon di Laravel + uji IP rumah + ketahanan — 6 November 2026 malam
+
+- **IP rumah lolos Imunify360** (6 Nov 18.05 WIB, WARP `Disconnected`, IP MyRepublic `158.140.180.88`): `curl` biasa,
+  `Accept: application/json`, dan User-Agent `Dart/3.5 (dart:io)` ke `https://rt05takeda.com/` → HTTP 200 tanpa
+  tantangan; path tak ada → 404 biasa. Jadi yang ditantang memang IP VPN/WARP, bukan semua klien non-browser. Catatan:
+  `public_html` masih menampilkan autoindex ("Index of /") — tutup dengan `Options -Indexes` saat M16.4.
+- **Jembatan uji pertama mati tanpa log.** PID 1683954 (mulai 17.33 WIB) masih hidup 17.55, tetapi saat dicek 18.09 WIB
+  sudah tidak ada; `bridge.log` hanya baris `mulai`, socket basi tertinggal, tidak ada proses akun lain, crontab kosong,
+  `ulimit` waktu CPU unlimited / maks proses 1400. Umur 22–36 menit. Penyebab belum diketahui (dugaan: pembunuh proses
+  latar hosting; bukan galat PHP yang tercatat karena stderr waktu itu ke /dev/null).
+- Uji ulang 18.11 WIB lewat skrip sementara `public_html/dg-*.php` (sudah dihapus): jembatan PID 1780931 di bawah bash
+  pembungkus yang mencatat stderr ke `~/rt05-pg/bridge.err` dan `keluar kode=…` ke `bridge.log`, plus proses kenari
+  `setsid -w sleep 864000` (log `~/rt05-pg/canary.log`) untuk membedakan "semua proses lama dibunuh" vs "hanya PHP".
+  Status dibaca dengan `public_html/st-*.php` (read-only; hapus setelah uji). Hasil berkala dicatat di bawah.
+  - 18.26 WIB: hidup, umur 859 dtk, RSS 32,8 MB. 18.32 WIB: hidup, umur 1245 dtk.
+- **Integrasi Laravel (branch `codex/m16-jembatan-neon`):**
+  - `infra/shared/neon-ws-bridge.php` → `rest-api/bin/neon-ws-bridge.php` (ikut paket rilis API); PID ditulis ke
+    `bridge.lock` yang tetap di-flock selama hidup.
+  - `App\Support\Database\NeonBridge`: hidup = ada pemegang flock **dan** socket ada (tidak membuka koneksi ke Neon,
+    jadi watchdog tidak membangunkan compute); penyalaan `env … nohup bash -c 'tutup fd>2; exec setsid php bin/…'`;
+    folder 0700; tunggu socket ≤3 dtk (`RT05_BRIDGE_START_WAIT_MS`).
+  - `BridgedPostgresConnector` di binding `db.connector.pgsql`: menyalakan jembatan sebelum koneksi pertama, hanya bila
+    host koneksi = folder jembatan. VPS/CI/migrasi dari PC tidak berubah.
+  - `rt05:shared-tick` memanggil `ensureRunning()` di awal (watchdog tiap menit). Operator:
+    `php artisan rt05:neon-bridge status|start|stop`.
+  - `TlsPolicy`: `sslmode=disable` diterima hanya untuk folder jembatan + `RT05_NEON_HOST` `*.neon.tech` + skrip ada;
+    koneksi TCP tetap wajib verify-full.
+  - Env baru (`config/rt05.php` `neon_bridge`, contoh di `infra/shared/api.env.example`): `RT05_NEON_BRIDGE`,
+    `RT05_NEON_HOST`, `RT05_BRIDGE_DIR`, `RT05_BRIDGE_PHP` (hosting: `/opt/alt/php84/usr/bin/php`), `RT05_BRIDGE_SCRIPT`,
+    `RT05_BRIDGE_CAFILE`, `RT05_BRIDGE_MAX`, `RT05_BRIDGE_START_WAIT_MS`.
+  - Tes `tests/Unit/NeonBridgeTest.php` (7): bawaan mati; hanya melayani folder jembatan; hidup butuh kunci + socket;
+    TlsPolicy; konektor memanggil jembatan sebelum PDO dan tidak untuk TCP; status command; **penyalaan jembatan asli,
+    tidak dobel, stop lalu nyala lagi** (Linux saja — dilewati di Windows, jalan di CI).
+  - Bukti lokal (PC, PHP 8.4.13, Postgres 17 sementara 54329): `php artisan test` **459 lulus, 1 dilewati** (tes Linux
+    di atas), 4815 asersi; `pint --test` lulus. Docs: ADR55 butir 4/8, SHARED_HOSTING preflight #3 + bagian jembatan.
+- Belum: CI branch, deploy ke hosting (M16.3/M16.4), uji jembatan dari Laravel di hosting sungguhan.
+
 ## M16.1b jalur Neon lewat WebSocket 443 + temuan Imunify360 — 6 November 2026
 
 - **Tiket T744194 dijawab Biznet: ditolak** (email support 6 Nov 10.23 WIB, dibaca agent di Gmail akun RT): NEO Web

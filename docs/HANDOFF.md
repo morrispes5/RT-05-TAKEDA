@@ -62,6 +62,13 @@ Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau stagi
 
 ## LANJUTKAN DARI SINI — sesi berikut (ditulis Jumat 6 Nov 2026 ±18.00 WIB)
 
+**Update 6 Nov ±18.40 WIB (sesi Claude berikut):** butir 1 selesai — IP rumah tanpa WARP **lolos** Imunify360 (200
+JSON/Dart). Butir 2: jembatan uji pertama **mati tanpa log** (umur 22–36 menit); uji ulang PID 1780931 sejak 18.11 WIB
+dengan stderr + kode keluar + proses kenari `sleep` (rincian dan hasil berkala di PROGRESS "M16.1c"). Skrip status
+read-only `public_html/st-*.php` masih terpasang untuk pemantauan — **hapus setelah uji**. Butir 3: kode integrasi
+dibuat di branch `codex/m16-jembatan-neon` (jembatan pindah ke `rest-api/bin/`, `NeonBridge`, konektor pgsql,
+watchdog `rt05:shared-tick`, `rt05:neon-bridge`); 459 tes lokal lulus. M16.2 (migrasi Neon production) belum.
+
 Kondisi pasti saat sesi ditutup (semua sudah di `main`; checkout lokal `RT-05-TAKEDA` masih di branch lama
 `codex/m17-rilis-1018` dengan perubahan pengguna — **jangan diedit/di-reset**; baca main lewat `gh api`, publish ke main
 lewat Git Data API seperti commit `e04b9a2`/`128acc1`, push/merge hanya atas perintah pemilik, ADR45):
@@ -72,7 +79,7 @@ lewat Git Data API seperti commit `e04b9a2`/`128acc1`, push/merge hanya atas per
   dan pindah MySQL — jangan tawarkan ulang tanpa fakta baru.
 - **Proses jembatan uji masih hidup di hosting** (PID 1683954, mulai 17.33 WIB; cek 17.55 WIB: hidup, RSS 40,8 MB).
   Berkas: `~/neon-ws-bridge.php`, `~/rt05-pg/` (socket, `bridge.lock`, `bridge.log`). `public_html` bersih (hanya
-  `.well-known`, `cgi-bin`). Cek hidup: unggah sementara `infra/shared/neon-ws-bridge-status.php` ke `public_html`
+  `.well-known`, `cgi-bin`). Cek hidup: unggah sementara `infra/shared/neon-ws-bridge-status.php` (setelah deploy: `php artisan rt05:neon-bridge status` lewat cron/terminal) ke `public_html`
   dengan nama acak, buka di Chrome, lalu hapus.
 - Role uji Neon `rt05_cek_hosting` (project `jolly-voice-55175426`, CONNECT saja, batas koneksi kecil) kedaluwarsa
   9 Nov 00.00 WIB. Sandinya tidak disimpan di mana pun; bila perlu uji lagi, ganti sandi lewat SQL. DROP role setelah

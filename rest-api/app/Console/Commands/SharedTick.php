@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Domain\Operations\OutboxDispatcher;
+use App\Support\Database\NeonBridge;
 use App\Support\Heartbeat;
 use App\Support\SharedHosting;
 use Illuminate\Console\Command;
@@ -39,6 +40,11 @@ class SharedTick extends Command
         }
 
         try {
+            // Watchdog ADR55: cek flock + socket saja (tidak membuka Neon). Jembatan mati → dinyalakan lagi di sini,
+            // jadi request berikutnya tidak menanggung waktu start. Gagal → langkah database di bawah ikut gagal.
+            if (! app(NeonBridge::class)->ensureRunning()) {
+                $this->error('neon_bridge_unavailable');
+            }
             if ($this->call('schedule:run') !== 0) {
                 return self::FAILURE;
             }

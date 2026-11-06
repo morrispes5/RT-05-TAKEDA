@@ -53,6 +53,21 @@ return [
         'reset_ip_per_15_minutes' => (int) env('RT05_RESET_IP_PER_15_MINUTES', 60),
     ],
 
+    // ADR55: hosting bersama tanpa TCP 5432 keluar. Laravel → unix socket di `dir` → bin/neon-ws-bridge.php →
+    // wss://neon_host/v2 (443, TLS verify). Mati secara bawaan; hanya host/path, tanpa kredensial.
+    'neon_bridge' => [
+        'enabled' => (bool) env('RT05_NEON_BRIDGE', false),
+        'neon_host' => env('RT05_NEON_HOST'),
+        // null = host koneksi pgsql (DB_HOST=/home/<akun>/rt05-pg).
+        'dir' => env('RT05_BRIDGE_DIR'),
+        // PHP CLI untuk proses jembatan; web LiteSpeed tidak punya PHP_BINARY CLI.
+        'php' => env('RT05_BRIDGE_PHP'),
+        'script' => env('RT05_BRIDGE_SCRIPT'),
+        'cafile' => env('RT05_BRIDGE_CAFILE'),
+        'max_connections' => (int) env('RT05_BRIDGE_MAX', 40),
+        'start_wait_ms' => (int) env('RT05_BRIDGE_START_WAIT_MS', 3000),
+    ],
+
     'heartbeat' => [
         // Store cache untuk heartbeat; redis → instance queue (noeviction), selain itu store default.
         'store' => env('RT05_HEARTBEAT_STORE', env('CACHE_STORE', 'file') === 'redis' ? 'coordination' : null),

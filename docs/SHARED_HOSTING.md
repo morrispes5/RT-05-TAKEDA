@@ -22,10 +22,14 @@ Sumber harga/kuota (bisa berubah):
 ## Database lewat jembatan WebSocket (ADR55, 6 Nov 2026)
 
 Hosting NEO Biznet memblokir TCP keluar 5432. Jalur production: Laravel → unix socket `~/rt05-pg/.s.PGSQL.5432` →
-`infra/shared/neon-ws-bridge.php` → `wss://<endpoint-neon>/v2` (443, TLS verify) → Neon. Env API:
+`rest-api/bin/neon-ws-bridge.php` → `wss://<endpoint-neon>/v2` (443, TLS verify) → Neon. Env API:
 `DB_HOST=/home/<akun>/rt05-pg`, `DB_PORT=5432`, `DB_SSLMODE=disable`. Env jembatan: `RT05_NEON_HOST` (host endpoint Neon),
 `RT05_BRIDGE_LISTEN=unix:///home/<akun>/rt05-pg/.s.PGSQL.5432`, `RT05_BRIDGE_LOCK`, `RT05_BRIDGE_LOG`, opsional
 `RT05_BRIDGE_CAFILE`, `RT05_BRIDGE_MAX` (default 40 koneksi). Jalankan dengan PHP CLI `/opt/alt/php84/usr/bin/php`.
+Laravel menyalakan jembatan sendiri bila `RT05_NEON_BRIDGE=true`: konektor pgsql menyalakannya sebelum koneksi
+pertama bila belum hidup (tunggu socket ≤3 detik), dan `rt05:shared-tick` memeriksanya tiap menit (flock + socket saja,
+tidak membangunkan Neon). Isi `RT05_BRIDGE_PHP=/opt/alt/php84/usr/bin/php` karena PHP web adalah lsphp. Operator:
+`php artisan rt05:neon-bridge status|start|stop` (stop memutus koneksi aktif; dinyalakan lagi otomatis).
 Hasil uji 6 Nov dan risiko terbuka ada di PROGRESS dan ADR55. Imunify360 bot-protection di depan hosting menantang
 klien non-browser dari IP bereputasi buruk (contoh: Cloudflare WARP); dari IP VPS Biznet lolos. Uji APK di HP nyata.
 
@@ -53,7 +57,7 @@ Foto shared dibatasi server ke 4 MiB dan 6 juta piksel, output ≤1600 px; batas
 
 1. Konfirmasi harga all-in, domain .com, kepemilikan RT, renewal dan ketentuan refund secara tertulis.
 2. PHP memenuhi composer.lock (uji `composer check-platform-reqs` terhadap build), web+CLI; pdo_pgsql, GD JPEG/PNG/WebP, mbstring, intl, fileinfo, openssl, curl. `pcntl` memberi SIGALRM per job. Tanpa `pcntl`, batas kooperatif SMTP/SQL/soket/CPU tetap dipasang, tetapi satu job yang macet di luar batas itu tidak bisa dihentikan paksa.
-3. Outbound Neon 5432 dengan TLS verify-full dan CA bundle; uji DML pooled, runtime DDL ditolak. Jangan menurunkan ke sslmode=require.
+3. Outbound Neon 5432 dengan TLS verify-full dan CA bundle; uji DML pooled, runtime DDL ditolak. Jangan menurunkan ke sslmode=require. Bila 5432 diblokir (Biznet NEO): jembatan ADR55; `sslmode=disable` hanya untuk unix socket folder jembatan (`TlsPolicy` menolak di luar itu), TLS terverifikasi di hop wss; uji DML lewat jembatan, DDL runtime ditolak, dan penyalaan ulang otomatis setelah `rt05:neon-bridge stop`.
 4. Cron dengan interval 15 menit atau lebih sering, batas waktu proses cukup untuk kerja setelah response, file lock bekerja. `fastcgi_finish_request` atau `litespeed_finish_request` tersedia.
 5. Document root hanya public, .env/vendor/storage privat tidak dapat diunduh. Web/API mempunyai APP_KEY/cookie berbeda; API CLI memakai key yang sama dengan API web.
 6. Resource CPU/RAM/proses/IO diuji; jangan menilai hanya dari SSD. Batas foto, kuota harian, dan upload PHP selaras; alert disk wajib sebelum live.
