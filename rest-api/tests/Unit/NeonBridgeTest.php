@@ -229,8 +229,12 @@ class NeonBridgeTest extends TestCase
         $proc = proc_open($cmd, [['file', '/dev/null', 'r'], ['file', $out, 'a'], ['file', $out, 'a']], $pipes, base_path(), $env);
         $this->assertIsResource($proc);
 
-        $this->assertTrue($this->waitUntil(fn () => $bridge->running(), 10),
-            'cron run menyalakan jembatan; output: '.@file_get_contents($out).' log: '.implode(' | ', $bridge->logTail()));
+        $ok = $this->waitUntil(fn () => $bridge->running(), 10);
+        $st = proc_get_status($proc);
+        $this->assertTrue($ok, 'cron run menyalakan jembatan; output='.json_encode(@file_get_contents($out))
+            .' log='.json_encode($bridge->logTail()).' isi='.json_encode(array_map(fn ($f) => $f.':'.@filetype($this->dir.'/'.$f), scandir($this->dir)))
+            .' kunci='.json_encode(@file_get_contents($bridge->lockPath())).' proc='.json_encode(['pid' => $st['pid'], 'running' => $st['running'], 'exit' => $st['exitcode']])
+            .' state='.json_encode(@file_get_contents('/proc/'.$st['pid'].'/status') ? 'ada' : 'tidak'));
         $pid = $bridge->pid();
         $this->assertSame($pid, proc_get_status($proc)['pid'], 'proses artisan itu sendiri yang menjadi jembatan');
 
