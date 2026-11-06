@@ -65,6 +65,8 @@ return [
         'script' => env('RT05_BRIDGE_SCRIPT'),
         'cafile' => env('RT05_BRIDGE_CAFILE'),
         'max_connections' => (int) env('RT05_BRIDGE_MAX', 40),
+        // Hosting Biznet membunuh proses akun di umur ±30 menit: serah terima rapi ke instance baru sebelum itu.
+        'max_age_seconds' => (int) env('RT05_BRIDGE_MAX_AGE', 1500),
         'start_wait_ms' => (int) env('RT05_BRIDGE_START_WAIT_MS', 3000),
     ],
 

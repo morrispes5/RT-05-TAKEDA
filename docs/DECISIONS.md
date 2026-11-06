@@ -961,3 +961,9 @@ butir 5 (fallback API di VPS) untuk production.
 9. Uji kedua (18.11–18.42 WIB): mati lagi di umur ±28–30 menit, bersamaan dengan kenari `sleep` dan pergantian induk
    lsphp akun. Proses yang lahir dari web ikut dibunuh saat lsphp didaur ulang. Jalur utama penyalaan = cron
    `rt05:shared-tick`; penyalaan saat request hanya cadangan. Ketahanan proses dari cron belum diuji (butuh izin cron).
+10. Koreksi 6 Nov malam: jembatan dari **cron juga mati di umur ±31 menit** → hosting membatasi umur setiap proses
+    akun ±30 menit (bukan daur ulang lsphp). Keputusan pemilik: **restart rapi sebelum 30 menit**. Jembatan di umur
+    `RT05_BRIDGE_MAX_AGE` (default 1500 dtk) menutup listener + socket, melepas kunci, menyalakan pengganti (fd > 2
+    ditutup, `setsid`), lalu tetap melayani koneksi yang sedang berjalan maks 60 dtk dan keluar. Celah tanpa socket
+    hanya selama PHP pengganti start (milidetik); konektor Laravel menunggu socket ≤3 dtk. Watchdog cron tetap sebagai
+    jaring bila pengganti gagal.

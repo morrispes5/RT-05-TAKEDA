@@ -30,6 +30,8 @@ Laravel menyalakan jembatan sendiri bila `RT05_NEON_BRIDGE=true`: konektor pgsql
 pertama bila belum hidup (tunggu socket ≤3 detik), dan `rt05:shared-tick` memeriksanya tiap menit (flock + socket saja,
 tidak membangunkan Neon). Isi `RT05_BRIDGE_PHP=/opt/alt/php84/usr/bin/php` karena PHP web adalah lsphp. Operator:
 `php artisan rt05:neon-bridge status|start|stop` (stop memutus koneksi aktif; dinyalakan lagi otomatis).
+Hosting membunuh setiap proses akun di umur ±30 menit (uji 6 Nov), jadi jembatan menyerahkan socket ke instance
+baru di umur `RT05_BRIDGE_MAX_AGE` (default 1500 dtk) dan menyelesaikan koneksi lama ≤60 dtk sebelum keluar (ADR55 butir 10).
 Hasil uji 6 Nov dan risiko terbuka ada di PROGRESS dan ADR55. Imunify360 bot-protection di depan hosting menantang
 klien non-browser dari IP bereputasi buruk (contoh: Cloudflare WARP); dari IP VPS Biznet lolos. Uji APK di HP nyata.
 

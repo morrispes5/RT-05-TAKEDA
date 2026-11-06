@@ -23,6 +23,12 @@ $lockFile = (string) (getenv('RT05_BRIDGE_LOCK') ?: '');
 $logFile = (string) (getenv('RT05_BRIDGE_LOG') ?: '');
 $caFile = (string) (getenv('RT05_BRIDGE_CAFILE') ?: '');
 $maxPairs = (int) (getenv('RT05_BRIDGE_MAX') ?: 40);
+// Hosting Biznet membunuh setiap proses akun di umur ±30 menit (uji 6 Nov). Sebelum itu jembatan menyerahkan socket
+// ke pengganti dan menyelesaikan koneksi yang masih berjalan (maks $drainSeconds), jadi tidak ada koneksi diputus paksa.
+$maxAge = max(2, (int) (getenv('RT05_BRIDGE_MAX_AGE') ?: 1500));
+$drainSeconds = 60;
+$started = time();
+$handedOverAt = null;
 
 if ($neonHost === '' || $listen === '' || ! preg_match('/^[a-z0-9.-]+$/', $neonHost)) {
     fwrite(STDERR, "RT05_NEON_HOST dan RT05_BRIDGE_LISTEN wajib diisi\n");
@@ -237,15 +243,58 @@ $closePair = function (int $id, bool $sendClose = true) use (&$pairs, &$bySock):
     @fclose($p['w']);
 };
 
+/** Nyalakan instance baru terlepas dari proses ini (fd > 2 ditutup agar kunci/socket tidak terwariskan). */
+function spawn_successor(): bool
+{
+    if (! function_exists('exec')) {
+        return false;
+    }
+    $inner = 'for f in /proc/$$/fd/*; do n=${f##*/}; [ "$n" -gt 2 ] 2>/dev/null && eval "exec $n>&-"; done; '
+        .'exec setsid '.escapeshellarg(PHP_BINARY).' '.escapeshellarg(__FILE__);
+    exec('nohup bash -c '.escapeshellarg($inner).' </dev/null >/dev/null 2>&1 &', $out, $code);
+
+    return $code === 0;
+}
+
+/** Lepas listener + kunci lalu nyalakan pengganti; koneksi yang sudah ada tetap dilayani proses ini. */
+function hand_over(): void
+{
+    global $server, $listen, $lock, $pairs, $started, $handedOverAt;
+    @fclose($server);
+    $server = null;
+    if (str_starts_with($listen, 'unix://')) {
+        @unlink(substr($listen, 7));
+    }
+    if (isset($lock) && $lock !== false) {
+        flock($lock, LOCK_UN);
+        fclose($lock);
+        $lock = null;
+    }
+    $ok = spawn_successor();
+    $handedOverAt = time();
+    bridge_log('serah terima umur='.($handedOverAt - $started).'s aktif='.count($pairs).($ok ? '' : ' pengganti_gagal'));
+}
+
 while (true) {
-    $read = [$server];
+    if ($server !== null && time() - $started >= $maxAge) {
+        hand_over();
+    }
+    if ($handedOverAt !== null && ($pairs === [] || time() - $handedOverAt >= $drainSeconds)) {
+        foreach (array_keys($pairs) as $id) {
+            $closePair($id);
+        }
+        bridge_log('keluar setelah serah terima pid='.getmypid());
+        exit(0);
+    }
+    $read = $server !== null ? [$server] : [];
     foreach ($pairs as $p) {
         $read[] = $p['c'];
         $read[] = $p['w'];
     }
     $write = null;
     $except = null;
-    $n = @stream_select($read, $write, $except, 60);
+    $timeout = $server !== null ? max(1, min(60, $started + $maxAge - time())) : 1;
+    $n = @stream_select($read, $write, $except, $timeout);
     if ($n === false) {
         usleep(100000);
 
