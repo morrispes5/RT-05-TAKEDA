@@ -225,10 +225,12 @@ class NeonBridgeTest extends TestCase
         ] + getenv();
         // Proses terpisah: pcntl_exec mengganti proses pemanggil dengan jembatan.
         $cmd = [PHP_BINARY, base_path('artisan'), 'rt05:neon-bridge', 'run'];
-        $proc = proc_open($cmd, [['file', '/dev/null', 'r'], ['file', '/dev/null', 'w'], ['file', '/dev/null', 'w']], $pipes, base_path(), $env);
+        $out = $this->dir.'/run.out';
+        $proc = proc_open($cmd, [['file', '/dev/null', 'r'], ['file', $out, 'a'], ['file', $out, 'a']], $pipes, base_path(), $env);
         $this->assertIsResource($proc);
 
-        $this->assertTrue($this->waitUntil(fn () => $bridge->running(), 10), 'cron run menyalakan jembatan');
+        $this->assertTrue($this->waitUntil(fn () => $bridge->running(), 10),
+            'cron run menyalakan jembatan; output: '.@file_get_contents($out).' log: '.implode(' | ', $bridge->logTail()));
         $pid = $bridge->pid();
         $this->assertSame($pid, proc_get_status($proc)['pid'], 'proses artisan itu sendiri yang menjadi jembatan');
 
