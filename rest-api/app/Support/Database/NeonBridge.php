@@ -171,6 +171,7 @@ class NeonBridge
             'RT05_BRIDGE_LOG' => $this->logPath(),
             'RT05_BRIDGE_CAFILE' => (string) config('rt05.neon_bridge.cafile'),
             'RT05_BRIDGE_MAX' => (string) (int) config('rt05.neon_bridge.max_connections', 40),
+            'RT05_BRIDGE_MAX_AGE' => (string) (int) config('rt05.neon_bridge.max_age_seconds', 1500),
         ], fn ($v) => $v !== '' && $v !== '0');
         $assign = implode(' ', array_map(fn ($k, $v) => $k.'='.escapeshellarg($v), array_keys($env), $env));
 

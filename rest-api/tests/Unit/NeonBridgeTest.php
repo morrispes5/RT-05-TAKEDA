@@ -188,6 +188,31 @@ class NeonBridgeTest extends TestCase
         $this->assertNotSame($pid, $bridge->pid());
     }
 
+    public function test_bridge_hands_over_to_successor_before_max_age_without_gap(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows' || ! is_executable('/usr/bin/setsid') && ! is_executable('/bin/setsid')) {
+            $this->markTestSkipped('butuh bash + setsid (Linux, seperti hosting dan CI)');
+        }
+        $bridge = $this->useBridge();
+        config(['rt05.neon_bridge.php' => PHP_BINARY, 'rt05.neon_bridge.max_age_seconds' => 3]);
+
+        $this->assertTrue($bridge->ensureRunning());
+        $first = $bridge->pid();
+        $this->assertNotNull($first);
+
+        $this->assertTrue($this->waitUntil(fn () => $bridge->running() && $bridge->pid() !== $first, 10), 'pengganti mengambil alih');
+        $this->assertTrue($this->waitUntil(fn () => ! file_exists("/proc/$first"), 5), 'proses lama keluar sendiri');
+        $log = implode("\n", $bridge->logTail(20));
+        $this->assertStringContainsString("keluar setelah serah terima pid=$first", $log);
+        $this->assertMatchesRegularExpression('/serah terima umur=\d+s aktif=0\n/', $log."\n");
+
+        // Hentikan rantai serah terima (batas umur 3 dtk); kill tidak memicu pengganti.
+        for ($i = 0; $i < 5 && $bridge->running(); $i++) {
+            $bridge->stop();
+            usleep(300_000);
+        }
+    }
+
     public function test_status_command_reports_without_touching_database(): void
     {
         $this->artisan('rt05:neon-bridge')->expectsOutputToContain('jembatan=mati')->assertExitCode(0);

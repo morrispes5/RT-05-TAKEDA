@@ -1,5 +1,16 @@
 # Progress — RT05 TAKEDA
 
+## ADR55 butir 10: jembatan serah terima sebelum batas umur 30 menit — 6 November 2026 malam
+
+- Keputusan pemilik (chat 6 Nov): restart rapi sebelum 30 menit. `rest-api/bin/neon-ws-bridge.php`: di umur
+  `RT05_BRIDGE_MAX_AGE` (default 1500 dtk) jembatan menutup listener + socket, melepas `bridge.lock`, menyalakan
+  pengganti (`nohup bash` tutup fd > 2, `setsid`, `PHP_BINARY`), mencatat `serah terima umur=…s aktif=N`, melayani koneksi
+  yang sedang berjalan ≤60 dtk, lalu `keluar setelah serah terima`. `stream_select` memakai sisa umur sebagai batas
+  waktu. `NeonBridge` meneruskan `rt05.neon_bridge.max_age_seconds` (env `RT05_BRIDGE_MAX_AGE`).
+- Tes baru `test_bridge_hands_over_to_successor_before_max_age_without_gap` (Linux; batas umur 3 dtk): pengganti
+  mengambil alih, proses lama keluar sendiri, log serah terima tercatat. Di PC Windows tes Linux dilewati; pint + 6 tes
+  lain lulus. Bukti Linux = CI PR ini. Uji di hosting setelah M16.4 (cron `rt05:shared-tick`).
+
 ## M16.3 paket rilis shared + batas umur proses 30 menit — 6 November 2026 malam
 
 - **Jembatan dari cron juga mati di umur ±31 menit**: PID 1896846 mulai 19.02:01 WIB (cron), cron menyalakan pengganti
