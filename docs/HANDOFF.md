@@ -62,7 +62,7 @@ Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau stagi
 
 ## LANJUTKAN DARI SINI — soft launch Minggu 8 Nov 2026 di VPS (ditulis Sabtu 7 Nov ±18.45 WIB, ADR57)
 
-**Production sementara = VPS Biznet pemilik `https://takeda.morriz.tech`** (compose `rt05-production`, `785e806`, env
+**Production sementara = VPS Biznet pemilik `https://takeda.morriz.tech`** (compose `rt05-production`, `cb9e9f1` sejak 7 Nov 23.00 WIB, env
 `/root/.rt05/.env.production`), database **Neon production**. APK **1030** di `/aplikasi`. Admin pertama
 `takedatamankedaung@gmail.com` (sandi diatur pemilik lewat email). 187 rumah diimpor s.d. September; tagihan Okt–Nov
 ada. **Staging dimatikan** (`docker compose -p rt05-staging stop`; volume + Neon staging + akun admin M6 dipertahankan,

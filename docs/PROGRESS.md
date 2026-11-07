@@ -64,6 +64,20 @@
   domain: penyesuaian tagihan Nov `D5-21-2` −Rp75.000, `Occupancies::move` ke `D5-21`, `D5-21-2` diarsipkan
   (`alamat_key` dilepas), `D5-21` jalan → Mawar 10, `permohonan_akun.rumah_id` → `D5-21`. `rt05:rekonsiliasi-keuangan`
   0 masalah, saldo Rp0. Akun ibu kini melihat `D5-21`: 9 bulan lunas (Jan–Sep), Okt + Nov belum bayar.
+- PR #118 merged (main `cb9e9f1`, izin pemilik); CI API verification/Infra/Repository hijau. 23.00 WIB deploy VPS
+  `deploy-production-vps.sh cb9e9f1` **lulus** (health ready, heartbeat 4 komponen, tanpa port host); `Address::unit`
+  aktif di container api.
+- 23.05–23.15 WIB uji mobile (permintaan pemilik "pastikan tidak ada error, termasuk UI/UX"): emulator Pixel_8a, APK
+  prod 1030 dari `rt05takeda.com/unduh` (sha256 cocok, versionCode 3030, data aplikasi lama di emulator dibersihkan
+  `pm clear`). Layar login, daftar akun utama (blok/nomor + pilihan Mawar 8–14), daftar akun tambahan, lupa sandi tampil
+  sesuai desain. **Login tidak diuji di emulator**: agent tidak boleh mengetik sandi asli ke production dan pemilik
+  tidak di depan PC. Gantinya uji baca in-process di container production (tanpa sandi, isi respons tidak dicetak):
+  102 panggilan GET sebagai akun warga dan admin — semua layar warga 200 (`/dues/my` 245 ms), semua layar admin 200
+  (`dashboard`, `houses`, `families`, `dues-recap`, `finance-reports`, `registration-token`, dll.), warga ditolak 403 di
+  27 endpoint admin. 5 non-200 sesuai rancangan: `emergencies` 403 `PANIC_UNAVAILABLE` (tombol darurat disembunyikan
+  saat `tersedia=false`), `dues/transparency` 403 untuk warga (ADR35), `household`/`dues/my` 404 untuk admin (tab admin
+  tidak memanggilnya). Pratinjau catat bayar `D5-21` (Okt Rp75.000, Okt+Nov Rp150.000, lebih Rp100.000) 200, di-rollback,
+  0 tulisan. Catatan UX untuk APK berikutnya: teks "Lupa kata sandi" terlalu teknis bagi warga.
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
