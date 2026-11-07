@@ -60,7 +60,35 @@ tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Sudah di `main` (2
 memakai `--sampai=2026-09 --putihkan`; saldo awal kas resmi tetap diisi bendahara sekali (belum ada angkanya).
 Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau staging (ADR52) perlu impor ulang setelah deploy.
 
-## LANJUTKAN DARI SINI — sesi berikut (ditulis Jumat 6 Nov 2026 ±18.00 WIB)
+## LANJUTKAN DARI SINI — status Sabtu 7 Nov 2026 ±12.00 WIB (menggantikan daftar 6 Nov di bawah)
+
+**Production hidup:** `https://rt05takeda.com` (Biznet NEO Web Hosting, cPanel `rttakezd`, PHP Selector 8.4.27,
+SSL Let's Encrypt s/d 3 Feb 2027) menjalankan `main` `6ddd45e`: website + API + Neon production
+(`jolly-voice-55175426`, db `rt05_takeda`, role runtime `rt05_app`) lewat jembatan WebSocket ADR55. `/health/ready`
+ready; 13 konten publik diimpor; data warga BELUM ada (M16.8). Rincian di PROGRESS "M16.4".
+
+Fakta hosting yang wajib diingat (ADR55 butir 8–12):
+- Proses akun dibunuh di umur ±30 menit → jembatan serah terima sendiri tiap 25 menit (`pcntl`), terbukti semalam.
+- `exec/proc_open/popen/shell_exec/curl_exec` diblokir (web **dan** CLI) → jembatan dinyalakan cron
+  `rt05:neon-bridge run`; tugas terjadwal lewat `App\Support\SharedSchedule` di dalam `rt05:shared-tick` (bukan
+  `schedule:run`).
+- `RT05_NEON_HOST` harus PERSIS dari konsol Neon (dengan `.c-4.`), kalau tidak login ditolak.
+- Tanpa SSH: perintah artisan dijalankan lewat cron sekali jalan (tulis output ke `~/rt05/*.log`, lalu hapus cron).
+  Pasang rilis: workflow **Shared release package** → artifact zip → unggah ≤10 MB per potongan ke `~/rt05-upload/`
+  → `infra/shared/install-release.php` sementara di `public_html` (nama + token acak) → hapus. `.env` tidak tersentuh.
+- Setelah mengubah `.env`: `config:cache` lewat cron sekali jalan. Perubahan PHP Selector memulai ulang proses akun.
+- Cron aktif: `cd ~/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:neon-bridge run` dan `... rt05:shared-tick
+  >> ~/rt05/cron.log`. Log Laravel harian 14 hari. `cron.log` belum dirotasi (pantau ukurannya).
+- Dari PC agent tanpa WARP, curl ke rt05takeda.com lolos Imunify360.
+
+Urutan berikut: **M16.5** email (akun Resend pemilik, domain `rt05takeda.com`, SPF/DKIM di Zone Editor atas izin,
+`MAIL_MAILER` masih `log`) + uji push FCM di hosting (HTTP lewat stream karena `curl_exec` diblokir) → **M16.6** admin
+pertama (`rt05:pengurus buat` lewat cron sekali jalan; kata sandi tidak boleh lewat agent) → **M16.7** APK prod
+`RT05_PROD_BASE_URL=https://rt05takeda.com` + uji HP nyata (data seluler + Wi-Fi) → M16.8 data asli (saldo kas
+bendahara) → M16.9 backup → M16.10 SEO + beta. Sandi `rt05_owner` sempat tampil di terminal 6 Nov: pastikan pemilik
+sudah Reset password. Role uji `rt05_cek_hosting` kedaluwarsa 9 Nov (DROP atas konfirmasi pemilik).
+
+## (Lama) LANJUTKAN DARI SINI — sesi berikut (ditulis Jumat 6 Nov 2026 ±18.00 WIB)
 
 **Update 6 Nov ±18.40 WIB (sesi Claude berikut):** butir 1 selesai — IP rumah tanpa WARP **lolos** Imunify360 (200
 JSON/Dart). Butir 2: jembatan uji pertama **mati tanpa log** (umur 22–36 menit); uji ulang PID 1780931 sejak 18.11 WIB

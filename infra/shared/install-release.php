@@ -17,7 +17,8 @@ declare(strict_types=1);
 const TOKEN = '__GANTI_TOKEN__';
 const PHP_CLI = '/opt/alt/php84/usr/bin/php';
 const DOMAIN = 'rt05takeda.com';
-const NEON_HOST = 'ep-snowy-union-b33dixmf-pooler.ap-southeast-1.aws.neon.tech';
+// Salin PERSIS dari konsol Neon (termasuk segmen .c-N.); tanpa itu proxy menolak login (uji 7 Nov).
+const NEON_HOST = 'ep-snowy-union-b33dixmf-pooler.c-4.ap-southeast-1.aws.neon.tech';
 const URL_PREFIX = 'https://github.com/morrispes5/RT-05-TAKEDA/releases/download/';
 
 header('Content-Type: text/plain; charset=utf-8');

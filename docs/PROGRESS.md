@@ -31,9 +31,45 @@
   (`SharedSchedule`, tes `test_due_shared_task_runs_inside_the_tick_process_without_scheduler` dan
   `test_failed_shared_task_is_retried_next_tick`). Setelah deploy: kosongkan penanda slot palsu di cache file
   (`rt05:shared:slot:*`/`ran:*`) supaya tugas hari ini benar-benar jalan.
-- Berikutnya: pemilik mengisi `DB_PASSWORD` di `~/rt05/api/.env`; merge perbaikan butir 11 → paket baru; cron
-  `rt05:neon-bridge run` + `rt05:shared-tick` menggantikan cron uji; cron sekali jalan `config:cache`/`route:cache`/
-  `view:cache` + `rt05:db-smoke`; hapus installer, `st-*.php`, `~/neon-ws-bridge.php`.
+- **Serah terima pcntl terbukti di hosting:** jembatan dari cron `rt05:neon-bridge run` mulai 21.43:03 WIB
+  (PID 2281392); 22.08:03 WIB `serah terima umur=1500s aktif=0` (tanpa `pengganti_gagal`), pengganti PID 2342354
+  `mulai` di detik yang sama, proses lama `keluar setelah serah terima`. Tanpa jeda socket dan tanpa menunggu cron.
+- 22.40 WIB: PR #112 merge (`6ddd45e`), paket `rt05-shared-6ddd45e.zip` (run 42244993399, sha256
+  `4108ecc11549e74fb4eab64bcad329a81224698b1ee84b51a98d80e8fb86cc34`) terpasang. Cron `rt05:shared-tick` **dinonaktifkan
+  sementara** (dihapus dari crontab) sampai `DB_PASSWORD` diisi, agar 7 tugas terjadwal tidak gagal tiap menit dan
+  membangunkan Neon; cron `rt05:neon-bridge run` tetap aktif. Setelah sandi diisi: pasang lagi cron shared-tick,
+  `cache:clear` sekali (penanda slot dari "DONE" palsu), lalu finalize lewat cron sekali jalan.
+- **7 Nov 11.10–11.25 WIB — database production tersambung.** Jembatan bertahan semalaman (serah terima pcntl tiap
+  25 menit tanpa restart cron). Setelah pemilik mengisi `DB_PASSWORD`: `password authentication failed for user
+  'rt05_app'` di `laravel.log` (5,5 MB semalam). Sidik jari sha256 sandi di `.env` = berkas PC (sama); login langsung
+  dari PC berhasil. **Akar: `RT05_NEON_HOST` tanpa segmen `.c-4.`** (`ep-…-pooler.ap-southeast-1.aws.neon.tech`):
+  lewat jembatan di PC host itu ditolak, host `ep-…-pooler.c-4.ap-southeast-1.aws.neon.tech` lulus. `.env` hosting
+  diperbaiki lewat skrip sementara (tanpa membaca isinya), jembatan lama dihentikan (`posix_kill`), cron menyalakan yang
+  baru 11.19 WIB → **`/health/ready` = ready, database ok**. Installer + `api.env.example` diperbaiki (host persis dari
+  konsol).
+- Cron `rt05:shared-tick` dipasang lagi; cron sekali jalan (lalu dihapus): `cache:clear`, `config:cache`,
+  `route:cache`, `view:cache` API + web, `rt05:db-smoke --connection=pgsql` di production: `rt05_app`, `sslmode
+  disable` (TLS di jembatan), tulis+baca ok, 0 baris tersisa, **DDL denied**. Tick 11.20 WIB menjalankan
+  tagihan-generate, pengingat-agenda, token-rotate, rekonsiliasi-keuangan, anonimkan-arsip, bersihkan-ekspor **exit=0**
+  (in-process, ADR55 butir 12).
+- Smoke luar 11.25 WIB: `/`, `/profil`, `/aplikasi`, `/up`, `/health/live`, `/health/ready`, `/reset-password` 200,
+  `/sanctum/csrf-cookie` 204, `/api/v1/public/contacts` 200 (dari DB production), `/.env` 403. **`/artikel` 500**:
+  `Undefined array key 0` di `artikel.blade.php` karena tabel konten production kosong (`rt05:konten-impor` belum;
+  API.md: wajib setelah migrasi di tiap environment). Menjalankan impor lewat cron ditolak pengaman → izin pemilik.
+- **7 Nov 11.40–11.55 WIB — beres-beres (izin pemilik "beresin yang belom beres").** `rt05:konten-impor` di
+  production lewat cron sekali jalan: **13 konten baru**, lalu `config:cache` API/web + `cache:clear` web →
+  `/artikel` 200 (5 artikel), `/dokumentasi`, `/fasilitas`, `/kontak`, `/pengurus`, `/artikel/cara-mencuci-tangan` 200.
+  `sitemap.xml` 404 dan `robots.txt` `Disallow: /` disengaja (`RT05_SEARCH_INDEXING=false` sampai M16.10).
+  Log: `LOG_STACK=daily`, `LOG_DAILY_DAYS=14` di `.env` API/web; `laravel.log` lama (API 5,6 MB) dihapus. Dihapus:
+  `~/neon-ws-bridge.php`, `~/rt05-pg/canary.log`, `cli-probe.txt`, semua skrip sementara `public_html/*-<hex>.php`
+  (installer, status, perawatan). `public_html` kini: `.well-known`, `auth-assets`, `build`, `cgi-bin`, `images`,
+  `.htaccess`, `error_log` (403 dari hosting), `favicon.ico`, `index.php`, `index-api.php`. PHP Selector Options:
+  `upload_max_filesize` 2M → **8M**, `post_max_size` 8M → **16M** (aplikasi tetap membatasi foto 4 MB);
+  `disable_functions` sengaja tidak diubah. Setelah itu `/health/ready` tetap ready. Cron aktif: `rt05:neon-bridge run`
+  dan `rt05:shared-tick` (tiap menit).
+- **Status M16.4: lulus** untuk web + API + database + cron di `https://rt05takeda.com` (commit `6ddd45e`). Sisa M16:
+  M16.5 email Resend (domain + SPF/DKIM, `MAIL_MAILER` masih `log`) dan uji FCM tanpa `curl_exec`; M16.6 admin pertama;
+  M16.7 APK prod + uji HP nyata (Imunify); M16.8 data asli; M16.9 backup; M16.10 SEO + beta.
 
 ## ADR55 butir 10: jembatan serah terima sebelum batas umur 30 menit — 6 November 2026 malam
 
