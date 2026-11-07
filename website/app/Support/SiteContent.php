@@ -144,14 +144,15 @@ class SiteContent
     }
 
     /**
-     * Pratinjau Vercel tidak menyimpan APK. Hanya URL unduh staging yang diterima, dan hanya dipakai
-     * bila versi.json tidak ada. Alamat lain diabaikan supaya pratinjau tidak menaut ke situs asing.
+     * Pratinjau Vercel tidak menyimpan APK. Hanya halaman unduh production rt05takeda.com yang diterima, dan hanya
+     * dipakai bila versi.json tidak ada. Alamat lain diabaikan supaya pratinjau tidak menaut ke situs asing.
+     * Bukan staging: staging bisa dimatikan (ADR57) sehingga tautan pratinjau menjadi 503 bagi warga.
      */
     public static function apkPage(): ?string
     {
         $url = trim((string) config('services.rt05_site.apk_page'));
 
-        return $url === 'https://takeda-staging.morriz.tech/aplikasi#unduh' ? $url : null;
+        return $url === 'https://rt05takeda.com/aplikasi#unduh' ? $url : null;
     }
 
     private static function apkShape(mixed $m): ?array

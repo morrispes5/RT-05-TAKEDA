@@ -71,6 +71,10 @@ sementara** (baris persisnya di PROGRESS). Belum: saldo awal kas bendahara, uji 
 Setelah soft launch (ADR57 butir 5): APK `rt05takeda.com`, salin media volume `rt05-production_api-storage`, hentikan
 tumpukan VPS, pasang lagi cron shared-tick, nyalakan staging (`deploy-staging-immutable.sh` / `docker compose start`).
 
+**7 Nov ±20.10 WIB:** APK 1030 juga di `rt05takeda.com/unduh` (alamat resmi untuk warga: `rt05takeda.com/aplikasi`).
+Bug "unavailable" = tautan pratinjau ke staging yang mati (503); diperbaiki ke `rt05takeda.com/aplikasi#unduh`
+(lihat PROGRESS). Tautan reset sandi admin 18.37 kedaluwarsa → ketuk "Lupa kata sandi" lagi di aplikasi.
+
 ## Status Sabtu 7 Nov 2026 ±12.00 WIB (shared hosting; sebelum ADR57)
 
 **Production hidup:** `https://rt05takeda.com` (Biznet NEO Web Hosting, cPanel `rttakezd`, PHP Selector 8.4.27,

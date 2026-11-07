@@ -27,6 +27,24 @@
   `rt05:rekonsiliasi-keuangan` 0 masalah, saldo Rp0 (saldo awal kas resmi belum diisi bendahara).
   `rt05:tagihan-generate` catch-up: **348 tagihan baru**. Per bulan: Okt 169 belum bayar + 18 lunas (bayar di muka),
   Nov 179 belum bayar + 8 lunas, Des 8 lunas. Pengurus dapat mencatat Oktober–November di HP.
+- 18.45–19.00 WIB uji pemilik "testing website + data production": `rt05takeda.com` 10 halaman 200 (<0,1 dtk), foto
+  200; `robots.txt` `Disallow: /` + `noindex` (disengaja sampai M16.10, pencarian web belum menemukan domain). Neon
+  production: akun 1 (admin, 0 akun uji), rumah 187 (kode Excel), tagihan 2.065, keringanan 380, pengaduan/aspirasi/
+  agenda/pengumuman/notifikasi 0, konten 13. API publik kedua domain sama (5 artikel); `ketua_whatsapp` null (diisi
+  admin di aplikasi; nomor tidak di Git). Login akun tak dikenal → 422 "Email atau kata sandi salah".
+- Atas izin pemilik ("Ya, pasang di sana"): `public_html/unduh/` dibuat; APK 1030 kedua ABI + `.sha256` disalin dari
+  `takeda.morriz.tech/unduh` lewat UAPI Fileman, `versi.json` terakhir. Unduhan `rt05takeda.com` sha256 cocok, MIME
+  `application/vnd.android.package-archive`; `/aplikasi` menampilkan 1.0.0 build 1030 (7 Nov 18.28 WIB).
+- **Bug laporan warga 7 Nov ±20.00 WIB: "unduh dari /aplikasi error unavailable".** Penyebab: tombol cadangan
+  `RT05_APK_PAGE` menaut ke `https://takeda-staging.morriz.tech/aplikasi#unduh`, padahal staging dimatikan 18.13 WIB
+  (ADR57) → **503 Service Unavailable**. Kena di pratinjau Vercel `rt05takeda.vercel.app/aplikasi` (diekspor dengan
+  tautan staging) dan di `rt05takeda.com/aplikasi` sebelum `versi.json` dipasang. Jam 20.05 WIB `rt05takeda.com/aplikasi`
+  sudah tautan langsung `/unduh/*.apk` (200, 23.138.333 byte unduh penuh dengan UA Android). Perbaikan: `SiteContent::apkPage()`
+  hanya menerima `https://rt05takeda.com/aplikasi#unduh`, `export-preview.php` memakai alamat itu, preview diekspor
+  ulang; tes regresi menolak tautan staging (`M16SearchAndAppTest`). Staging tidak lagi boleh jadi tujuan unduh warga.
+- 20.05 WIB cek VPS: 9 service production Up/healthy, worker restart 1× per jam (`--max-time=3600`, exit 0, normal),
+  RAM tersedia 750 MiB, disk 26%; beban CPU dari `coolify` (73%, layanan lain, tidak disentuh). Akun admin belum login
+  (0 token) dan tautan reset 18.37 WIB **sudah kedaluwarsa** (60 menit) → pemilik ketuk "Lupa kata sandi" lagi di HP.
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
