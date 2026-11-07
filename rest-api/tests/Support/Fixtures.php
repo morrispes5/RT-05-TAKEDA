@@ -2,9 +2,11 @@
 
 namespace Tests\Support;
 
+use App\Domain\Finance\Dues;
 use App\Domain\Identity\Registration;
 use App\Domain\Identity\RegistrationToken;
 use App\Models\Akun;
+use App\Models\Rumah;
 use Laravel\Sanctum\Sanctum;
 
 /** Fixture sintetis untuk tes (nama "Uji", alamat fiktif). */
@@ -21,7 +23,7 @@ trait Fixtures
     {
         $code = $this->tokenCode ?? $this->freshToken();
 
-        return Registration::primary(array_merge([
+        $akun = Registration::primary(array_merge([
             'email' => "uji$nomor@contoh.test",
             'password' => 'Rahasia123',
             'nama_kepala' => "Uji Kepala $nomor",
@@ -32,6 +34,16 @@ trait Fixtures
             'jenis_hunian' => 'pemilik',
             'anggota' => [['nama' => "Uji Anak $nomor", 'hubungan_keluarga' => 'Anak']],
         ], $overrides), $code);
+
+        // ADR58: rumah di luar data RT dibuat tanpa tagihan. Fixture meniru pengurus yang menyalakan tagihan sejak bulan
+        // berjalan supaya tes keuangan tetap memakai rumah bertagihan seperti sebelum ADR58.
+        $rumah = Rumah::find($akun->permohonan?->rumah_id);
+        if ($rumah && ! $rumah->tagihan_aktif && $rumah->mulai_tagih === null) {
+            $rumah->forceFill(['tagihan_aktif' => true, 'mulai_tagih' => now('Asia/Jakarta')->startOfMonth()->toDateString()])->save();
+            Dues::catchUpQuietly();
+        }
+
+        return $akun;
     }
 
     /** Akun tambahan menunggu persetujuan untuk alamat fixture warga($nomor). */

@@ -20,6 +20,24 @@ final class Address
     }
 
     /**
+     * ADR58: unit rumah = blok + nomor, tanpa jalan. Di data RT (187 rumah, D1–D7) blok + nomor unik, sedangkan jalan
+     * sering keliru (satu blok melintasi beberapa jalan). "Blok D 5" = "d5", "021" = "21". Null bila blok/nomor kosong.
+     *
+     * @return array{0:string,1:string}|null
+     */
+    public static function unit(?string $blok, string $nomor): ?array
+    {
+        [$b, , $n] = explode('|', self::key($blok, 'x', $nomor));
+        $b = str_replace(' ', '', (string) preg_replace('/^blok\s*/', '', $b));
+        if ($b === '' || $n === '') {
+            return null;
+        }
+        $n = ltrim($n, '0');
+
+        return [$b, $n === '' ? '0' : $n];
+    }
+
+    /**
      * ADR43: tampilan nama jalan baku. Jalan RT 05 = Mawar 8–14: "jl. mawar8", "JALAN MAWAR 8" → "Mawar 8". Jalan lain hanya
      * dirapikan spasinya (tidak diubah isinya).
      */

@@ -52,11 +52,24 @@ final class Registration
             $key = Address::key($data['blok'] ?? null, $data['jalan'], $data['nomor']);
             // Rumah dari impor buku lama/sensus belum berpenghuni: kepala keluarga pertama menempatinya, riwayat iuran
             // tetap pada rumah itu (ADR53). Rumah yang sudah dihuni keluarga lain tetap ditolak.
-            $rumah = Rumah::where('alamat_key', $key)->lockForUpdate()->first();
+            // ADR58: dicocokkan lewat blok + nomor; jalan dan nama di data RT boleh keliru.
+            $rumah = self::houseFor($data, $key);
             if ($rumah && ($rumah->archived_at !== null || Penghunian::where('rumah_id', $rumah->id)->whereNull('selesai_tanggal')->exists())) {
                 throw new DomainConflict('HOUSE_ALREADY_REGISTERED', self::HOUSE_EXISTS);
             }
 
+            $jalanDikoreksi = false;
+            if ($rumah && $rumah->alamat_key !== $key) {
+                // Jalan isian warga dipakai (warga lebih tahu alamatnya daripada rekap); dilewati bila bentrok dengan rumah lain.
+                $baru = Address::key($rumah->blok, $data['jalan'], $rumah->nomor);
+                if ($baru !== $rumah->alamat_key && ! Rumah::where('alamat_key', $baru)->whereKeyNot($rumah->id)->exists()) {
+                    Audit::record(null, 'rumah.jalan_dikoreksi_registrasi', 'rumah', $rumah->id, ['jalan_lama' => $rumah->jalan, 'jalan_baru' => Address::street($data['jalan'])]);
+                    $rumah->forceFill(['jalan' => Address::street($data['jalan']), 'alamat_key' => $baru, 'versi' => $rumah->versi + 1])->save();
+                    $jalanDikoreksi = true;
+                }
+            }
+
+            $rumahBaru = ! $rumah;
             if (! $rumah) {
                 $code = Address::code($data['blok'] ?? null, $data['nomor']);
                 $suffix = 1;
@@ -64,14 +77,16 @@ final class Registration
                 while (Rumah::where('kode_rumah', $code)->exists()) {
                     $code = $base.'-'.(++$suffix);
                 }
+                // ADR58: rumah di luar data RT (mis. salah ketik blok/nomor) tidak langsung ditagih; pengurus memeriksa lalu
+                // menyalakan tagihan lewat Ubah rumah. Mencegah tagihan ganda seperti D5-21-2 (7 Nov 2026).
                 $rumah = Rumah::create([
                     'kode_rumah' => $code,
                     'blok' => $data['blok'] ?? null,
                     'jalan' => trim($data['jalan']),
                     'nomor' => trim($data['nomor']),
                     'alamat_key' => $key,
-                    'tagihan_aktif' => true,
-                    'mulai_tagih' => now('Asia/Jakarta')->startOfMonth()->toDateString(),
+                    'tagihan_aktif' => false,
+                    'mulai_tagih' => null,
                 ]);
             }
 
@@ -120,7 +135,8 @@ final class Registration
             ]);
             PreferensiNotifikasi::create(['akun_id' => $akun->id]);
 
-            Audit::record($akun, 'akun.registrasi_utama', 'akun', $akun->id, ['rumah_id' => $rumah->id, 'anggota' => count($data['anggota'] ?? [])]);
+            Audit::record($akun, 'akun.registrasi_utama', 'akun', $akun->id, ['rumah_id' => $rumah->id, 'anggota' => count($data['anggota'] ?? []),
+                'rumah_baru_tanpa_tagihan' => $rumahBaru, 'jalan_dikoreksi' => $jalanDikoreksi]);
             Outbox::record('akun.registrasi_utama', 'akun', $akun->id);
 
             return $akun;
@@ -310,6 +326,9 @@ final class Registration
                 return $byAddress;
             }
         }
+        if (filled($data['nomor'] ?? null) && ($unit = self::unitHouses($data['blok'] ?? null, (string) $data['nomor'])) && $unit->count() === 1) {
+            return $unit->first();
+        }
         $nama = mb_strtolower(trim((string) preg_replace('/\s+/u', ' ', (string) ($data['nama_kepala'] ?? ''))));
         if ($nama === '') {
             return null;
@@ -322,6 +341,41 @@ final class Registration
             ->limit(2)->get();
 
         return $rumah->count() === 1 ? $rumah->first() : null;
+    }
+
+    /**
+     * ADR58: rumah untuk akun utama. Alamat persis (rumah aktif) dulu; lalu tepat satu rumah aktif dengan blok + nomor
+     * sama (jalan diabaikan); terakhir alamat persis yang diarsipkan (ditolak pemanggil). Null → rumah baru tanpa tagihan.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private static function houseFor(array $data, string $key): ?Rumah
+    {
+        $exact = Rumah::where('alamat_key', $key)->lockForUpdate()->first();
+        if ($exact && $exact->archived_at === null) {
+            return $exact;
+        }
+        $unit = self::unitHouses($data['blok'] ?? null, (string) $data['nomor'], true);
+        if ($unit && $unit->count() === 1) {
+            return $unit->first();
+        }
+
+        return $exact;
+    }
+
+    /** Rumah aktif dengan blok + nomor sama (paling banyak 2 baris; >1 berarti ambigu). */
+    private static function unitHouses(?string $blok, string $nomor, bool $lock = false)
+    {
+        $unit = Address::unit($blok, $nomor);
+        if (! $unit) {
+            return null;
+        }
+
+        return Rumah::whereNull('archived_at')
+            ->whereRaw("replace(regexp_replace(split_part(alamat_key, '|', 1), '^blok ?', ''), ' ', '') = ?", [$unit[0]])
+            ->whereRaw("coalesce(nullif(ltrim(split_part(alamat_key, '|', 3), '0'), ''), '0') = ?", [$unit[1]])
+            ->when($lock, fn ($q) => $q->lockForUpdate())
+            ->limit(2)->get();
     }
 
     /** Alamat yang diketik pemohon; null bila tidak diisi (alamat opsional). */
