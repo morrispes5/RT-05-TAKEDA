@@ -32,4 +32,17 @@ class AuditDashboardTest extends TestCase
         $this->assertTrue(DB::table('tagihan_iuran')->where('rumah_id', $arsip->id)->exists(), 'tagihan rumah arsip tetap ada di ledger');
         $this->assertTrue(DB::table('tagihan_iuran')->where('rumah_id', $aktif->id)->where('status', 'belum_bayar')->exists());
     }
+
+    public function test_empty_complaint_and_aspiration_counts_are_json_objects_not_lists(): void
+    {
+        // Regresi production 7 Nov 2026: tanpa pengaduan/aspirasi API memberi [] dan Ringkasan mobile (as Map) crash abu-abu.
+        $admin = $this->pengurus('audit-dasbor-kosong@contoh.test');
+        DB::table('pengaduan')->update(['archived_at' => now()]);
+        DB::table('aspirasi')->update(['archived_at' => now()]);
+
+        $body = $this->as($admin)->getJson('/api/v1/admin/dashboard')->assertOk()->getContent();
+
+        $this->assertStringContainsString('"pengaduan":{}', $body);
+        $this->assertStringContainsString('"aspirasi":{}', $body);
+    }
 }
