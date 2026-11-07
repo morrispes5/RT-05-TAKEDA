@@ -1018,3 +1018,5 @@ dipertahankan).
    dibuat lewat `rt05:pengurus buat` (sandi acak + email atur sandi; agent tidak memegang sandi).
 5. Pindah ke shared hosting setelah soft launch: APK baru dengan `RT05_PROD_BASE_URL=https://rt05takeda.com` lewat
    pembaruan dalam aplikasi (ADR46), salin media, hentikan tumpukan VPS, pasang kembali cron shared-tick, nyalakan staging.
+   `APP_KEY` API shared **wajib sama** dengan `API_APP_KEY` VPS: NIK, nomor KK, token push, dan token registrasi
+   dienkripsi/di-HMAC dengan kunci itu (temuan 7 Nov 21.35 WIB: token buatan shared tak terbaca di VPS → dirotasi).
