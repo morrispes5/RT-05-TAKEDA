@@ -24,10 +24,10 @@ class M16OperatorChecksTest extends TestCase
 
     public function test_mail_test_sends_one_direct_email_and_masks_the_recipient(): void
     {
-        config(['mail.default' => 'array']);
+        config(['mail.default' => 'array', 'mail.from.address' => 'noreply@contoh.test']);
+        // Satu baris output = satu ekspektasi (Mockery mencocokkan tiap baris sekali).
         $this->artisan('rt05:mail-test', ['email' => 'pemilik@contoh.test'])
-            ->expectsOutputToContain('mail=terkirim mailer=array')
-            ->expectsOutputToContain('ke=pe***@contoh.test')
+            ->expectsOutputToContain('mail=terkirim mailer=array dari=noreply@contoh.test ke=pe***@contoh.test')
             ->doesntExpectOutputToContain('pemilik@contoh.test')
             ->assertSuccessful();
 
