@@ -27,6 +27,14 @@
   `rt05:rekonsiliasi-keuangan` 0 masalah, saldo Rp0 (saldo awal kas resmi belum diisi bendahara).
   `rt05:tagihan-generate` catch-up: **348 tagihan baru**. Per bulan: Okt 169 belum bayar + 18 lunas (bayar di muka),
   Nov 179 belum bayar + 8 lunas, Des 8 lunas. Pengurus dapat mencatat Oktober–November di HP.
+- 18.45–19.00 WIB uji pemilik "testing website + data production": `rt05takeda.com` 10 halaman 200 (<0,1 dtk), foto
+  200; `robots.txt` `Disallow: /` + `noindex` (disengaja sampai M16.10, pencarian web belum menemukan domain). Neon
+  production: akun 1 (admin, 0 akun uji), rumah 187 (kode Excel), tagihan 2.065, keringanan 380, pengaduan/aspirasi/
+  agenda/pengumuman/notifikasi 0, konten 13. API publik kedua domain sama (5 artikel); `ketua_whatsapp` null (diisi
+  admin di aplikasi; nomor tidak di Git). Login akun tak dikenal → 422 "Email atau kata sandi salah".
+- Atas izin pemilik ("Ya, pasang di sana"): `public_html/unduh/` dibuat; APK 1030 kedua ABI + `.sha256` disalin dari
+  `takeda.morriz.tech/unduh` lewat UAPI Fileman, `versi.json` terakhir. Unduhan `rt05takeda.com` sha256 cocok, MIME
+  `application/vnd.android.package-archive`; `/aplikasi` menampilkan 1.0.0 build 1030 (7 Nov 18.28 WIB).
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
