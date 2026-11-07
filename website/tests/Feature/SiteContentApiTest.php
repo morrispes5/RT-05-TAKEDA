@@ -140,6 +140,22 @@ class SiteContentApiTest extends TestCase
     }
 
     /**
+     * M16.4 (7 Nov): database production baru tanpa konten membuat /artikel 500 (`$articles[0]`). Daftar kosong dari
+     * API harus tetap tampil (tanpa artikel pilihan), bukan error.
+     */
+    public function test_article_index_survives_an_empty_published_list(): void
+    {
+        config(['services.rt05_content.api' => 'http://api.internal']);
+        Http::fake([
+            'api.internal/api/v1/public/articles*' => Http::response(['data' => [], 'meta' => []]),
+            'api.internal/api/v1/public/albums*' => Http::response(['data' => [], 'meta' => []]),
+            'api.internal/api/v1/public/site-profile*' => Http::response(['data' => null], 404),
+        ]);
+
+        $this->get('/artikel')->assertOk()->assertSee('0 artikel ditampilkan')->assertDontSee('featured-article');
+    }
+
+    /**
      * ADR43: halaman Kontak menampilkan Ketua RT dari pengaturan aplikasi; tanpa API (preview) tidak ada nomor.
      *
      * Test: contact page shows chairman WhatsApp from settings only when available.
