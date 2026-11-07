@@ -45,6 +45,15 @@
 - 20.05 WIB cek VPS: 9 service production Up/healthy, worker restart 1× per jam (`--max-time=3600`, exit 0, normal),
   RAM tersedia 750 MiB, disk 26%; beban CPU dari `coolify` (73%, layanan lain, tidak disentuh). Akun admin belum login
   (0 token) dan tautan reset 18.37 WIB **sudah kedaluwarsa** (60 menit) → pemilik ketuk "Lupa kata sandi" lagi di HP.
+- PR #116 merged (main `77c8f9d`, izin pemilik "Ya, merge"); `rt05takeda.vercel.app/aplikasi` kini menaut ke
+  `https://rt05takeda.com/aplikasi#unduh`.
+- **Bug token registrasi (21.35 WIB):** token aktif dibuat shared hosting 7 Nov 11.20 WIB dengan `APP_KEY` shared, sedangkan
+  VPS memakai `APP_KEY` baru. `kode_terenkripsi` (Crypt) dan `kode_digest` (HMAC `app.key`) keduanya bergantung pada
+  kunci → di VPS admin gagal melihat token dan kode warga selalu ditolak. Perbaikan: `rt05:token-rotate --no-interaction`
+  di VPS (nilai tidak dicetak): 1 token aktif, dekripsi OK, `verify()` cocok, berlaku s.d. 15 Nov 2026. Data lain yang
+  dienkripsi `APP_KEY` (`warga.nik`, `keluarga.nomor_kk`, `perangkat_push.fcm_token`) masih 0 baris saat dicek.
+  **Saat pindah balik ke shared (ADR57 butir 5): salin `API_APP_KEY` VPS ke `APP_KEY` shared** — kalau tidak, NIK/KK/
+  token push yang diisi selama soft launch tidak terbaca dan token registrasi harus dirotasi ulang.
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`

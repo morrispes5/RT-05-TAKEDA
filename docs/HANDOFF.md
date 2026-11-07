@@ -74,6 +74,8 @@ tumpukan VPS, pasang lagi cron shared-tick, nyalakan staging (`deploy-staging-im
 **7 Nov ±20.10 WIB:** APK 1030 juga di `rt05takeda.com/unduh` (alamat resmi untuk warga: `rt05takeda.com/aplikasi`).
 Bug "unavailable" = tautan pratinjau ke staging yang mati (503); diperbaiki ke `rt05takeda.com/aplikasi#unduh`
 (lihat PROGRESS). Tautan reset sandi admin 18.37 kedaluwarsa → ketuk "Lupa kata sandi" lagi di aplikasi.
+Token registrasi dirotasi di VPS 21.35 WIB (token buatan shared tak terbaca dengan `APP_KEY` VPS). **Pindah balik ke
+shared: pakai `APP_KEY` yang sama dengan VPS** (`API_APP_KEY` di `/root/.rt05/.env.production`), jangan kunci baru.
 
 ## Status Sabtu 7 Nov 2026 ±12.00 WIB (shared hosting; sebelum ADR57)
 
