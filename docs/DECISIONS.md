@@ -981,3 +981,16 @@ butir 5 (fallback API di VPS) untuk production.
     memakai scheduler Laravel: `App\Support\SharedSchedule` memanggil tugas jatuh tempo dengan `Artisan::call` di
     dalam proses `rt05:shared-tick` (aturan catch-up dan slot sama, kunci tumpang tindih file 60 menit, gagal → dicoba
     tick berikutnya kecuali rekonsiliasi yang dilaporkan sekali per hari). Profil VPS tidak berubah.
+
+### ADR56 — Email production lewat SMTP Resend 587; cek operator tanpa SSH
+
+7 November 2026 (M16.5, izin pemilik "lanjut M16.5"). Hosting Biznet membuka TCP keluar 587 (465 ditolak) dan
+`curl_exec` diblokir. SMTP Resend sudah lulus di staging (ADR20), jadi production memakai `MAIL_MAILER=smtp`,
+`smtp.resend.com:587` STARTTLS, user `resend`, sandi = API key Resend khusus domain `rt05takeda.com` (izin Sending saja)
+yang diisi pemilik langsung ke `.env` hosting. Paket `resend/resend-php` tidak ditambahkan: tidak perlu dependensi baru
+untuk transport yang sudah terbukti. Pengirim `noreply@rt05takeda.com`, nama "RT05 TAKEDA". DNS (DKIM `resend._domainkey`,
+MX + SPF subdomain `send`, DMARC `p=none`) ditambahkan di Zone Editor hanya atas izin pemilik untuk record tersebut.
+
+Karena hosting tanpa SSH, bukti dijalankan lewat cron sekali jalan: `rt05:mail-test <inbox pemilik>` (langsung, bukan
+antrean; ditolak bila transport log) dan `rt05:push-check` (OAuth + `validate_only` ke token sintetis; tidak ada perangkat
+yang menerima). Output tanpa kredensial; alamat penerima disamarkan.

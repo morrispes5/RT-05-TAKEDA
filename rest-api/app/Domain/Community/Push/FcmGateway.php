@@ -88,6 +88,45 @@ final class FcmGateway implements PushGateway
         return $results;
     }
 
+    /** Token sintetis untuk rt05:push-check; FCM pasti menolaknya, jadi tidak ada perangkat yang menerima apa pun. */
+    public const PROBE_TOKEN = 'rt05-push-check-token-sintetis';
+
+    /**
+     * M16.5: bukti kredensial + HTTPS keluar ke FCM tanpa perangkat (hosting tanpa SSH, curl_exec diblokir → Guzzle
+     * stream). OAuth service account, lalu kirim `validate_only` ke token sintetis: 400/404 berarti autentikasi lolos
+     * dan token ditolak seperti seharusnya. Hanya status/kode galat, tanpa isi respons atau kredensial.
+     *
+     * @return array{ok: bool, line: string}
+     */
+    public function probe(): array
+    {
+        if (! $this->credentials) {
+            return ['ok' => false, 'line' => 'fcm=belum_dikonfigurasi (FCM_CREDENTIALS_PATH/BASE64 kosong atau tidak sah)'];
+        }
+        try {
+            $access = $this->accessToken();
+        } catch (Throwable $e) {
+            return ['ok' => false, 'line' => 'fcm=oauth_gagal ('.class_basename($e).')'];
+        }
+        $url = 'https://fcm.googleapis.com/v1/projects/'.rawurlencode($this->credentials['project_id']).'/messages:send';
+        try {
+            $r = Http::withToken($access)->acceptJson()->asJson()->connectTimeout(5)->timeout($this->timeout)
+                ->post($url, ['validate_only' => true, 'message' => ['token' => self::PROBE_TOKEN, 'data' => ['cek' => '1']]]);
+        } catch (Throwable $e) {
+            return ['ok' => false, 'line' => 'fcm=koneksi_gagal ('.class_basename($e).')'];
+        }
+        $status = $r->status();
+        $code = (string) ($r->json('error.status') ?? '-');
+        $line = "project={$this->credentials['project_id']} oauth=ok status=$status kode=$code";
+        if ($status === 401) {
+            Cache::forget(self::CACHE_KEY);
+        }
+
+        return in_array($status, [200, 400, 404], true)
+            ? ['ok' => true, 'line' => "fcm=ok $line (token uji ditolak seperti seharusnya)"]
+            : ['ok' => false, 'line' => "fcm=ditolak $line"];
+    }
+
     /** @return array<string, mixed> */
     public static function payload(PushMessage $m): array
     {

@@ -1,5 +1,19 @@
 # Progress — RT05 TAKEDA
 
+## M16.5 email + push production (berjalan) — 7 November 2026 siang
+
+- Izin pemilik (chat 7 Nov ±13.35 WIB): "Ya, lanjut M16.5". Keputusan teknis [ADR56](DECISIONS.md): email lewat
+  **SMTP Resend 587** (terbukti terbuka dari hosting 6 Nov, 465 ditolak; jalur sama dengan staging ADR20), tanpa paket
+  `resend/resend-php`. Push FCM tetap Laravel HTTP: dengan `curl_exec` diblokir Guzzle otomatis memakai stream
+  (`allow_url_fopen`), sama seperti website mengambil konten API di production.
+- Branch `codex/m16-email-resend`: `rt05:mail-test {email}` (kirim satu email langsung, menolak transport log, alamat
+  disamarkan di output) dan `rt05:push-check` (OAuth service account + `validate_only` ke token sintetis, tanpa
+  perangkat; 400/404 = lulus). `FcmGateway::probe()`. Tes `tests/Feature/M16OperatorChecksTest.php` (4).
+  `infra/shared/api.env.example`: blok SMTP Resend. `php -l` lulus; `node infra/scripts/check-repo.mjs` lulus; tes
+  PHP dijalankan di CI (vendor lokal sengaja tidak dipasang, SSD pemilik sempit).
+- Belum: domain `rt05takeda.com` di Resend (pemilik login), DNS DKIM/SPF/DMARC di Zone Editor (izin terpisah), API key
+  di `.env` hosting (diisi pemilik), service account FCM production (`~/rt05/private/`, diisi pemilik), uji inbox nyata.
+
 ## M16.4 pasang di cPanel (berjalan) — 6 November 2026 malam
 
 - Izin pemilik (chat 6 Nov ±20.25 WIB): zip di GitHub, installer di hosting, PHP 8.4 + SSL, cron setelah uji serah
