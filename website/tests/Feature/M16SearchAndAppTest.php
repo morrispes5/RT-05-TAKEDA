@@ -122,13 +122,13 @@ class M16SearchAndAppTest extends TestCase
         $this->get('/aplikasi')->assertOk()->assertSee('Aplikasi sedang disiapkan');
     }
 
-    public function test_preview_without_release_links_only_to_the_staging_download_page(): void
+    public function test_preview_without_release_links_only_to_the_production_download_page(): void
     {
-        config(['services.rt05_site.apk_page' => 'https://takeda-staging.morriz.tech/aplikasi#unduh']);
+        config(['services.rt05_site.apk_page' => 'https://rt05takeda.com/aplikasi#unduh']);
 
         $this->get('/aplikasi')->assertOk()
             ->assertSee('Berkas aplikasi ada di server RT')
-            ->assertSee('href="https://takeda-staging.morriz.tech/aplikasi#unduh"', false)
+            ->assertSee('href="https://rt05takeda.com/aplikasi#unduh"', false)
             ->assertSee('Buka halaman unduh')
             ->assertDontSee('Aplikasi sedang disiapkan')
             ->assertDontSee('.apk"', false);
@@ -136,7 +136,7 @@ class M16SearchAndAppTest extends TestCase
 
     public function test_release_files_stay_on_this_site_even_when_a_preview_link_is_configured(): void
     {
-        config(['services.rt05_site.apk_page' => 'https://takeda-staging.morriz.tech/aplikasi#unduh']);
+        config(['services.rt05_site.apk_page' => 'https://rt05takeda.com/aplikasi#unduh']);
         $hash = str_repeat('ab', 32);
         File::put($this->meta, json_encode([
             'versi' => '1.0.0', 'build' => 1014, 'tanggal' => '2026-10-24T06:25:29Z', 'catatan' => [],
@@ -148,13 +148,14 @@ class M16SearchAndAppTest extends TestCase
         $this->get('/aplikasi')->assertOk()
             ->assertSee('href="/unduh/rt05-takeda-staging-1014-arm64-v8a.apk"', false)
             ->assertSee('Unduh hanya dari halaman resmi ini')
-            ->assertDontSee('takeda-staging.morriz.tech', false)
+            ->assertDontSee('rt05takeda.com/aplikasi#unduh', false)
             ->assertDontSee('Buka halaman unduh');
     }
 
-    public function test_preview_download_link_rejects_anything_except_the_staging_page(): void
+    public function test_preview_download_link_rejects_anything_except_the_production_page(): void
     {
-        foreach (['javascript:alert(1)', 'https://evil.example/aplikasi#unduh', 'https://takeda-staging.morriz.tech.evil/aplikasi#unduh', 'http://takeda-staging.morriz.tech/aplikasi#unduh'] as $url) {
+        // Regresi 7 Nov 2026: staging dimatikan untuk soft launch → tautan pratinjau ke staging memberi 503 ke warga.
+        foreach (['javascript:alert(1)', 'https://evil.example/aplikasi#unduh', 'https://rt05takeda.com.evil/aplikasi#unduh', 'http://rt05takeda.com/aplikasi#unduh', 'https://takeda-staging.morriz.tech/aplikasi#unduh'] as $url) {
             config(['services.rt05_site.apk_page' => $url]);
             $this->get('/aplikasi')->assertOk()->assertSee('Aplikasi sedang disiapkan')
                 ->assertDontSee('javascript:', false)->assertDontSee('evil', false);
