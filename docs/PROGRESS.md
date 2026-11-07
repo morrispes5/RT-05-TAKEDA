@@ -78,6 +78,17 @@
   saat `tersedia=false`), `dues/transparency` 403 untuk warga (ADR35), `household`/`dues/my` 404 untuk admin (tab admin
   tidak memanggilnya). Pratinjau catat bayar `D5-21` (Okt Rp75.000, Okt+Nov Rp150.000, lebih Rp100.000) 200, di-rollback,
   0 tulisan. Catatan UX untuk APK berikutnya: teks "Lupa kata sandi" terlalu teknis bagi warga.
+- 8 Nov 01.15–01.25 WIB pemilik di depan PC, login sendiri di emulator (agent mengisi email, pemilik mengetik sandi).
+  **Warga (akun ibu) lulus**: Beranda (D5-21 Mawar 10, Nov Rp75.000 belum, tunggakan 1 bulan), Layanan, Agenda, Iuran
+  (Jan–Sep lunas, Okt–Nov belum), Akun, form Buat pengaduan — tanpa error. Tombol panik tidak tampil (disengaja,
+  `RT05_PANIC_ENABLED=false`, ADR57). Catatan UX: kartu Iuran memisahkan "Tunggakan 1 bulan Rp75.000" (lewat jatuh
+  tempo) dari "Tunggakan Rp150.000" di kartu tahunan (termasuk bulan berjalan) — membingungkan, untuk APK berikutnya.
+- **Bug admin: Ringkasan layar abu-abu.** Logcat: `type 'List<dynamic>' is not a subtype of type 'Map?'` di
+  `pengurus_pages.dart:81`. Penyebab: `GET /admin/dashboard` memberi `pengaduan`/`aspirasi` = `[]` bila belum ada data
+  (koleksi `pluck` kosong → array JSON); staging selalu berisi data sehingga tidak terlihat. Perbaikan server (tanpa APK
+  baru): `(object) ...->all()` → selalu `{}`; tes `AuditDashboardTest` regresi. Pindai semua respons GET production: nilai
+  `[]` lain hanya daftar (alokasi, riwayat, mutasi) dan tidak di-cast `Map` di mobile. Tambalan langsung ke container
+  ditolak pengaman → lewat PR + deploy.
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
