@@ -1,5 +1,36 @@
 # Progress — RT05 TAKEDA
 
+## Soft launch 8 Nov di VPS `takeda.morriz.tech` + Neon production (ADR57) — 7 November 2026 malam
+
+- Keputusan pemilik ±18.00 WIB (ADR57): soft launch memakai VPS Biznet pemilik, alamat `https://takeda.morriz.tech`,
+  database Neon production, staging dimatikan sementara (volume/DB staging dan akun admin M6 dipertahankan).
+- 18.11 WIB `/root/.rt05/.env.production` (600) dibuat dari env staging lewat skrip stdin (sandi tidak dicetak): Neon
+  production `rt05_app` pooled `verify-full`, `APP_KEY`/Redis baru, SMTP Resend + FCM staging, `RT05_FINANCE_V2=true`,
+  panik nonaktif. 18.13 WIB `docker compose -p rt05-staging stop` (0 container staging berjalan), deploy
+  `infra/scripts/deploy-production-vps.sh 785e806` dimulai (log `/root/rt05-prod-785e806.log`).
+- Cek impor dari PC ke Neon production (tanpa tulis; koneksi diverifikasi: db `rt05_takeda`, host
+  `ep-snowy-union-b33dixmf-pooler`, 0 rumah, 0 akun, 1 tarif): 187 rumah, 8 tarif khusus, 1.717 tagihan, 1.337 bulan
+  lunas buku lama (Rp98.065.000), 380 bulan diputihkan (Rp28.235.000), tunggakan di HP Rp0, sidik jari `48ea004a…`
+  (sama dengan pratinjau staging 3 Nov).
+- APK prod run 42367259701 GAGAL `url-empty` (variabel repo `RT05_PROD_BASE_URL` kosong; skrip rilis menolak default).
+  Variabel diisi `https://takeda.morriz.tech`, run ulang **42367884497 lulus**: APK **1030** (1.0.0, 7 Nov 18.28 WIB),
+  sertifikat rilis terverifikasi di CI; sha256 arm64 `1322f28f…dddc6c`, armeabi-v7a `336ecd52…05bd1f`.
+- 18.35 WIB deploy **lulus** (`Selesai production SHA 785e806`): health ready, heartbeat worker-default/media/exports/
+  scheduler, tanpa port host, container lain tidak restart. Dari luar: `/health/ready` 200 `database ok`, `/` dan
+  `/artikel` 200, `/api/v1/dues/my` (Accept JSON) 401 `UNAUTHENTICATED`; SSL Let's Encrypt s/d 5 Feb 2027.
+  (Tanpa header Accept JSON API memberi 500 `Route [login] not defined` — bukan jalur aplikasi; dicatat untuk dirapikan.)
+- APK 1030 dipasang di volume `rt05-production_apk-downloads` (`versi.json` terakhir); unduhan publik kedua ABI sha256
+  cocok, `/aplikasi` menampilkan 1030.
+- Admin pertama `rt05:pengurus buat takedatamankedaung@gmail.com --no-interaction` (sandi acak tidak ditampilkan);
+  `ResetPasswordNotification` DONE di worker-default (SMTP Resend). Pemilik mengatur sandi lewat email.
+- Impor terapkan (`--pengurus` admin itu, sidik `48ea004a…`): 187 rumah baru, 1.337 bulan lunas buku lama;
+  `rt05:rekonsiliasi-keuangan` 0 masalah, saldo Rp0 (saldo awal kas resmi belum diisi bendahara).
+  `rt05:tagihan-generate` catch-up: **348 tagihan baru**. Per bulan: Okt 169 belum bayar + 18 lunas (bayar di muka),
+  Nov 179 belum bayar + 8 lunas, Des 8 lunas. Pengurus dapat mencatat Oktober–November di HP.
+- Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
+  tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
+  `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
+
 ## M16.5 email + push production (berjalan) — 7 November 2026 siang
 
 - Izin pemilik (chat 7 Nov ±13.35 WIB): "Ya, lanjut M16.5". Keputusan teknis [ADR56](DECISIONS.md): email lewat
@@ -11,7 +42,13 @@
   perangkat; 400/404 = lulus). `FcmGateway::probe()`. Tes `tests/Feature/M16OperatorChecksTest.php` (4).
   `infra/shared/api.env.example`: blok SMTP Resend. `php -l` lulus; `node infra/scripts/check-repo.mjs` lulus; tes
   PHP dijalankan di CI (vendor lokal sengaja tidak dipasang, SSD pemilik sempit).
-- Belum: domain `rt05takeda.com` di Resend (pemilik login), DNS DKIM/SPF/DMARC di Zone Editor (izin terpisah), API key
+- 7 Nov ±13.47 WIB: domain `rt05takeda.com` ditambahkan di Resend akun pemilik (region Tokyo, return-path `send`,
+  tracking mati). ±14.10 WIB atas izin pemilik ("sekarang lanjutkan"): Zone Editor UAPI `mass_edit_zone` menambah TXT
+  `resend._domainkey` (DKIM), CNAME `rsend` → `rsend-apne1.forge.rmta.net`, CNAME `send` → `send.forge.rmta.net` (TTL
+  3600); nslookup ke `ns1.neohosting.id` menjawab ketiganya. `_dmarc` sudah ada dari cPanel (`p=none`), tidak diubah.
+  MX "receiving" Resend sengaja tidak dipasang (email masuk domain tetap di hosting). Resend: "DNS verified".
+  Catatan ADR54 butir 6: Resend masih akun pribadi pemilik; pindah ke akun email RT sebelum serah terima.
+- Belum: API key
   di `.env` hosting (diisi pemilik), service account FCM production (`~/rt05/private/`, diisi pemilik), uji inbox nyata.
 
 ## M16.4 pasang di cPanel (berjalan) — 6 November 2026 malam

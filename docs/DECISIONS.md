@@ -994,3 +994,27 @@ MX + SPF subdomain `send`, DMARC `p=none`) ditambahkan di Zone Editor hanya atas
 Karena hosting tanpa SSH, bukti dijalankan lewat cron sekali jalan: `rt05:mail-test <inbox pemilik>` (langsung, bukan
 antrean; ditolak bila transport log) dan `rt05:push-check` (OAuth + `validate_only` ke token sintetis; tidak ada perangkat
 yang menerima). Output tanpa kredensial; alamat penerima disamarkan.
+
+### ADR57 — Soft launch 8 Nov 2026 di VPS pemilik `takeda.morriz.tech` dengan Neon production
+
+7 November 2026 ±18.00 WIB. Keputusan pemilik: "untuk soft launching besok kita pakai VPS aku dulu … yang udah
+pasti-pasti aja"; setelah soft launch baru pindah ke Biznet NEO Web Hosting (`rt05takeda.com`, ADR54). Pilihan pemilik
+(dialog 7 Nov): alamat **`https://takeda.morriz.tech`** (DNS sudah ke VPS 139.190.105.219; default APK flavor prod),
+database **Neon production** (`jolly-voice-55175426`, sudah dimigrasi M16.2), dan **staging dimatikan sementara**
+(RAM VPS 2 GB tidak cukup untuk dua tumpukan; volume dan database staging tetap, termasuk akun admin M6 yang harus
+dipertahankan).
+
+1. Deploy `infra/scripts/deploy-production-vps.sh` (compose project `rt05-production`, env `/root/.rt05/.env.production`
+   mode 600, image bertag SHA turunan `main`). Tidak menjalankan migrasi; ditolak bila SHA membawa migrasi lebih baru
+   dari `2026_10_31_000100_m18_metode_pemutihan`. Sandi owner Neon tidak ada di VPS (runtime dan job migrasi sama-sama
+   `rt05_app`, jadi cek isolasi kredensial staging tidak dipakai di sini).
+2. Env production dibuat dari env staging: SMTP Resend (`takeda@mail.morriztech.cloud`) dan FCM project `rt05-takeda`
+   disalin; `APP_KEY` dan sandi Redis baru; `RT05_FINANCE_V2=true`; tombol panik **nonaktif** sampai M19 lulus HP nyata.
+3. Shared hosting `rt05takeda.com` tetap menyajikan website publik dan membaca Neon production yang sama. Hanya satu
+   penjadwal boleh aktif: cron `rt05:shared-tick` di cPanel dihapus selama VPS menjadi production (butuh izin pemilik),
+   cron jembatan tetap. Media unggahan HP tersimpan di volume VPS dan harus disalin saat pindah ke hosting.
+4. Data iuran: impor Excel bendahara dari PC (`--sampai=2026-09 --putihkan`, Excel tidak diunggah), lalu catch-up
+   tagihan Oktober–November agar pengurus bisa mencatat bulan berjalan. Admin pertama `takedatamankedaung@gmail.com`
+   dibuat lewat `rt05:pengurus buat` (sandi acak + email atur sandi; agent tidak memegang sandi).
+5. Pindah ke shared hosting setelah soft launch: APK baru dengan `RT05_PROD_BASE_URL=https://rt05takeda.com` lewat
+   pembaruan dalam aplikasi (ADR46), salin media, hentikan tumpukan VPS, pasang kembali cron shared-tick, nyalakan staging.

@@ -60,7 +60,18 @@ tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Sudah di `main` (2
 memakai `--sampai=2026-09 --putihkan`; saldo awal kas resmi tetap diisi bendahara sekali (belum ada angkanya).
 Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau staging (ADR52) perlu impor ulang setelah deploy.
 
-## LANJUTKAN DARI SINI — status Sabtu 7 Nov 2026 ±12.00 WIB (menggantikan daftar 6 Nov di bawah)
+## LANJUTKAN DARI SINI — soft launch Minggu 8 Nov 2026 di VPS (ditulis Sabtu 7 Nov ±18.45 WIB, ADR57)
+
+**Production sementara = VPS Biznet pemilik `https://takeda.morriz.tech`** (compose `rt05-production`, `785e806`, env
+`/root/.rt05/.env.production`), database **Neon production**. APK **1030** di `/aplikasi`. Admin pertama
+`takedatamankedaung@gmail.com` (sandi diatur pemilik lewat email). 187 rumah diimpor s.d. September; tagihan Okt–Nov
+ada. **Staging dimatikan** (`docker compose -p rt05-staging stop`; volume + Neon staging + akun admin M6 dipertahankan,
+jangan dihapus). `rt05takeda.com` (shared) tetap website publik, Neon sama; cron `rt05:shared-tick` cPanel **dihapus
+sementara** (baris persisnya di PROGRESS). Belum: saldo awal kas bendahara, uji HP nyata APK 1030, PR #114 (M16.5).
+Setelah soft launch (ADR57 butir 5): APK `rt05takeda.com`, salin media volume `rt05-production_api-storage`, hentikan
+tumpukan VPS, pasang lagi cron shared-tick, nyalakan staging (`deploy-staging-immutable.sh` / `docker compose start`).
+
+## Status Sabtu 7 Nov 2026 ±12.00 WIB (shared hosting; sebelum ADR57)
 
 **Production hidup:** `https://rt05takeda.com` (Biznet NEO Web Hosting, cPanel `rttakezd`, PHP Selector 8.4.27,
 SSL Let's Encrypt s/d 3 Feb 2027) menjalankan `main` `6ddd45e`: website + API + Neon production
