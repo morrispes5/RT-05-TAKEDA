@@ -53,6 +53,8 @@ Kode BR dipakai pada API, tes, issue, dan kriteria milestone. Bagian A mempertah
 - Membership keluarga dan link akun mempunyai rentang waktu. Riwayat perpindahan tidak dihapus.
 - Rumah kontrakan memakai occupancy_type=tenant; kepemilikan dicatat admin. Pemilik dan penghuni bukan otomatis entitas yang sama.
 - Tagihan melekat pada rumah. Perpindahan keluarga tidak memindahkan tagihan ke rumah baru dan tidak menghapus tunggakan.
+- Registrasi menempati rumah data RT yang blok + nomornya sama; jalan/nama rekap boleh keliru dan jalan isian warga dipakai.
+  Blok + nomor di luar data RT dibuat tanpa tagihan sampai pengurus menyalakannya (ADR58).
 - Rumah kosong/baru tidak otomatis bebas iuran. Admin menetapkan billing_enabled dan billing_start_month; jangan membuat pengecualian tanpa catatan.
 - Hanya akun utama dan admin mengubah data keluarga pada v1. Akun tambahan dapat membaca data keluarga sendiri dan memakai layanan.
 - Persetujuan akun tambahan memberikan role resident, tidak admin. Grant/revoke admin hanya lewat command operator yang diaudit pada v1.

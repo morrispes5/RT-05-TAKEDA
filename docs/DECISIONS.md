@@ -1020,3 +1020,20 @@ dipertahankan).
    pembaruan dalam aplikasi (ADR46), salin media, hentikan tumpukan VPS, pasang kembali cron shared-tick, nyalakan staging.
    `APP_KEY` API shared **wajib sama** dengan `API_APP_KEY` VPS: NIK, nomor KK, token push, dan token registrasi
    dienkripsi/di-HMAC dengan kunci itu (temuan 7 Nov 21.35 WIB: token buatan shared tak terbaca di VPS → dirotasi).
+
+### ADR58 — Registrasi mencocokkan rumah lewat blok + nomor; rumah di luar data RT tanpa tagihan (7 Nov 2026)
+
+Konteks: rekap iuran Excel (187 rumah D1–D7) hanya sumber **daftar rumah dan riwayat iuran**, bukan data warga. Nama dan
+jalan di rekap bisa keliru (satu blok melintasi beberapa jalan). Uji pemilik 7 Nov 22.11 WIB: rekap D5 No. 21 "Mawar 12",
+pendaftar mengetik "Mawar 10" → registrasi membuat rumah ganda `D5-21-2` bertagihan November ganda.
+
+Keputusan pemilik:
+1. Akun utama menempati rumah aktif yang **blok + nomor**-nya sama (normalisasi "Blok D 5"="D5", "021"="21"); jalan dan
+   nama tidak ikut dicocokkan. Alamat persis tetap diutamakan; rumah sudah berpenghuni tetap `HOUSE_ALREADY_REGISTERED`
+   (arahkan ke akun tambahan). Akun tambahan juga dicocokkan lewat blok + nomor.
+2. Jalan isian warga dipakai untuk rumah itu (audit `rumah.jalan_dikoreksi_registrasi`), kecuali bentrok dengan rumah lain.
+3. Blok + nomor yang tidak ada di data RT **tidak ditolak** (pemilik tidak mau "hubungi pengurus"): rumah dibuat
+   `tagihan_aktif=false`, `mulai_tagih=null`; pengurus memeriksa lalu menyalakan tagihan lewat Ubah rumah. Mengganti
+   perilaku UAT M15 "rumah baru langsung ditagih bulan berjalan" untuk rumah buatan registrasi (rumah buatan pengurus tetap).
+4. Data uji 7 Nov dikoreksi: keluarga pindah ke `D5-21` (jalan → Mawar 10), tagihan ganda dinolkan lewat
+   `penyesuaian_tagihan`, `D5-21-2` diarsipkan (`alamat_key` dilepas). Rekonsiliasi 0 masalah.

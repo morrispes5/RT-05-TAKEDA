@@ -54,6 +54,16 @@
   dienkripsi `APP_KEY` (`warga.nik`, `keluarga.nomor_kk`, `perangkat_push.fcm_token`) masih 0 baris saat dicek.
   **Saat pindah balik ke shared (ADR57 butir 5): salin `API_APP_KEY` VPS ke `APP_KEY` shared** — kalau tidak, NIK/KK/
   token push yang diisi selama soft launch tidak terbaca dan token registrasi harus dirotasi ulang.
+- **22.11 WIB uji pemilik: registrasi akun ibu (bukan kepala di rekap) membuat rumah ganda `D5-21-2`.** Rekap Excel
+  mencatat D5 No. 21 di "Mawar 12", pendaftar mengetik "Mawar 10"; pencocokan lama memakai blok+jalan+nomor persis →
+  rumah baru bertagihan Nov ganda. Keputusan pemilik (ADR58): cocokkan blok + nomor, jalan isian warga dipakai, rumah di
+  luar data RT tanpa tagihan (tidak ditolak). Cek data: blok + nomor unik di 187 rumah (D1–D7, D5 melintasi Mawar 9/10/12).
+  Kode: `Address::unit()`, `Registration::houseFor()/unitHouses()`; tes `M16RegistrationUnitMatchTest` (5) + fixture warga
+  menyalakan tagihan seperti pengurus. Lokal: **473 tes, 470 lulus, 3 skip**, Pint lulus.
+- 22.35 WIB koreksi data production (keputusan pemilik "Pindahkan ke D5-21", jalan "Mawar 10"), satu transaksi lewat
+  domain: penyesuaian tagihan Nov `D5-21-2` −Rp75.000, `Occupancies::move` ke `D5-21`, `D5-21-2` diarsipkan
+  (`alamat_key` dilepas), `D5-21` jalan → Mawar 10, `permohonan_akun.rumah_id` → `D5-21`. `rt05:rekonsiliasi-keuangan`
+  0 masalah, saldo Rp0. Akun ibu kini melihat `D5-21`: 9 bulan lunas (Jan–Sep), Okt + Nov belum bayar.
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
