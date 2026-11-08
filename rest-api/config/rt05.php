@@ -19,6 +19,8 @@ return [
         // published tanpa completed lebih lama dari ini dianggap hilang dari antrean → replay.
         // Default > jendela retry job (5 percobaan, backoff 10/30/120/300, timeout 60).
         'stale_seconds' => (int) env('RT05_OUTBOX_STALE_SECONDS', 900),
+        // Profil VPS: event darurat.* langsung di-enqueue setelah response (tanpa menunggu sweep tiap menit).
+        'urgent_immediate' => (bool) env('RT05_OUTBOX_URGENT_IMMEDIATE', true),
     ],
 
     // M10 push Android. Tanpa kredensial → inbox saja (push_status dilewati). Kredensial service

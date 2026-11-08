@@ -31,6 +31,8 @@
         <env name="DB_SSLMODE" value="prefer"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <!-- Tes lama mengatur dispatch outbox sendiri; jalur cepat darurat diuji khusus di M19UrgentDispatchTest. -->
+        <env name="RT05_OUTBOX_URGENT_IMMEDIATE" value="false"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>

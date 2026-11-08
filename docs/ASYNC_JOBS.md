@@ -42,6 +42,9 @@ Gunakan image API sama, restart policy/process manager, graceful SIGTERM, stop g
 
 1. API transaction menulis domain + audit + outbox event stable UUID.
 2. Dispatcher tiap menit mencari available rows, lock/lease terbatas, publish job event ID ke Redis.
+   Pengecualian event `darurat.*` di profil VPS (8 Nov 2026): dispatcher dipanggil juga segera setelah response
+   (`Outbox::dispatchAfterResponse`, flag `RT05_OUTBOX_URGENT_IMMEDIATE`, default true) agar alarm tidak menunggu
+   sweep 0–60 detik; gagal → event tetap pending dan sweep tiap menit menjadi cadangan.
 3. Setelah enqueue berhasil, published_at diisi; completed_at tetap kosong sampai consumer selesai.
 4. Consumer memuat event dari Postgres dan membuat hasil idempotent, lalu completed_at.
 5. Lease expired atau published tanpa completion melewati batas →replay. Dispatcher menggunakan SKIP LOCKED jika beberapa proses.

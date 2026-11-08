@@ -116,6 +116,16 @@
   Okt 100rb sumbangan → kas +100.000, sumbangan 25.000; tanpa pilihan → 422 `EXCESS_CHOICE_REQUIRED` /
   `SHORTFALL_CHOICE_REQUIRED`, kas +0; dua rumah total 100rb (A 75rb + B 25rb dicicil) → kas +100.000, B sisa 50.000.
   **Kas selalu = uang diterima** (BR M18). Satu penerimaan berlaku untuk satu rumah; pemilik dua rumah dicatat dua kali.
+- 08.50 WIB **alarm uji production** (izin pemilik "Ya, kirim uji"): emulator akun warga D5-21 → scroll ketentuan →
+  geser → layar "Alarm darurat menyala" (identitas pelapor + rumah, pilihan jenis, batal). Server: kejadian 08.50.30,
+  outbox `darurat.dibuat` di-publish 08.51.02, `SendPush` selesai 08.51.06, status `provider_menerima`. Pemilik: alarm
+  **masuk dan berbunyi di HP admin**, jeda 30 detik–1 menit. Admin tidak bisa jadi pelapor (tanpa rumah,
+  `PANIC_HOUSE_REQUIRED`); akun warga belum punya perangkat push terdaftar (4 perangkat milik admin). Laporan uji
+  dibatalkan pelapor dari emulator.
+- **Jeda alarm**: hampir seluruhnya menunggu sweep `rt05:outbox-dispatch` tiap menit (profil VPS); kirim FCM ±1 dtk.
+  Perbaikan: event `darurat.*` di-enqueue segera setelah response (`Outbox::dispatchAfterResponse`, flag
+  `RT05_OUTBOX_URGENT_IMMEDIATE` default true; phpunit false agar tes lama tidak berubah), sweep tetap cadangan.
+  Tes `M19UrgentDispatchTest`. Tanpa APK baru.
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
