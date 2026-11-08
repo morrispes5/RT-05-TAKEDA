@@ -101,6 +101,21 @@
   Sebelumnya: push-check FCM ok; simulasi alur panik penuh in-process (rollback) 15 panggilan sesuai rancangan, 0 tulisan,
   0 push. Saklar `darurat.fitur` masih `aktif=false`: `configure` sebagai admin ditolak `PRIVACY_CONSENT_REQUIRED`
   (benar) — pengurus menyetujui privasi baru di aplikasi lalu menyalakan di Lainnya. M19 tetap belum passed (HP nyata).
+- 08.45 WIB pemilik: "tombol panik hilang di production, padahal di staging ada scroll lalu geser". Emulator (APK 1030,
+  admin): setelah aplikasi dibuka ulang FAB tampil abu-abu (saklar pengurus mati) + kartu "Laporan darurat"; saklar
+  Lainnya → "Aktifkan tombol panik RT" dinyalakan (pemilik mengizinkan agent memakai akun admin) → FAB merah; halaman
+  "Baca dulu sebelum menyalakan" + "Scroll sampai bawah untuk membuka" lalu geser **sama dengan staging** (kode sama).
+  Penyebab "hilang": status panik di-cache aplikasi sejak sebelum flag server dibuka (tidak dimuat ulang saat aplikasi
+  kembali dari latar belakang) + saklar pengurus belum menyala. Solusi tanpa APK: tutup aplikasi dari recent apps lalu
+  buka lagi. Untuk APK berikutnya: muat ulang `emergencyStatusProvider` saat resume/setelah setuju privasi; FAB menutupi
+  tombol "Token registrasi RT" di Ringkasan (beri ruang bawah). Alarm sungguhan belum dikirim (akan berbunyi di HP warga).
+- 08.50 WIB pemilik menanyakan logika iuran M18 (bayar kurang, lebih, dua rumah). Simulasi 8 skenario lewat API
+  production sebagai admin, tiap skenario di-rollback (0 tulisan), rumah D5-21 Okt/Nov masing-masing Rp75.000:
+  50rb "sesuai kemampuan" → kas +50.000, Okt lunas (keringanan 25.000); 50rb "dicicil" → kas +50.000, Okt sisa 25.000;
+  Okt+Nov 100rb dicicil → Okt lunas, Nov sisa 50.000, kas +100.000; Okt 100rb titipan → kas +100.000, titipan 25.000;
+  Okt 100rb sumbangan → kas +100.000, sumbangan 25.000; tanpa pilihan → 422 `EXCESS_CHOICE_REQUIRED` /
+  `SHORTFALL_CHOICE_REQUIRED`, kas +0; dua rumah total 100rb (A 75rb + B 25rb dicicil) → kas +100.000, B sisa 50.000.
+  **Kas selalu = uang diterima** (BR M18). Satu penerimaan berlaku untuk satu rumah; pemilik dua rumah dicatat dua kali.
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
