@@ -2,8 +2,11 @@
 
 namespace App\Support;
 
+use App\Domain\Operations\OutboxDispatcher;
 use App\Models\OutboxEvent;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Transactional outbox: event ditulis dalam transaksi domain; dispatcher (rt05:outbox-dispatch)
