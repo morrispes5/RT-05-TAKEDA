@@ -67,7 +67,7 @@ Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau stagi
 `takedatamankedaung@gmail.com` (sandi diatur pemilik lewat email). 187 rumah diimpor s.d. September; tagihan Okt–Nov
 ada. **Staging dimatikan** (`docker compose -p rt05-staging stop`; volume + Neon staging + akun admin M6 dipertahankan,
 jangan dihapus). `rt05takeda.com` (shared) tetap website publik, Neon sama; cron `rt05:shared-tick` cPanel **dihapus
-sementara** (baris persisnya di PROGRESS). Belum: saldo awal kas bendahara, uji HP nyata APK 1030, PR #114 (M16.5).
+sementara** (baris persisnya di PROGRESS). **Tombol panik dibuka di server 8 Nov 08.33 WIB (ADR59)**; saklar pengurus dinyalakan pengurus di aplikasi setelah setuju privasi baru. Belum: saldo awal kas bendahara, uji HP nyata APK 1030, PR #114 (M16.5).
 Setelah soft launch (ADR57 butir 5): APK `rt05takeda.com`, salin media volume `rt05-production_api-storage`, hentikan
 tumpukan VPS, pasang lagi cron shared-tick, nyalakan staging (`deploy-staging-immutable.sh` / `docker compose start`).
 

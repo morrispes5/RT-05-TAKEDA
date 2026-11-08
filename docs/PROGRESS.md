@@ -95,6 +95,12 @@
   0 permohonan/pengaduan/aspirasi, tombol Catat iuran/Usulan/Token — tanpa exception Flutter di logcat. Catatan: layar
   yang sudah abu-abu sebelum deploy tetap abu-abu sampai aplikasi ditutup-buka; pengurus yang sempat melihatnya cukup
   menutup lalu membuka aplikasi lagi.
+- 08.33 WIB **tombol panik dibuka di server** atas perintah pemilik (ADR59): `RT05_PANIC_ENABLED=true`,
+  `RT05_PANIC_AUDIENCE=all`, cadangan env, container dibuat ulang; health ready 200, semua container healthy,
+  `config('panic.enabled')=true`, versi privasi wajib `2026-10-27`, `/kebijakan-privasi` VPS memuat teks tombol panik.
+  Sebelumnya: push-check FCM ok; simulasi alur panik penuh in-process (rollback) 15 panggilan sesuai rancangan, 0 tulisan,
+  0 push. Saklar `darurat.fitur` masih `aktif=false`: `configure` sebagai admin ditolak `PRIVACY_CONSENT_REQUIRED`
+  (benar) — pengurus menyetujui privasi baru di aplikasi lalu menyalakan di Lainnya. M19 tetap belum passed (HP nyata).
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
