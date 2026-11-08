@@ -35,8 +35,10 @@ class OperationsController extends Controller
             'rumah_aktif' => Rumah::whereNull('archived_at')->count(),
             'akun_aktif' => Akun::where('status', 'aktif')->count(),
             'permohonan_menunggu' => PermohonanAkun::where('status', 'diajukan')->count(),
-            'pengaduan' => Pengaduan::whereNull('archived_at')->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status'),
-            'aspirasi' => Aspirasi::whereNull('archived_at')->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status'),
+            // Objek JSON walau kosong: koleksi kosong ter-serialisasi sebagai [] dan Ringkasan mobile (as Map) crash
+            // layar abu-abu di production tanpa laporan (7 Nov 2026).
+            'pengaduan' => (object) Pengaduan::whereNull('archived_at')->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status')->all(),
+            'aspirasi' => (object) Aspirasi::whereNull('archived_at')->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status')->all(),
             // Audit 27 Okt: angka kerja harian hanya rumah aktif; tagihan rumah arsip tetap ada di rekap/laporan ledger.
             'iuran_bulan_ini' => [
                 'periode' => substr($period, 0, 7),
