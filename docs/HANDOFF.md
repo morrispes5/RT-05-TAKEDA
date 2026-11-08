@@ -60,6 +60,22 @@ tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Sudah di `main` (2
 memakai `--sampai=2026-09 --putihkan`; saldo awal kas resmi tetap diisi bendahara sekali (belum ada angkanya).
 Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau staging (ADR52) perlu impor ulang setelah deploy.
 
+## ATURAN — production berisi data warga asli (sejak soft launch Minggu 8 Nov 2026 siang)
+
+Pemilik 8 Nov: soft launch aman, warga sudah mengisi data → "harus hati-hati jika menyentuh production". Mengikat:
+
+1. **Tidak ada hot-patch** container/berkas production. Perubahan kode hanya PR → CI hijau → izin merge eksplisit
+   pemilik → `deploy-production-vps.sh <sha>` (skrip menolak migrasi baru; migrasi butuh rencana + izin terpisah).
+2. **Cadangan sebelum tiap deploy/perubahan env**: buat branch Neon dari production (titik pulih) dan salin env
+   (`.bak-<alasan>-<waktu>`). Deploy di jam sepi (malam) dan kabari pemilik jam mulai/selesai; build dari nol ±35 mnt.
+3. **Jangan uji yang menulis data** di production: tanpa seed/factory/akun uji. Cek logika hanya in-process dalam
+   transaksi yang di-rollback (pola `dues-sim.php`/`panic-sim.php`) atau di staging setelah staging dinyalakan lagi.
+4. **Alarm panik sekarang berbunyi di HP semua warga** (audience `all`): jangan kirim alarm uji tanpa izin pemilik
+   per kejadian dan pemberitahuan ke warga lebih dulu.
+5. Perbaikan data warga hanya atas permintaan pengurus, lewat fitur aplikasi/aksi domain (koreksi keuangan =
+   pembalikan, BR). Tidak ada UPDATE/DELETE SQL langsung; jangan cetak data warga ke log/chat.
+6. Prioritas setelah launch: latihan backup + restore (M16.9) ke branch Neon terpisah, sebelum perubahan besar lain.
+
 ## LANJUTKAN DARI SINI — soft launch Minggu 8 Nov 2026 di VPS (ditulis Sabtu 7 Nov ±18.45 WIB, ADR57)
 
 **Production sementara = VPS Biznet pemilik `https://takeda.morriz.tech`** (compose `rt05-production`, `5358e68` sejak 8 Nov pagi (sebelumnya `cb9e9f1`), env

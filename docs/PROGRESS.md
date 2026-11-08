@@ -126,6 +126,10 @@
   Perbaikan: event `darurat.*` di-enqueue segera setelah response (`Outbox::dispatchAfterResponse`, flag
   `RT05_OUTBOX_URGENT_IMMEDIATE` default true; phpunit false agar tes lama tidak berubah), sweep tetap cadangan.
   Tes `M19UrgentDispatchTest`. Tanpa APK baru.
+- **Minggu 8 Nov siang — soft launch berjalan (laporan pemilik):** warga yang berhasil memasang APK 1030 memakai aplikasi
+  tanpa masalah; data production mulai diisi warga/pengurus. Kendala: sebagian HP warga **memblokir unduhan/pemasangan
+  APK** (perlindungan HP; merek dan pesan persisnya belum dicatat). Sejak titik ini Neon production berisi **data warga
+  asli** → berlaku aturan "Production berisi data asli" di HANDOFF (keputusan pemilik: hati-hati menyentuh production).
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
