@@ -1037,3 +1037,22 @@ Keputusan pemilik:
    perilaku UAT M15 "rumah baru langsung ditagih bulan berjalan" untuk rumah buatan registrasi (rumah buatan pengurus tetap).
 4. Data uji 7 Nov dikoreksi: keluarga pindah ke `D5-21` (jalan → Mawar 10), tagihan ganda dinolkan lewat
    `penyesuaian_tagihan`, `D5-21-2` diarsipkan (`alamat_key` dilepas). Rekonsiliasi 0 masalah.
+
+### ADR59 — Tombol panik dibuka di production sebelum uji HP nyata (8 Nov 2026)
+
+Konteks: ADR57 menahan `RT05_PANIC_ENABLED=false` sampai gate HP nyata M19 lulus. Pagi 8 Nov pemilik memerintahkan
+"tombol paniknya tolong diaktifin dari sisi server", setelah agent memeriksa bug lebih dulu.
+
+Keputusan pemilik dan pelaksanaannya:
+1. VPS production: `RT05_PANIC_ENABLED=true`, `RT05_PANIC_AUDIENCE=all` (runbook langkah 5). Cadangan env lama
+   `/root/.rt05/.env.production.bak-sebelum-panik-202611080833`. Container api/web/worker/scheduler dibuat ulang tanpa build.
+2. Sebelum dibuka: CI API `5358e68` hijau (tes M19 ikut), push-check FCM ok, simulasi alur penuh di container production
+   dalam transaksi yang di-rollback (status, gate privasi, saklar pengurus, kirim, ubah jenis, batal, tampilan pengurus)
+   semua 2xx/403 sesuai rancangan, 0 tulisan dan 0 push terkirim.
+3. Akibat yang diterima: versi privasi wajib naik ke `2026-10-27`, jadi semua akun diminta menyetujui ulang saat membuka
+   aplikasi. Saklar fitur (`darurat.fitur`) tetap dinyalakan **pengurus sendiri** di aplikasi (Lainnya) setelah menyetujui
+   privasi; agent tidak memalsukan persetujuan atas nama admin. Warga yang belum menyetujui privasi baru tidak menerima alarm.
+4. M19 **tetap belum passed**: bunyi alarm saat HP terkunci/aplikasi ditutup belum dibuktikan di HP nyata. Uji pertama di
+   production dilakukan pemilik bersama pengurus (UJI_HP_M19.md), laporan uji ditutup "selesai" tanpa penanda penyalahgunaan.
+5. Saat pindah ke shared hosting (ADR57 butir 5) env API shared ikut `RT05_PANIC_ENABLED=true` + `RT05_PANIC_AUDIENCE=all`.
+   Website shared `rt05takeda.com/kebijakan-privasi` masih teks lama sampai env web shared ikut dinyalakan.
