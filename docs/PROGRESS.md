@@ -89,6 +89,12 @@
   baru): `(object) ...->all()` → selalu `{}`; tes `AuditDashboardTest` regresi. Pindai semua respons GET production: nilai
   `[]` lain hanya daftar (alokasi, riwayat, mutasi) dan tidak di-cast `Map` di mobile. Tambalan langsung ke container
   ditolak pengaman → lewat PR + deploy.
+- PR #120 merged (main `5358e68`, izin pemilik "Ya, merge + deploy"); deploy VPS `rt05-deploy-production.sh 5358e68`
+  **lulus** (build image dari nol ±35 menit karena cache layer hilang; health ready 200, heartbeat, `>>> Selesai`).
+  Emulator (admin tetap login): Ringkasan tampil — saldo kas, iuran November 8 lunas/179 belum, 187 rumah aktif,
+  0 permohonan/pengaduan/aspirasi, tombol Catat iuran/Usulan/Token — tanpa exception Flutter di logcat. Catatan: layar
+  yang sudah abu-abu sebelum deploy tetap abu-abu sampai aplikasi ditutup-buka; pengurus yang sempat melihatnya cukup
+  menutup lalu membuka aplikasi lagi.
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
   `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
