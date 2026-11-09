@@ -39,8 +39,18 @@
 - Tidak ada log akses API di VPS/DB (`last_used_at` token tidak diisi) → tidak bisa menghitung warga yang masih 1030.
   Karena itu VPS hanya boleh dimatikan setelah jembatan `takeda.morriz.tech` → hosting (alias cPanel + A record ke
   `103.58.102.39` + AutoSSL); API tidak membatasi Host, jadi alias cukup.
-- Belum: APK 1031 rilis; jembatan `takeda.morriz.tech` untuk APK 1030 (DNS, izin pemilik); cutover penjadwal (stop
-  scheduler VPS → kuras antrean → cron shared-tick); matikan tumpukan VPS; hapus installer sementara; M16.9 backup+drill.
+- Jembatan `takeda.morriz.tech` (pemilik setuju "Ya, buat jembatan"): domain ditambahkan di cPanel sebagai addon
+  (vhost sendiri, subdomain `takeda-morriz.rt05takeda.com`, document root `public_html` = sama dengan rt05takeda.com,
+  IP 103.58.102.39). `.htaccess` hosting tidak punya pengalihan berbasis Host. Uji `curl --resolve` HTTP ke hosting:
+  `/up` 200, `/api/v1/` = info API sama, `/aplikasi` 200, `/unduh/versi.json` build 1031 (URL berkas relatif → benar
+  di dua host), `.sha256` 200. **HTTPS belum**: tanpa sertifikat, IP bersama itu menyajikan vhost bawaan pelanggan lain
+  → DNS tidak boleh dipindah sebelum AutoSSL bisa jalan. Menyalin sertifikat VPS (disimpan Traefik Coolify) ke cPanel
+  ditolak pemeriksa keamanan; tidak dicoba jalan lain. AutoSSL cPanel butuh DNS sudah mengarah ke hosting, jadi ada jeda
+  TLS beberapa menit setelah A record diganti (TTL `takeda` sudah 300 dtk). Tidak ada data hilang selama jeda: APK 1030
+  hanya gagal tersambung lalu mencoba lagi.
+- Belum: pemilik ganti A record `takeda` (hPanel Hostinger, morriz.tech) ke `103.58.102.39` di jam sepi → AutoSSL +
+  verifikasi HTTPS; cutover penjadwal (stop scheduler VPS → kuras antrean → cron shared-tick); matikan tumpukan VPS;
+  hapus installer sementara; M16.9 backup+drill.
 
 ## Soft launch 8 Nov di VPS `takeda.morriz.tech` + Neon production (ADR57) — 7 November 2026 malam
 

@@ -64,8 +64,9 @@ Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau stagi
 
 Hosting `rt05takeda.com` sudah menjalankan kode `d4b5407` (= VPS) dengan `APP_KEY`, email, push, dan panik sama dengan
 VPS; data di Neon production yang sama (titik pulih branch `cadangan-sebelum-pindah-hosting-20261109`). APK 1030 warga
-masih ke `takeda.morriz.tech` (VPS). Urutan sisa (detail PROGRESS 9 Nov): APK 1031 ke rt05takeda.com → jembatan
-`takeda.morriz.tech` → cutover penjadwal (stop scheduler VPS, tunggu antrean Redis kosong, pasang cron
+masih ke `takeda.morriz.tech` (VPS). APK 1031 (ke rt05takeda.com) sudah tayang. `takeda.morriz.tech` sudah jadi addon
+domain cPanel (docroot `public_html`, HTTP lulus uji); sisa jembatan: pemilik ganti A record `takeda` ke `103.58.102.39`
+lalu segera AutoSSL (jeda TLS beberapa menit; jangan ganti DNS sebelum siap menjalankan AutoSSL). Urutan sisa: cutover penjadwal (stop scheduler VPS, tunggu antrean Redis kosong, pasang cron
 `rt05:shared-tick`) → hentikan VPS → hapus `public_html/pd-*.php` dan `ar-*.php`. **Hanya satu penjadwal aktif.**
 
 ## LANJUTKAN DARI SINI — soft launch Minggu 8 Nov 2026 di VPS (ditulis Sabtu 7 Nov ±18.45 WIB, ADR57)
