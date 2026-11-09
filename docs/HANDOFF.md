@@ -60,6 +60,14 @@ tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Sudah di `main` (2
 memakai `--sampai=2026-09 --putihkan`; saldo awal kas resmi tetap diisi bendahara sekali (belum ada angkanya).
 Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau staging (ADR52) perlu impor ulang setelah deploy.
 
+## LANJUTKAN DARI SINI — pindah ke `rt05takeda.com` (Senin 9 Nov 2026 siang)
+
+Hosting `rt05takeda.com` sudah menjalankan kode `d4b5407` (= VPS) dengan `APP_KEY`, email, push, dan panik sama dengan
+VPS; data di Neon production yang sama (titik pulih branch `cadangan-sebelum-pindah-hosting-20261109`). APK 1030 warga
+masih ke `takeda.morriz.tech` (VPS). Urutan sisa (detail PROGRESS 9 Nov): APK 1031 ke rt05takeda.com → jembatan
+`takeda.morriz.tech` → cutover penjadwal (stop scheduler VPS, tunggu antrean Redis kosong, pasang cron
+`rt05:shared-tick`) → hentikan VPS → hapus `public_html/pd-*.php` dan `ar-*.php`. **Hanya satu penjadwal aktif.**
+
 ## LANJUTKAN DARI SINI — soft launch Minggu 8 Nov 2026 di VPS (ditulis Sabtu 7 Nov ±18.45 WIB, ADR57)
 
 **Production sementara = VPS Biznet pemilik `https://takeda.morriz.tech`** (compose `rt05-production`, `5358e68` sejak 8 Nov pagi (sebelumnya `cb9e9f1`), env
