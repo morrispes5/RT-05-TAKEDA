@@ -27,6 +27,18 @@
   installer sementara. Cron `rt05:shared-tick` belum dipasang lagi (hanya satu penjadwal: VPS sampai cutover).
 - APK 1031 (PR #124): status panik dimuat ulang saat resume; ruang bawah Ringkasan pengurus. Dibangun dengan
   `RT05_PROD_BASE_URL=https://rt05takeda.com` setelah izin merge.
+- 14.02 WIB PR #124 merge (`bc8c964`) atas perintah pemilik ("lanjut bertahap aja sampe milestone 16 kelar"); variabel
+  repo `RT05_PROD_BASE_URL` → `https://rt05takeda.com`; workflow Mobile release APK run 42576772225 (#31) lulus:
+  **APK 1031** (1.0.0, 9 Nov 14.08 WIB), arm64 `5bc8483d…56c9`, armeabi-v7a `752fd84f…2a37`; `libapp.so` kedua ABI hanya
+  memuat `https://rt05takeda.com`. Berkas + `.sha256` dipasang di volume VPS `rt05-production_apk-downloads` dan
+  `rt05takeda.com/unduh` (hosting menyalin dari VPS dengan cek sha256), `versi.json` 1031 dipasang terakhir di keduanya
+  (cadangan versi 1030 `/root/.rt05/versi-1030.json.bak`); `/aplikasi` kedua domain menampilkan 1031.
+- Emulator (APK 1030, akun warga): pop-up **"Versi baru tersedia — build 1031"** dengan catatan rilis tampil saat aplikasi
+  dibuka. Pemasangan tidak diuji di emulator (ABI x86_64 terpasang versionCode 3030 > arm64 2031); HP nyata arm64 2030 →
+  2031 / armeabi 1030 → 1031 naik normal. Token login tidak terikat alamat server (`rt05_token`), jadi warga tetap masuk.
+- Tidak ada log akses API di VPS/DB (`last_used_at` token tidak diisi) → tidak bisa menghitung warga yang masih 1030.
+  Karena itu VPS hanya boleh dimatikan setelah jembatan `takeda.morriz.tech` → hosting (alias cPanel + A record ke
+  `103.58.102.39` + AutoSSL); API tidak membatasi Host, jadi alias cukup.
 - Belum: APK 1031 rilis; jembatan `takeda.morriz.tech` untuk APK 1030 (DNS, izin pemilik); cutover penjadwal (stop
   scheduler VPS → kuras antrean → cron shared-tick); matikan tumpukan VPS; hapus installer sementara; M16.9 backup+drill.
 
