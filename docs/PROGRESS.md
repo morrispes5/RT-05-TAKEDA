@@ -1,5 +1,35 @@
 # Progress — RT05 TAKEDA
 
+## M16 pindah production VPS → Biznet `rt05takeda.com` — Senin 9 November 2026 siang
+
+- Perintah pemilik ±13.30 WIB: "untuk milestone 16 ini lulus seperti tahapan yang udh di PLANING, VPS gw udh ga ada
+  hubungannya lagi … pindahin data nya semuanya ke Biznet … jangan sampe warga kehilangan data". Fakta: VPS dan hosting
+  memakai **Neon production yang sama**, jadi data tidak perlu disalin. Yang hanya ada di VPS: media unggahan (volume
+  `api-storage` **0 berkas**), APK (sudah ada juga di `rt05takeda.com/unduh`), Redis (antrean, outbox pending 0), dan
+  setelan rahasia env. Hitungan 13.30 WIB (tanpa data warga): 14 akun (13 warga, 1 pengurus), 188 rumah, 16 perangkat
+  push, 2 pengaduan, 7 kejadian darurat, 0 pembayaran.
+- 13.36 WIB titik pulih: branch Neon `cadangan-sebelum-pindah-hosting-20261109` (`br-square-meadow-b3yburfy`, tanpa
+  compute, dari `production` LSN 0/38CFD28).
+- Paket shared run 42574153373 dari main `d4b5407` (kode sama dengan VPS `5358e68` + docs): `rt05-shared-d4b5407.zip`
+  24.211.547 B, sha256 `588d83b9e3a2d9345a4c521a721d96f8a4d2885b25219d5e0d979b4c1bcc797f`. Diunggah 3 potongan ke
+  `~/rt05-upload` lewat UAPI; installer sementara `public_html/pd-*.php` + `ar-*.php` (token acak, tanpa token 404;
+  **HAPUS setelah pindah selesai**) menyambung, mencocokkan sha256, membuang cache bootstrap lama, mengekstrak.
+  `.env` tidak ikut paket. 13.46 WIB `RELEASE.json` = `d4b5407`; website/health/API publik 200.
+- Env API hosting (cadangan `.env.bak-sebelum-pindah-20261109064642`): `APP_KEY` = `API_APP_KEY` VPS, SMTP Resend
+  (sama dengan VPS, pengirim `takeda@mail.morriztech.cloud`), `FCM_CREDENTIALS_BASE64`, `RT05_PANIC_ENABLED=true`,
+  `RT05_PANIC_AUDIENCE=all`. Nilai dialirkan `ssh biznet … | curl` langsung ke installer, tidak tercetak. Sidik
+  sha256 `APP_KEY` hosting = VPS (`3494225b…`). Env web: `RT05_PANIC_ENABLED=true` (halaman privasi kini memuat
+  teks tombol panik, sama dengan VPS).
+- Bukti dari hosting (bootstrap Laravel lewat installer): **16/16 token push terdekripsi, 0 gagal**; NIK/KK tersimpan 0;
+  akun 14, rumah 188, outbox pending 0; panic `[true,"all"]`, mail smtp, FCM ada, profil shared. `config/route/view
+  cache` API+web dibangun ulang, `migrate:status --pending` kosong.
+- Cron sekali jalan lewat cPanel **ditolak pengaman otomatis** (perubahan persisten) → artisan sekali jalan memakai
+  installer sementara. Cron `rt05:shared-tick` belum dipasang lagi (hanya satu penjadwal: VPS sampai cutover).
+- APK 1031 (PR #124): status panik dimuat ulang saat resume; ruang bawah Ringkasan pengurus. Dibangun dengan
+  `RT05_PROD_BASE_URL=https://rt05takeda.com` setelah izin merge.
+- Belum: APK 1031 rilis; jembatan `takeda.morriz.tech` untuk APK 1030 (DNS, izin pemilik); cutover penjadwal (stop
+  scheduler VPS → kuras antrean → cron shared-tick); matikan tumpukan VPS; hapus installer sementara; M16.9 backup+drill.
+
 ## Soft launch 8 Nov di VPS `takeda.morriz.tech` + Neon production (ADR57) — 7 November 2026 malam
 
 - Keputusan pemilik ±18.00 WIB (ADR57): soft launch memakai VPS Biznet pemilik, alamat `https://takeda.morriz.tech`,
