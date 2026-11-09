@@ -81,7 +81,8 @@ class _AdminHomeContent extends ConsumerWidget {
           final p = Map<String, dynamic>.from(d['pengaduan'] as Map? ?? {});
           final a = Map<String, dynamic>.from(d['aspirasi'] as Map? ?? {});
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+            // Ruang bawah untuk tombol panik agar tidak menutupi tombol terakhir (Token registrasi, 8 Nov).
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 152),
             children: [
               Container(
                 padding: const EdgeInsets.all(20),

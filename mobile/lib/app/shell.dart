@@ -26,7 +26,11 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   String? _accountId;
 
   // Kembali ke aplikasi: muat ulang lencana inbox (push bisa ditolak atau belum tersedia).
-  late final AppLifecycleListener _lifecycle = AppLifecycleListener(onResume: () => ref.invalidate(notificationsProvider));
+  // Status panik juga dimuat ulang: saklar server/pengurus bisa berubah saat aplikasi di latar belakang (8 Nov).
+  late final AppLifecycleListener _lifecycle = AppLifecycleListener(onResume: () {
+    ref.invalidate(notificationsProvider);
+    ref.invalidate(emergencyStatusProvider);
+  });
 
   @override
   void initState() {
