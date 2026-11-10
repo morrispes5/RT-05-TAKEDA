@@ -61,7 +61,14 @@
   >/dev/null 2>>/home/rttakezd/rt05/shared-tick.err`; cron jembatan Neon (78948247) tetap. Cek 13.41 WIB:
   `heartbeat shared-tick` umur 54 dtk, jobs 0, failed_jobs 0, outbox_pending 0, token push 15/15 terdekripsi
   (satu perangkat lepas wajar), akun 14, rumah 188. **Penjadwal tunggal kini hosting.**
-- Belum: matikan sisa tumpukan VPS (api/web/worker/gateway/redis; izin pemilik, volume jangan dihapus); hapus installer
+- **VPS RT05 production dimatikan 10 Nov siang** atas perintah pemilik ("matikan vps tapi khusus untuk takeda aja"):
+  `queue:monitor` 4 antrean redis 0 lalu `docker stop` 8 container `rt05-production-*` (gateway, web, api, worker
+  default/media/exports, redis, redis-cache; scheduler sudah mati). Restart policy `unless-stopped` → tetap mati saat
+  reboot. Volume `rt05-production_api-storage`, `_apk-downloads`, `_redis-data` dan env `/root/.rt05` **disimpan**
+  (bisa `docker start` lagi bila darurat). Coolify dan 11 container lain di VPS tidak disentuh, tetap Up. Staging RT05
+  memang sudah mati. Sesudahnya `takeda.morriz.tech` dan `rt05takeda.com` (`/up`, `/api/v1/`, `/`, `/unduh/versi.json`)
+  200 dari 103.58.102.39. **RT05 production kini sepenuhnya di hosting Biznet + Neon.**
+- Belum: hapus installer
   sementara `public_html/pd-*.php`, `ar-*.php`, `~/rt05/verif.php`; M16.9 backup+drill; M16.10.
 
 ## Soft launch 8 Nov di VPS `takeda.morriz.tech` + Neon production (ADR57) — 7 November 2026 malam

@@ -67,7 +67,7 @@ VPS; data di Neon production yang sama (titik pulih branch `cadangan-sebelum-pin
 masih ke `takeda.morriz.tech` (VPS). APK 1031 (ke rt05takeda.com) sudah tayang. `takeda.morriz.tech` sudah jadi addon
 domain cPanel; **sejak 10 Nov 10.01 WIB A record `takeda` → `103.58.102.39` + AutoSSL (lulus), semua lalu lintas aplikasi
 ke hosting.** Sejak 10 Nov siang scheduler VPS dihentikan dan cron `rt05:shared-tick` (tiap menit) berjalan di cPanel → **penjadwal
-tunggal = hosting**. VPS sisa api/web/worker tanpa lalu lintas, menunggu izin dimatikan. Urutan sisa: cutover penjadwal (stop scheduler VPS, tunggu antrean Redis kosong, pasang cron
+tunggal = hosting**. Container `rt05-production-*` di VPS **dimatikan** (volume + `/root/.rt05` disimpan, layanan lain VPS tetap jalan). Urutan sisa: cutover penjadwal (stop scheduler VPS, tunggu antrean Redis kosong, pasang cron
 `rt05:shared-tick`) → hentikan VPS → hapus `public_html/pd-*.php` dan `ar-*.php`. **Hanya satu penjadwal aktif.**
 
 ## LANJUTKAN DARI SINI — soft launch Minggu 8 Nov 2026 di VPS (ditulis Sabtu 7 Nov ±18.45 WIB, ADR57)
