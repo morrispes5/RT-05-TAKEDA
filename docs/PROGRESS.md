@@ -54,8 +54,15 @@
   (jeda TLS ±1 menit). HTTPS tanpa `--resolve`: `/up`, `/api/v1/`, `/`, `/aplikasi`, `/unduh/versi.json` (build 1031)
   200 dari 103.58.102.39, verifikasi TLS 0; APK arm64 1031 23.138.333 B. Cek hitungan hosting 10.03 WIB: 16/16 token
   push terdekripsi, akun 14, rumah 188, outbox_pending 0, panik true/all, profil shared. APK 1030 di HP nyata belum diuji.
-- Belum: cutover penjadwal (stop scheduler VPS → kuras antrean → cron shared-tick); matikan tumpukan VPS;
-  hapus installer sementara; M16.9 backup+drill.
+- **Cutover penjadwal 10 Nov siang.** VPS `queue:monitor`: redis default/notifications/media/exports 0 pending/delayed/
+  reserved, 0 failed. Atas izin pemilik ("Ya, hentikan") `docker stop rt05-production-scheduler-1` (restart policy
+  `unless-stopped` → tetap mati setelah reboot). Pemilik meminta agent mengisi cron → cPanel `Cron::add_line`
+  (linekey 26761769) tiap menit: `cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick
+  >/dev/null 2>>/home/rttakezd/rt05/shared-tick.err`; cron jembatan Neon (78948247) tetap. Cek 13.41 WIB:
+  `heartbeat shared-tick` umur 54 dtk, jobs 0, failed_jobs 0, outbox_pending 0, token push 15/15 terdekripsi
+  (satu perangkat lepas wajar), akun 14, rumah 188. **Penjadwal tunggal kini hosting.**
+- Belum: matikan sisa tumpukan VPS (api/web/worker/gateway/redis; izin pemilik, volume jangan dihapus); hapus installer
+  sementara `public_html/pd-*.php`, `ar-*.php`, `~/rt05/verif.php`; M16.9 backup+drill; M16.10.
 
 ## Soft launch 8 Nov di VPS `takeda.morriz.tech` + Neon production (ADR57) — 7 November 2026 malam
 
