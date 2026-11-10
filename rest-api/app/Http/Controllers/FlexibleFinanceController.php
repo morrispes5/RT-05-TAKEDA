@@ -30,7 +30,7 @@ class FlexibleFinanceController extends Controller
         $period = Dues::period((string) $request->query('periode', now('Asia/Jakarta')->format('Y-m')));
 
         return DB::transaction(function () use ($period) {
-            FlexibleDues::lock();
+            FlexibleDues::readLock();
             $arrears = DB::table('rt05_tagihan_saldo')->where('periode', '<', $period->toDateString())->where('sisa', '>', 0)
                 ->selectRaw('rumah_id, count(*) AS bulan, sum(sisa) AS nominal')->groupBy('rumah_id')->get()->keyBy('rumah_id');
             $rows = TagihanIuran::with(['rumah', 'alokasi.pembayaran', 'saldo'])->where('periode', $period->toDateString())->get()
@@ -187,7 +187,7 @@ class FlexibleFinanceController extends Controller
         self::enabled();
 
         return DB::transaction(function () use ($id) {
-            FlexibleDues::lock();
+            FlexibleDues::readLock();
             $periods = DB::table('alokasi_pembayaran as a')->join('tagihan_iuran as t', 't.id', '=', 'a.tagihan_id')
                 ->where('t.rumah_id', $id)->whereNotNull('a.penggunaan_titipan_id')->orderBy('t.periode')
                 ->get(['a.penggunaan_titipan_id', 't.periode'])->groupBy('penggunaan_titipan_id');

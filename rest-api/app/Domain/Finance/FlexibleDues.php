@@ -15,9 +15,20 @@ use Illuminate\Support\Str;
 /** M18 domain. HTTP mutations must additionally use Idempotency::run. */
 final class FlexibleDues
 {
+    /** Penulis keuangan: eksklusif, menunggu semua pembaca dan penulis lain pada kunci yang sama. */
     public static function lock(): void
     {
         DB::select("SELECT pg_advisory_xact_lock(hashtext('rt05:keuangan'))");
+    }
+
+    /**
+     * Pembaca keuangan (GET): kunci bersama pada kunci yang sama. Pembaca tidak saling menunggu, tetapi tetap tidak
+     * melihat pencatatan setengah jalan karena penulis memegang kunci eksklusif. M16 (10 Nov 2026): dengan kunci
+     * eksklusif, semua pembukaan layar Iuran di satu RT antre satu per satu dan bisa memenuhi 20 proses hosting.
+     */
+    public static function readLock(): void
+    {
+        DB::select("SELECT pg_advisory_xact_lock_shared(hashtext('rt05:keuangan'))");
     }
 
     private static function reason(string $reason): void
