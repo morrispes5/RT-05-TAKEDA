@@ -68,8 +68,12 @@
   (bisa `docker start` lagi bila darurat). Coolify dan 11 container lain di VPS tidak disentuh, tetap Up. Staging RT05
   memang sudah mati. Sesudahnya `takeda.morriz.tech` dan `rt05takeda.com` (`/up`, `/api/v1/`, `/`, `/unduh/versi.json`)
   200 dari 103.58.102.39. **RT05 production kini sepenuhnya di hosting Biznet + Neon.**
-- Belum: hapus installer
-  sementara `public_html/pd-*.php`, `ar-*.php`, `~/rt05/verif.php`; M16.9 backup+drill; M16.10.
+- **Installer sementara dihapus 10 Nov siang** (perintah pemilik "Ya, hapus"): `public_html/pd-552d0c8ef631.php`,
+  `public_html/ar-552d0c8ef631.php`, `~/rt05/verif.php` lewat cPanel `Fileman::fileop unlink`; `~/rt05-upload` sudah tidak
+  ada. Keduanya kini 404; `/up`, `/api/v1/`, `/`, `/aplikasi`, `/unduh/versi.json` di kedua domain 200. Cadangan
+  `.env.bak-sebelum-pindah-*` (0600, di luar public_html) dibiarkan sebagai titik pulih.
+- Belum (M16): M16.9 backup terenkripsi + latihan restore tanpa VPS (Neon Free: PITR 6 jam, belum ada jadwal snapshot);
+  M16.10 SEO/GSC, sitemap, SOP, serah terima, pemantauan 14 hari; uji HP nyata update 1030 → 1031.
 
 ## Soft launch 8 Nov di VPS `takeda.morriz.tech` + Neon production (ADR57) — 7 November 2026 malam
 
