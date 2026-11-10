@@ -48,8 +48,13 @@
   ditolak pemeriksa keamanan; tidak dicoba jalan lain. AutoSSL cPanel butuh DNS sudah mengarah ke hosting, jadi ada jeda
   TLS beberapa menit setelah A record diganti (TTL `takeda` sudah 300 dtk). Tidak ada data hilang selama jeda: APK 1030
   hanya gagal tersambung lalu mencoba lagi.
-- Belum: pemilik ganti A record `takeda` (hPanel Hostinger, morriz.tech) ke `103.58.102.39` di jam sepi → AutoSSL +
-  verifikasi HTTPS; cutover penjadwal (stop scheduler VPS → kuras antrean → cron shared-tick); matikan tumpukan VPS;
+- **Selasa 10 Nov ±10.01 WIB jembatan aktif.** Pemilik login hPanel di Chrome, agent mengganti A record `takeda` (bukan
+  `takeda-staging`, tetap 139.190.105.219) ke `103.58.102.39`, TTL 300. NS hermes/artemis, 8.8.8.8, 1.1.1.1 langsung
+  mengembalikan IP baru. `SSL/start_autossl_check` → sertifikat Let's Encrypt `takeda.morriz.tech` terpasang 10.02.41 WIB
+  (jeda TLS ±1 menit). HTTPS tanpa `--resolve`: `/up`, `/api/v1/`, `/`, `/aplikasi`, `/unduh/versi.json` (build 1031)
+  200 dari 103.58.102.39, verifikasi TLS 0; APK arm64 1031 23.138.333 B. Cek hitungan hosting 10.03 WIB: 16/16 token
+  push terdekripsi, akun 14, rumah 188, outbox_pending 0, panik true/all, profil shared. APK 1030 di HP nyata belum diuji.
+- Belum: cutover penjadwal (stop scheduler VPS → kuras antrean → cron shared-tick); matikan tumpukan VPS;
   hapus installer sementara; M16.9 backup+drill.
 
 ## Soft launch 8 Nov di VPS `takeda.morriz.tech` + Neon production (ADR57) — 7 November 2026 malam
