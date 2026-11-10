@@ -1,5 +1,41 @@
 # Progress — RT05 TAKEDA
 
+## M16 cek production, kapasitas 400 rumah, uji tombol, M16.9 — Selasa 10 November 2026 sore
+
+Perintah pemilik: "selesaikan milestone 16 semuanya… pastikan production nggak ada bug… RAM 1 GB… simulasi user 400…
+semua tombol sebagai user". Bukti lengkap: [evidence/m16/KAPASITAS_400_20261110.md](evidence/m16/KAPASITAS_400_20261110.md).
+
+- **Production (baca saja):** log API hosting tanpa error sejak 7 Nov (LOG_LEVEL warning → setiap 500 tercatat); log web
+  hanya 2× `site_content.api_unavailable` (9 Nov 18.47, 10 Nov 10.30 WIB; website menyajikan last-good). Smoke GET 35
+  URL di `rt05takeda.com` dan `takeda.morriz.tech`: semua sesuai (halaman, 5 artikel + 3 album 200, API publik 200, 19
+  endpoint privat 401). `sitemap.xml` 404 dan robots `Disallow: /` **disengaja** (`RT05_SEARCH_INDEXING` false, M16.10).
+  Push dari hosting terbukti: pengaduan asli 10 Nov ±13 WIB `push_status=terkirim`. cPanel LVE: CPU 1 inti, RAM 1 GB,
+  20 EP; pemakaian hari ini ≤21 MB, EP ≤0,08, **0 fault**.
+- **Kapasitas 400 rumah (lokal):** `M16CapacityTest` — query setiap layar warga sama di 10 dan 400 rumah, memori
+  ≤7,8 MB/request, alarm panik ke 399 HP dan pengumuman ke 400 HP selesai dalam 1 job `SendPush` (±4 dtk).
+  **Bug ditemukan:** `/dues/my` dan `/cash/summary` memakai kunci keuangan eksklusif → layar Iuran satu RT antre satu per
+  satu. Diperbaiki dengan kunci bersama (`FlexibleDues::readLock`), plus `rt05:demo-seed` yang rusak sejak M15b/M18.
+  **PR #125** (`codex/m16-kapasitas-400`, CI hijau; lokal 479 tes lulus (478 + demo seed)) — **belum merge/deploy** (butuh izin pemilik).
+- **Risiko kapasitas (keputusan pemilik):** (1) kuota Neon Free 100 CU-jam/bulan bisa habis bila 400 warga aktif
+  (perkiraan 120–150 CU-jam); (2) anti-bot hosting memblokir IP rumah pemilik (`403` "One moment, please…") setelah
+  ±150 permintaan cepat dari PC operator, **masih 403 ±40 menit kemudian** — HP di Wi-Fi rumah ikut gagal; usul tiket
+  Biznet untuk mengecualikan `/api/`, `/unduh/`, `/up`. Jangan uji beban production dari satu IP.
+- **Uji tombol warga di emulator** (APK debug dev `bc8c964` dari CI → API lokal, AVD Pixel_7a): pendaftaran, privasi,
+  Beranda, notifikasi, iuran + bukti transfer foto, pengaduan + foto + anonim + perbaikan, aspirasi, agenda, ajukan
+  kegiatan, akun/keluarga, ganti kata sandi, keluar/masuk, multi-akun, tombol panik (nyala, jenis, batal), lupa kata
+  sandi — **lulus**. Anonimitas benar dari sisi warga lain. Kosmetik untuk evaluasi: tombol "Detail" kartu Iuran di tengah;
+  teks Lupa kata sandi masih teknis.
+- **M16.9 latihan restore (jalur Neon) lulus:** compute baca-saja `ep-odd-art-b31gbtxb` dipasang di branch titik pulih
+  `cadangan-sebelum-pindah-hosting-20261109` (9 Nov 13.36 WIB) dan langsung terbaca (±1 menit). Isi cocok dengan production:
+  akun 14, rumah 188, keluarga 12, warga 20, tagihan 2.066 / Rp151.925.000, pembayaran 0, kas 0, konten 13, migrasi 37;
+  selisih hanya aktivitas setelah titik pulih (pengaduan 2→3, notifikasi 82→83, audit 328→331).
+  **Belum: dump terenkripsi offsite ke Drive (ADR38).** Docker Desktop PC rusak (socket `dockerInference` dan
+  `docker-secrets-engine/engine.sock` tidak bisa diakses sistem; folder lama dipindah ke `*.lama-20261110`, masih
+  gagal; masalah sama 7 Sep). Unduhan biner resmi PostgreSQL 17.10 (EDB) untuk `pg_dump` **ditolak pemeriksa keamanan**
+  ("kode dari luar") → dihapus. Pilihan untuk pemilik: (a) izinkan biner `pg_dump` di PC, atau (b) backup harian GitHub
+  Actions (`pg_dump` role baca → gpg → Drive `rclone` scope `drive.file`) dengan secret di repo. rclone mengingatkan
+  client_id bersama akan dimatikan 2026 → perlu client_id sendiri.
+
 ## M16 pindah production VPS → Biznet `rt05takeda.com` — Senin 9 November 2026 siang
 
 - Perintah pemilik ±13.30 WIB: "untuk milestone 16 ini lulus seperti tahapan yang udh di PLANING, VPS gw udh ga ada

@@ -60,6 +60,19 @@ tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Sudah di `main` (2
 memakai `--sampai=2026-09 --putihkan`; saldo awal kas resmi tetap diisi bendahara sekali (belum ada angkanya).
 Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau staging (ADR52) perlu impor ulang setelah deploy.
 
+## LANJUTKAN DARI SINI — sisa M16 setelah pindah (Selasa 10 Nov 2026 sore)
+
+Production 100% di hosting `rt05takeda.com` (+ `takeda.morriz.tech`), cron `rt05:shared-tick` + jembatan Neon; VPS RT05
+mati. 10 Nov: production bersih (log, smoke, LVE 0 fault), kapasitas 400 rumah diuji lokal, uji tombol warga lulus,
+latihan restore jalur Neon lulus (PROGRESS 10 Nov + `evidence/m16/KAPASITAS_400_20261110.md`). Menunggu pemilik:
+1. Merge + deploy **PR #125** (kunci baca keuangan bersama) ke hosting di jam sepi, cadangan branch Neon + env dulu.
+   Installer sementara sudah dihapus → deploy berikut lewat cPanel File Manager (unggah zip `shared-release` + ekstrak).
+2. Backup offsite ADR38: izinkan `pg_dump` di PC **atau** workflow GitHub Actions dengan secret (repo publik → tanpa artefak).
+3. Tiket Biznet anti-bot (`/api/` dikecualikan) — IP rumah pemilik masih 403 pada 10 Nov sore.
+4. Kuota Neon Free untuk 400 warga (pantau mingguan; paket berbayar atau cadangan ADR39).
+5. M16.10: `RT05_SEARCH_INDEXING=true` + GSC (TXT DNS cPanel) + sitemap; pantau 14 hari (soft launch 8 Nov → 22 Nov);
+   SOP + serah terima. Pilot rumah dan saldo kas resmi bendahara tetap dari pengurus.
+
 ## LANJUTKAN DARI SINI — pindah ke `rt05takeda.com` (Senin 9 Nov 2026 siang)
 
 Hosting `rt05takeda.com` sudah menjalankan kode `d4b5407` (= VPS) dengan `APP_KEY`, email, push, dan panik sama dengan
