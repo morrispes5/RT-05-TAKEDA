@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\Database\TlsPolicy;
+use App\Support\SharedHosting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +21,9 @@ class HealthController extends Controller
     private const NO_STORE = ['Cache-Control' => 'no-store'];
 
     private const DATABASE_CACHE_SECONDS = 10;
+
+    /** Shared (Neon Free, satu compute): pemantau luar tiap menit tidak boleh menjaga compute tetap bangun. */
+    private const SHARED_DATABASE_CACHE_SECONDS = 60;
 
     public function live(): JsonResponse
     {
@@ -49,7 +53,9 @@ class HealthController extends Controller
         // Audit M16: hasil disimpan sebentar agar banjir permintaan publik ke /health/ready tidak membangunkan Neon dan
         // menghabiskan kuota CU-jam. Cache gagal → periksa langsung.
         try {
-            return Cache::remember('rt05:health:database', self::DATABASE_CACHE_SECONDS, fn () => $this->ping());
+            $seconds = SharedHosting::enabled() ? self::SHARED_DATABASE_CACHE_SECONDS : self::DATABASE_CACHE_SECONDS;
+
+            return Cache::remember('rt05:health:database', $seconds, fn () => $this->ping());
         } catch (Throwable) {
             return $this->ping();
         }

@@ -6,7 +6,7 @@ return [
     'rt05_content' => [
         'api' => env('RT05_CONTENT_API'),
         'timeout' => (int) env('RT05_CONTENT_API_TIMEOUT', 3),
-        'fresh_seconds' => (int) env('RT05_CONTENT_FRESH_SECONDS', 60),
+        'fresh_seconds' => (int) env('RT05_CONTENT_FRESH_SECONDS', 300),
     ],
 
     // M16: hanya production yang boleh diindeks mesin pencari; staging/preview noindex. APK_META: path/URL versi.json.

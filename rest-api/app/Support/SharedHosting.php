@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Domain\Operations\OutboxDispatcher;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,31 @@ final class SharedHosting
 {
     /** Jaring pemulihan. Tidak menyentuh database bila belum waktunya dan tidak ada penanda. */
     public const SWEEP_SECONDS = 900;
+
+    /**
+     * 14 Nov 2026: operasi Neon memperlihatkan compute dibangunkan tiap 10–15 menit sepanjang malam oleh sapuan ini
+     * (±30–40% waktu aktif tanpa pemakai, pemakai kuota Free terbesar). Pukul 22.00–05.59 WIB sapuan cukup tiap jam dan
+     * tugas terjadwal ikut sapuan itu. Kejadian baru tetap diproses tiap menit lewat penanda wake (Outbox::record).
+     */
+    public const NIGHT_SWEEP_SECONDS = 3600;
+
+    public static function isNight(): bool
+    {
+        $hour = Carbon::now('Asia/Jakarta')->hour;
+
+        return $hour >= 22 || $hour < 6;
+    }
+
+    public static function sweepSeconds(): int
+    {
+        return self::isNight() ? self::NIGHT_SWEEP_SECONDS : self::SWEEP_SECONDS;
+    }
+
+    /** Hanya membaca cache file; tidak membuka database. */
+    public static function sweepDue(): bool
+    {
+        return time() - (int) Cache::store('file')->get('rt05:shared:last-sweep', 0) >= self::sweepSeconds();
+    }
 
     /**
      * Cron 15 menit boleh terlambat beberapa menit, dan tick menulis heartbeat
