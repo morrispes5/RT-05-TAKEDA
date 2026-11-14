@@ -300,7 +300,8 @@ class SessionController extends Notifier<SessionState> {
         stored,
       ],
     );
-    _writeProfile(stored, previousId);
+    // Simpan ke storage tanpa menahan UI; gagal tulis tidak boleh menjadi error async tak tertangani.
+    _writeProfile(stored, previousId).ignore();
   }
 
   Future<void> _writeProfile(StoredAccount stored, String? previousId) async {

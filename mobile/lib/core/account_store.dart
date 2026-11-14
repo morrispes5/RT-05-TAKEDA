@@ -78,7 +78,18 @@ class AccountStore {
 
   Future<void> clearActive() => _delete(_activeKey);
 
-  Future<void> upsert(StoredAccount account) async {
+  // Daftar akun disimpan sebagai satu JSON: baca-ubah-tulis harus berurutan. Tanpa antrean, upsert profil yang
+  // tertunda bisa menulis ulang daftar lama setelah logout menghapus akun itu, sehingga token akun yang sudah
+  // keluar muncul lagi di "Akun di HP ini".
+  Future<void> _tail = Future.value();
+
+  Future<void> _locked(Future<void> Function() op) {
+    final run = _tail.then((_) => op());
+    _tail = run.catchError((Object _) {});
+    return run;
+  }
+
+  Future<void> upsert(StoredAccount account) => _locked(() async {
     final all = await loadAll();
     final idx = all.indexWhere((a) => a.id == account.id);
     if (idx >= 0) {
@@ -87,12 +98,12 @@ class AccountStore {
       all.add(account);
     }
     await saveAll(all);
-  }
+  });
 
-  Future<void> remove(String id) async {
+  Future<void> remove(String id) => _locked(() async {
     final all = await loadAll();
     all.removeWhere((a) => a.id == id);
     await saveAll(all);
     if (await activeId() == id) await clearActive();
-  }
+  });
 }

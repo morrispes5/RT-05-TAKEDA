@@ -912,7 +912,7 @@ class _RecordPaymentPageState extends ConsumerState<RecordPaymentPage> {
                                 ref.invalidate(houseDuesProvider('${_house!['id']}'));
                                 if (context.mounted) {
                                   showMessage(context, 'Tercatat: ${(res as Map)['nomor_bukti']}');
-                                  Navigator.pop(context);
+                                  Navigator.pop(context, true);
                                 }
                               } on ApiException catch (e) {
                                 if (e.isUnknownOutcome) {

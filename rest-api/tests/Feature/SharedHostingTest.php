@@ -88,7 +88,7 @@ class SharedHostingTest extends TestCase
         $this->onlyDue('bersihkan-ekspor');
         Artisan::command('rt05:bersihkan-ekspor', fn () => 1); // ganti sementara: gagal
 
-        $ran = SharedSchedule::runDue();
+        $ran = SharedSchedule::runDue(true);
 
         $this->assertSame([['task' => 'bersihkan-ekspor', 'exit' => 1]], $ran);
         $this->assertTrue(SharedHosting::dueSlot('bersihkan-ekspor', '2026-11-07'), 'gagal → tidak ditandai, dicoba lagi');
@@ -214,7 +214,6 @@ class SharedHostingTest extends TestCase
         $this->onlyDue('-');
         Cache::store('file')->forget('rt05:shared:ran:pengingat-agenda');
         Cache::store('file')->put('rt05:shared:last-sweep', time() - SharedHosting::NIGHT_SWEEP_SECONDS - 1, 3600);
-        Cache::store('file')->forget('rt05:shared:awake');
         $event = DB::transaction(fn () => Outbox::record('rt05.smoke', 'smoke', null, ['penerima' => []]));
         $this->events[] = $event->id;
         Cache::store('file')->forget('rt05:shared:awake');

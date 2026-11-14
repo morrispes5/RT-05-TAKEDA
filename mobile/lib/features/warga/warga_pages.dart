@@ -1,4 +1,4 @@
-import 'dart:io' show File;
+import 'dart:io' show File, FileSystemException;
 
 import 'package:dio/dio.dart' show FormData, MultipartFile;
 import 'package:flutter/material.dart';
@@ -432,9 +432,11 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
   /// Android sempat menutup aplikasi saat kamera terbuka: kembalikan isian dan foto.
   Future<void> _restoreDraft() async {
     final store = ref.read(reportDraftStoreProvider);
+    // Dibaca sebelum await: ref tidak boleh dipakai lagi bila halaman sudah ditutup selama membaca draf.
+    final lostPhotos = ref.read(lostPhotosProvider);
     final draft = await pendingDraftFor(store, ref.read(sessionProvider).akun?.id);
     if (draft == null) return;
-    final lost = draft.kamera ? await ref.read(lostPhotosProvider)(_picker) : const <XFile>[];
+    final lost = draft.kamera ? await lostPhotos(_picker) : const <XFile>[];
     final kept = [
       for (final p in draft.photos)
         if (File(p).existsSync()) XFile(p),
@@ -633,6 +635,9 @@ class _ReportFormPageState extends ConsumerState<ReportFormPage> {
         return;
       }
       setState(() => _formError = e.display);
+    } on FileSystemException {
+      // Foto di cache aplikasi sudah dihapus Android sebelum dikirim: tanpa ini tombol aktif lagi tanpa pesan.
+      if (mounted) setState(() => _formError = 'Foto tidak bisa dibaca lagi dari HP. Hapus foto itu, pilih ulang, lalu kirim.');
     }
   }
 

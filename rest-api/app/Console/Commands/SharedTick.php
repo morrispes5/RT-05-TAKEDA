@@ -47,11 +47,11 @@ class SharedTick extends Command
                 $this->error('neon_bridge_unavailable');
             }
             // Bukan `schedule:run`: itu menjalankan command sebagai proses baru (proc_open), yang diblokir di Biznet.
-            foreach (SharedSchedule::runDue() as $ran) {
+            $sweep = SharedHosting::sweepDue();
+            foreach (SharedSchedule::runDue($sweep) as $ran) {
                 $this->line(now()->toDateTimeString().' '.$ran['task'].' exit='.$ran['exit']);
             }
             $cache = Cache::store('file');
-            $sweep = SharedHosting::sweepDue();
             if (! $sweep && ! SharedHosting::awake()) {
                 // Idle juga baru menulis setelah tugas terjadwal kembali.
                 Heartbeat::beat('shared-tick');

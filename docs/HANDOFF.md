@@ -76,6 +76,24 @@ Pemilik 8 Nov: "harus hati-hati jika menyentuh production". Mengikat:
    UPDATE/DELETE SQL langsung; data warga tidak dicetak ke log/chat.
 6. **Jangan uji beban/smoke beruntun dari PC** ke production: anti-bot Biznet memblokir IP rumah pemilik (10 Nov).
 
+## Review bug mobile + /simplify (Sabtu 14 Nov 2026 sore)
+
+Perintah pemilik sebelum pindah sesi: "/simplify, cari bug, aku gak mau ada bug apapun di mobile, review kode kamu sendiri".
+Branch `codex/m16-review-mobile` (rincian PROGRESS). Diperbaiki + dikunci tes regresi (5 tes gagal di kode lama, lulus
+setelah perbaikan): kunci idempotency pengaturan tombol panik tidak pernah diganti (toggle kedua 409); bukti bayar jalur
+keuangan lama bisa ditandai "selesai" walau pencatatan dibatalkan; respons HTML 200 (tantangan anti-bot/captive portal)
+membuat layar diam tanpa pesan; daftar akun di HP bisa menulis ulang akun yang sudah keluar; parser field error. Juga
+pengaman kecil (tombol "Tidak setuju, keluar", unduhan pembaruan ganda, foto pengaduan hilang dari cache, `ref`/`setState`
+setelah halaman ditutup). Server: keputusan sapuan malam dihitung sekali di `SharedTick`.
+
+**Belum rilis:** perbaikan mobile baru sampai ke HP lewat APK berikutnya (1032, workflow rilis butuh persetujuan pemilik);
+perubahan server kecil ikut deploy berikutnya (aturan production: PR → CI → izin merge → deploy berkas + cek sha256).
+
+**Dicatat untuk tahap evaluasi (tidak diubah, perlu keputusan/server):** Idempotency-Key untuk buat pengaduan, bukti
+bayar, agenda, pengumuman, anggota, dan rumah (retry setelah timeout bisa membuat data ganda; server baru mendukung kunci
+di keuangan + darurat); daftar pembayaran terbaru/bukti menunggu/permohonan berhenti di 50 baris tanpa halaman berikutnya;
+`readLock()` keuangan dipanggil per controller (bisa disatukan di satu titik baca domain).
+
 ## LANJUTKAN DARI SINI — setelah deploy Fase 3 (Sabtu 14 Nov 2026 siang)
 
 Production `a3e5209` (PR #125 + #127) di hosting; SEO aktif; runbook cadangan tanpa Docker (RUNBOOK bagian 8). Sisa:

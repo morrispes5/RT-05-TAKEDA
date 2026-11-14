@@ -142,6 +142,19 @@ class _PrivacyPolicyPageState extends ConsumerState<PrivacyPolicyPage> {
   String? _shownVersion;
   String? _accountId;
 
+  var _leaving = false;
+
+  Future<void> _logout() async {
+    setState(() => _leaving = true);
+    try {
+      await revokeServerSession(ref, path: '/auth/logout');
+    } on ApiException catch (error) {
+      if (mounted) showMessage(context, keptSessionMessage(error), error: true);
+    } finally {
+      if (mounted) setState(() => _leaving = false);
+    }
+  }
+
   Future<void> _agree() async {
     final session = ref.read(sessionProvider.notifier);
     final epoch = session.epoch;
@@ -237,11 +250,7 @@ class _PrivacyPolicyPageState extends ConsumerState<PrivacyPolicyPage> {
               const SizedBox(height: 16),
               AccountSwitcher(onAdd: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginPage(adding: true)))),
               const SizedBox(height: 8),
-              TextButton(
-                key: const ValueKey('privasi-keluar'),
-                onPressed: () => revokeServerSession(ref, path: '/auth/logout'),
-                child: const Text('Tidak setuju, keluar'),
-              ),
+              TextButton(key: const ValueKey('privasi-keluar'), onPressed: _leaving ? null : _logout, child: const Text('Tidak setuju, keluar')),
             ],
           ],
         ),

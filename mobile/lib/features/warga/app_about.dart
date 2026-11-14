@@ -170,6 +170,19 @@ class _AppUpdateDialogState extends ConsumerState<AppUpdateDialog> {
     });
   }
 
+  // Ketukan ganda sebelum tahap berganti (abis/directory masih ditunggu) memulai dua unduhan ke berkas yang sama.
+  bool _sibuk = false;
+
+  Future<void> _sekali(Future<void> Function() op) async {
+    if (_sibuk) return;
+    _sibuk = true;
+    try {
+      await op();
+    } finally {
+      _sibuk = false;
+    }
+  }
+
   Future<void> _unduh() async {
     final platform = ref.read(appUpdatePlatformProvider);
     final file = widget.release.fileFor(await platform.abis());
@@ -221,6 +234,9 @@ class _AppUpdateDialogState extends ConsumerState<AppUpdateDialog> {
         'INVALID' => 'Berkas ini bukan versi yang lebih baru dari aplikasi di HP, jadi tidak dipasang.',
         _ => 'Pemasangan gagal dimulai. Tekan Coba lagi atau pasang dari halaman unduh resmi.',
       });
+    } on Object {
+      // Selain PlatformException (mis. plugin tidak tersedia): tanpa ini dialog tertahan di tahap lama.
+      _gagal('Pemasangan gagal dimulai. Tekan Coba lagi atau pasang dari halaman unduh resmi.');
     }
   }
 
@@ -278,18 +294,18 @@ class _AppUpdateDialogState extends ConsumerState<AppUpdateDialog> {
       },
     ];
     final actions = switch (_tahap) {
-      _Tahap.siap => [close, FilledButton(key: const ValueKey('pembaruan-mulai'), onPressed: _unduh, child: const Text('Unduh dan pasang'))],
+      _Tahap.siap => [close, FilledButton(key: const ValueKey('pembaruan-mulai'), onPressed: () => _sekali(_unduh), child: const Text('Unduh dan pasang'))],
       _Tahap.unduh => [TextButton(key: const ValueKey('pembaruan-batal'), onPressed: () => _cancel?.cancel(), child: const Text('Batal'))],
       _Tahap.izin => [
         close,
         OutlinedButton(onPressed: () => ref.read(appUpdatePlatformProvider).openInstallPermission(), child: const Text('Buka pengaturan')),
-        FilledButton(key: const ValueKey('pembaruan-pasang'), onPressed: _pasang, child: const Text('Pasang')),
+        FilledButton(key: const ValueKey('pembaruan-pasang'), onPressed: () => _sekali(_pasang), child: const Text('Pasang')),
       ],
       _Tahap.pasang => [close],
       _Tahap.gagal => [
         TextButton(onPressed: () => openDownloadPage(context, ref), child: const Text('Halaman unduh resmi')),
         close,
-        FilledButton(key: const ValueKey('pembaruan-ulang'), onPressed: _pasang, child: const Text('Coba lagi')),
+        FilledButton(key: const ValueKey('pembaruan-ulang'), onPressed: () => _sekali(_pasang), child: const Text('Coba lagi')),
       ],
     };
     return PopScope(

@@ -14,7 +14,8 @@ import 'account_access.dart';
 import 'account_switcher.dart';
 
 Future<void> _finishAuth(WidgetRef ref, dynamic data) async {
-  final map = data as Map;
+  if (data is! Map || data['token'] is! String || data['akun'] is! Map) throw ApiException(0, 'BAD_RESPONSE', badResponseMessage);
+  final map = data;
   await ref.read(sessionProvider.notifier).signIn('${map['token']}', Akun(Map<String, dynamic>.from(map['akun'] as Map)));
 }
 
