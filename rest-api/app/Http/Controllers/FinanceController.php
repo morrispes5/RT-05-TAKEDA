@@ -41,7 +41,7 @@ class FinanceController extends Controller
         $period = $data['periode'] ?? now('Asia/Jakarta')->format('Y-m');
 
         return DB::transaction(function () use ($period) {
-            FlexibleDues::lock();
+            FlexibleDues::readLock();
 
             return Api::data(CashSummary::month($period));
         })->header('Cache-Control', 'private, no-store');
@@ -57,7 +57,7 @@ class FinanceController extends Controller
 
         return DB::transaction(function () use ($rumah, $request) {
             if (config('finance.v2')) {
-                FlexibleDues::lock();
+                FlexibleDues::readLock();
             }
 
             return Api::data($this->houseSummary($rumah, (int) $request->query('bulan', 24)));
@@ -137,7 +137,7 @@ class FinanceController extends Controller
     {
         if (config('finance.v2')) {
             return DB::transaction(function () {
-                FlexibleDues::lock();
+                FlexibleDues::readLock();
                 $period = now('Asia/Jakarta')->format('Y-m');
                 $reversed = self::reversedIds();
 
@@ -284,7 +284,7 @@ class FinanceController extends Controller
     {
         return DB::transaction(function () use ($id) {
             if (config('finance.v2')) {
-                FlexibleDues::lock();
+                FlexibleDues::readLock();
             }
 
             return Api::data($this->houseSummary(Rumah::findOrFail($id), 24));

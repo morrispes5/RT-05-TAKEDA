@@ -10,7 +10,7 @@ final class FinanceReports
     public static function year(int $year): array
     {
         return DB::transaction(function () use ($year) {
-            FlexibleDues::lock();
+            FlexibleDues::readLock();
             $start = sprintf('%04d-01-01', $year);
             $end = sprintf('%04d-01-01', $year + 1);
             $charges = collect(self::charges($start, $end));

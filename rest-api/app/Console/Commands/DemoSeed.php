@@ -57,19 +57,22 @@ class DemoSeed extends Command
         }
         Registration::additional([
             'email' => 'tambahan@demo.rt05.test', 'password' => $password, 'nama' => 'Demo Anggota Tambahan',
-            'hubungan_keluarga' => 'Anak', 'blok' => 'A', 'jalan' => 'Jl. Kedaung Demo', 'nomor' => '1',
+            // Pemohon tambahan wajib menyebut kepala keluarga rumah tujuan (M15b); tanpa ini seed demo gagal (10 Nov 2026).
+            'hubungan_keluarga' => 'Anak', 'nama_kepala' => 'Demo Warga Satu', 'blok' => 'A', 'jalan' => 'Jl. Kedaung Demo', 'nomor' => '1',
         ], $code);
 
         $pengurus = new Akun(['nama' => 'Demo Pengurus', 'email' => 'pengurus@demo.rt05.test', 'password_hash' => $password, 'jenis' => 'utama', 'status' => 'aktif']);
         $pengurus->peran = 'pengurus';
         $pengurus->save();
 
-        DB::table('rumah')->update(['mulai_tagih' => CarbonImmutable::now('Asia/Jakarta')->subMonths(2)->startOfMonth()->toDateString()]);
-        DB::table('tarif_iuran')->update(['mulai_periode' => CarbonImmutable::now('Asia/Jakarta')->subMonths(2)->startOfMonth()->toDateString()]);
+        // Tarif ledger tidak boleh diubah (trigger M18); tagihan demo mulai paling awal di bulan tarif berlaku (10 Nov 2026).
+        $start = max(CarbonImmutable::now('Asia/Jakarta')->subMonths(2)->startOfMonth(),
+            CarbonImmutable::parse((string) DB::table('tarif_iuran')->min('mulai_periode'), 'Asia/Jakarta')->startOfMonth());
+        DB::table('rumah')->update(['tagihan_aktif' => true, 'mulai_tagih' => $start->toDateString()]);
         Dues::catchUp($pengurus);
-        Dues::recordCash($pengurus, 'saldo_awal', 500000, CarbonImmutable::now('Asia/Jakarta')->subMonths(2)->startOfMonth()->toDateString(), 'Saldo awal', 'Saldo awal kas demo');
-        $first = CarbonImmutable::now('Asia/Jakarta')->subMonths(2)->format('Y-m');
-        $second = CarbonImmutable::now('Asia/Jakarta')->subMonth()->format('Y-m');
+        Dues::recordCash($pengurus, 'saldo_awal', 500000, $start->toDateString(), 'Saldo awal', 'Saldo awal kas demo');
+        $first = $start->format('Y-m');
+        $second = $start->addMonth()->format('Y-m');
         Dues::recordPayment($pengurus, $accounts[0]->rumah()->id, [$first, $second], 150000, now('Asia/Jakarta')->toDateString(), 'Demo: bayar dua bulan');
         Dues::recordCash($pengurus, 'pengeluaran', 120000, now('Asia/Jakarta')->toDateString(), 'Kebersihan', 'Demo: pembelian kantong sampah');
 

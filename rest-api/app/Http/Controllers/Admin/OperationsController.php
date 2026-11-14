@@ -116,7 +116,7 @@ class OperationsController extends Controller
     private function financeCsv(string $jenis, ?string $period): StreamedResponse
     {
         [$header, $rows] = DB::transaction(function () use ($jenis, $period) {
-            FlexibleDues::lock();
+            FlexibleDues::readLock();
             $start = $period ? Dues::period($period)->toDateString() : null;
             $end = $period ? Dues::period($period)->addMonth()->toDateString() : null;
             if ($jenis === 'iuran') {
