@@ -59,6 +59,11 @@ final class SharedSchedule
     public static function runDue(): array
     {
         $ran = [];
+        // Malam (22.00–05.59 WIB): tugas terjadwal menunggu tick yang memang menjalankan sapuan, jadi Neon dibangunkan
+        // sekali per jam, bukan sekali per tugas. Keterlambatan maksimal ±1 jam; semua tugas idempotent (14 Nov 2026).
+        if (SharedHosting::isNight() && ! SharedHosting::sweepDue()) {
+            return $ran;
+        }
         foreach (self::tasks() as $t) {
             if (! ($t['due'])()) {
                 continue;

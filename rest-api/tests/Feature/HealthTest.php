@@ -81,6 +81,20 @@ class HealthTest extends TestCase
         $this->getJson('/health/ready')->assertStatus(503)->assertJsonPath('checks.database', 'unavailable');
     }
 
+    /** ADR60 Fase 3: di shared hosting (Neon Free) hasil cek database disimpan 60 detik. */
+    public function test_shared_profile_caches_the_database_check_for_a_minute(): void
+    {
+        config(['rt05.deployment_profile' => 'shared']);
+        $this->getJson('/health/ready')->assertOk();
+        $this->breakDatabase();
+
+        $this->travel(59)->seconds();
+        $this->getJson('/health/ready')->assertOk()->assertJsonPath('checks.database', 'ok');
+
+        $this->travel(2)->seconds();
+        $this->getJson('/health/ready')->assertStatus(503)->assertJsonPath('checks.database', 'unavailable');
+    }
+
     /** Audit M16: pesan QueryException di log tidak memuat nilai binding (email, hash kata sandi, nomor WA). */
     public function test_query_exception_messages_mask_bindings(): void
     {

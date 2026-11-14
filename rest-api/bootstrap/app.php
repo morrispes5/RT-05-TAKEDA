@@ -4,6 +4,7 @@ use App\Exceptions\DomainConflict;
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\EnsureAkun;
 use App\Http\Middleware\RequireCsrfToken;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Responses\ApiError;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(AssignRequestId::class);
+        $middleware->append(SecurityHeaders::class);
         $middleware->alias(['akun' => EnsureAkun::class]);
         // CMS: request dari origin sendiri (SANCTUM_STATEFUL_DOMAINS) memakai sesi cookie API +
         // CSRF ketat; mobile tanpa Origin/Referer tetap bearer murni.

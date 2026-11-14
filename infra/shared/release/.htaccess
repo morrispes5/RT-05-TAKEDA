@@ -13,10 +13,12 @@ Options -Indexes -MultiViews
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # HTTPS wajib — AKTIFKAN setelah AutoSSL rt05takeda.com terbukti (M16.4). Sebelum itu redirect ini memutus situs.
-    # RewriteCond %{HTTPS} !=on
-    # RewriteCond %{HTTP:X-Forwarded-Proto} !=https
-    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    # HTTPS wajib (ADR60 Fase 3; AutoSSL rt05takeda.com dan takeda.morriz.tech terbukti). Validasi AutoSSL lewat
+    # /.well-known tetap boleh HTTP agar perpanjangan sertifikat tidak bergantung pada sertifikat lama.
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteCond %{REQUEST_URI} !^/\.well-known/
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
     # Dotfile tidak boleh diunduh, kecuali .well-known (validasi AutoSSL).
     RewriteRule (^|/)\.(?!well-known(/|$)) - [F,L]

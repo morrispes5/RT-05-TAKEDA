@@ -67,9 +67,10 @@ class SharedHostingTest extends TestCase
 
     public function test_due_shared_task_runs_inside_the_tick_process_without_scheduler(): void
     {
-        // 03.00 WIB: bersihkan-ekspor (mulai 02.00) jatuh tempo.
+        // 03.00 WIB: bersihkan-ekspor (mulai 02.00) jatuh tempo. Malam hari tugas ikut sapuan per jam (14 Nov 2026),
+        // jadi sapuan terakhir dibuat lebih dari satu jam lalu.
         $this->travelTo(CarbonImmutable::parse('2026-11-07 03:00', 'Asia/Jakarta'));
-        Cache::store('file')->put('rt05:shared:last-sweep', time(), 3600);
+        Cache::store('file')->put('rt05:shared:last-sweep', time() - SharedHosting::NIGHT_SWEEP_SECONDS - 1, 3600);
         $this->onlyDue('bersihkan-ekspor');
         $this->assertTrue(SharedHosting::dueSlot('bersihkan-ekspor', '2026-11-07'));
 
@@ -181,6 +182,60 @@ class SharedHostingTest extends TestCase
         });
         $this->artisan('rt05:shared-tick')->assertExitCode(0);
         $this->assertSame([], $queries, 'An idle cron must not wake Neon.');
+        $this->travelBack();
+    }
+
+    /**
+     * 14 Nov 2026: Neon dibangunkan tiap 10–15 menit sepanjang malam oleh sapuan 15 menit. Malam hari (22.00–05.59 WIB)
+     * tick 20 menit setelah sapuan tidak membuka database, termasuk tugas per jam yang sudah jatuh tempo.
+     */
+    public function test_night_tick_between_hourly_sweeps_does_not_wake_neon(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-13 23:30', 'Asia/Jakarta'));
+        $this->onlyDue('-');
+        Cache::store('file')->forget('rt05:shared:ran:pengingat-agenda'); // tugas per jam jatuh tempo
+        Cache::store('file')->put('rt05:shared:last-sweep', time() - 1200, 3600);
+        $this->assertTrue(SharedHosting::isNight());
+        $this->assertFalse(SharedHosting::sweepDue());
+        $queries = [];
+        DB::listen(function ($event) use (&$queries): void {
+            $queries[] = $event->sql;
+        });
+
+        $this->artisan('rt05:shared-tick')->doesntExpectOutputToContain('pengingat-agenda')->assertExitCode(0);
+
+        $this->assertSame([], $queries, 'Tick malam di antara sapuan tidak boleh membangunkan Neon.');
+        $this->travelBack();
+    }
+
+    public function test_night_sweep_runs_hourly_and_carries_due_tasks(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-13 23:30', 'Asia/Jakarta'));
+        $this->onlyDue('-');
+        Cache::store('file')->forget('rt05:shared:ran:pengingat-agenda');
+        Cache::store('file')->put('rt05:shared:last-sweep', time() - SharedHosting::NIGHT_SWEEP_SECONDS - 1, 3600);
+        Cache::store('file')->forget('rt05:shared:awake');
+        $event = DB::transaction(fn () => Outbox::record('rt05.smoke', 'smoke', null, ['penerima' => []]));
+        $this->events[] = $event->id;
+        Cache::store('file')->forget('rt05:shared:awake');
+
+        $this->artisan('rt05:shared-tick')->expectsOutputToContain('pengingat-agenda exit=0')->assertExitCode(0);
+
+        $this->assertNotNull($event->fresh()->completed_at, 'Sapuan malam tetap memulihkan outbox tanpa penanda.');
+        $this->assertFalse(SharedHosting::sweepDue());
+        $this->travelBack();
+    }
+
+    public function test_daytime_keeps_the_fifteen_minute_sweep(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-13 10:00', 'Asia/Jakarta'));
+        Cache::store('file')->put('rt05:shared:last-sweep', time() - SharedHosting::SWEEP_SECONDS - 1, 3600);
+        $this->assertFalse(SharedHosting::isNight());
+        $this->assertTrue(SharedHosting::sweepDue());
+        $this->travelTo(CarbonImmutable::parse('2026-11-13 22:00', 'Asia/Jakarta'));
+        Cache::store('file')->put('rt05:shared:last-sweep', time() - SharedHosting::SWEEP_SECONDS - 1, 3600);
+        $this->assertTrue(SharedHosting::isNight());
+        $this->assertFalse(SharedHosting::sweepDue());
         $this->travelBack();
     }
 

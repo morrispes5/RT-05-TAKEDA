@@ -51,7 +51,7 @@ class SharedTick extends Command
                 $this->line(now()->toDateTimeString().' '.$ran['task'].' exit='.$ran['exit']);
             }
             $cache = Cache::store('file');
-            $sweep = time() - (int) $cache->get('rt05:shared:last-sweep', 0) >= SharedHosting::SWEEP_SECONDS;
+            $sweep = SharedHosting::sweepDue();
             if (! $sweep && ! SharedHosting::awake()) {
                 // Idle juga baru menulis setelah tugas terjadwal kembali.
                 Heartbeat::beat('shared-tick');
