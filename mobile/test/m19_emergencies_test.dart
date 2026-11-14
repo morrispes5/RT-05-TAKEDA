@@ -311,6 +311,28 @@ void main() {
     expect(sent[1].data, sent[0].data);
   });
 
+  // Review 14 Nov 2026: kunci pengaturan dulu final, jadi toggle kedua di layar yang sama ditolak server
+  // 409 IDEMPOTENCY_KEY_REUSED (kunci sama, isi beda). Setiap perubahan yang selesai memakai kunci baru.
+  testWidgets('admin settings uses a fresh key for each completed change', (tester) async {
+    final sent = <RequestOptions>[];
+    await _pump(
+      tester,
+      FakeAdapter((o) {
+        if (o.method == 'POST') {
+          sent.add(o);
+          return jsonBody(200, {'data': _status});
+        }
+        return jsonBody(200, {'data': _status});
+      }),
+      page: const Scaffold(body: EmergencyAdminSettings()),
+      admin: true,
+    );
+    await _tap(tester, 'Nonaktifkan tombol panik RT');
+    await _tap(tester, 'Nonaktifkan tombol panik RT');
+    expect(sent, hasLength(2));
+    expect(sent[0].headers['Idempotency-Key'], isNot(sent[1].headers['Idempotency-Key']));
+  });
+
   test('M19 privacy is explicitly recognized and discloses emergency identity without changing M18 text', () {
     expect(emergencyDeliveryText('gagal'), contains('mengalami kegagalan'));
     expect(emergencyDeliveryText('provider_menerima'), contains('belum membuktikan'));

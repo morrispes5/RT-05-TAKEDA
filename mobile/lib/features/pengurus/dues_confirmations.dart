@@ -211,13 +211,14 @@ class _DuesConfirmationDetailPageState extends ConsumerState<DuesConfirmationDet
       if (mounted && saved == true) Navigator.pop(context, true);
       return;
     }
-    await Navigator.push(
+    final saved = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (_) => RecordPaymentPage(house: _rumah, initialPeriods: [for (final p in (_k['periode'] as List? ?? const [])) '$p']),
       ),
     );
-    if (!mounted) return;
+    // Kembali tanpa menyimpan: jangan tawarkan "selesai", bukti belum punya pembayaran tercatat.
+    if (!mounted || saved != true) return;
     ref.invalidate(paymentsProvider);
     await _tandaiSelesai();
   }
@@ -441,9 +442,11 @@ class _TreasurerContactPageState extends ConsumerState<TreasurerContactPage> {
 
   Future<void> _kirim(String? nomor, {required String sukses}) async {
     setState(() => _fieldError = null);
+    // Container diambil sebelum await: ref tidak boleh dipakai bila halaman ditutup selama menyimpan.
+    final container = ProviderScope.containerOf(context, listen: false);
     try {
       final res = await ref.read(apiProvider).put('/admin/settings/contacts', data: {_field: nomor});
-      ref.invalidate(contactsProvider);
+      container.invalidate(contactsProvider);
       if (!mounted) return;
       final normal = res is Map ? res[_field] : null;
       _nomor.text = normal == null ? '' : waDisplay('$normal');

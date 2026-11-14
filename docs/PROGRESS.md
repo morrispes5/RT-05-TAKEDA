@@ -1,5 +1,42 @@
 # Progress — RT05 TAKEDA
 
+## Review bug mobile + /simplify — Sabtu 14 November 2026 sore
+
+Perintah pemilik: "/simplify dulu cari bug, aku gak mau ada bug apapun di mobile, review kode kamu sendiri". Basis `main`
+`61d6bf4` (tarball API GitHub, tanpa `git fetch`), branch `codex/m16-review-mobile`. Review: 4 sudut /simplify atas diff
+PR #125 + #127, 3 review bug untuk seluruh `mobile/lib` (19,6 ribu baris); tiap temuan dicek ulang di kode sebelum diubah.
+
+- **Diperbaiki (mobile):**
+  - `emergencies.dart`: kunci idempotency pengaturan tombol panik `final` → toggle kedua di layar yang sama ditolak server
+    409 IDEMPOTENCY_KEY_REUSED. Kunci kini diganti setiap perubahan selesai (berhasil/ditolak); retry hasil-tak-diketahui
+    tetap memakai kunci sama.
+  - `dues_confirmations.dart` + `RecordPaymentPage`: jalur keuangan lama menawarkan "Tandai selesai" walau pengurus kembali
+    tanpa menyimpan pembayaran. Kini hanya setelah pencatatan berhasil (`pop(true)`).
+  - `api.dart`: respons 2xx bukan envelope JSON (halaman HTML tantangan anti-bot hosting, captive portal) → `ApiException
+    BAD_RESPONSE` dengan pesan, bukan TypeError diam; mutasi 204 tetap `null`; field error non-list tidak melempar.
+    `auth_pages.dart` `_finishAuth` memeriksa token/akun.
+  - `account_store.dart`: `upsert`/`remove` diantrekan (baca-ubah-tulis satu JSON); sebelumnya penyimpanan profil yang
+    tertunda bisa menimpa logout. `session.dart`: error simpan profil tidak lagi jadi error async tak tertangani.
+  - Pengaman kecil: "Tidak setuju, keluar" (kunci sibuk + pesan bila gagal), dialog pembaruan (ketukan ganda tidak memulai
+    dua unduhan; error selain PlatformException tidak menahan dialog), kirim pengaduan saat foto cache sudah dihapus Android
+    (pesan, bukan diam), `ref`/`setState` setelah halaman ditutup (`warga_pages` pemulihan draf, `content_admin`, nomor
+    bendahara).
+- **Diperbaiki (/simplify server):** `SharedTick` menghitung `sweepDue()` sekali dan meneruskannya ke
+  `SharedSchedule::runDue(bool $sweep)` (gerbang malam tidak lagi dibaca dua kali); satu `forget` ganda di tes dibuang.
+- **Temuan reviewer yang ditolak setelah dicek:** "error kompilasi" `app_about.dart`/`activity_proposals.dart`
+  (`flutter analyze` `main` bersih); rotasi kunci saat form pembayaran/kas diubah (justru bisa membuat posting ganda; server
+  sudah menolak isi beda dengan 409); cache `/health/ready` di DB (profil shared memakai cache `file`); `expire()` tidak
+  menghapus akun saat sesi baru mulai (disengaja, mencegah menghapus login baru akun yang sama).
+- **Dicatat untuk evaluasi:** Idempotency-Key untuk pengaduan/bukti bayar/agenda/pengumuman/anggota/rumah (butuh server);
+  daftar pembayaran terbaru, bukti menunggu, permohonan berhenti di 50 baris; `readLock()` per controller; header keamanan
+  API dan website masih dua salinan (dua aplikasi Laravel terpisah).
+- **Tes:** 6 tes baru (`test/m16_review_fixes_test.dart` 4, `m19_emergencies_test.dart` 1,
+  `m15b_dues_confirmation_test.dart` 1); 5 di antaranya gagal pada kode lama (yang ke-6 menjaga 204 tetap `null`), semua
+  lulus setelah perbaikan.
+  `flutter analyze` 0 isu, `dart format` 0 berubah, `flutter test` **376 lulus**; backend `php artisan test`
+  SharedHosting/Health/M16 47 lulus, seluruh suite **482 lulus, 3 dilewati, 0 gagal**; `node infra/scripts/check-repo.mjs` OK.
+- **Belum:** APK 1032 (rilis butuh persetujuan pemilik); deploy dua berkas server mengikuti aturan production.
+
 ## Deploy Fase 3 + Fase 6 + SEO + runbook cadangan — Sabtu 14 November 2026 siang
 
 Perintah pemilik: "gass nomer 1–7 … serah terima nanti, yang penting Biznet sudah dibeli dan dibayar".

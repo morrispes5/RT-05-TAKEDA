@@ -213,6 +213,28 @@ void main() {
     expect(find.text('Bukti ditandai selesai'), findsOneWidget);
   });
 
+  // Review 14 Nov 2026: kembali dari layar catat pembayaran tanpa menyimpan dulu tetap menawarkan "Tandai selesai",
+  // sehingga bukti bisa selesai tanpa pembayaran tercatat.
+  testWidgets('pengurus: kembali dari catat pembayaran tanpa menyimpan tidak menawarkan tandai selesai', (tester) async {
+    useCompactScreen(tester, height: 1600);
+    final posts = <RequestOptions>[];
+    final base = apiHandler(me: akunJson);
+    await _pump(tester, _opener(() => DuesConfirmationDetailPage(item: _menunggu())), (o) {
+      if (o.method == 'POST') posts.add(o);
+      return base(o);
+    });
+
+    await tester.tap(find.text('Buka'));
+    await _settle(tester);
+    await tester.tap(find.text('Catat pembayaran'));
+    await _settle(tester);
+    expect(find.text('Catat pembayaran iuran'), findsOneWidget);
+    await tester.pageBack();
+    await _settle(tester);
+    expect(find.text('Tandai bukti ini selesai?'), findsNothing);
+    expect(posts, isEmpty);
+  });
+
   testWidgets('pengurus: nomor bendahara dikirim sebagai PUT dan tampil ternormalisasi', (tester) async {
     useCompactScreen(tester, height: 1600);
     final puts = <RequestOptions>[];

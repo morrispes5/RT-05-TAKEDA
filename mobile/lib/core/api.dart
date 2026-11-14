@@ -8,6 +8,8 @@ import '../app/config.dart';
 import 'health.dart';
 import 'session.dart';
 
+const badResponseMessage = 'Respons server tidak dikenali. Periksa koneksi internet, lalu muat ulang sebelum mencoba lagi.';
+
 /// Error API v1 terstruktur: {"error": {code, message, fields?, request_id}}.
 class ApiException implements Exception {
   ApiException(this.status, this.code, this.message, {this.fields = const {}, this.requestId});
@@ -32,7 +34,7 @@ class ApiException implements Exception {
     if (data is Map && data['error'] is Map) {
       final err = data['error'] as Map;
       final fields = <String, List<String>>{};
-      (err['fields'] as Map?)?.forEach((k, v) => fields['$k'] = (v as List).map((x) => '$x').toList());
+      (err['fields'] as Map?)?.forEach((k, v) => fields['$k'] = v is List ? v.map((x) => '$x').toList() : ['$v']);
       return ApiException(e.response?.statusCode ?? 0, '${err['code']}', '${err['message']}', fields: fields, requestId: err['request_id'] as String?);
     }
     return switch (e.type) {
@@ -104,6 +106,13 @@ class Api {
     }
   }
 
+  /// Respons 2xx yang bukan envelope JSON: halaman HTML tantangan anti-bot hosting, captive portal Wi-Fi, atau proxy.
+  /// Tanpa ini `as Map` melempar TypeError yang tidak ditangkap layar (tombol kembali aktif tanpa pesan).
+  static Map<dynamic, dynamic> _envelope(dynamic body) => body is Map ? body : throw ApiException(0, 'BAD_RESPONSE', badResponseMessage);
+
+  /// Mutasi: `data` dari envelope; 204/isi kosong → null.
+  static dynamic _dataOrEmpty(dynamic body) => body == null || (body is String && body.trim().isEmpty) ? null : _envelope(body)['data'];
+
   /// M16: JSON publik di origin yang sama di luar /api/v1, tanpa token dan tanpa envelope.
   Future<dynamic> publicJson(String path) => _wrap(
     () => _dio.get(
@@ -134,12 +143,12 @@ class Api {
       queryParameters: query,
       options: Options(headers: {if (bearer != null) 'Authorization': 'Bearer $bearer'}, extra: {if (ignoreUnauthorized) 'ignoreUnauthorized': true}),
     ),
-    (b) => (b as Map)['data'],
+    (b) => _envelope(b)['data'],
   );
 
   /// Mengembalikan envelope lengkap (data + meta) untuk daftar berhalaman.
   Future<Map<String, dynamic>> page(String path, {Map<String, dynamic>? query}) =>
-      _wrap(() => _dio.get(path, queryParameters: query), (b) => Map<String, dynamic>.from(b as Map));
+      _wrap(() => _dio.get(path, queryParameters: query), (b) => Map<String, dynamic>.from(_envelope(b)));
 
   /// [bearer] dan [sessionEpoch] dipasang sekarang, sebelum interceptor Dio berjalan.
   Future<dynamic> post(String path, {Object? data, String? idempotencyKey, String? bearer, int? sessionEpoch}) => _wrap(
@@ -151,7 +160,7 @@ class Api {
         extra: {'sessionEpoch': ?sessionEpoch},
       ),
     ),
-    (b) => b is Map ? b['data'] : null,
+    _dataOrEmpty,
   );
 
   Object? _financeData(String path, Object? data) {
@@ -160,9 +169,9 @@ class Api {
     return {...data, 'versi_keuangan': 2};
   }
 
-  Future<dynamic> patch(String path, {Object? data}) => _wrap(() => _dio.patch(path, data: data), (b) => b is Map ? b['data'] : null);
+  Future<dynamic> patch(String path, {Object? data}) => _wrap(() => _dio.patch(path, data: data), _dataOrEmpty);
 
-  Future<dynamic> put(String path, {Object? data}) => _wrap(() => _dio.put(path, data: data), (b) => b is Map ? b['data'] : null);
+  Future<dynamic> put(String path, {Object? data}) => _wrap(() => _dio.put(path, data: data), _dataOrEmpty);
 
   /// Unduhan berkas (mis. ekspor CSV). Respons error JSON tetap diubah menjadi [ApiException].
   Future<Uint8List> download(String path, {Map<String, dynamic>? query}) async {
@@ -188,7 +197,7 @@ class Api {
   }
 
   /// Mengembalikan `data` bila ada (mis. hapus foto pengaduan); 204 → null.
-  Future<dynamic> delete(String path, {Object? data}) => _wrap(() => _dio.delete(path, data: data), (b) => b is Map ? b['data'] : null);
+  Future<dynamic> delete(String path, {Object? data}) => _wrap(() => _dio.delete(path, data: data), _dataOrEmpty);
 }
 
 final apiProvider = Provider<Api>((ref) => Api(ref));

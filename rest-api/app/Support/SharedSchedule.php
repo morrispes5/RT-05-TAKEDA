@@ -54,14 +54,16 @@ final class SharedSchedule
     /**
      * Jalankan tugas yang jatuh tempo. Hanya membaca cache file bila tidak ada yang jatuh tempo (tidak membangunkan Neon).
      *
+     * [$sweep] = keputusan sapuan tick ini (SharedHosting::sweepDue()), dihitung sekali oleh SharedTick.
+     *
      * @return list<array{task:string, exit:int}>
      */
-    public static function runDue(): array
+    public static function runDue(bool $sweep): array
     {
         $ran = [];
         // Malam (22.00–05.59 WIB): tugas terjadwal menunggu tick yang memang menjalankan sapuan, jadi Neon dibangunkan
         // sekali per jam, bukan sekali per tugas. Keterlambatan maksimal ±1 jam; semua tugas idempotent (14 Nov 2026).
-        if (SharedHosting::isNight() && ! SharedHosting::sweepDue()) {
+        if (! $sweep && SharedHosting::isNight()) {
             return $ran;
         }
         foreach (self::tasks() as $t) {

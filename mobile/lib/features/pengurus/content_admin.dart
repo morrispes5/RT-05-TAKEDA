@@ -241,12 +241,13 @@ class _ContentEditorPageState extends ConsumerState<ContentEditorPage> {
     final body = {'slug': _slug.text.trim(), 'draf': _payload(), if (_item != null) 'versi': _item!['versi']};
     try {
       final res = _item == null ? await api.post('/admin/${widget.type}', data: body) : await api.put('/admin/${widget.type}/${_item!['id']}', data: body);
+      if (!mounted) return true;
       setState(() {
         _item = Json.from(res as Map);
         _errors = {};
         _dirty = false;
       });
-      if (!quiet && mounted) showMessage(context, 'Draf tersimpan. Pengunjung belum melihat perubahan ini.');
+      if (!quiet) showMessage(context, 'Draf tersimpan. Pengunjung belum melihat perubahan ini.');
       return true;
     } on ApiException catch (e) {
       if (!mounted) return false;
@@ -266,10 +267,12 @@ class _ContentEditorPageState extends ConsumerState<ContentEditorPage> {
     );
     if (!ok || !mounted) return;
     if ((_item == null || _dirty) && !await _save(quiet: true)) return;
+    if (!mounted) return;
     try {
       final res = await ref.read(apiProvider).post('/admin/${widget.type}/${_item!['id']}/publish', data: {'versi': _item!['versi']});
+      if (!mounted) return;
       setState(() => _item = Json.from(res as Map));
-      if (mounted) await showResultDialog(context, title: '$_label diterbitkan', message: 'Tampil di website pada alamat /${_item!['slug']}.');
+      await showResultDialog(context, title: '$_label diterbitkan', message: 'Tampil di website pada alamat /${_item!['slug']}.');
     } on ApiException catch (e) {
       if (mounted) showApiError(context, e);
     }

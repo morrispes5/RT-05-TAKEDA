@@ -282,7 +282,9 @@ class EmergencyAdminSettings extends ConsumerStatefulWidget {
 
 class _EmergencyAdminSettingsState extends ConsumerState<EmergencyAdminSettings> {
   Json? _settingsPending;
-  final String _settingsKey = _key();
+  // Satu kunci per perubahan: dipakai ulang hanya untuk mengulang [_settingsPending] yang sama, diganti begitu
+  // perubahan itu selesai (berhasil atau ditolak). Kunci tetap membuat toggle kedua ditolak 409 IDEMPOTENCY_KEY_REUSED.
+  String _settingsKey = _key();
 
   Future<void> _configure(Json status) async {
     final s = ref.read(sessionProvider);
@@ -295,10 +297,14 @@ class _EmergencyAdminSettingsState extends ConsumerState<EmergencyAdminSettings>
           .post('/admin/emergencies/settings', data: _settingsPending, idempotencyKey: _settingsKey, bearer: s.token, sessionEpoch: epoch);
       if (!mounted || !ref.read(sessionProvider.notifier).isCurrentActive(s, epoch: epoch)) return;
       _settingsPending = null;
+      _settingsKey = _key();
       ref.invalidate(emergencyStatusProvider);
     } on ApiException catch (e) {
       if (!mounted || !ref.read(sessionProvider.notifier).isCurrentActive(s, epoch: epoch)) return;
-      if (e.status > 0 && e.status < 500) _settingsPending = null;
+      if (e.status > 0 && e.status < 500) {
+        _settingsPending = null;
+        _settingsKey = _key();
+      }
       showApiError(context, e);
       if (e.isConflict) ref.invalidate(emergencyStatusProvider);
     }
