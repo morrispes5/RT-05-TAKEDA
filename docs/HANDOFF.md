@@ -65,8 +65,10 @@ Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau stagi
 Production 100% di hosting `rt05takeda.com` (+ `takeda.morriz.tech`), cron `rt05:shared-tick` + jembatan Neon; VPS RT05
 mati. 10 Nov: production bersih (log, smoke, LVE 0 fault), kapasitas 400 rumah diuji lokal, uji tombol warga lulus,
 latihan restore jalur Neon lulus (PROGRESS 10 Nov + `evidence/m16/KAPASITAS_400_20261110.md`). Menunggu pemilik:
-1. Merge + deploy **PR #125** (kunci baca keuangan bersama) ke hosting di jam sepi, cadangan branch Neon + env dulu.
-   Installer sementara sudah dihapus → deploy berikut lewat cPanel File Manager (unggah zip `shared-release` + ekstrak).
+1. ~~PR #125~~ **sudah merge (`489ffc9`) dan terdeploy 14 Nov 09.48 WIB** (6 berkas, sha256 = main; cadangan
+   `~/rt05/rollback-pr125/`, branch Neon `cadangan-sebelum-deploy-pr125-20261114`). Deploy berkas tunggal tanpa installer:
+   UAPI `Fileman/save_file_content` dengan body **urlencoded** (multipart mengubah LF→CRLF), cek sha256 setelah simpan.
+   Fase 3 ADR60 (PR `codex/m16-pengerasan`) belum dibuat. Pantau: compute Neon bangun tiap 10–15 menit karena `shared-tick`.
 2. Backup offsite ADR38: izinkan `pg_dump` di PC **atau** workflow GitHub Actions dengan secret (repo publik → tanpa artefak).
 3. Tiket Biznet anti-bot (`/api/` dikecualikan) — IP rumah pemilik masih 403 pada 10 Nov sore.
 4. Kuota Neon Free untuk 400 warga (pantau mingguan; paket berbayar atau cadangan ADR39).

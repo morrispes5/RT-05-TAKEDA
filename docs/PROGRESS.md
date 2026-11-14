@@ -1,5 +1,31 @@
 # Progress — RT05 TAKEDA
 
+## Deploy PR #125 (kunci baca keuangan bersama) ke hosting — Sabtu 14 November 2026 pagi
+
+Perintah pemilik: "Ya, malam ini" lalu "sekarang aja gpp, nggak usah nunggu sepi" (deploy 09.48 WIB).
+
+- PR #125 merge → `main` `489ffc9` (CI hijau). Kode server hosting `d4b5407` = `main` sebelumnya (compare: tidak ada beda
+  `rest-api/`, `website/`, `infra/shared`), jadi deploy = 6 berkas `rest-api/app` dari PR #125 (tes tidak ikut rilis).
+- Sebelum deploy: branch Neon `cadangan-sebelum-deploy-pr125-20261114` (`br-curly-credit-b31feec6`, tanpa compute, LSN
+  0/73C0560); hash 6 berkas di hosting = versi `d4b5407` (tanpa perubahan manual); salinan berkas lama + `api/.env`
+  (0600) di `~/rt05/rollback-pr125/`.
+- Deploy lewat cPanel UAPI `Fileman/save_file_content` (sesi cPanel di Chrome pemilik), isi diambil dari
+  `raw.githubusercontent.com/.../489ffc9/` dan sha256 dicek sebelum simpan, `FlexibleDues.php` lebih dulu. Percobaan
+  pertama memakai multipart → browser mengubah LF jadi CRLF (berkas tetap valid PHP, aktif ±30 dtk); diulang dengan
+  `application/x-www-form-urlencoded` → **6/6 berkas sha256 sama dengan main** (02.48.37–02.48.42 UTC).
+  `~/rt05/RELEASE.json` → commit `489ffc9` (base `d4b5407`). Tanpa perubahan env, migrasi, atau cache.
+- Setelah deploy (dari IP VPS, GET berjeda): `/up` 200, `/health/ready` 200, `/api/v1/` 200, `/` 200,
+  `/api/v1/dues/my` + `/api/v1/cash/summary` 401 tanpa token. Rollback: salin balik `~/rt05/rollback-pr125/*`.
+- **Temuan log API 10 Nov (sebelum deploy, sudah selesai sendiri):** 36 request aplikasi HTTP 500 pada 23.18–23.24 WIB
+  (query pertama `personal_access_tokens`: "server closed the connection unexpectedly" lewat jembatan Neon), plus 3 error
+  koneksi dari cron (02.34 dan 05.33 WIB 11 Nov). Log 11–14 Nov bersih. Penyebab pasti belum terbukti (riwayat operasi
+  Neon MCP tidak menjangkau tanggal itu); dugaan gangguan sisi Neon/jembatan. Perlu pantauan; usul evaluasi: aplikasi
+  mengulang otomatis GET yang gagal 5xx sekali.
+- **Temuan kuota Neon:** operasi Neon 13–14 Nov malam menunjukkan compute **start/suspend tiap 10–15 menit** tanpa
+  pemakai (start di detik ±02 = jendela 15 menit `rt05:shared-tick` yang membuka database). Itu ±30–40% waktu aktif
+  hanya dari cron (cocok dengan audit 10 Nov: compute menyala ±39%). Usul evaluasi: jendela DB `shared-tick` hanya bila
+  ada penanda kerja / tiap 60 menit di malam hari, untuk menghemat CU-jam sebelum warga bertambah.
+
 ## M16 cek production, kapasitas 400 rumah, uji tombol, M16.9 — Selasa 10 November 2026 sore
 
 Perintah pemilik: "selesaikan milestone 16 semuanya… pastikan production nggak ada bug… RAM 1 GB… simulasi user 400…
