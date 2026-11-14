@@ -1,5 +1,31 @@
 # Progress — RT05 TAKEDA
 
+## Deploy Fase 3 + Fase 6 + SEO + runbook cadangan — Sabtu 14 November 2026 siang
+
+Perintah pemilik: "gass nomer 1–7 … serah terima nanti, yang penting Biznet sudah dibeli dan dibayar".
+
+- **PR #127 merge → `main` `a3e5209`, deploy 11.08–11.09 WIB** (pemilik: tidak perlu menunggu sepi). Titik pulih Neon
+  `cadangan-sebelum-deploy-pr127-20261114` (`br-wild-hill-b3htg7i7`); 7 berkas di hosting dicek = versi `489ffc9`, dicadangkan
+  bersama `public_html/.htaccess`, cache config web, dan env web ke `~/rt05/rollback-pr127/`. Dipasang berurutan
+  (SecurityHeaders → bootstrap/app.php → SharedHosting → SharedSchedule → SharedTick → HealthController → config web),
+  sha256 7/7 cocok; cache config web dihapus (TTL 300 dtk berlaku); `.htaccess` baru cocok.
+  Dari IP VPS: header API `nosniff`, `DENY`, `no-referrer`, HSTS ada, `X-Powered-By` hilang; `http://` → 301 `https://` di
+  kedua domain, `/.well-known/acme-challenge/*` tidak dialihkan (404); `/`, `/aplikasi`, `/up`, `/health/ready`,
+  `/api/v1/`, `/unduh/versi.json`, `takeda.morriz.tech/api/v1/` 200. Log API/web hari ini tanpa error baru.
+- **Fase 6 (atas izin pemilik):** role `rt05_cek_hosting` (kedaluwarsa 8 Nov, 0 objek) dan endpoint baca-saja
+  `latihan-restore-m16-9` dihapus; production tinggal endpoint `ep-snowy-union-b33dixmf`; `/health/ready` tetap 200.
+  Branch cadangan lama belum dihapus (menunggu backup harian terbukti).
+- **M16.10 SEO:** env web `RT05_SEARCH_INDEXING=true` (env dicadangkan, izin 0600 tetap) → `robots.txt` mengizinkan
+  kecuali `/pengurus` dan `/api/`, `sitemap.xml` 16 URL, `/pengurus` tetap `noindex`, canonical kedua domain →
+  `rt05takeda.com`. Search Console (akun Google RT): properti Domain `rt05takeda.com`, TXT `google-site-verification`
+  ditambah di Zone Editor cPanel (SPF tidak berubah) → **terverifikasi**; sitemap dikirim → **Sukses, 16 halaman**.
+- **Fase 2:** RUNBOOK_PRODUCTION bagian 8 ditulis ulang untuk pindah ke Neon cadangan tanpa Docker/VPS (mode baca-saja
+  lewat `.htaccess`, sinkron lewat workflow backup, tukar 4 baris env, `rt05:neon-bridge stop`, smoke). Latihan
+  pindah-kembali menunggu backup harian hijau 3 hari.
+- **PR #123 ditutup** (alarm cepat profil VPS; production kini shared dan VPS RT05 mati). Enam aturan production dari PR
+  itu dipindah ke HANDOFF dan diperbarui untuk cara deploy hosting.
+- Username akun hosting dihapus dari docs (diganti `<akun>`).
+
 ## ADR60 Fase 3 PR + bersih-bersih SSD — Sabtu 14 November 2026 siang
 
 - **PR #127** `codex/m16-pengerasan` (dari main `489ffc9`): profil shared 22.00–05.59 WIB sapuan `shared-tick` tiap 60 menit +
@@ -129,8 +155,8 @@ semua tombol sebagai user". Bukti lengkap: [evidence/m16/KAPASITAS_400_20261110.
 - **Cutover penjadwal 10 Nov siang.** VPS `queue:monitor`: redis default/notifications/media/exports 0 pending/delayed/
   reserved, 0 failed. Atas izin pemilik ("Ya, hentikan") `docker stop rt05-production-scheduler-1` (restart policy
   `unless-stopped` → tetap mati setelah reboot). Pemilik meminta agent mengisi cron → cPanel `Cron::add_line`
-  (linekey 26761769) tiap menit: `cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick
-  >/dev/null 2>>/home/rttakezd/rt05/shared-tick.err`; cron jembatan Neon (78948247) tetap. Cek 13.41 WIB:
+  (linekey 26761769) tiap menit: `cd /home/<akun>/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick
+  >/dev/null 2>>/home/<akun>/rt05/shared-tick.err`; cron jembatan Neon (78948247) tetap. Cek 13.41 WIB:
   `heartbeat shared-tick` umur 54 dtk, jobs 0, failed_jobs 0, outbox_pending 0, token push 15/15 terdekripsi
   (satu perangkat lepas wajar), akun 14, rumah 188. **Penjadwal tunggal kini hosting.**
 - **VPS RT05 production dimatikan 10 Nov siang** atas perintah pemilik ("matikan vps tapi khusus untuk takeda aja"):
@@ -250,7 +276,7 @@ semua tombol sebagai user". Bukti lengkap: [evidence/m16/KAPASITAS_400_20261110.
   (benar) — pengurus menyetujui privasi baru di aplikasi lalu menyalakan di Lainnya. M19 tetap belum passed (HP nyata).
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
-  `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
+  `* * * * * cd /home/<akun>/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/<akun>/rt05/cron.log 2>&1`
 
 ## M16.5 email + push production (berjalan) — 7 November 2026 siang
 

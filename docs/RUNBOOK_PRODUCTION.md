@@ -103,6 +103,10 @@ checkout memaksa memilih domain sekarang, tanyakan dulu ke Biznet apakah domain 
 
 ## 4. Google Search Console (setelah domain live)
 
+**Selesai 14 Nov 2026:** properti Domain `rt05takeda.com` terverifikasi lewat TXT DNS (Zone Editor cPanel Biznet) di akun
+Google RT; sitemap dikirim → status Sukses, 16 halaman. `RT05_SEARCH_INDEXING=true` di env website hosting. Jangan hapus
+record TXT `google-site-verification` (verifikasi batal).
+
 1. Pastikan `https://<domain>/robots.txt` berisi `Sitemap:` dan tidak `Disallow: /`, serta `/sitemap.xml` terbuka.
 2. Pemilik login [Search Console](https://search.google.com/search-console) → Tambah properti → **Domain** → salin record TXT.
 3. Tambahkan TXT di DNS domain (panel Biznet), atas izin pemilik. Tunggu, lalu klik Verifikasi.
@@ -143,10 +147,43 @@ bandingkan → enkripsi), lalu `rclone copy <dir>/*.dump.gpg "gdrive:RT05 TAKEDA
 5. Ubah DNS A/AAAA `takeda-staging` ke VPS baru (atas izin pemilik). APK yang terpasang tetap jalan karena memakai nama domain.
 6. Smoke: `/health/ready`, `/aplikasi`, login pengurus, push. Setelah stabil, VPS lama dibiarkan habis.
 
-## 8. Database cadangan (ADR39)
+## 8. Database cadangan tanpa Docker/VPS (ADR39 → ADR60 Fase 2, ditulis ulang 14 Nov 2026)
 
-- Sinkron (operator, Docker): `bash infra/scripts/standby-sync.sh <env-utama> <env-cadangan>`; isi cadangan diganti salinan
-  utama lalu dibandingkan. Production: jadwalkan mingguan + sebelum pindah terencana.
-- Pindah terencana (kuota utama ~85% atau gangguan): hentikan penulisan (mode perawatan), sinkron terakhir, ganti
-  `DATABASE_URL`/`DATABASE_URL_UNPOOLED` API ke cadangan (role `rt05_app` / `rt05_owner`), `config:cache`, smoke.
-- Kembali: hentikan penulisan, `standby-sync.sh <env-cadangan> <env-utama>` (arah terbalik, salinan utuh), kembalikan env, smoke.
+Production berjalan di hosting shared (tanpa SSH, `exec` diblokir) dengan Neon lewat jembatan WebSocket (ADR55). Cadangan =
+Neon project kedua `rt05-takeda-cadangan` (`long-star-75282377`, role `rt05_owner` + `rt05_app`). Docker dan VPS tidak
+dipakai lagi; skrip `standby-sync.sh`/`backup-drill.sh` hanya untuk operator yang kebetulan punya Docker.
+
+**Prasyarat (sekali, pemilik + agent):**
+
+1. Branch cadangan **tidak archived** dan berisi salinan production: workflow harian di repo privat operasi
+   (`pg_dump` role baca-saja → enkripsi → Drive → pulihkan ke cadangan → bandingkan jumlah baris + total rupiah) sudah
+   hijau minimal 3 hari berturut-turut. Sebelum itu cadangan **belum boleh** menjadi tujuan pindah.
+2. Pemilik menyimpan `~/rt05/api/.env.cadangan` (izin 0600, di luar `public_html`) berisi **hanya** empat baris untuk
+   cadangan: `RT05_NEON_HOST=<endpoint pooler cadangan>`, `DB_DATABASE`, `DB_USERNAME=rt05_app`, `DB_PASSWORD`.
+   Nilai tidak pernah masuk Git/chat.
+
+**Pindah terencana** (proyeksi kuota production ≥85 CU-jam/bulan, atau Neon production bermasalah). Jam sepi, kabari
+pemilik jam mulai/selesai:
+
+1. **Mode baca-saja**: tambahkan di `public_html/.htaccess` tepat setelah blok HTTPS:
+   `RewriteCond %{REQUEST_METHOD} !^(GET|HEAD|OPTIONS)$` + `RewriteRule ^api/ - [R=503,L]`. Aplikasi tetap bisa dibuka,
+   penulisan ditolak sementara (aplikasi menampilkan gagal kirim, data warga tidak ada yang setengah jalan).
+2. **Sinkron terakhir** production → cadangan: jalankan workflow backup secara manual (workflow_dispatch), tunggu hijau,
+   cek ringkasan perbandingan "cocok" untuk semua tabel utama.
+3. **Tukar env**: salin `~/rt05/api/.env` → `.env.bak-sebelum-cadangan-<YYYYMMDDHHMM>` (0600), ganti empat baris di atas
+   dengan isi `.env.cadangan` (cPanel File Manager → Edit, atau UAPI `Fileman/save_file_content` dengan body
+   **urlencoded**; multipart mengubah LF→CRLF). Hapus `~/rt05/api/bootstrap/cache/config.php` (konfigurasi tersimpan).
+4. **Ganti jembatan**: jembatan lama terus memakai host lama sampai serah terima (≤25 menit). Agar langsung, pemilik
+   menambah cron sekali jalan `cd /home/<akun>/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:neon-bridge stop`
+   lalu menghapusnya setelah 1 menit; cron jembatan tiap menit menyalakan instance baru dengan host cadangan.
+5. **Smoke**: `/health/ready` 200 (cache 60 dtk — tunggu satu menit), login pengurus di aplikasi, buka Iuran satu rumah,
+   heartbeat `shared-tick` bergerak. Lalu hapus aturan baca-saja dari `.htaccess`.
+6. Catat di PROGRESS: jam mulai/selesai, RTO, dan isi ringkasan sinkron. Mulai saat itu **cadangan = utama**: workflow
+   harian diarahkan dari cadangan ke Drive saja (jangan menimpa cadangan dari production lama).
+
+**Kembali ke production** (bulan berikutnya / gangguan selesai): langkah yang sama dengan arah terbalik — baca-saja,
+workflow pemulihan arah balik (cadangan → production, salinan utuh), kembalikan empat baris env dari
+`.env.bak-sebelum-cadangan-*`, hapus cache config, `rt05:neon-bridge stop`, smoke, buka penulisan.
+
+**Latihan pindah-kembali** wajib sekali setelah prasyarat 1–2 terpenuhi (jam sepi, atas izin pemilik), dengan target
+RTO ≤30 menit dan tanpa selisih jumlah baris/total rupiah. Sebelum latihan: titik pulih branch Neon production.
