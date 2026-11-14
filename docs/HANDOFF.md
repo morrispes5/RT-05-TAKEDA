@@ -68,7 +68,8 @@ latihan restore jalur Neon lulus (PROGRESS 10 Nov + `evidence/m16/KAPASITAS_400_
 1. ~~PR #125~~ **sudah merge (`489ffc9`) dan terdeploy 14 Nov 09.48 WIB** (6 berkas, sha256 = main; cadangan
    `~/rt05/rollback-pr125/`, branch Neon `cadangan-sebelum-deploy-pr125-20261114`). Deploy berkas tunggal tanpa installer:
    UAPI `Fileman/save_file_content` dengan body **urlencoded** (multipart mengubah LF→CRLF), cek sha256 setelah simpan.
-   Fase 3 ADR60 (PR `codex/m16-pengerasan`) belum dibuat. Pantau: compute Neon bangun tiap 10–15 menit karena `shared-tick`.
+   Fase 3 ADR60 = **PR #127** (CI dulu, lalu merge + deploy atas izin; website config berubah → hapus/bangun ulang
+   cache config web; `.htaccess` public_html ikut diganti). Pantau: compute Neon bangun tiap 10–15 menit karena `shared-tick`.
 2. Backup offsite ADR38: izinkan `pg_dump` di PC **atau** workflow GitHub Actions dengan secret (repo publik → tanpa artefak).
 3. Tiket Biznet anti-bot (`/api/` dikecualikan) — IP rumah pemilik masih 403 pada 10 Nov sore.
 4. Kuota Neon Free untuk 400 warga (pantau mingguan; paket berbayar atau cadangan ADR39).

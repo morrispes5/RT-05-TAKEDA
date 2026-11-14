@@ -1,5 +1,15 @@
 # Progress — RT05 TAKEDA
 
+## ADR60 Fase 3 PR + bersih-bersih SSD — Sabtu 14 November 2026 siang
+
+- **PR #127** `codex/m16-pengerasan` (dari main `489ffc9`): profil shared 22.00–05.59 WIB sapuan `shared-tick` tiap 60 menit +
+  tugas terjadwal ikut sapuan (Neon tidak lagi dibangunkan tiap 10–15 menit malam hari); `/health/ready` cache 60 dtk di
+  shared; middleware `SecurityHeaders` API (nosniff, DENY, no-referrer, HSTS lewat HTTPS, tanpa `X-Powered-By`); TTL konten
+  website 60→300 dtk; redirect HTTPS `.htaccess` rilis aktif (kecuali `/.well-known/`); actions `mobile-release.yml` dikunci SHA.
+  Lokal: 485 tes lulus, 4.984 assertion; Pint + `check-repo.mjs` OK. **Belum merge/deploy** (izin pemilik).
+- SSD PC pemilik: 52,6 → 68,4 GB bebas (cache npm/`_npx` tak terpakai, Gradle, sisa updater VS Code/7-Zip di Temp,
+  scratchpad sesi; atas izin pemilik 3 arsip `.rar` game yang sudah diekstrak di Downloads). Docker Desktop PC tetap rusak.
+
 ## Deploy PR #125 (kunci baca keuangan bersama) ke hosting — Sabtu 14 November 2026 pagi
 
 Perintah pemilik: "Ya, malam ini" lalu "sekarang aja gpp, nggak usah nunggu sepi" (deploy 09.48 WIB).
