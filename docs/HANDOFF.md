@@ -60,12 +60,68 @@ tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Sudah di `main` (2
 memakai `--sampai=2026-09 --putihkan`; saldo awal kas resmi tetap diisi bendahara sekali (belum ada angkanya).
 Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau staging (ADR52) perlu impor ulang setelah deploy.
 
+## ATURAN — production berisi data warga asli (sejak soft launch Minggu 8 Nov 2026; diperbarui 14 Nov untuk hosting)
+
+Pemilik 8 Nov: "harus hati-hati jika menyentuh production". Mengikat:
+
+1. **Tidak ada hot-patch.** Perubahan kode hanya PR → CI hijau → izin merge eksplisit pemilik → deploy berkas dari commit
+   `main` itu ke hosting (UAPI `Fileman/save_file_content` body urlencoded, sha256 tiap berkas dicek setelah simpan,
+   `~/rt05/RELEASE.json` diperbarui). Migrasi butuh rencana + izin terpisah.
+2. **Cadangan sebelum tiap deploy/perubahan env**: branch Neon dari production (titik pulih) + salinan berkas lama dan env
+   ke `~/rt05/rollback-<alasan>/` (env 0600). Kabari pemilik jam mulai/selesai; jam sepi kecuali pemilik bilang lain.
+3. **Jangan uji yang menulis data** di production: tanpa seed/factory/akun uji. Logika diuji lokal (Postgres sintetis,
+   mis. `M16CapacityTest`) atau in-process dalam transaksi yang di-rollback.
+4. **Alarm panik berbunyi di HP semua warga** (audience `all`): tanpa alarm uji kecuali izin pemilik per kejadian.
+5. Perbaikan data warga hanya atas permintaan pengurus lewat fitur aplikasi (koreksi keuangan = pembalikan). Tanpa
+   UPDATE/DELETE SQL langsung; data warga tidak dicetak ke log/chat.
+6. **Jangan uji beban/smoke beruntun dari PC** ke production: anti-bot Biznet memblokir IP rumah pemilik (10 Nov).
+
+## LANJUTKAN DARI SINI — setelah deploy Fase 3 (Sabtu 14 Nov 2026 siang)
+
+Production `a3e5209` (PR #125 + #127) di hosting; SEO aktif; runbook cadangan tanpa Docker (RUNBOOK bagian 8). Sisa:
+
+1. **Pemilik:** tiket Biznet anti-bot (`/api/`, `/unduh/`, `/health/`, `/up`); aktifkan backup harian repo privat operasi
+   (role baca-saja, kunci `age`, OAuth Drive, secret) → agent cek run pertama + latihan restore dari Drive; reset sandi
+   `rt05_owner`; salinan `APP_KEY` di Drive; 2FA semua akun; uji HP nyata 1030 → 1031 (data seluler + Wi-Fi).
+2. **Agent setelah backup hijau 3 hari:** latihan pindah-kembali ke Neon cadangan (RUNBOOK 8, jam sepi, izin), lalu hapus
+   branch Neon cadangan lama (`cadangan-sebelum-pindah-hosting-20261109`, `cadangan-audit-20261110`,
+   `cadangan-sebelum-deploy-pr125/127-20261114`) atas izin.
+3. **Pemantauan sampai 22–24 Nov** (soft launch 8 Nov + 14 hari): tiap 2–3 hari cek log API/web hosting, LVE fault cPanel,
+   operasi/CU-jam Neon (harapan: compute malam bangun ±1×/jam setelah Fase 3), Search Console (halaman terindeks), heartbeat
+   `shared-tick`. Maksimal belasan GET berjeda dari luar.
+4. **Fase 4 email/DNS** (izin per perubahan): pengirim `noreply@rt05takeda.com`, DMARC bertahap, CAA.
+5. **M16 tersisa dari pengurus:** saldo kas resmi bendahara (M16.8), pilot 5–10 rumah.
+6. **Serah terima ditunda** (keputusan pemilik 14 Nov): yang penting hosting Biznet sudah dibeli dan dibayar —
+   NEO Web Hosting Personal Large `rt05takeda.com`, 5 Nov 2026 – 5 Nov 2027, perpanjangan Rp612.000/tahun. Akun
+   Neon/Resend/Firebase ke akun RT dijadwalkan nanti.
+7. Setelah M16 lengkap → tahap evaluasi (revisi kecil + fitur): tombol "Detail" kartu Iuran, teks Lupa kata sandi,
+   aplikasi mengulang otomatis GET 5xx, tombol panik menutupi tombol terakhir sebelum digulir.
+
+## LANJUTKAN DARI SINI — sisa M16 setelah pindah (Selasa 10 Nov 2026 sore)
+
+Production 100% di hosting `rt05takeda.com` (+ `takeda.morriz.tech`), cron `rt05:shared-tick` + jembatan Neon; VPS RT05
+mati. 10 Nov: production bersih (log, smoke, LVE 0 fault), kapasitas 400 rumah diuji lokal, uji tombol warga lulus,
+latihan restore jalur Neon lulus (PROGRESS 10 Nov + `evidence/m16/KAPASITAS_400_20261110.md`). Menunggu pemilik:
+1. ~~PR #125~~ **sudah merge (`489ffc9`) dan terdeploy 14 Nov 09.48 WIB** (6 berkas, sha256 = main; cadangan
+   `~/rt05/rollback-pr125/`, branch Neon `cadangan-sebelum-deploy-pr125-20261114`). Deploy berkas tunggal tanpa installer:
+   UAPI `Fileman/save_file_content` dengan body **urlencoded** (multipart mengubah LF→CRLF), cek sha256 setelah simpan.
+   Fase 3 ADR60 = **PR #127** (CI dulu, lalu merge + deploy atas izin; website config berubah → hapus/bangun ulang
+   cache config web; `.htaccess` public_html ikut diganti). Pantau: compute Neon bangun tiap 10–15 menit karena `shared-tick`.
+2. Backup offsite ADR38: izinkan `pg_dump` di PC **atau** workflow GitHub Actions dengan secret (repo publik → tanpa artefak).
+3. Tiket Biznet anti-bot (`/api/` dikecualikan) — IP rumah pemilik masih 403 pada 10 Nov sore.
+4. Kuota Neon Free untuk 400 warga (pantau mingguan; paket berbayar atau cadangan ADR39).
+5. M16.10: `RT05_SEARCH_INDEXING=true` + GSC (TXT DNS cPanel) + sitemap; pantau 14 hari (soft launch 8 Nov → 22 Nov);
+   SOP + serah terima. Pilot rumah dan saldo kas resmi bendahara tetap dari pengurus.
+
 ## LANJUTKAN DARI SINI — pindah ke `rt05takeda.com` (Senin 9 Nov 2026 siang)
 
 Hosting `rt05takeda.com` sudah menjalankan kode `d4b5407` (= VPS) dengan `APP_KEY`, email, push, dan panik sama dengan
 VPS; data di Neon production yang sama (titik pulih branch `cadangan-sebelum-pindah-hosting-20261109`). APK 1030 warga
-masih ke `takeda.morriz.tech` (VPS). Urutan sisa (detail PROGRESS 9 Nov): APK 1031 ke rt05takeda.com → jembatan
-`takeda.morriz.tech` → cutover penjadwal (stop scheduler VPS, tunggu antrean Redis kosong, pasang cron
+masih ke `takeda.morriz.tech` (VPS). APK 1031 (ke rt05takeda.com) sudah tayang. `takeda.morriz.tech` sudah jadi addon
+domain cPanel; **sejak 10 Nov 10.01 WIB A record `takeda` → `103.58.102.39` + AutoSSL (lulus), semua lalu lintas aplikasi
+ke hosting.** Sejak 10 Nov siang scheduler VPS dihentikan dan cron `rt05:shared-tick` (tiap menit) berjalan di cPanel → **penjadwal
+tunggal = hosting**. Container `rt05-production-*` di VPS **dimatikan** (volume + `/root/.rt05` disimpan, layanan lain VPS tetap jalan). Installer sementara `pd-*.php`/`ar-*.php`/`verif.php`
+sudah dihapus 10 Nov. Sisa M16: M16.9 (backup + latihan restore tanpa VPS) dan M16.10. Urutan sisa: cutover penjadwal (stop scheduler VPS, tunggu antrean Redis kosong, pasang cron
 `rt05:shared-tick`) → hentikan VPS → hapus `public_html/pd-*.php` dan `ar-*.php`. **Hanya satu penjadwal aktif.**
 
 ## LANJUTKAN DARI SINI — soft launch Minggu 8 Nov 2026 di VPS (ditulis Sabtu 7 Nov ±18.45 WIB, ADR57)
@@ -87,7 +143,7 @@ shared: pakai `APP_KEY` yang sama dengan VPS** (`API_APP_KEY` di `/root/.rt05/.e
 
 ## Status Sabtu 7 Nov 2026 ±12.00 WIB (shared hosting; sebelum ADR57)
 
-**Production hidup:** `https://rt05takeda.com` (Biznet NEO Web Hosting, cPanel `rttakezd`, PHP Selector 8.4.27,
+**Production hidup:** `https://rt05takeda.com` (Biznet NEO Web Hosting, cPanel `<akun>`, PHP Selector 8.4.27,
 SSL Let's Encrypt s/d 3 Feb 2027) menjalankan `main` `6ddd45e`: website + API + Neon production
 (`jolly-voice-55175426`, db `rt05_takeda`, role runtime `rt05_app`) lewat jembatan WebSocket ADR55. `/health/ready`
 ready; 13 konten publik diimpor; data warga BELUM ada (M16.8). Rincian di PROGRESS "M16.4".

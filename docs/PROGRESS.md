@@ -1,5 +1,103 @@
 # Progress — RT05 TAKEDA
 
+## Deploy Fase 3 + Fase 6 + SEO + runbook cadangan — Sabtu 14 November 2026 siang
+
+Perintah pemilik: "gass nomer 1–7 … serah terima nanti, yang penting Biznet sudah dibeli dan dibayar".
+
+- **PR #127 merge → `main` `a3e5209`, deploy 11.08–11.09 WIB** (pemilik: tidak perlu menunggu sepi). Titik pulih Neon
+  `cadangan-sebelum-deploy-pr127-20261114` (`br-wild-hill-b3htg7i7`); 7 berkas di hosting dicek = versi `489ffc9`, dicadangkan
+  bersama `public_html/.htaccess`, cache config web, dan env web ke `~/rt05/rollback-pr127/`. Dipasang berurutan
+  (SecurityHeaders → bootstrap/app.php → SharedHosting → SharedSchedule → SharedTick → HealthController → config web),
+  sha256 7/7 cocok; cache config web dihapus (TTL 300 dtk berlaku); `.htaccess` baru cocok.
+  Dari IP VPS: header API `nosniff`, `DENY`, `no-referrer`, HSTS ada, `X-Powered-By` hilang; `http://` → 301 `https://` di
+  kedua domain, `/.well-known/acme-challenge/*` tidak dialihkan (404); `/`, `/aplikasi`, `/up`, `/health/ready`,
+  `/api/v1/`, `/unduh/versi.json`, `takeda.morriz.tech/api/v1/` 200. Log API/web hari ini tanpa error baru.
+- **Fase 6 (atas izin pemilik):** role `rt05_cek_hosting` (kedaluwarsa 8 Nov, 0 objek) dan endpoint baca-saja
+  `latihan-restore-m16-9` dihapus; production tinggal endpoint `ep-snowy-union-b33dixmf`; `/health/ready` tetap 200.
+  Branch cadangan lama belum dihapus (menunggu backup harian terbukti).
+- **M16.10 SEO:** env web `RT05_SEARCH_INDEXING=true` (env dicadangkan, izin 0600 tetap) → `robots.txt` mengizinkan
+  kecuali `/pengurus` dan `/api/`, `sitemap.xml` 16 URL, `/pengurus` tetap `noindex`, canonical kedua domain →
+  `rt05takeda.com`. Search Console (akun Google RT): properti Domain `rt05takeda.com`, TXT `google-site-verification`
+  ditambah di Zone Editor cPanel (SPF tidak berubah) → **terverifikasi**; sitemap dikirim → **Sukses, 16 halaman**.
+- **Fase 2:** RUNBOOK_PRODUCTION bagian 8 ditulis ulang untuk pindah ke Neon cadangan tanpa Docker/VPS (mode baca-saja
+  lewat `.htaccess`, sinkron lewat workflow backup, tukar 4 baris env, `rt05:neon-bridge stop`, smoke). Latihan
+  pindah-kembali menunggu backup harian hijau 3 hari.
+- **PR #123 ditutup** (alarm cepat profil VPS; production kini shared dan VPS RT05 mati). Enam aturan production dari PR
+  itu dipindah ke HANDOFF dan diperbarui untuk cara deploy hosting.
+- Username akun hosting dihapus dari docs (diganti `<akun>`).
+
+## ADR60 Fase 3 PR + bersih-bersih SSD — Sabtu 14 November 2026 siang
+
+- **PR #127** `codex/m16-pengerasan` (dari main `489ffc9`): profil shared 22.00–05.59 WIB sapuan `shared-tick` tiap 60 menit +
+  tugas terjadwal ikut sapuan (Neon tidak lagi dibangunkan tiap 10–15 menit malam hari); `/health/ready` cache 60 dtk di
+  shared; middleware `SecurityHeaders` API (nosniff, DENY, no-referrer, HSTS lewat HTTPS, tanpa `X-Powered-By`); TTL konten
+  website 60→300 dtk; redirect HTTPS `.htaccess` rilis aktif (kecuali `/.well-known/`); actions `mobile-release.yml` dikunci SHA.
+  Lokal: 485 tes lulus, 4.984 assertion; Pint + `check-repo.mjs` OK. **Belum merge/deploy** (izin pemilik).
+- SSD PC pemilik: 52,6 → 68,4 GB bebas (cache npm/`_npx` tak terpakai, Gradle, sisa updater VS Code/7-Zip di Temp,
+  scratchpad sesi; atas izin pemilik 3 arsip `.rar` game yang sudah diekstrak di Downloads). Docker Desktop PC tetap rusak.
+
+## Deploy PR #125 (kunci baca keuangan bersama) ke hosting — Sabtu 14 November 2026 pagi
+
+Perintah pemilik: "Ya, malam ini" lalu "sekarang aja gpp, nggak usah nunggu sepi" (deploy 09.48 WIB).
+
+- PR #125 merge → `main` `489ffc9` (CI hijau). Kode server hosting `d4b5407` = `main` sebelumnya (compare: tidak ada beda
+  `rest-api/`, `website/`, `infra/shared`), jadi deploy = 6 berkas `rest-api/app` dari PR #125 (tes tidak ikut rilis).
+- Sebelum deploy: branch Neon `cadangan-sebelum-deploy-pr125-20261114` (`br-curly-credit-b31feec6`, tanpa compute, LSN
+  0/73C0560); hash 6 berkas di hosting = versi `d4b5407` (tanpa perubahan manual); salinan berkas lama + `api/.env`
+  (0600) di `~/rt05/rollback-pr125/`.
+- Deploy lewat cPanel UAPI `Fileman/save_file_content` (sesi cPanel di Chrome pemilik), isi diambil dari
+  `raw.githubusercontent.com/.../489ffc9/` dan sha256 dicek sebelum simpan, `FlexibleDues.php` lebih dulu. Percobaan
+  pertama memakai multipart → browser mengubah LF jadi CRLF (berkas tetap valid PHP, aktif ±30 dtk); diulang dengan
+  `application/x-www-form-urlencoded` → **6/6 berkas sha256 sama dengan main** (02.48.37–02.48.42 UTC).
+  `~/rt05/RELEASE.json` → commit `489ffc9` (base `d4b5407`). Tanpa perubahan env, migrasi, atau cache.
+- Setelah deploy (dari IP VPS, GET berjeda): `/up` 200, `/health/ready` 200, `/api/v1/` 200, `/` 200,
+  `/api/v1/dues/my` + `/api/v1/cash/summary` 401 tanpa token. Rollback: salin balik `~/rt05/rollback-pr125/*`.
+- **Temuan log API 10 Nov (sebelum deploy, sudah selesai sendiri):** 36 request aplikasi HTTP 500 pada 23.18–23.24 WIB
+  (query pertama `personal_access_tokens`: "server closed the connection unexpectedly" lewat jembatan Neon), plus 3 error
+  koneksi dari cron (02.34 dan 05.33 WIB 11 Nov). Log 11–14 Nov bersih. Penyebab pasti belum terbukti (riwayat operasi
+  Neon MCP tidak menjangkau tanggal itu); dugaan gangguan sisi Neon/jembatan. Perlu pantauan; usul evaluasi: aplikasi
+  mengulang otomatis GET yang gagal 5xx sekali.
+- **Temuan kuota Neon:** operasi Neon 13–14 Nov malam menunjukkan compute **start/suspend tiap 10–15 menit** tanpa
+  pemakai (start di detik ±02 = jendela 15 menit `rt05:shared-tick` yang membuka database). Itu ±30–40% waktu aktif
+  hanya dari cron (cocok dengan audit 10 Nov: compute menyala ±39%). Usul evaluasi: jendela DB `shared-tick` hanya bila
+  ada penanda kerja / tiap 60 menit di malam hari, untuk menghemat CU-jam sebelum warga bertambah.
+
+## M16 cek production, kapasitas 400 rumah, uji tombol, M16.9 — Selasa 10 November 2026 sore
+
+Perintah pemilik: "selesaikan milestone 16 semuanya… pastikan production nggak ada bug… RAM 1 GB… simulasi user 400…
+semua tombol sebagai user". Bukti lengkap: [evidence/m16/KAPASITAS_400_20261110.md](evidence/m16/KAPASITAS_400_20261110.md).
+
+- **Production (baca saja):** log API hosting tanpa error sejak 7 Nov (LOG_LEVEL warning → setiap 500 tercatat); log web
+  hanya 2× `site_content.api_unavailable` (9 Nov 18.47, 10 Nov 10.30 WIB; website menyajikan last-good). Smoke GET 35
+  URL di `rt05takeda.com` dan `takeda.morriz.tech`: semua sesuai (halaman, 5 artikel + 3 album 200, API publik 200, 19
+  endpoint privat 401). `sitemap.xml` 404 dan robots `Disallow: /` **disengaja** (`RT05_SEARCH_INDEXING` false, M16.10).
+  Push dari hosting terbukti: pengaduan asli 10 Nov ±13 WIB `push_status=terkirim`. cPanel LVE: CPU 1 inti, RAM 1 GB,
+  20 EP; pemakaian hari ini ≤21 MB, EP ≤0,08, **0 fault**.
+- **Kapasitas 400 rumah (lokal):** `M16CapacityTest` — query setiap layar warga sama di 10 dan 400 rumah, memori
+  ≤7,8 MB/request, alarm panik ke 399 HP dan pengumuman ke 400 HP selesai dalam 1 job `SendPush` (±4 dtk).
+  **Bug ditemukan:** `/dues/my` dan `/cash/summary` memakai kunci keuangan eksklusif → layar Iuran satu RT antre satu per
+  satu. Diperbaiki dengan kunci bersama (`FlexibleDues::readLock`), plus `rt05:demo-seed` yang rusak sejak M15b/M18.
+  **PR #125** (`codex/m16-kapasitas-400`, CI hijau; lokal 479 tes lulus (478 + demo seed)) — **belum merge/deploy** (butuh izin pemilik).
+- **Risiko kapasitas (keputusan pemilik):** (1) kuota Neon Free 100 CU-jam/bulan bisa habis bila 400 warga aktif
+  (perkiraan 120–150 CU-jam); (2) anti-bot hosting memblokir IP rumah pemilik (`403` "One moment, please…") setelah
+  ±150 permintaan cepat dari PC operator, **masih 403 ±40 menit kemudian** — HP di Wi-Fi rumah ikut gagal; usul tiket
+  Biznet untuk mengecualikan `/api/`, `/unduh/`, `/up`. Jangan uji beban production dari satu IP.
+- **Uji tombol warga di emulator** (APK debug dev `bc8c964` dari CI → API lokal, AVD Pixel_7a): pendaftaran, privasi,
+  Beranda, notifikasi, iuran + bukti transfer foto, pengaduan + foto + anonim + perbaikan, aspirasi, agenda, ajukan
+  kegiatan, akun/keluarga, ganti kata sandi, keluar/masuk, multi-akun, tombol panik (nyala, jenis, batal), lupa kata
+  sandi — **lulus**. Anonimitas benar dari sisi warga lain. Kosmetik untuk evaluasi: tombol "Detail" kartu Iuran di tengah;
+  teks Lupa kata sandi masih teknis.
+- **M16.9 latihan restore (jalur Neon) lulus:** compute baca-saja `ep-odd-art-b31gbtxb` dipasang di branch titik pulih
+  `cadangan-sebelum-pindah-hosting-20261109` (9 Nov 13.36 WIB) dan langsung terbaca (±1 menit). Isi cocok dengan production:
+  akun 14, rumah 188, keluarga 12, warga 20, tagihan 2.066 / Rp151.925.000, pembayaran 0, kas 0, konten 13, migrasi 37;
+  selisih hanya aktivitas setelah titik pulih (pengaduan 2→3, notifikasi 82→83, audit 328→331).
+  **Belum: dump terenkripsi offsite ke Drive (ADR38).** Docker Desktop PC rusak (socket `dockerInference` dan
+  `docker-secrets-engine/engine.sock` tidak bisa diakses sistem; folder lama dipindah ke `*.lama-20261110`, masih
+  gagal; masalah sama 7 Sep). Unduhan biner resmi PostgreSQL 17.10 (EDB) untuk `pg_dump` **ditolak pemeriksa keamanan**
+  ("kode dari luar") → dihapus. Pilihan untuk pemilik: (a) izinkan biner `pg_dump` di PC, atau (b) backup harian GitHub
+  Actions (`pg_dump` role baca → gpg → Drive `rclone` scope `drive.file`) dengan secret di repo. rclone mengingatkan
+  client_id bersama akan dimatikan 2026 → perlu client_id sendiri.
+
 ## M16 pindah production VPS → Biznet `rt05takeda.com` — Senin 9 November 2026 siang
 
 - Perintah pemilik ±13.30 WIB: "untuk milestone 16 ini lulus seperti tahapan yang udh di PLANING, VPS gw udh ga ada
@@ -27,8 +125,53 @@
   installer sementara. Cron `rt05:shared-tick` belum dipasang lagi (hanya satu penjadwal: VPS sampai cutover).
 - APK 1031 (PR #124): status panik dimuat ulang saat resume; ruang bawah Ringkasan pengurus. Dibangun dengan
   `RT05_PROD_BASE_URL=https://rt05takeda.com` setelah izin merge.
-- Belum: APK 1031 rilis; jembatan `takeda.morriz.tech` untuk APK 1030 (DNS, izin pemilik); cutover penjadwal (stop
-  scheduler VPS → kuras antrean → cron shared-tick); matikan tumpukan VPS; hapus installer sementara; M16.9 backup+drill.
+- 14.02 WIB PR #124 merge (`bc8c964`) atas perintah pemilik ("lanjut bertahap aja sampe milestone 16 kelar"); variabel
+  repo `RT05_PROD_BASE_URL` → `https://rt05takeda.com`; workflow Mobile release APK run 42576772225 (#31) lulus:
+  **APK 1031** (1.0.0, 9 Nov 14.08 WIB), arm64 `5bc8483d…56c9`, armeabi-v7a `752fd84f…2a37`; `libapp.so` kedua ABI hanya
+  memuat `https://rt05takeda.com`. Berkas + `.sha256` dipasang di volume VPS `rt05-production_apk-downloads` dan
+  `rt05takeda.com/unduh` (hosting menyalin dari VPS dengan cek sha256), `versi.json` 1031 dipasang terakhir di keduanya
+  (cadangan versi 1030 `/root/.rt05/versi-1030.json.bak`); `/aplikasi` kedua domain menampilkan 1031.
+- Emulator (APK 1030, akun warga): pop-up **"Versi baru tersedia — build 1031"** dengan catatan rilis tampil saat aplikasi
+  dibuka. Pemasangan tidak diuji di emulator (ABI x86_64 terpasang versionCode 3030 > arm64 2031); HP nyata arm64 2030 →
+  2031 / armeabi 1030 → 1031 naik normal. Token login tidak terikat alamat server (`rt05_token`), jadi warga tetap masuk.
+- Tidak ada log akses API di VPS/DB (`last_used_at` token tidak diisi) → tidak bisa menghitung warga yang masih 1030.
+  Karena itu VPS hanya boleh dimatikan setelah jembatan `takeda.morriz.tech` → hosting (alias cPanel + A record ke
+  `103.58.102.39` + AutoSSL); API tidak membatasi Host, jadi alias cukup.
+- Jembatan `takeda.morriz.tech` (pemilik setuju "Ya, buat jembatan"): domain ditambahkan di cPanel sebagai addon
+  (vhost sendiri, subdomain `takeda-morriz.rt05takeda.com`, document root `public_html` = sama dengan rt05takeda.com,
+  IP 103.58.102.39). `.htaccess` hosting tidak punya pengalihan berbasis Host. Uji `curl --resolve` HTTP ke hosting:
+  `/up` 200, `/api/v1/` = info API sama, `/aplikasi` 200, `/unduh/versi.json` build 1031 (URL berkas relatif → benar
+  di dua host), `.sha256` 200. **HTTPS belum**: tanpa sertifikat, IP bersama itu menyajikan vhost bawaan pelanggan lain
+  → DNS tidak boleh dipindah sebelum AutoSSL bisa jalan. Menyalin sertifikat VPS (disimpan Traefik Coolify) ke cPanel
+  ditolak pemeriksa keamanan; tidak dicoba jalan lain. AutoSSL cPanel butuh DNS sudah mengarah ke hosting, jadi ada jeda
+  TLS beberapa menit setelah A record diganti (TTL `takeda` sudah 300 dtk). Tidak ada data hilang selama jeda: APK 1030
+  hanya gagal tersambung lalu mencoba lagi.
+- **Selasa 10 Nov ±10.01 WIB jembatan aktif.** Pemilik login hPanel di Chrome, agent mengganti A record `takeda` (bukan
+  `takeda-staging`, tetap 139.190.105.219) ke `103.58.102.39`, TTL 300. NS hermes/artemis, 8.8.8.8, 1.1.1.1 langsung
+  mengembalikan IP baru. `SSL/start_autossl_check` → sertifikat Let's Encrypt `takeda.morriz.tech` terpasang 10.02.41 WIB
+  (jeda TLS ±1 menit). HTTPS tanpa `--resolve`: `/up`, `/api/v1/`, `/`, `/aplikasi`, `/unduh/versi.json` (build 1031)
+  200 dari 103.58.102.39, verifikasi TLS 0; APK arm64 1031 23.138.333 B. Cek hitungan hosting 10.03 WIB: 16/16 token
+  push terdekripsi, akun 14, rumah 188, outbox_pending 0, panik true/all, profil shared. APK 1030 di HP nyata belum diuji.
+- **Cutover penjadwal 10 Nov siang.** VPS `queue:monitor`: redis default/notifications/media/exports 0 pending/delayed/
+  reserved, 0 failed. Atas izin pemilik ("Ya, hentikan") `docker stop rt05-production-scheduler-1` (restart policy
+  `unless-stopped` → tetap mati setelah reboot). Pemilik meminta agent mengisi cron → cPanel `Cron::add_line`
+  (linekey 26761769) tiap menit: `cd /home/<akun>/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick
+  >/dev/null 2>>/home/<akun>/rt05/shared-tick.err`; cron jembatan Neon (78948247) tetap. Cek 13.41 WIB:
+  `heartbeat shared-tick` umur 54 dtk, jobs 0, failed_jobs 0, outbox_pending 0, token push 15/15 terdekripsi
+  (satu perangkat lepas wajar), akun 14, rumah 188. **Penjadwal tunggal kini hosting.**
+- **VPS RT05 production dimatikan 10 Nov siang** atas perintah pemilik ("matikan vps tapi khusus untuk takeda aja"):
+  `queue:monitor` 4 antrean redis 0 lalu `docker stop` 8 container `rt05-production-*` (gateway, web, api, worker
+  default/media/exports, redis, redis-cache; scheduler sudah mati). Restart policy `unless-stopped` → tetap mati saat
+  reboot. Volume `rt05-production_api-storage`, `_apk-downloads`, `_redis-data` dan env `/root/.rt05` **disimpan**
+  (bisa `docker start` lagi bila darurat). Coolify dan 11 container lain di VPS tidak disentuh, tetap Up. Staging RT05
+  memang sudah mati. Sesudahnya `takeda.morriz.tech` dan `rt05takeda.com` (`/up`, `/api/v1/`, `/`, `/unduh/versi.json`)
+  200 dari 103.58.102.39. **RT05 production kini sepenuhnya di hosting Biznet + Neon.**
+- **Installer sementara dihapus 10 Nov siang** (perintah pemilik "Ya, hapus"): `public_html/pd-552d0c8ef631.php`,
+  `public_html/ar-552d0c8ef631.php`, `~/rt05/verif.php` lewat cPanel `Fileman::fileop unlink`; `~/rt05-upload` sudah tidak
+  ada. Keduanya kini 404; `/up`, `/api/v1/`, `/`, `/aplikasi`, `/unduh/versi.json` di kedua domain 200. Cadangan
+  `.env.bak-sebelum-pindah-*` (0600, di luar public_html) dibiarkan sebagai titik pulih.
+- Belum (M16): M16.9 backup terenkripsi + latihan restore tanpa VPS (Neon Free: PITR 6 jam, belum ada jadwal snapshot);
+  M16.10 SEO/GSC, sitemap, SOP, serah terima, pemantauan 14 hari; uji HP nyata update 1030 → 1031.
 
 ## Soft launch 8 Nov di VPS `takeda.morriz.tech` + Neon production (ADR57) — 7 November 2026 malam
 
@@ -133,7 +276,7 @@
   (benar) — pengurus menyetujui privasi baru di aplikasi lalu menyalakan di Lainnya. M19 tetap belum passed (HP nyata).
 - Cron cPanel `rt05:shared-tick` dihapus atas izin pemilik ("Ya hapus cron nya tapi nanti adain lagi") ±18.35 WIB;
   tinggal cron `rt05:neon-bridge run`. **Pasang lagi setelah soft launch** persis:
-  `* * * * * cd /home/rttakezd/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/rttakezd/rt05/cron.log 2>&1`
+  `* * * * * cd /home/<akun>/rt05/api && /opt/alt/php84/usr/bin/php artisan rt05:shared-tick >> /home/<akun>/rt05/cron.log 2>&1`
 
 ## M16.5 email + push production (berjalan) — 7 November 2026 siang
 
