@@ -96,10 +96,30 @@ checkout memaksa memilih domain sekarang, tanyakan dulu ke Biznet apakah domain 
 3. Unduh artifact: dua APK, `.sha256`, dan `rt05-takeda-prod-<build>-versi.json`.
 4. Salin APK ke `public/unduh/` di hosting, lalu salin `...-versi.json` menjadi `public/unduh/versi.json` **terakhir**
    (supaya halaman tidak menautkan berkas yang belum lengkap). Untuk staging, folder yang sama adalah volume
-   `rt05-staging_apk-downloads`.
+   `rt05-staging_apk-downloads`. Tanpa VPS (satu-satunya jalur production sejak VPS RT05 mati): bagian 3a.
 5. Buka `https://<domain>/aplikasi`. Versi, tanggal, ukuran, dan SHA-256 harus sama dengan artifact. Aplikasi lama
    menampilkan "Versi baru tersedia" di menu Akun.
 6. Beri tahu pemilik: nomor build, tanggal + jam WIB, tautan.
+
+### 3a. Memasang APK ke `rt05takeda.com` tanpa VPS (dipakai untuk APK 1032, 14 Nov 2026)
+
+Jalur "salin dari VPS" tidak ada lagi karena VPS RT05 mati. Pemasangan ke production tetap butuh izin pemilik untuk tiap
+rilis. Tanpa data warga: hanya berkas statis di `public_html/unduh/`.
+
+1. Pemilik login cPanel di Chrome (profil "Takeda"). Sesi sering kedaluwarsa dan agent tidak pernah mengetik kata sandi.
+   Agent memakai token sesi `/cpsessNNNN/` dari tab itu dan memanggil UAPI lewat `fetch` di tab cPanel.
+2. Unduh artifact ke folder baru di scratchpad, lalu cek `.sha256` dan sertifikat (`apksigner verify --print-certs`;
+   jalankan lewat PowerShell, di Git Bash keluarannya kosong) sebelum menyentuh hosting.
+3. Cadangkan `versi.json` lama ke `~/rt05/rollback-apk-<build>/` (`Fileman/get_file_content`, lalu simpan).
+4. Ekstensi Chrome membatasi `file_upload` ±10,4 MB per panggilan (batch dihitung gabungan), sedangkan APK ±21–23 MB.
+   Potong dengan `split -b 7000000`, unggah satu potongan per panggilan ke `<input type=file>` buatan sendiri di tab cPanel
+   (pendengar `change` menyimpan potongan), gabungkan di JS (`Uint8Array`), cek sha256 dengan `crypto.subtle`, lalu kirim
+   `FormData` ke `Fileman/upload_files` (`dir` + `file-1`). Berkas teks (`versi.json`, `.sha256`) jangan lewat multipart,
+   yang mengubah LF menjadi CRLF: pakai `Fileman/save_file_content` dengan body urlencoded.
+5. Urutan: APK dan `.sha256` dulu, `versi.json` paling akhir.
+6. Verifikasi dari tab `rt05takeda.com` (bukan skrip dari PC: anti-bot Biznet memblokir IP rumah): unduh tiap APK,
+   bandingkan sha256 dengan artifact, buka `/aplikasi` dan `/unduh/versi.json`.
+7. Hapus salinan lokal APK dan potongan (SSD pemilik sempit).
 
 ## 4. Google Search Console (setelah domain live)
 

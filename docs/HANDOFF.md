@@ -76,6 +76,21 @@ Pemilik 8 Nov: "harus hati-hati jika menyentuh production". Mengikat:
    UPDATE/DELETE SQL langsung; data warga tidak dicetak ke log/chat.
 6. **Jangan uji beban/smoke beruntun dari PC** ke production: anti-bot Biznet memblokir IP rumah pemilik (10 Nov).
 
+## Rilis APK 1032 (Sabtu 14 Nov 2026 malam)
+
+APK **1032** (1.0.0, prod; arm64 versionCode 3032, armeabi-v7a 2032; dari `main` `0658eb0`, build selesai 22.14 WIB) tayang
+di `rt05takeda.com/unduh` pada **23.50 WIB** dan di Drive (ID tetap, arm64 saja, ±23.51 WIB). Isinya perbaikan review mobile
+(bagian di bawah). Bukti dan hash ada di PROGRESS paling atas.
+
+- Warga yang masih di 1030/1031 mendapat pop-up "Versi baru tersedia" di menu Akun. **Rollback:** salin
+  `~/rt05/rollback-apk-1032/versi-1031.json` menjadi `public_html/unduh/versi.json` (APK 1030/1031 masih ada di folder itu).
+- Uji emulator sebelum rilis lulus (APK `dev` + API lokal sintetis). Alur dan jebakannya: [TESTING.md](TESTING.md), "Uji
+  emulator pra-rilis mobile". **Pakai alur itu untuk rilis mobile berikutnya.**
+- Memasang APK ke `rt05takeda.com` tanpa VPS (cPanel lewat Chrome pemilik, APK dipotong 7 MB): [RUNBOOK_PRODUCTION.md](RUNBOOK_PRODUCTION.md) bagian 3a.
+- **Sisa:** uji HP nyata update 1030/1031 → 1032 (data seluler + Wi-Fi); dua berkas server dari #128 menunggu deploy
+  berikutnya (production tetap `a3e5209`); dua pengamatan emulator belum terkonfirmasi — Kebijakan Privasi muncul lagi
+  setelah mulai ulang pertama, dan daftar bukti bayar tidak memuat bukti baru dalam sesi berjalan sampai aplikasi dimulai ulang.
+
 ## Review bug mobile + /simplify (Sabtu 14 Nov 2026 sore)
 
 Perintah pemilik sebelum pindah sesi: "/simplify, cari bug, aku gak mau ada bug apapun di mobile, review kode kamu sendiri".
@@ -86,8 +101,8 @@ membuat layar diam tanpa pesan; daftar akun di HP bisa menulis ulang akun yang s
 pengaman kecil (tombol "Tidak setuju, keluar", unduhan pembaruan ganda, foto pengaduan hilang dari cache, `ref`/`setState`
 setelah halaman ditutup). Server: keputusan sapuan malam dihitung sekali di `SharedTick`.
 
-**Belum rilis:** perbaikan mobile baru sampai ke HP lewat APK berikutnya (1032, workflow rilis butuh persetujuan pemilik);
-perubahan server kecil ikut deploy berikutnya (aturan production: PR → CI → izin merge → deploy berkas + cek sha256).
+**Rilis:** PR #128 merge (`0658eb0`) dan perbaikan mobile sudah di APK 1032 (bagian di atas); perubahan server kecil belum
+dideploy dan ikut deploy berikutnya (aturan production: PR → CI → izin merge → deploy berkas + cek sha256).
 
 **Dicatat untuk tahap evaluasi (tidak diubah, perlu keputusan/server):** Idempotency-Key untuk buat pengaduan, bukti
 bayar, agenda, pengumuman, anggota, dan rumah (retry setelah timeout bisa membuat data ganda; server baru mendukung kunci
@@ -409,6 +424,9 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | 1024 | 3024 / 2024 | `4b36e55` | Selasa 27 Okt ±13.07 | **Tidak disebar** (emulator) | Perbaikan audit M19 tahap 1; emulator menemukan dashboard menghitung rumah arsip + label menempel | Diperbaiki PR #96 |
 | **1025** (1.0.0) | 3025 / 2025 | `613466b` | **Selasa 27 Okt 13.36** | **Selasa 27 Okt `/unduh` + `versi.json` 13.38; Drive 13.39 WIB, ID tetap** | Audit M17–M19: jenis darurat wajib dipilih, pembatalan penanda penyalahgunaan, pelapor tidak menerima alarm sendiri, dashboard tanpa rumah arsip (server: minimal versi privasi panik, validasi ledger cepat) | Diuji Claude di emulator (upgrade 3023→3025, dashboard 7/10, layar panik); HP nyata M19 belum |
 | **1027** (1.0.0) | **3027 / 2027** | `3384bf9` | **Kamis 29 Okt 21.35.25** | **Kamis 29 Okt `/unduh` + `versi.json` 21.37.07; Drive 21.37 WIB, ID tetap `1G3YAst…`** | M19R Tombol Panik (ketentuan + geser, jenis opsional, batal pelapor) + ADR50 alarm berdering seperti panggilan (data-only FCM, layar penuh, kartu izin) + ADR46 pembaruan dari dalam aplikasi + ADR49 Lunas (buku lama). Sertifikat = kunci rilis tetap; SHA-256 arm64 `68b0bb9c…`, v7a `905ac687…`. Pengguna 1025 pasang manual sekali | Menunggu uji HP nyata tim (emulator dilarang pemilik). Run #26 bukan rilis, jadi tidak ada 1026 |
+| **1032** (1.0.0) | **3032 / 2032** | `0658eb0` | **Sabtu 14 Nov 22.14** | **Sabtu 14 Nov 23.50 `/unduh` + `versi.json` terakhir; Drive ±23.51 WIB (arm64), ID tetap** | Review mobile (PR #128): tombol panik bisa diubah berulang, "Tandai selesai" hanya setelah pembayaran tercatat, pesan jelas saat koneksi/respons bermasalah, akun yang keluar tidak muncul lagi, pengaman kecil | Diuji agent di emulator (APK `dev`, lulus); belum di HP nyata |
+
+Build 1028–1031 tidak diulang di tabel ini: lihat PROGRESS (2 Nov, 7 Nov, 9 Nov). Rilis 1030 ke atas hanya lewat `/unduh` rt05takeda.com dan `versi.json`; Drive hanya diperbarui pada 1032.
 
 Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
 

@@ -94,6 +94,32 @@ Browser A admin publish→browser B public membaca revision; draft edit tidak be
 
 Perangkat nyata: fresh install signed APK, login/token expiry/logout, keyboard/form, kamera/galeri, permission denial, koneksi lambat/lost, push foreground/background/terminated, deep link policy, multi-month finance admin, accessibility label/font scaling.
 
+### Uji emulator pra-rilis mobile (alur sejak 14 Nov 2026, dipakai untuk APK 1032)
+
+Perubahan mobile dicoba di emulator dengan API lokal dan data sintetis **sebelum** rilis `prod`. APK `prod` terhubung ke data
+warga asli, jadi tidak dipakai login atau menulis di emulator.
+
+| APK | Mengarah ke | Dipakai untuk |
+| --- | --- | --- |
+| `dev` (debug; artifact CI tiap PR `rt05-takeda-debug-dev`, disimpan 14 hari) | API lokal `10.0.2.2:8077`, Postgres lokal, akun demo sintetis | Uji emulator sebelum merge |
+| `staging` (debug; artifact `rt05-takeda-debug-staging`) | Staging (VPS Biznet + branch Neon staging; cek dulu apakah VPS menyala) | HP nyata, push FCM, uji tim |
+| `prod` (rilis; workflow *Mobile release APK*) | Production | Hanya cek sha256, sertifikat, dan terpasang; tanpa login di emulator |
+
+1. `gh run download <run Mobile verification PR> -n rt05-takeda-debug-dev` ke folder baru; cek hash terhadap artifact.
+2. API lokal dari **salinan scratch** repo (bukan checkout kerja): `cp .env.example .env && php artisan key:generate`
+   (`.env.example` mengarah ke Postgres lokal 54329, bukan Neon), `php artisan migrate --database=pgsql_migrations`,
+   `php artisan rt05:demo-seed`, `php artisan serve --port 8077`. **Jangan** `php artisan ... --env=testing` (tidak ada
+   `.env.testing`, jadi memakai `.env` = Neon dev). Kartu Tombol Panik pengurus butuh `RT05_PANIC_ENABLED=true` dan
+   `RT05_PANIC_RECIPIENT_IDS=<id pengurus demo>`.
+3. Emulator headless (`-no-window -no-audio -memory 1536 -gpu host -no-snapshot`). Bila AVD pemilik hampir penuh (APK debug
+   ±168 MB), buat AVD sementara dari salinan `config.ini` (tanpa mengganti `skin.name`/`skin.path`, `hw.sdCard=no`) dan
+   hapus sesudah uji (±6,8 GB). Jangan hapus AVD/SDK pemilik tanpa izin; jangan uninstall aplikasi pemilik.
+4. adb di Git Bash: `MSYS_NO_PATHCONV=1`; koordinat dari `uiautomator dump`. APK rilis tidak bisa menimpa APK debug
+   (uninstall dulu).
+5. Skenario: setiap perubahan di PR **ditambah** regresi bug versi sebelumnya (tes dikunci di kode lama gagal, kode baru
+   lulus). Catat hasil per skenario dan yang belum teruji di PROGRESS (contoh: PROGRESS 14 Nov malam, 7 skenario lulus).
+6. Bersihkan: AVD sementara, Postgres dan API lokal, APK uji, salinan scratch, kata sandi demo.
+
 ## Acceptance matrix
 
 Setiap issue menghubungkan FR dan BR ke test identifier serta bukti. Contoh: FR13/BR11–BR17 →FIN-05..FIN-14. Kriteria selesai milestone ROADMAP dipenuhi oleh hasil nyata, bukan placeholder screenshot.
