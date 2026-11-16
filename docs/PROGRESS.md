@@ -1,5 +1,44 @@
 # Progress — RT05 TAKEDA
 
+## Rilis APK 1033 (sentuhan Beranda) — Senin 16 November 2026 pagi
+
+Perintah pemilik: "udh masuk belom aplikasi 1033 dan pr nya? kalo udh lgsg aja dah merge abis itu build seperti biasa",
+lalu "Ya, pasang". PR dibuat sesi Claude lain; `main` dibaca lewat `gh api`, tanpa `git fetch`/`git push` (ADR45).
+
+- **PR #130** (`codex/m16-sentuhan-beranda`, commit `fde6507`) merge ke `main` = `2219fa8`, 16 Nov 09.12 WIB, dengan
+  penjaga SHA kepala. Ditinjau agent sebelum merge: tidak ada perubahan server/API/kontrak; hanya `mobile/` (Dart, aset
+  `pubspec.yaml`, 10 SVG) dan docs; tidak ada tombol bayar; ucapan hanya untuk tagihan yang benar-benar dibayar; kesepuluh
+  SVG diperiksa (tanpa `<script>`, `href`, atau `data:`; satu-satunya `http://` adalah deklarasi `xmlns`); `flutter_svg`
+  sudah menjadi dependensi.
+- **CI PR #130:** verify (analyze + 382 tes), hygiene, plan, dan Vercel hijau saat merge; dua job APK debug (dev dan
+  staging) masih berjalan saat merge dan kemudian selesai **sukses**.
+- **Build rilis:** run #33 (id 43790805095, `mobile-release.yml`, flavor `prod`) dari `main` `2219fa8`. Environment
+  `release` disetujui agent lewat `pending_deployments` atas perintah pemilik ("build seperti biasa"), 09.13 WIB; selesai
+  09.20 WIB. Artifact `rt05-takeda-prod-release-33` (id 14192562309, kedaluwarsa 14 Feb 2027): **APK 1033 (1.0.0)**,
+  arm64-v8a versionCode 3033 (23.145.796 B, sha256 `cf65b257…950e`), armeabi-v7a 2033 (21.046.032 B, sha256
+  `28553096…428a`). Diverifikasi sebelum dipasang: sha256 sama dengan berkas `.sha256` dan `versi.json`; `apksigner` (v2)
+  kedua ABI bersertifikat `dba8bc3f…e4069a` = `RT05_RELEASE_CERT_SHA256`; versionCode dan nama paket sesuai. Catatan rilis
+  (3 baris) ada di `versi.json`.
+- **Dipasang ke production atas perintah pemilik ("Ya, pasang"), 16 Nov 09.32 WIB** (hanya berkas statis di
+  `public_html/unduh/`; tanpa deploy kode, database, atau env): dua APK + `.sha256` dulu (potongan 7 MB lewat Chrome; hash
+  gabungan dicek di browser sebelum dikirim dan ukuran di server dicek sesudahnya). Unduhan publik dari `rt05takeda.com`
+  dicek **sebelum** `versi.json` diganti (hash kedua APK = artifact). Terakhir `versi.json` 1033 (770 B, sha256
+  `7f18a915…ad9a`, sama dengan berkas artifact). `/aplikasi` menampilkan 1033 dan hanya tautan 1033.
+  - **Rollback:** `~/rt05/rollback-apk-1033/versi-1032.json` (986 B, hash sama dengan `versi.json` produksi sebelumnya) →
+    salin menjadi `public_html/unduh/versi.json`; APK 1030–1032 masih ada di `/unduh`.
+- **Drive** (±09.33 WIB): berkas link-tetap (ID `1G3YAst…`) ditimpa di tempat dengan arm64-v8a 1033 dan diganti nama menjadi
+  `rt05-takeda-prod-1033-arm64-v8a.apk`; hash di Drive = artifact. Drive hanya berisi arm64; HP 32-bit memakai `/unduh`.
+- **Catatan proses:** dua Chrome tersambung ke ekstensi (Browser 1 = profil pemilik dengan isi-otomatis login; Browser 2
+  bukan). Login di tab pemilik sendiri tidak memberi agent token `/cpsess…/`; yang berhasil: pemilik mengklik Log in di
+  tab "cPanel Login" milik grup Claude. `file_upload` maksimum ±10,4 MB per panggilan (satu potongan per panggilan).
+  `rclone` memperingatkan bahwa `client_id` Drive bawaan akan dihentikan selama 2026.
+- **Keterbatasan / belum:** tampilan baru (salam, ucapan, ilustrasi) hanya terbukti lewat tes widget; belum dilihat di
+  emulator atau HP nyata (strip ucapan menambah tinggi kartu Iuran: cek 320 px dan teks besar). Pop-up "Versi baru tersedia —
+  build 1033" di HP berbuild lama belum dilihat. Dua berkas server dari #128 tetap belum dideploy (production `a3e5209`).
+- **Berkas docs:** `PROGRESS.md`, `HANDOFF.md`, `RUNBOOK_PRODUCTION.md` (3a). `node infra/scripts/check-repo.mjs` pada
+  snapshot `main` `2219fa8` + ketiga berkas ini: **OK, 1164 berkas dilacak** (tanpa file terlarang, pola secret, atau tautan
+  relatif rusak). Perubahan hanya dokumentasi: tes mobile/backend tidak dijalankan ulang.
+
 ## Sentuhan kecil Beranda + ucapan terima kasih iuran (mobile) — Senin 16 November 2026
 
 Permintaan pemilik: aplikasi terasa kurang "hidup"; tambahkan sentuhan kecil **di atas tampilan yang sudah berjalan**
@@ -21,7 +60,8 @@ berubah.
   tampilan strip, layar 320 px skala teks 2.0).
 - **Tes:** `flutter analyze` 0 isu; `dart format` diterapkan; `flutter test` **382 lulus, 0 gagal** (376 lama + 6 baru).
 - **Belum:** tanggal pembayaran pada kartu ucapan (server belum mengirimnya ke akun warga; perlu perubahan API);
-  tampilan di HP nyata/emulator belum dilihat (hanya tes widget); APK baru (build berikutnya 1033) belum dibuat.
+  tampilan di HP nyata/emulator belum dilihat (hanya tes widget); APK 1033 sudah dibuat dan dirilis (bagian di atas).
+
 ## Rilis APK 1032 + uji emulator pra-rilis — Sabtu 14 November 2026 malam
 
 Perintah pemilik: "Ya, merge + 1032", "setuju run 32 dan uji simulator", "Kamu yang setujui" (agent menyetujui run rilis

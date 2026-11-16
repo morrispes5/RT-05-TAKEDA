@@ -67,7 +67,8 @@ tata letak yang berjalan lalu tambahkan sentuhan kecil. Google Stitch hanya untu
 (`mobile/assets/avatars/`), bukan mockup layar. Ilustrasi baru masuk `mobile/assets/ilustrasi/` dan wajib lolos
 `test/m16_home_touches_test.dart` (tanpa `<text>`, `<style>`, gradient, filter; tidak ada berkas yatim). Ucapan terima kasih
 iuran hanya untuk tagihan lunas yang benar-benar dibayar (`layakUcapan`), bukan pemutihan. Sisa: tanggal bayar di kartu
-ucapan butuh field baru di `GET /dues/my`; cek tampilan di HP; rilis APK berikutnya (1033) atas izin pemilik.
+ucapan butuh field baru di `GET /dues/my`; cek tampilan di HP. APK 1033 sudah dirilis (bagian "Rilis APK 1033" di bawah).
+
 ## ATURAN — production berisi data warga asli (sejak soft launch Minggu 8 Nov 2026; diperbarui 14 Nov untuk hosting)
 
 Pemilik 8 Nov: "harus hati-hati jika menyentuh production". Mengikat:
@@ -83,6 +84,23 @@ Pemilik 8 Nov: "harus hati-hati jika menyentuh production". Mengikat:
 5. Perbaikan data warga hanya atas permintaan pengurus lewat fitur aplikasi (koreksi keuangan = pembalikan). Tanpa
    UPDATE/DELETE SQL langsung; data warga tidak dicetak ke log/chat.
 6. **Jangan uji beban/smoke beruntun dari PC** ke production: anti-bot Biznet memblokir IP rumah pemilik (10 Nov).
+
+## Rilis APK 1033 (Senin 16 Nov 2026 pagi)
+
+APK **1033** (1.0.0, prod; arm64 versionCode 3033, armeabi-v7a 2033; dari `main` `2219fa8`, build selesai 09.20 WIB) tayang
+di `rt05takeda.com/unduh` pada **09.32 WIB** dan di Drive (ID tetap, arm64 saja, ±09.33 WIB). Isinya sentuhan kecil Beranda
+(bagian "Sentuhan kecil mobile" di atas): salam sesuai jam, ucapan terima kasih iuran lunas, ilustrasi keadaan kosong.
+Bukti dan hash ada di PROGRESS paling atas.
+
+- **Rollback:** salin `~/rt05/rollback-apk-1033/versi-1032.json` menjadi `public_html/unduh/versi.json` (APK 1030–1032
+  masih ada di folder itu).
+- Cara pasang (cPanel lewat Chrome pemilik): [RUNBOOK_PRODUCTION.md](RUNBOOK_PRODUCTION.md) bagian 3a. Pemilik mengklik
+  **Log in** di tab "cPanel Login" milik grup Claude supaya token sesi jatuh ke tab agent.
+- **Sisa:** lihat tampilan baru di HP nyata/emulator (320 px, teks besar) dan uji update 1030–1032 → 1033 (data seluler +
+  Wi-Fi); tanggal bayar di kartu ucapan butuh field baru di `GET /dues/my`; dua berkas server dari #128 menunggu deploy
+  (production `a3e5209`); pengamatan emulator 1032 (Kebijakan Privasi muncul lagi setelah mulai ulang pertama, daftar bukti
+  bayar basi sampai mulai ulang) belum terkonfirmasi; **akses Drive lewat `rclone` memakai `client_id` bawaan yang
+  dijadwalkan dihentikan selama 2026**: buat `client_id` sendiri sebelum tiba-tiba gagal.
 
 ## Rilis APK 1032 (Sabtu 14 Nov 2026 malam)
 
@@ -433,8 +451,9 @@ Pemilik minta tanggal dan jam rilis selalu dicatat agar mudah diingat. Waktu dal
 | **1025** (1.0.0) | 3025 / 2025 | `613466b` | **Selasa 27 Okt 13.36** | **Selasa 27 Okt `/unduh` + `versi.json` 13.38; Drive 13.39 WIB, ID tetap** | Audit M17–M19: jenis darurat wajib dipilih, pembatalan penanda penyalahgunaan, pelapor tidak menerima alarm sendiri, dashboard tanpa rumah arsip (server: minimal versi privasi panik, validasi ledger cepat) | Diuji Claude di emulator (upgrade 3023→3025, dashboard 7/10, layar panik); HP nyata M19 belum |
 | **1027** (1.0.0) | **3027 / 2027** | `3384bf9` | **Kamis 29 Okt 21.35.25** | **Kamis 29 Okt `/unduh` + `versi.json` 21.37.07; Drive 21.37 WIB, ID tetap `1G3YAst…`** | M19R Tombol Panik (ketentuan + geser, jenis opsional, batal pelapor) + ADR50 alarm berdering seperti panggilan (data-only FCM, layar penuh, kartu izin) + ADR46 pembaruan dari dalam aplikasi + ADR49 Lunas (buku lama). Sertifikat = kunci rilis tetap; SHA-256 arm64 `68b0bb9c…`, v7a `905ac687…`. Pengguna 1025 pasang manual sekali | Menunggu uji HP nyata tim (emulator dilarang pemilik). Run #26 bukan rilis, jadi tidak ada 1026 |
 | **1032** (1.0.0) | **3032 / 2032** | `0658eb0` | **Sabtu 14 Nov 22.14** | **Sabtu 14 Nov 23.50 `/unduh` + `versi.json` terakhir; Drive ±23.51 WIB (arm64), ID tetap** | Review mobile (PR #128): tombol panik bisa diubah berulang, "Tandai selesai" hanya setelah pembayaran tercatat, pesan jelas saat koneksi/respons bermasalah, akun yang keluar tidak muncul lagi, pengaman kecil | Diuji agent di emulator (APK `dev`, lulus); belum di HP nyata |
+| **1033** (1.0.0) | **3033 / 2033** | `2219fa8` | **Senin 16 Nov 09.20** | **Senin 16 Nov 09.32 `/unduh` + `versi.json` terakhir; Drive ±09.33 WIB (arm64), ID tetap** | Sentuhan Beranda (PR #130): salam sesuai jam + hiasan kartu, ucapan terima kasih bergambar saat iuran lunas, ilustrasi keadaan kosong | Belum dilihat di emulator/HP (hanya tes widget; CI hijau) |
 
-Build 1028–1031 tidak diulang di tabel ini: lihat PROGRESS (2 Nov, 7 Nov, 9 Nov). Rilis 1030 ke atas hanya lewat `/unduh` rt05takeda.com dan `versi.json`; Drive hanya diperbarui pada 1032.
+Build 1028–1031 tidak diulang di tabel ini: lihat PROGRESS (2 Nov, 7 Nov, 9 Nov). Rilis 1030 ke atas hanya lewat `/unduh` rt05takeda.com dan `versi.json`; Drive hanya diperbarui pada 1032 dan 1033.
 
 Perbaikan website (foto sampul artikel, PR #55) tidak butuh APK; sudah aktif di staging sejak deploy 20 Okt 14.32 WIB. Pulihkan arsip di CMS web juga sudah aktif di staging sejak deploy ±19.58 WIB (tanpa APK).
 
