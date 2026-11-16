@@ -101,13 +101,16 @@ checkout memaksa memilih domain sekarang, tanyakan dulu ke Biznet apakah domain 
    menampilkan "Versi baru tersedia" di menu Akun.
 6. Beri tahu pemilik: nomor build, tanggal + jam WIB, tautan.
 
-### 3a. Memasang APK ke `rt05takeda.com` tanpa VPS (dipakai untuk APK 1032, 14 Nov 2026)
+### 3a. Memasang APK ke `rt05takeda.com` tanpa VPS (dipakai untuk APK 1032 dan 1033, 14–16 Nov 2026)
 
 Jalur "salin dari VPS" tidak ada lagi karena VPS RT05 mati. Pemasangan ke production tetap butuh izin pemilik untuk tiap
 rilis. Tanpa data warga: hanya berkas statis di `public_html/unduh/`.
 
-1. Pemilik login cPanel di Chrome (profil "Takeda"). Sesi sering kedaluwarsa dan agent tidak pernah mengetik kata sandi.
-   Agent memakai token sesi `/cpsessNNNN/` dari tab itu dan memanggil UAPI lewat `fetch` di tab cPanel.
+1. Pemilik login cPanel di Chrome (profil "Takeda"). Sesi sering kedaluwarsa dan agent tidak pernah mengetik kata sandi
+   atau mengklik Log in. Dua Chrome bisa tersambung ke ekstensi (`list_connected_browsers`): pakai yang profil pemilik
+   (formulir login terisi otomatis). Login di tab pemilik sendiri tidak memberi agent tokennya: agent membuka tab ke
+   halaman login cPanel hosting (`:2083`), pemilik mengklik **Log in** di tab itu, dan alamat tab itu lalu memuat token sesi
+   `/cpsessNNNN/`. Agent memanggil UAPI lewat `fetch` di tab cPanel tersebut.
 2. Unduh artifact ke folder baru di scratchpad, lalu cek `.sha256` dan sertifikat (`apksigner verify --print-certs`;
    jalankan lewat PowerShell, di Git Bash keluarannya kosong) sebelum menyentuh hosting.
 3. Cadangkan `versi.json` lama ke `~/rt05/rollback-apk-<build>/` (`Fileman/get_file_content`, lalu simpan).
