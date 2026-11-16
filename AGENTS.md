@@ -71,6 +71,16 @@ Keputusan bisnis yang sudah ada di BUSINESS_RULES.md bersifat mengikat. Keputusa
 
 Instruksi langsung terbaru pemilik mendahului paket ini. Catat perubahan agar agent berikutnya membaca keputusan yang sama.
 
+## Cursor Cloud
+
+Lingkungan Cloud Agent memakai Linux. PHP 8.4, Composer, Node.js 22, PostgreSQL 17, dan Flutter 3.47.7 sudah terpasang. Perintah website memakai `npm` dan `npx`.
+
+- Postgres lokal mendengarkan `127.0.0.1:54329`. Role `rt05_migrator` dan `rt05_app` memakai kata sandi pengembangan `local-dev-only`. Basis data `rt05_dev` untuk API dan `rt05_test` untuk PHPUnit, sama dengan `rest-api/.env.example` dan `rest-api/phpunit.xml`. Jangan arahkan tes ke Neon.
+- Saat boot, Postgres menyala, `rt05_dev` dimigrasi, API melayani http://127.0.0.1:8000, dan pratinjau statis melayani http://127.0.0.1:8123.
+- `npm run build` di `website/` menghasilkan `public/build` yang dibutuhkan tes PHP. Jangan menjalankan `composer setup`.
+- `flutter test` di `mobile/` tidak membutuhkan emulator. APK dan emulator tetap di GitHub Actions.
+- Drill Redis dan Docker (`infra/scripts/ci-redis.sh`) tetap di CI. API lokal memakai `QUEUE_CONNECTION=sync`.
+
 ## Definition of done universal
 
 Kode dan kontrak konsisten, tes relevan lulus, akses ditolak dengan benar, tidak ada secrets, dokumentasi/progress diperbarui, dan perilaku milestone dapat diperagakan. Mock adapter atau build lokal tidak membuktikan integrasi Neon maupun deployment live.
