@@ -1,5 +1,63 @@
 # Progress — RT05 TAKEDA
 
+## Rilis APK 1032 + uji emulator pra-rilis — Sabtu 14 November 2026 malam
+
+Perintah pemilik: "Ya, merge + 1032", "setuju run 32 dan uji simulator", "Kamu yang setujui" (agent menyetujui run rilis
+lewat API) dan "pasang aja langsung APK 1032 biar ntar warga bisa langsung auto update". `main` dibaca lewat `gh api`,
+tanpa `git fetch`/`git push` (ADR45).
+
+- **PR #128** (`codex/m16-review-mobile`) merge ke `main` = `0658eb0`, 14 Nov 19.36 WIB; 8 check hijau termasuk Mobile
+  verification. Merge tidak membangun APK (`mobile-release.yml` hanya `workflow_dispatch`).
+- **Uji emulator sebelum rilis** memakai APK debug `dev` dari artifact CI PR #128 (`rt05-takeda-debug-dev`, hash cocok):
+  - Lingkungan: AVD sementara `rt05_uji_tmp` (AVD pemilik hanya punya ±450 MB bebas; APK debug 168 MB gagal
+    `INSUFFICIENT_STORAGE`) dan API lokal dari salinan scratch repo (Postgres lokal 54329, `php artisan migrate
+    --database=pgsql_migrations`, `rt05:demo-seed`, `php artisan serve --port 8077`; emulator ke `10.0.2.2:8077`). Hanya
+    data demo sintetis. AVD sementara, Postgres, API, APK uji, salinan scratch, dan kata sandi demo dihapus sesudahnya; AVD
+    pemilik tidak disentuh.
+  - Hasil: **semua skenario yang bisa diuji lulus.**
+
+    | Skenario | Hasil |
+    | --- | --- |
+    | Pengaturan tombol panik diubah 4 kali berturut-turut (kode lama: 409 pada kali kedua) | Lulus, label bergantian tanpa error |
+    | Bukti bayar: keluar tanpa menyimpan pembayaran | Lulus, "Tandai selesai" tidak ditawarkan, status tetap `diajukan` |
+    | Bukti bayar: simpan pembayaran lalu tandai selesai | Lulus, tawaran muncul setelah pembayaran tercatat, status `selesai` |
+    | Keluar akun dengan ketukan ganda cepat | Lulus, kembali ke login tanpa error |
+    | Daftar "Akun di HP ini" setelah keluar | Lulus, akun yang sudah keluar tidak tertinggal |
+    | API mati | Lulus, pesan "Tidak dapat terhubung ke server. Periksa koneksi internet." |
+    | Respons HTML berstatus 200 (seperti captive portal) | Lulus, pesan "Respons server tidak dikenali…" |
+
+  - **Belum diuji di emulator** (hanya tes otomatis): unduhan pembaruan ganda, foto pengaduan yang hilang dari HP,
+    `ref`/`setState` setelah halaman ditutup, `BAD_RESPONSE` di jalur login sungguhan.
+  - **Pengamatan belum terkonfirmasi sebagai bug:** layar Kebijakan Privasi muncul lagi setelah mulai ulang pertama
+    (tidak pada mulai ulang kedua); daftar bukti bayar sekali tidak memuat bukti yang baru dibuat dalam sesi berjalan
+    sampai aplikasi dimulai ulang.
+- **Build rilis:** workflow *Mobile release APK* run #32 (id 43595674669), flavor `prod`, dari `main` `0658eb0`.
+  Environment `release` disetujui agent lewat `pending_deployments` atas perintah pemilik (22.06 WIB); selesai 22.14 WIB.
+  Artifact `rt05-takeda-prod-release-32` (id 14119597874, kedaluwarsa 12 Feb 2027): **APK 1032 (1.0.0)**, arm64-v8a
+  versionCode 3032 (23.138.333 B, sha256 `ef9340d7…b545`), armeabi-v7a 2032 (21.038.569 B, sha256 `942afbec…244d`).
+  Diverifikasi sebelum dipasang: sha256 sama dengan berkas `.sha256`; `apksigner` (v2) kedua ABI bersertifikat
+  `dba8bc3f…e4069a` = variabel `RT05_RELEASE_CERT_SHA256` (kunci rilis tetap, ADR31); versionCode dan nama paket sesuai.
+- **Dipasang ke production atas perintah pemilik, 14 Nov ±23.50 WIB** (hanya berkas statis di `public_html/unduh/`;
+  tanpa deploy kode, database, atau env): dua APK + `.sha256`, lalu `versi.json` (build 1032, 986 B, sha256
+  `c651ecbf…1597`, sama dengan berkas artifact) paling akhir. Jalur salin-dari-VPS sudah tidak ada, jadi lewat cPanel di
+  Chrome pemilik (pemilik login ulang saat sesi kedaluwarsa; agent tidak mengetik sandi); caranya di RUNBOOK_PRODUCTION
+  bagian 3a. Unduhan publik dari `rt05takeda.com/unduh/`: sha256 kedua APK = artifact; `/aplikasi` menampilkan 1032.
+  Catatan rilis di `versi.json`: tombol panik bisa diubah berulang; "Tandai selesai" hanya setelah pembayaran tercatat; pesan
+  jelas bila koneksi/Wi-Fi bermasalah; akun yang sudah keluar tidak muncul lagi di daftar akun; pesan bila foto pengaduan
+  hilang dari HP; perbaikan kecil lain.
+  - **Rollback:** `~/rt05/rollback-apk-1032/versi-1031.json` → salin menjadi `public_html/unduh/versi.json`; APK 1030 dan
+    1031 masih ada di `/unduh`.
+- **Drive** (±23.51 WIB): berkas link-tetap (ID `1G3YAst…`) ditimpa di tempat dengan arm64-v8a 1032 (ID tetap) dan diganti
+  nama menjadi `rt05-takeda-prod-1032-arm64-v8a.apk`. Sebelumnya masih berisi APK staging 1028 (2 Nov) yang basi sejak
+  staging dimatikan. Drive hanya berisi arm64; HP 32-bit memakai `/unduh`. Hash di Drive = artifact.
+- **Keterbatasan / belum:** tidak ada uji di HP nyata dan tidak ada uji APK `prod` di emulator (langsung ke data warga
+  asli, jadi tanpa login). Pop-up "Versi baru tersedia — build 1032" di HP berbuild lama belum dilihat. Dua berkas server
+  dari #128 (`SharedTick`, `SharedSchedule`) belum dideploy ke production (aturan production: izin + cadangan + cek
+  sha256); production tetap `a3e5209`. Salinan lokal APK dan potongan unggahan sudah dihapus.
+- **Berkas docs:** `PROGRESS.md`, `HANDOFF.md`, `RUNBOOK_PRODUCTION.md` (bagian 3a), `TESTING.md` (uji emulator pra-rilis).
+  `node infra/scripts/check-repo.mjs` pada snapshot `main` `0658eb0` + keempat berkas ini: **OK, 1152 berkas dilacak** (tanpa
+  file terlarang, pola secret, atau tautan relatif rusak). Perubahan hanya dokumentasi: tes mobile/backend tidak dijalankan ulang.
+
 ## Review bug mobile + /simplify — Sabtu 14 November 2026 sore
 
 Perintah pemilik: "/simplify dulu cari bug, aku gak mau ada bug apapun di mobile, review kode kamu sendiri". Basis `main`
@@ -35,7 +93,8 @@ PR #125 + #127, 3 review bug untuk seluruh `mobile/lib` (19,6 ribu baris); tiap 
   lulus setelah perbaikan.
   `flutter analyze` 0 isu, `dart format` 0 berubah, `flutter test` **376 lulus**; backend `php artisan test`
   SharedHosting/Health/M16 47 lulus, seluruh suite **482 lulus, 3 dilewati, 0 gagal**; `node infra/scripts/check-repo.mjs` OK.
-- **Belum:** APK 1032 (rilis butuh persetujuan pemilik); deploy dua berkas server mengikuti aturan production.
+- **Lanjutan:** APK 1032 sudah dirilis (bagian "Rilis APK 1032" di atas); deploy dua berkas server belum, mengikuti aturan
+  production.
 
 ## Deploy Fase 3 + Fase 6 + SEO + runbook cadangan — Sabtu 14 November 2026 siang
 
