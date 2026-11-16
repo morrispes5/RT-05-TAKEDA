@@ -1,5 +1,27 @@
 # Progress — RT05 TAKEDA
 
+## Sentuhan kecil Beranda + ucapan terima kasih iuran (mobile) — Senin 16 November 2026
+
+Permintaan pemilik: aplikasi terasa kurang "hidup"; tambahkan sentuhan kecil **di atas tampilan yang sudah berjalan**
+(bukan desain ulang), termasuk kartu ucapan terima kasih bergambar saat iuran lunas dengan kalimat yang berbeda-beda.
+Basis `main` `206bee8` (tarball API GitHub, tanpa `git fetch`). Hanya `mobile/`; server, website, dan kontrak API tidak
+berubah.
+
+- **Beranda warga:** salam mengikuti jam WIB (pagi/siang/sore/malam) menggantikan "Selamat datang,"; kartu salam diberi
+  hiasan latar samar (matahari + atap rumah, atau bulan + jendela menyala saat malam); "Belum ada agenda." dan "Belum ada
+  pengumuman." ditemani ilustrasi kecil. Urutan kartu, warna, tombol, dan logo gapura tetap.
+- **Iuran lunas:** kartu "Iuran bulan ini" di Beranda dan tab Iuran menampilkan strip ucapan terima kasih bergambar; di
+  tab Iuran ditambah baris periode + nominal yang dibayar. Enam ucapan bergilir per periode. Tidak tampil untuk bulan yang
+  diputihkan/diringankan penuh (lunas tanpa uang diterima).
+- **Aset:** `mobile/assets/ilustrasi/` (10 SVG): 6 ilustrasi terima kasih dibuat lewat Google Stitch (Gemini 3.8 Flash)
+  mengikuti gaya dan palet avatar keluarga, lalu diperiksa (tanpa teks, style, gradient, filter); 4 lainnya (2 hiasan
+  kartu salam, 2 keadaan kosong) digambar agent. Semua hiasan dikecualikan dari pembaca layar.
+- **Berkas:** `lib/features/warga/home_touches.dart` (baru), `warga_pages.dart`, `pubspec.yaml`,
+  `test/m16_home_touches_test.dart` (6 tes baru: salam per jam, giliran ucapan, aturan pemutihan, keamanan aset SVG,
+  tampilan strip, layar 320 px skala teks 2.0).
+- **Tes:** `flutter analyze` 0 isu; `dart format` diterapkan; `flutter test` **382 lulus, 0 gagal** (376 lama + 6 baru).
+- **Belum:** tanggal pembayaran pada kartu ucapan (server belum mengirimnya ke akun warga; perlu perubahan API);
+  tampilan di HP nyata/emulator belum dilihat (hanya tes widget); APK baru (build berikutnya 1033) belum dibuat.
 ## Rilis APK 1032 + uji emulator pra-rilis — Sabtu 14 November 2026 malam
 
 Perintah pemilik: "Ya, merge + 1032", "setuju run 32 dan uji simulator", "Kamu yang setujui" (agent menyetujui run rilis

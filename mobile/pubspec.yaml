@@ -37,6 +37,8 @@ flutter:
     - assets/brand/
     # M17: 15 avatar keluarga (dibuat tool/avatars.py).
     - assets/avatars/
+    # Sentuhan kecil 16 Nov 2026: ucapan terima kasih iuran, hiasan kartu salam, keadaan kosong.
+    - assets/ilustrasi/
   # TTF statis dari sumber resmi (lisensi OFL di assets/fonts/); tidak ada unduhan font saat runtime.
   fonts:
     - family: PublicSans

@@ -60,6 +60,14 @@ tetap lunas (tanpa tunggakan), dan pencatatan tunai/transfer. Sudah di `main` (2
 memakai `--sampai=2026-09 --putihkan`; saldo awal kas resmi tetap diisi bendahara sekali (belum ada angkanya).
 Bug pendaftaran ke rumah hasil impor diperbaiki (ADR53 butir 4). Pratinjau staging (ADR52) perlu impor ulang setelah deploy.
 
+## Sentuhan kecil mobile (Senin 16 Nov 2026)
+
+Rincian di PROGRESS paling atas. Aturan pemilik untuk pekerjaan tampilan: **jangan desain ulang layar**; pakai komponen dan
+tata letak yang berjalan lalu tambahkan sentuhan kecil. Google Stitch hanya untuk komponen SVG kecil bergaya avatar keluarga
+(`mobile/assets/avatars/`), bukan mockup layar. Ilustrasi baru masuk `mobile/assets/ilustrasi/` dan wajib lolos
+`test/m16_home_touches_test.dart` (tanpa `<text>`, `<style>`, gradient, filter; tidak ada berkas yatim). Ucapan terima kasih
+iuran hanya untuk tagihan lunas yang benar-benar dibayar (`layakUcapan`), bukan pemutihan. Sisa: tanggal bayar di kartu
+ucapan butuh field baru di `GET /dues/my`; cek tampilan di HP; rilis APK berikutnya (1033) atas izin pemilik.
 ## ATURAN — production berisi data warga asli (sejak soft launch Minggu 8 Nov 2026; diperbarui 14 Nov untuk hosting)
 
 Pemilik 8 Nov: "harus hati-hati jika menyentuh production". Mengikat:
