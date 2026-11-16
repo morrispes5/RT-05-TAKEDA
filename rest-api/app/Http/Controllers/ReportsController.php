@@ -29,7 +29,7 @@ class ReportsController extends Controller
 
     public function complaints(Request $request): JsonResponse
     {
-        $request->validate(['status' => ['sometimes', 'nullable', 'in:diajukan,diproses,selesai']]);
+        $request->validate(['status' => ['sometimes', 'nullable', 'in:diajukan,diproses,selesai'], 'kategori_id' => ['sometimes', 'nullable', 'uuid']]);
         $viewer = $request->user();
         $q = Pengaduan::with(['kategori', 'pelapor', 'foto'])
             ->when(! ($viewer->isPengurus() && $request->boolean('arsip')), fn ($q) => $q->whereNull('archived_at'))

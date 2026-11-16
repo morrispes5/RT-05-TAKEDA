@@ -78,6 +78,14 @@ dan state privat sebelum COPY di setiap build stage.
 
 Constraint lintas baris seperti total allocations=payment dilindungi transaction/action dan meaningful tests; jangan mengklaim CHECK biasa dapat membaca tabel lain.
 
+### Larangan hapus permanen data inti (ADR61)
+
+Trigger `rt05_larang_hapus` menolak `DELETE` dan `TRUNCATE` (SQLSTATE 42501) pada tabel identitas, hunian, layanan warga,
+konten, konfirmasi iuran, dan tagihan; daftar tabel ada di migrasi `2026_11_16_000100_larang_hapus_permanen_data_inti`.
+Data "dihapus" lewat arsip (`archived_at`/status/tanggal selesai) dan dipulihkan lewat endpoint `restore`. Pembersihan
+yang disengaja: `SET LOCAL rt05.izinkan_hapus = 'ya'` di dalam transaksi itu saja. Tabel baru yang menyimpan data
+penting ditambahkan ke daftar lewat migrasi baru.
+
 ## Transaksi pembayaran
 
 1. Validasi admin, rumah, periode, nominal, tanggal dan Idempotency-Key.

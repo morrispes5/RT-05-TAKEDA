@@ -36,7 +36,7 @@ Kode BR dipakai pada API, tes, issue, dan kriteria milestone. Bagian A mempertah
 | BR15 | Warga melihat iuran/tunggakan/titipan rumah sendiri dan dapat mengirim bukti transfer atau chat bendahara. M18 membuka kas agregat bulanan tanpa identitas setelah persetujuan teks privasi terbaru; status iuran rumah lain dan detail transaksi tetap khusus pengurus (ADR44 mengubah sebagian ADR26/35) |
 | BR16 | Pemasukan iuran harus berhubungan dengan pembayaran yang dicatat |
 | BR17 | Koreksi keuangan dapat dilakukan admin dan historinya tetap tersedia |
-| BR18 | Hapus dari tampilan menggunakan arsip untuk data penting; arsip dapat dipulihkan pengurus (ADR34) |
+| BR18 | Hapus dari tampilan menggunakan arsip untuk data penting; arsip dapat dipulihkan pengurus (ADR34). Database menolak hapus permanen data inti (ADR61) |
 | BR19 | Agenda tersedia di kalender mobile dan dapat ditambahkan ke Google Calendar |
 | BR20 | Pengumuman dan notifikasi layanan tersedia di mobile |
 | BR21 | Notifikasi mencakup status laporan, agenda, iuran, pengumuman, kebijakan privasi, dan update aplikasi |

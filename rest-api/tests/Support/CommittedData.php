@@ -36,6 +36,8 @@ trait CommittedData
     protected function purgeCommittedData(): void
     {
         DB::connection('pgsql_migrations')->transaction(function ($db) {
+            // ADR61: data inti hanya boleh dihapus dengan izin eksplisit per transaksi.
+            $db->statement("SET LOCAL rt05.izinkan_hapus = 'ya'");
             $db->statement('ALTER TABLE kejadian_darurat DISABLE TRIGGER kejadian_darurat_immutable');
             $db->statement('ALTER TABLE koreksi_penyalahgunaan_darurat DISABLE TRIGGER koreksi_penyalahgunaan_darurat_immutable');
             foreach (['tarif_rumah', 'keringanan_iuran', 'penggunaan_titipan', 'mutasi_titipan', 'penyesuaian_tagihan', 'pelunasan_buku_lama'] as $table) {

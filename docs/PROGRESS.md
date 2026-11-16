@@ -1,5 +1,44 @@
 # Progress — RT05 TAKEDA
 
+## Review keamanan + bug backend, pengaman hapus permanen (ADR61) — Senin 16 November 2026
+
+Perintah pemilik (pagi): cari bug dan celah keamanan, jangan ubah yang memang disengaja, dan tambahkan "soft delete" agar
+data yang terhapus bisa dikembalikan. Dikerjakan pagi di atas `main` `0658eb0` (tarball API GitHub, tanpa `git fetch`).
+Siang, atas perintah pemilik "lgsg aja benerin dan lgsg aja push ke main", patch dipasang ulang di atas `main` `af05228`
+(pohon `rest-api/` identik dengan `0658eb0`, jadi patch kode terpasang tanpa konflik) dan dijadikan PR
+`codex/m16-review-keamanan`. Skill `/security-review` tidak bisa dijalankan (membutuhkan `origin/HEAD` di folder induk),
+jadi review dilakukan manual berkas demi berkas.
+
+- **Dibaca:** seluruh rute dan middleware API, auth/sesi/CSRF/token registrasi, pengaduan + foto, aspirasi, usulan +
+  dokumen, bukti iuran, konten + media, tombol panik, ekspor CSV, serializer `Present`, retensi/arsip, jadwal, entry point
+  shared hosting, keluaran Blade website (`{!! !!}`, JSON-LD), manifest dan penyimpanan token mobile. Domain keuangan M18
+  dan `mobile/lib` tidak dibaca ulang baris demi baris (sudah direview 14 Nov).
+- **Hasil keamanan:** tidak ditemukan celah akses (IDOR), bocor identitas pelapor anonim, unggahan berbahaya, XSS, SQL
+  injection, atau rahasia di repo. Otorisasi diperiksa ulang per request dan dikunci di domain.
+- **Bug diperbaiki:** filter query daftar tidak divalidasi → 500. Dari akun warga: `GET /agendas?bulan=abc` (Carbon
+  melempar) dan `GET /complaints?kategori_id=abc` (Postgres menolak UUID). Dari pengurus: `rumah_id`, `periode[]`, `q[]`,
+  `status[]`, `jenis[]`, `entity_type[]` pada daftar tagihan, pembayaran, kas, rumah, keluarga, akun, permohonan, audit,
+  rekap. Kini 422.
+- **Soft delete:** sudah ada di aplikasi (arsip bertanggal + pulihkan untuk akun, rumah, keluarga, warga, konten,
+  laporan; BR18/ADR34). Ditambah pengaman database: trigger `rt05_larang_hapus` menolak DELETE/TRUNCATE pada 19 tabel
+  data inti (ADR61), dengan izin eksplisit per transaksi untuk pembersihan yang disengaja.
+- **Tidak diubah (disengaja):** anonimisasi arsip setelah 12 bulan (ADR43), hapus foto pengaduan oleh pemilik (ADR32),
+  token 6 digit + klaim rumah kosong hasil impor (ADR53/58), kas agregat untuk warga (M18), `main` tanpa proteksi (ADR60).
+- **Berkas:** 6 controller (`Reports`, `Community`, `Finance`, `FlexibleFinance`, `Admin/Residents`, `Admin/Operations`),
+  migrasi baru `2026_11_16_000100_larang_hapus_permanen_data_inti` + blok pasang-ulang di migrasi M07, tes baru
+  `M16ReviewKeamananTest` (4 tes), `TestCase::hapusPermanen()` dipakai `FinanceTest`, `M11ConcurrencyTest`,
+  `M07MigrationTest`, `SharedRuntimeTest`, `CommittedData`; docs DECISIONS/DATABASE/BUSINESS_RULES/openapi/HANDOFF.
+- **Tes pagi (Postgres 17 lokal, role `rt05_app`, basis `0658eb0`):** tes filter warga gagal pada kode lama (500) dan
+  lulus setelah perbaikan; `php artisan test` **489 tes: 486 lulus, 3 dilewati, 0 gagal**; `vendor/bin/pint --test` lulus.
+  Siang tes lokal tidak diulang (kode backend sama); CI PR yang menjalankannya lagi. `node infra/scripts/check-repo.mjs`
+  pada snapshot `af05228` + patch: hasil di badan PR.
+- **Belum (production tidak disentuh):** deploy 6 controller ke hosting dan **menjalankan migrasi di Neon production**.
+  Keduanya butuh rencana sendiri, branch Neon cadangan, jam sepi, login cPanel oleh pemilik, dan izin eksplisit pemilik.
+  Sampai itu dilakukan, production masih `a3e5209` + berkas PR #125/#127 dan filter tak sah masih 500 di sana.
+  Staging mati. Tes mobile/website tidak dijalankan (tidak ada perubahan di sana).
+- **Dicatat, tidak dikerjakan:** batas laju per IP di shared hosting bergantung pada IP klien asli yang dilihat PHP (sisa
+  ADR60 Fase 5, cek Raw Access cPanel).
+
 ## Rilis APK 1033 (sentuhan Beranda) — Senin 16 November 2026 pagi
 
 Perintah pemilik: "udh masuk belom aplikasi 1033 dan pr nya? kalo udh lgsg aja dah merge abis itu build seperti biasa",

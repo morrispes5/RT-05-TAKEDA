@@ -69,6 +69,22 @@ return new class extends Migration
         DB::statement('ALTER TABLE rumah ADD COLUMN versi integer NOT NULL DEFAULT 1');
         DB::statement('ALTER TABLE rumah ADD CONSTRAINT rumah_versi_positif CHECK (versi >= 1)');
 
+        // ADR61: bila pengaman hapus permanen sudah terpasang (M07 dipasang ulang setelah rollback), dua tabel ini ikut
+        // dijaga lagi. Pada instalasi berurutan fungsi itu belum ada dan blok ini tidak berbuat apa-apa.
+        DB::unprepared(<<<'SQL'
+            DO $do$
+            DECLARE t text;
+            BEGIN
+                IF to_regproc('rt05_larang_hapus') IS NOT NULL THEN
+                    FOREACH t IN ARRAY ARRAY['keanggotaan_keluarga', 'tautan_akun'] LOOP
+                        EXECUTE format('CREATE TRIGGER %I BEFORE DELETE ON %I FOR EACH ROW EXECUTE FUNCTION rt05_larang_hapus()', t || '_larang_hapus', t);
+                        EXECUTE format('CREATE TRIGGER %I BEFORE TRUNCATE ON %I FOR EACH STATEMENT EXECUTE FUNCTION rt05_larang_hapus()', t || '_larang_kosongkan', t);
+                    END LOOP;
+                END IF;
+            END
+            $do$;
+            SQL);
+
         LegacyBackfill::run();
     }
 

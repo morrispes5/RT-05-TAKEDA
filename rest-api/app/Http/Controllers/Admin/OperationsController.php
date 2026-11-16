@@ -51,6 +51,7 @@ class OperationsController extends Controller
 
     public function auditLogs(Request $request): JsonResponse
     {
+        $request->validate(['entity_type' => ['sometimes', 'nullable', 'string', 'max:60']]);
         $q = AuditLog::query()
             ->when($request->query('entity_type'), fn ($q, $t) => $q->where('entity_type', $t))
             ->orderByDesc('created_at');
