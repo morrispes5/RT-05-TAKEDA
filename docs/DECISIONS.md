@@ -1056,3 +1056,34 @@ Keputusan pemilik dan pelaksanaannya:
    production dilakukan pemilik bersama pengurus (UJI_HP_M19.md), laporan uji ditutup "selesai" tanpa penanda penyalahgunaan.
 5. Saat pindah ke shared hosting (ADR57 butir 5) env API shared ikut `RT05_PANIC_ENABLED=true` + `RT05_PANIC_AUDIENCE=all`.
    Website shared `rt05takeda.com/kebijakan-privasi` masih teks lama sampai env web shared ikut dinyalakan.
+
+### ADR61 — Database menolak hapus permanen data inti; filter daftar tidak sah dijawab 422 (16 Nov 2026)
+
+Konteks: pemilik meminta "soft delete" agar akun/data yang terhapus tidak langsung hilang dan bisa dikembalikan, sekaligus
+review keamanan ulang. Review atas `main` `0658eb0` menemukan aplikasi **sudah** tidak pernah menghapus data inti: akun,
+rumah, keluarga, warga, konten, pengaduan, aspirasi memakai arsip bertanggal (`archived_at`, status `diarsipkan`) yang
+dapat dipulihkan pengurus (BR18, ADR34), dan keuangan/audit sudah dikunci trigger. Yang belum ada: pengaman di database
+bila baris dihapus di luar aplikasi (bug baru, SQL manual, skrip salah sasaran). Role runtime `rt05_app` memegang hak
+DELETE pada semua tabel.
+
+Keputusan:
+
+1. Migrasi `2026_11_16_000100_larang_hapus_permanen_data_inti`: trigger `BEFORE DELETE` dan `BEFORE TRUNCATE` pada `akun`,
+   `warga`, `keluarga`, `rumah`, `penghunian`, `keanggotaan_keluarga`, `tautan_akun`, `permohonan_akun`, `pengaduan`,
+   `riwayat_pengaduan`, `aspirasi`, `riwayat_aspirasi`, `usulan_kegiatan`, `riwayat_usulan_kegiatan`, `agenda`,
+   `pengumuman`, `konten`, `konfirmasi_iuran`, `tagihan_iuran`. Hapus ditolak dengan SQLSTATE 42501 untuk semua role,
+   termasuk pemilik schema. Aditif, tidak mengubah baris; jalur aplikasi tidak berubah karena tidak pernah menghapus
+   tabel ini.
+2. Pembersihan yang disengaja membuka izin untuk satu transaksi saja: `SET LOCAL rt05.izinkan_hapus = ya`. Di production
+   hanya atas izin pemilik per tindakan, setelah branch Neon cadangan dibuat (aturan production di HANDOFF).
+3. Tetap boleh dihapus aplikasi (disengaja): token akses, perangkat push, token reset, antrean, idempotency, slug lama,
+   dan foto pengaduan yang dihapus pemiliknya selama *diajukan* (ADR32).
+4. Anonimisasi arsip 12 bulan (ADR43 butir 7) tidak berubah: itu UPDATE, bukan DELETE. Sebelum 12 bulan arsip bisa
+   dipulihkan; sesudahnya identitas sudah dianonimkan dan tidak bisa dikembalikan (janji Kebijakan Privasi).
+5. Filter query daftar divalidasi (`bulan`, `kategori_id`, `rumah_id`, `periode`, `q`, `status`, `jenis`, `entity_type`):
+   nilai tidak sah dijawab 422. Sebelumnya `GET /agendas?bulan=abc` dan `GET /complaints?kategori_id=abc` dari akun warga
+   menghasilkan 500.
+
+Akibat: migrasi M07 memasang ulang trigger untuk dua tabelnya bila fungsi pengaman sudah ada (kasus rollback M07 lalu
+migrate). Tes yang memang membuang baris memakai `TestCase::hapusPermanen()`. Production belum berubah sampai PR digabung
+dan migrasi dijalankan atas izin pemilik.

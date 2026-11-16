@@ -35,6 +35,9 @@ class ResidentsController extends Controller
 {
     private const WHATSAPP = ['nullable', 'string', 'max:25', 'regex:/^[0-9+ -]{8,25}$/'];
 
+    /** Kata cari daftar: teks pendek saja (array/teks panjang → 422, bukan 500). */
+    private const CARI = ['q' => ['sometimes', 'nullable', 'string', 'max:100']];
+
     /** ADR42: opsional, tidak di masa depan. */
     private const TANGGAL_LAHIR = ['sometimes', 'nullable', 'date_format:Y-m-d', 'after_or_equal:1900-01-01', 'before_or_equal:today'];
 
@@ -42,6 +45,7 @@ class ResidentsController extends Controller
 
     public function houses(Request $request): JsonResponse
     {
+        $request->validate(self::CARI);
         $q = Rumah::query()->with(['penghunianAktif.keluarga.keanggotaanAktif.warga'])
             ->when(! $request->boolean('arsip'), fn ($q) => $q->whereNull('archived_at'))
             ->when($request->query('q'), fn ($q, $s) => $q->where(fn ($w) => $w
@@ -224,7 +228,7 @@ class ResidentsController extends Controller
 
     public function families(Request $request): JsonResponse
     {
-        $request->validate(['status' => ['sometimes', 'in:belum_verifikasi,terverifikasi']]);
+        $request->validate(['status' => ['sometimes', 'in:belum_verifikasi,terverifikasi']] + self::CARI);
         $q = Keluarga::query()->with(['keanggotaanAktif.warga', 'penghunianAktif.rumah'])
             ->when(! $request->boolean('arsip'), fn ($q) => $q->whereNull('archived_at'))
             ->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))
@@ -420,6 +424,7 @@ class ResidentsController extends Controller
 
     public function accounts(Request $request): JsonResponse
     {
+        $request->validate(['status' => ['sometimes', 'nullable', 'string', 'max:30']] + self::CARI);
         $q = Akun::query()->with(Akun::PROFIL)
             ->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->query('q'), fn ($q, $s) => $q->where(fn ($w) => $w->where('nama', 'ilike', "%$s%")->orWhere('email', 'ilike', "%$s%")))
@@ -477,6 +482,7 @@ class ResidentsController extends Controller
 
     public function requests(Request $request): JsonResponse
     {
+        $request->validate(['status' => ['sometimes', 'nullable', 'string', 'max:30']]);
         $q = PermohonanAkun::with(['akun', 'rumah'])
             ->where('jenis', 'tambahan')
             ->where('status', $request->query('status', 'diajukan'))

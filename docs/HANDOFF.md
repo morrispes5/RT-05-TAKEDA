@@ -69,6 +69,17 @@ tata letak yang berjalan lalu tambahkan sentuhan kecil. Google Stitch hanya untu
 iuran hanya untuk tagihan lunas yang benar-benar dibayar (`layakUcapan`), bukan pemutihan. Sisa: tanggal bayar di kartu
 ucapan butuh field baru di `GET /dues/my`; cek tampilan di HP. APK 1033 sudah dirilis (bagian "Rilis APK 1033" di bawah).
 
+## Review keamanan + pengaman hapus permanen (Senin 16 Nov 2026, ADR61)
+
+Rincian di PROGRESS paling atas. Kode ada di PR `codex/m16-review-keamanan` (basis `main` `af05228`); salinan patch di
+PC pemilik, folder rt05-ops-draf/review-keamanan-16nov/. **Production belum disentuh.** Urutan lanjut setelah merge:
+(1) rencana deploy + izin pemilik, jam sepi; (2) branch Neon cadangan; (3) deploy 6 controller ke hosting mengikuti aturan
+production (boleh sejendela dengan `SharedTick`/`SharedSchedule` dari PR #128); (4) migrasi `2026_11_16_000100` di Neon
+production lewat role migrasi; cek `SELECT count(*) FROM information_schema.triggers WHERE trigger_name LIKE
+'%larang_hapus'` = 19. Sesudah itu DELETE manual pada data inti ditolak; pembersihan yang disetujui pemilik memakai
+`SET LOCAL rt05.izinkan_hapus = 'ya'` dalam satu transaksi. Controller boleh dideploy tanpa migrasi (tidak saling
+bergantung); migrasi tanpa controller juga aman karena aplikasi tidak pernah menghapus tabel itu.
+
 ## ATURAN — production berisi data warga asli (sejak soft launch Minggu 8 Nov 2026; diperbarui 14 Nov untuk hosting)
 
 Pemilik 8 Nov: "harus hati-hati jika menyentuh production". Mengikat:

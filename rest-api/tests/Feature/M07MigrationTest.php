@@ -27,8 +27,10 @@ class M07MigrationTest extends TestCase
     /** Hapus histori M07 agar data menyerupai baris yang ditulis image M06. */
     private function forgetHistory(): void
     {
-        DB::table('tautan_akun')->delete();
-        DB::table('keanggotaan_keluarga')->delete();
+        $this->hapusPermanen(function () {
+            DB::table('tautan_akun')->delete();
+            DB::table('keanggotaan_keluarga')->delete();
+        });
     }
 
     private function pointers(): array

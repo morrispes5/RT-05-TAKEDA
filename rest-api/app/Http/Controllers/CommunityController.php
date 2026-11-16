@@ -22,6 +22,8 @@ class CommunityController extends Controller
 {
     public function agendas(Request $request): JsonResponse
     {
+        // Filter tidak sah → 422, bukan 500 (Carbon melempar pada format salah).
+        $request->validate(['bulan' => ['sometimes', 'nullable', 'date_format:Y-m']]);
         $q = Agenda::query()->whereNull('archived_at')
             ->when($request->query('bulan'), function ($q, $bulan) {
                 $start = Carbon::createFromFormat('!Y-m', $bulan, 'Asia/Jakarta')->startOfMonth();

@@ -2008,7 +2008,7 @@ paths:
       summary: Feed pengaduan tersanitasi
       x-status: implemented
       x-milestone: M08
-      description: Query opsional status (diajukan, diproses, selesai; nilai lain 422), kategori_id, milik_saya=1; pengurus arsip=1. Laporan anonim tidak memuat pelapor bagi warga lain. Akun menunggu/nonaktif 403.
+      description: Query opsional status (diajukan, diproses, selesai; nilai lain 422), kategori_id (UUID; selain itu 422), milik_saya=1; pengurus arsip=1. Laporan anonim tidak memuat pelapor bagi warga lain. Akun menunggu/nonaktif 403.
       responses:
         "200":
           $ref: "#/components/responses/Data"

@@ -27,7 +27,8 @@ class FlexibleFinanceController extends Controller
     public function recap(Request $request): JsonResponse
     {
         self::enabled();
-        $period = Dues::period((string) $request->query('periode', now('Asia/Jakarta')->format('Y-m')));
+        $request->validate(['periode' => ['sometimes', 'nullable', 'string', 'max:7']]);
+        $period = Dues::period((string) ($request->query('periode') ?? now('Asia/Jakarta')->format('Y-m')));
 
         return DB::transaction(function () use ($period) {
             FlexibleDues::readLock();

@@ -36,7 +36,7 @@ class M11ConcurrencyTest extends TestCase
             $houses[] = $this->warga($n)->rumah()->id;
         }
         // Registrasi kini langsung membuat tagihan bulan berjalan (UAT M15); balapan diuji dari kosong.
-        DB::table('tagihan_iuran')->whereIn('rumah_id', $houses)->delete();
+        $this->hapusPermanen(fn () => DB::table('tagihan_iuran')->whereIn('rumah_id', $houses)->delete());
         DB::table('rumah')->whereIn('id', $houses)->update(['mulai_tagih' => '2026-10-01']);
         $token = $this->pengurus('m11-race@contoh.test')->createToken('race')->plainTextToken;
 

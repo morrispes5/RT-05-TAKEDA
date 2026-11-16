@@ -111,7 +111,8 @@ class FinanceController extends Controller
         if (config('finance.v2')) {
             return app(FlexibleFinanceController::class)->recap($request);
         }
-        $period = Dues::period($request->query('periode', CarbonImmutable::now('Asia/Jakarta')->format('Y-m')));
+        $request->validate(['periode' => ['sometimes', 'nullable', 'string', 'max:7']]);
+        $period = Dues::period((string) ($request->query('periode') ?? CarbonImmutable::now('Asia/Jakarta')->format('Y-m')));
         $rows = TagihanIuran::join('rumah', 'rumah.id', '=', 'tagihan_iuran.rumah_id')
             ->where('tagihan_iuran.periode', $period->toDateString())
             ->orderBy('rumah.kode_rumah')
@@ -224,7 +225,8 @@ class FinanceController extends Controller
         if (config('finance.v2')) {
             return app(FlexibleFinanceController::class)->recap($request);
         }
-        $period = Dues::period((string) $request->query('periode', CarbonImmutable::now('Asia/Jakarta')->format('Y-m')));
+        $request->validate(['periode' => ['sometimes', 'nullable', 'string', 'max:7']]);
+        $period = Dues::period((string) ($request->query('periode') ?? CarbonImmutable::now('Asia/Jakarta')->format('Y-m')));
         $date = $period->toDateString();
         $charges = TagihanIuran::with(['rumah:id,kode_rumah', 'alokasi' => fn ($q) => $q->whereNull('dibatalkan_at')->with('pembayaran:id,tanggal_bayar')])
             ->where('periode', $date)->get()->sortBy(fn ($t) => $t->rumah->kode_rumah)->values();
@@ -271,6 +273,7 @@ class FinanceController extends Controller
 
     public function charges(Request $request): JsonResponse
     {
+        $request->validate(['periode' => ['sometimes', 'nullable', 'date_format:Y-m'], 'rumah_id' => ['sometimes', 'nullable', 'uuid'], 'status' => ['sometimes', 'nullable', 'string', 'max:30']]);
         $q = TagihanIuran::with(config('finance.v2') ? ['rumah', 'alokasi', 'saldo'] : ['rumah', 'alokasi'])
             ->when($request->query('periode'), fn ($q, $p) => $q->where('periode', Dues::period($p)->toDateString()))
             ->when($request->query('rumah_id'), fn ($q, $r) => $q->where('rumah_id', $r))
@@ -313,6 +316,7 @@ class FinanceController extends Controller
 
     public function payments(Request $request): JsonResponse
     {
+        $request->validate(['rumah_id' => ['sometimes', 'nullable', 'uuid']]);
         $q = PembayaranIuran::with(config('finance.v2') ? ['rumah', 'alokasi.tagihan', 'keringanan.tagihan'] : ['rumah', 'alokasi.tagihan'])
             ->when($request->query('rumah_id'), fn ($q, $r) => $q->where('rumah_id', $r))
             ->orderByDesc('created_at');
@@ -363,6 +367,7 @@ class FinanceController extends Controller
 
     public function cash(Request $request): JsonResponse
     {
+        $request->validate(['jenis' => ['sometimes', 'nullable', 'string', 'max:30']]);
         $q = TransaksiKas::query()
             ->when($request->query('jenis'), fn ($q, $j) => $q->where('jenis', $j))
             ->orderByDesc('tanggal')->orderByDesc('created_at');

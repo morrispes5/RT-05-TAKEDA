@@ -49,7 +49,7 @@ class SharedRuntimeTest extends TestCase
     {
         if ($this->resetEmail !== null) {
             DB::table('password_reset_tokens')->where('email', $this->resetEmail)->delete();
-            DB::table('akun')->where('email', $this->resetEmail)->delete();
+            $this->hapusPermanen(fn () => DB::table('akun')->where('email', $this->resetEmail)->delete());
         }
         DB::table('jobs')->delete();
         try {
