@@ -28,6 +28,7 @@ import 'app_about.dart';
 import 'dues_proof.dart';
 import 'dues_year.dart';
 import 'emergencies.dart';
+import 'home_touches.dart';
 import 'notification_center.dart';
 import 'providers.dart';
 import 'report_actions.dart';
@@ -91,6 +92,7 @@ class WargaHomePage extends ConsumerWidget {
                         style: const TextStyle(color: Brand.danger, fontWeight: FontWeight.w600),
                       ),
                     ],
+                    if (now != null && layakUcapan(Tagihan(Json.from(now)))) ...[const SizedBox(height: 12), ThanksStrip(tagihan: Tagihan(Json.from(now)))],
                     const SizedBox(height: 8),
                     Text('${d['catatan']}', style: const TextStyle(color: Brand.muted, fontSize: 13)),
                   ],
@@ -143,7 +145,9 @@ class WargaHomePage extends ConsumerWidget {
             child: AsyncView(
               value: agendas,
               onRetry: () => ref.invalidate(agendasProvider),
-              builder: (list) => list.isEmpty ? const Text('Belum ada agenda.') : Column(children: [for (final a in list.take(2)) _AgendaTile(a)]),
+              builder: (list) => list.isEmpty
+                  ? const IllustratedEmpty(gambar: 'kosong_agenda', teks: 'Belum ada agenda.')
+                  : Column(children: [for (final a in list.take(2)) _AgendaTile(a)]),
             ),
           ),
           const SizedBox(height: 16),
@@ -153,7 +157,7 @@ class WargaHomePage extends ConsumerWidget {
               value: news,
               onRetry: () => ref.invalidate(announcementsProvider),
               builder: (list) => list.isEmpty
-                  ? const Text('Belum ada pengumuman.')
+                  ? const IllustratedEmpty(gambar: 'kosong_pengumuman', teks: 'Belum ada pengumuman.')
                   : Column(
                       children: [
                         for (final n in list.take(3))
@@ -181,31 +185,42 @@ class _Hero extends StatelessWidget {
   final String? alamat;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(colors: [Brand.navy, Brand.navyDeep], begin: Alignment.topLeft, end: Alignment.bottomRight),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Selamat datang,', style: TextStyle(color: Colors.white70)),
-              Text(name, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white)),
-              const SizedBox(height: 8),
-              Container(height: 3, width: 48, color: Brand.yellow),
-              const SizedBox(height: 8),
-              Text(kode == null ? 'Belum terhubung ke rumah' : 'Rumah $kode • ${alamat ?? ''}', style: const TextStyle(color: Colors.white)),
-            ],
+  Widget build(BuildContext context) {
+    final jam = jamWib();
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Brand.navy, Brand.navyDeep], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(child: HeroDecor(malam: waktuMalam(jam))),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(salamWaktu(jam), style: const TextStyle(color: Colors.white70)),
+                      Text(name, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white)),
+                      const SizedBox(height: 8),
+                      Container(height: 3, width: 48, color: Brand.yellow),
+                      const SizedBox(height: 8),
+                      Text(kode == null ? 'Belum terhubung ke rumah' : 'Rumah $kode • ${alamat ?? ''}', style: const TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+                const GapuraMark(size: 56, light: true),
+              ],
+            ),
           ),
-        ),
-        const GapuraMark(size: 56, light: true),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }
 
 class _QuickAction extends StatelessWidget {
@@ -1299,6 +1314,10 @@ class _MyDues extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              if (d['bulan_berjalan'] case final Map now when layakUcapan(Tagihan(Json.from(now)))) ...[
+                ThanksStrip(tagihan: Tagihan(Json.from(now)), rinci: true),
+                const SizedBox(height: 16),
+              ],
               Text('Riwayat tagihan', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               DuesYearView(tagihan: list),
